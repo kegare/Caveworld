@@ -1,0 +1,18 @@
+[
+{
+  "modid": "kegare.caveworld",
+  "name": "Caveworld",
+  "description": "Adding the Caveworld dimension.",
+  "url": "",
+  "updateUrl": "",
+  "logoFile": "",
+  "version": "1.0.0",
+  "credits": "By kegare",
+  "parent": "",
+  "authors": ["kegare"],
+  "requiredMods": ["Forge"],
+  "dependencies": [],
+  "dependants": [],
+  "useDependencyInformation": "true"
+}
+]
