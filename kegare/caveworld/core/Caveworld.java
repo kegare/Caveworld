@@ -42,6 +42,7 @@ public class Caveworld
 		Config.buildConfiguration();
 
 		CaveBlock.load();
+		CaveBiome.load();
 	}
 
 	@EventHandler
@@ -60,7 +61,7 @@ public class Caveworld
 
 		if (event.getSide().isServer() && Config.versionCheck && Version.isOutdated())
 		{
-			event.getServer().logInfo(" A new Caveworld version is available : " + Version.LATEST);
+			event.getServer().logInfo("A new Caveworld version is available : " + Version.LATEST);
 		}
 	}
 }

@@ -13,7 +13,7 @@ public class CaveBlock
 	{
 		portalCaveworld = new BlockPortalCaveworld(Config.portalCaveworld, "portalCaveworld");
 
-		GameRegistry.registerBlock(portalCaveworld, "portalOlbia");
+		GameRegistry.registerBlock(portalCaveworld, "portalCaveworld");
 		LanguageRegistry.addName(portalCaveworld, "Caveworld Portal");
 	}
 }

@@ -1,8 +1,8 @@
 package kegare.caveworld.handler;
 
 import kegare.caveworld.core.Config;
-import kegare.caveworld.util.Version;
 import kegare.caveworld.util.Color;
+import kegare.caveworld.util.Version;
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.NetLoginHandler;
 import net.minecraft.network.packet.NetHandler;
@@ -49,7 +49,7 @@ public class ConnectionHandler implements IConnectionHandler
 		if (Config.versionCheck && Version.isOutdated())
 		{
 			StringBuilder message = new StringBuilder();
-			message.append(" A new ").append(Color.AQUA).append("Caveworld").append(Color.WHITE);
+			message.append("A new ").append(Color.AQUA).append("Caveworld").append(Color.WHITE);
 			message.append(" version is available : ").append(Color.YELLOW).append(Version.LATEST);
 
 			clientHandler.getPlayer().addChatMessage(message.toString());

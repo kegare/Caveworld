@@ -14,7 +14,7 @@ public class WorldProviderCaveworld extends WorldProvider
 	@Override
 	protected void registerWorldChunkManager()
 	{
-		worldChunkMgr = new CaveworldChunkManager(new BiomeGenCaveworld(Config.biomeCaveworld));
+		worldChunkMgr = new WorldChunkManagerCaveworld();
 		dimensionId = Config.dimensionCaveworld;
 		hasNoSky = true;
 	}
@@ -46,7 +46,7 @@ public class WorldProviderCaveworld extends WorldProvider
 	@Override
 	public boolean isSurfaceWorld()
 	{
-		return false;
+		return true;
 	}
 
 	@Override
@@ -109,6 +109,12 @@ public class WorldProviderCaveworld extends WorldProvider
 		return 0.0F;
 	}
 
+	@Override
+	public int getMoonPhase(long time)
+	{
+		return 0;
+	}
+
 	@SideOnly(Side.CLIENT)
 	@Override
 	public float[] calcSunriseSunsetColors(float par1, float par2)
@@ -126,6 +132,13 @@ public class WorldProviderCaveworld extends WorldProvider
 	@SideOnly(Side.CLIENT)
 	@Override
 	public Vec3 getSkyColor(Entity entity, float ticks)
+	{
+		return worldObj.getWorldVec3Pool().getVecFromPool(0.0D, 0.0D, 0.0D);
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
+	public Vec3 drawClouds(float ticks)
 	{
 		return worldObj.getWorldVec3Pool().getVecFromPool(0.0D, 0.0D, 0.0D);
 	}

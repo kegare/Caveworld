@@ -30,7 +30,7 @@ import net.minecraftforge.event.terraingen.TerrainGen;
 public class ChunkProviderCaveworld implements IChunkProvider
 {
 	private final World worldObj;
-	private final Random rand;
+	private final Random random;
 
 	private MapGenBase caveGenerator = new MapGenCaves();
 	private MapGenBase ravineGenerator = new MapGenRavine();
@@ -45,7 +45,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	public ChunkProviderCaveworld(World world, long seed)
 	{
 		this.worldObj = world;
-		this.rand = new Random(seed);
+		this.random = new Random(seed);
 	}
 
 	@Override
@@ -57,7 +57,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	@Override
 	public Chunk provideChunk(int chunkX, int chunkZ)
 	{
-		rand.setSeed((long)chunkX * 341873128712L + (long)chunkZ * 132897987541L);
+		random.setSeed((long)chunkX * 341873128712L + (long)chunkZ * 132897987541L);
 
 		byte[] blocks = new byte[32768];
 		Arrays.fill(blocks, (byte)Block.stone.blockID);
@@ -117,63 +117,63 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		int var1 = chunkX * 16;
 		int var2 = chunkZ * 16;
 		BiomeGenBase biome = worldObj.getBiomeGenForCoords(var1 + 16, var2 + 16);
-		rand.setSeed(worldObj.getSeed());
-		long var3 = rand.nextLong() / 2L * 2L + 1L;
-		long var4 = rand.nextLong() / 2L * 2L + 1L;
-		rand.setSeed((long)chunkX * var3 + (long)chunkZ * var4 ^ worldObj.getSeed());
+		random.setSeed(worldObj.getSeed());
+		long var3 = random.nextLong() / 2L * 2L + 1L;
+		long var4 = random.nextLong() / 2L * 2L + 1L;
+		random.setSeed((long)chunkX * var3 + (long)chunkZ * var4 ^ worldObj.getSeed());
 
-		MinecraftForge.EVENT_BUS.post(new PopulateChunkEvent.Pre(chunkProvider, worldObj, rand, chunkX, chunkZ, false));
+		MinecraftForge.EVENT_BUS.post(new PopulateChunkEvent.Pre(chunkProvider, worldObj, random, chunkX, chunkZ, false));
 
 		if (Config.generateMineshaft)
 		{
-			mineshaftGenerator.generateStructuresInChunk(worldObj, rand, chunkX, chunkZ);
+			mineshaftGenerator.generateStructuresInChunk(worldObj, random, chunkX, chunkZ);
 		}
 
-		if (TerrainGen.populate(chunkProvider, worldObj, rand, chunkX, chunkZ, false, EventType.LAKE) && rand.nextInt(4) == 0)
+		if (TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.LAKE) && random.nextInt(4) == 0)
 		{
-			int x = var1 + rand.nextInt(16) + 8;
-			int y = rand.nextInt(128);
-			int z = var2 + rand.nextInt(16) + 8;
+			int x = var1 + random.nextInt(16) + 8;
+			int y = random.nextInt(128);
+			int z = var2 + random.nextInt(16) + 8;
 
-			(new WorldGenLakes(Block.waterStill.blockID)).generate(worldObj, rand, x, y, z);
+			(new WorldGenLakes(Block.waterStill.blockID)).generate(worldObj, random, x, y, z);
 		}
 
-		if (TerrainGen.populate(chunkProvider, worldObj, rand, chunkX, chunkZ, false, EventType.LAVA) && rand.nextInt(8) == 0)
+		if (TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.LAVA) && random.nextInt(8) == 0)
 		{
-			int x = var1 + rand.nextInt(16) + 8;
-			int y = rand.nextInt(rand.nextInt(120) + 8);
-			int z = var2 + rand.nextInt(16) + 8;
+			int x = var1 + random.nextInt(16) + 8;
+			int y = random.nextInt(random.nextInt(120) + 8);
+			int z = var2 + random.nextInt(16) + 8;
 
-			if (y < 63 || rand.nextInt(10) == 0)
+			if (y < 63 || random.nextInt(10) == 0)
 			{
-				(new WorldGenLakes(Block.lavaStill.blockID)).generate(worldObj, rand, x, y, z);
+				(new WorldGenLakes(Block.lavaStill.blockID)).generate(worldObj, random, x, y, z);
 			}
 		}
 
-		for (int i = 0; TerrainGen.populate(chunkProvider, worldObj, rand, chunkX, chunkZ, false, EventType.DUNGEON) && i < 8; ++i)
+		for (int i = 0; TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.DUNGEON) && i < 8; ++i)
 		{
-			int x = var1 + rand.nextInt(16) + 8;
-			int y = rand.nextInt(128);
-			int z = var2 + rand.nextInt(16) + 8;
+			int x = var1 + random.nextInt(16) + 8;
+			int y = random.nextInt(128);
+			int z = var2 + random.nextInt(16) + 8;
 
-			(new WorldGenDungeons()).generate(worldObj, rand, x, y, z);
+			(new WorldGenDungeons()).generate(worldObj, random, x, y, z);
 		}
 
-		biome.decorate(worldObj, rand, var1, var2);
+		biome.decorate(worldObj, random, var1, var2);
 
-		for (int i = 0; i < rand.nextInt(3) + 4; ++i)
+		for (int i = 0; i < random.nextInt(2) + 3; ++i)
 		{
-			int x = var1 + rand.nextInt(16) + 8;
-			int y = rand.nextInt(52) + 64;
-			int z = var2 + rand.nextInt(16) + 8;
+			int x = var1 + random.nextInt(16) + 8;
+			int y = random.nextInt(52) + 64;
+			int z = var2 + random.nextInt(16) + 8;
 
 			if (worldObj.getBlockId(x, y, z) == Block.stone.blockID)
 			{
-				(new WorldGenMinable(Block.oreEmerald.blockID, 6)).generate(worldObj, rand, x, y, z);
+				(new WorldGenMinable(Block.oreEmerald.blockID, 6)).generate(worldObj, random, x, y, z);
 			}
 		}
 
-		MinecraftForge.EVENT_BUS.post(new PopulateChunkEvent.Post(chunkProvider, worldObj, rand, chunkX, chunkZ, false));
+		MinecraftForge.EVENT_BUS.post(new PopulateChunkEvent.Post(chunkProvider, worldObj, random, chunkX, chunkZ, false));
 
 		BlockSand.fallInstantly = false;
 	}

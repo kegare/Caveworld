@@ -24,4 +24,16 @@ public class BiomeGenCaveworld extends BiomeGenBase
 	{
 		return 0;
 	}
+
+	@Override
+	public boolean canSpawnLightningBolt()
+	{
+		return false;
+	}
+
+	@Override
+	public boolean isHighHumidity()
+	{
+		return false;
+	}
 }
