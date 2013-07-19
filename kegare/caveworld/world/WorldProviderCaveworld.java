@@ -38,6 +38,12 @@ public class WorldProviderCaveworld extends WorldProvider
 	}
 
 	@Override
+	public boolean shouldMapSpin(String entity, double x, double y, double z)
+	{
+		return false;
+	}
+
+	@Override
 	public IChunkProvider createChunkGenerator()
 	{
 		return new ChunkProviderCaveworld(worldObj, worldObj.getSeed());
@@ -46,7 +52,7 @@ public class WorldProviderCaveworld extends WorldProvider
 	@Override
 	public boolean isSurfaceWorld()
 	{
-		return true;
+		return false;
 	}
 
 	@Override
@@ -104,7 +110,7 @@ public class WorldProviderCaveworld extends WorldProvider
 	}
 
 	@Override
-	public float calculateCelestialAngle(long par1, float par2)
+	public float calculateCelestialAngle(long time, float par2)
 	{
 		return 0.0F;
 	}

@@ -49,12 +49,6 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	}
 
 	@Override
-	public Chunk loadChunk(int chunkX, int chunkZ)
-	{
-		return provideChunk(chunkX, chunkZ);
-	}
-
-	@Override
 	public Chunk provideChunk(int chunkX, int chunkZ)
 	{
 		random.setSeed((long)chunkX * 341873128712L + (long)chunkZ * 132897987541L);
@@ -97,16 +91,13 @@ public class ChunkProviderCaveworld implements IChunkProvider
 			mineshaftGenerator.generate(this, worldObj, chunkX, chunkZ, blocks);
 		}
 
-		Chunk chunk = new Chunk(worldObj, blocks, chunkX, chunkZ);
-		chunk.generateSkylightMap();
-
-		return chunk;
+		return new Chunk(worldObj, blocks, chunkX, chunkZ);
 	}
 
 	@Override
-	public boolean chunkExists(int chunkX, int chunkZ)
+	public Chunk loadChunk(int chunkX, int chunkZ)
 	{
-		return true;
+		return provideChunk(chunkX, chunkZ);
 	}
 
 	@Override
@@ -132,7 +123,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		if (TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.LAKE) && random.nextInt(4) == 0)
 		{
 			int x = var1 + random.nextInt(16) + 8;
-			int y = random.nextInt(128);
+			int y = random.nextInt(100);
 			int z = var2 + random.nextInt(16) + 8;
 
 			(new WorldGenLakes(Block.waterStill.blockID)).generate(worldObj, random, x, y, z);
@@ -150,10 +141,10 @@ public class ChunkProviderCaveworld implements IChunkProvider
 			}
 		}
 
-		for (int i = 0; TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.DUNGEON) && i < 8; ++i)
+		for (int i = 0; TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.DUNGEON) && i < 6; ++i)
 		{
 			int x = var1 + random.nextInt(16) + 8;
-			int y = random.nextInt(128);
+			int y = random.nextInt(86);
 			int z = var2 + random.nextInt(16) + 8;
 
 			(new WorldGenDungeons()).generate(worldObj, random, x, y, z);
@@ -161,10 +152,10 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 		biome.decorate(worldObj, random, var1, var2);
 
-		for (int i = 0; i < random.nextInt(2) + 3; ++i)
+		for (int i = 0; i < random.nextInt(3) + 2; ++i)
 		{
 			int x = var1 + random.nextInt(16) + 8;
-			int y = random.nextInt(52) + 64;
+			int y = random.nextInt(64) + 64;
 			int z = var2 + random.nextInt(16) + 8;
 
 			if (worldObj.getBlockId(x, y, z) == Block.stone.blockID)
@@ -179,15 +170,15 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	}
 
 	@Override
-	public boolean saveChunks(boolean par1, IProgressUpdate progress)
+	public boolean chunkExists(int chunkX, int chunkZ)
 	{
 		return true;
 	}
 
 	@Override
-	public void func_104112_b()
+	public boolean saveChunks(boolean flag, IProgressUpdate progress)
 	{
-		//NOOP
+		return true;
 	}
 
 	@Override
@@ -235,5 +226,11 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		{
 			mineshaftGenerator.generate(this, worldObj, x, z, (byte[])null);
 		}
+	}
+
+	@Override
+	public void func_104112_b()
+	{
+		//NOOP
 	}
 }

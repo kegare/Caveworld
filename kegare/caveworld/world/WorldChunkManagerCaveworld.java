@@ -28,7 +28,7 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 	@Override
 	public BiomeGenBase[] getBiomeGenAt(BiomeGenBase[] biomes, int chunkX, int chunkZ, int width, int length, boolean flag)
 	{
-		return super.getBiomesForGeneration(biomes, chunkX, chunkZ, width, length);
+		return getBiomesForGeneration(biomes, chunkX, chunkZ, width, length);
 	}
 
 	@Override
