@@ -32,6 +32,8 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	private final World worldObj;
 	private final Random random;
 
+	private final boolean mapFeaturesEnabled;
+
 	private MapGenBase caveGenerator = new MapGenCaves();
 	private MapGenBase ravineGenerator = new MapGenRavine();
 	private MapGenMineshaft mineshaftGenerator = new MapGenMineshaft();
@@ -46,6 +48,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	{
 		this.worldObj = world;
 		this.random = new Random(seed);
+		this.mapFeaturesEnabled = world.getWorldInfo().isMapFeaturesEnabled();
 	}
 
 	@Override
@@ -86,7 +89,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 			ravineGenerator.generate(this, worldObj, chunkX, chunkZ, blocks);
 		}
 
-		if (Config.generateMineshaft)
+		if (mapFeaturesEnabled && Config.generateMineshaft)
 		{
 			mineshaftGenerator.generate(this, worldObj, chunkX, chunkZ, blocks);
 		}
@@ -115,39 +118,45 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 		MinecraftForge.EVENT_BUS.post(new PopulateChunkEvent.Pre(chunkProvider, worldObj, random, chunkX, chunkZ, false));
 
-		if (Config.generateMineshaft)
+		if (mapFeaturesEnabled && Config.generateMineshaft)
 		{
 			mineshaftGenerator.generateStructuresInChunk(worldObj, random, chunkX, chunkZ);
 		}
 
-		if (TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.LAKE) && random.nextInt(4) == 0)
+		if (Config.generateLakes)
 		{
-			int x = var1 + random.nextInt(16) + 8;
-			int y = random.nextInt(100);
-			int z = var2 + random.nextInt(16) + 8;
-
-			(new WorldGenLakes(Block.waterStill.blockID)).generate(worldObj, random, x, y, z);
-		}
-
-		if (TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.LAVA) && random.nextInt(8) == 0)
-		{
-			int x = var1 + random.nextInt(16) + 8;
-			int y = random.nextInt(random.nextInt(120) + 8);
-			int z = var2 + random.nextInt(16) + 8;
-
-			if (y < 63 || random.nextInt(10) == 0)
+			if (TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.LAKE) && random.nextInt(4) == 0)
 			{
-				(new WorldGenLakes(Block.lavaStill.blockID)).generate(worldObj, random, x, y, z);
+				int x = var1 + random.nextInt(16) + 8;
+				int y = random.nextInt(100);
+				int z = var2 + random.nextInt(16) + 8;
+
+				(new WorldGenLakes(Block.waterStill.blockID)).generate(worldObj, random, x, y, z);
+			}
+
+			if (TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.LAVA) && random.nextInt(8) == 0)
+			{
+				int x = var1 + random.nextInt(16) + 8;
+				int y = random.nextInt(random.nextInt(120) + 8);
+				int z = var2 + random.nextInt(16) + 8;
+
+				if (y < 63 || random.nextInt(10) == 0)
+				{
+					(new WorldGenLakes(Block.lavaStill.blockID)).generate(worldObj, random, x, y, z);
+				}
 			}
 		}
 
-		for (int i = 0; TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.DUNGEON) && i < 6; ++i)
+		if (mapFeaturesEnabled && Config.generateDungeon)
 		{
-			int x = var1 + random.nextInt(16) + 8;
-			int y = random.nextInt(86);
-			int z = var2 + random.nextInt(16) + 8;
+			for (int i = 0; TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.DUNGEON) && i < 8; ++i)
+			{
+				int x = var1 + random.nextInt(16) + 8;
+				int y = random.nextInt(100);
+				int z = var2 + random.nextInt(16) + 8;
 
-			(new WorldGenDungeons()).generate(worldObj, random, x, y, z);
+				(new WorldGenDungeons()).generate(worldObj, random, x, y, z);
+			}
 		}
 
 		biome.decorate(worldObj, random, var1, var2);
@@ -222,7 +231,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	@Override
 	public void recreateStructures(int x, int z)
 	{
-		if (Config.generateMineshaft)
+		if (mapFeaturesEnabled && Config.generateMineshaft)
 		{
 			mineshaftGenerator.generate(this, worldObj, x, z, (byte[])null);
 		}

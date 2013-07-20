@@ -11,6 +11,9 @@ import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemMonsterPlacer;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -40,7 +43,25 @@ public class BlockPortalCaveworld extends BlockPortal
 	@Override
 	public void updateTick(World world, int x, int y, int z, Random random)
 	{
-		//NOOP
+		if (world.provider.isSurfaceWorld() && random.nextInt(300) < world.difficultySetting)
+		{
+			int var1;
+
+			for (var1 = y; !world.doesBlockHaveSolidTopSurface(x, var1, z) && var1 > 0; --var1)
+			{
+				;
+			}
+
+			if (var1 > 0 && !world.isBlockNormalCube(x, var1 + 1, z))
+			{
+				Entity entity = ItemMonsterPlacer.spawnCreature(world, 65, (double)x + 0.5D, (double)var1 + 1.1D, (double)z + 0.5D);
+
+				if (entity != null)
+				{
+					entity.timeUntilPortal = 10;
+				}
+			}
+		}
 	}
 
 	@Override
@@ -166,19 +187,22 @@ public class BlockPortalCaveworld extends BlockPortal
 	@Override
 	public void onEntityCollidedWithBlock(World world, int x, int y, int z, Entity entity)
 	{
-		if (!world.isRemote && entity.isEntityAlive() && !entity.isRiding() && !entity.isSneaking())
+		if (!world.isRemote && entity.isEntityAlive() && entity.ridingEntity == null && entity.riddenByEntity == null && !entity.isSneaking())
 		{
 			if (entity instanceof EntityPlayerMP)
 			{
 				EntityPlayerMP player = (EntityPlayerMP)entity;
 
-				if (player.timeUntilPortal == 0)
+				if (player.timeUntilPortal == 0 && !player.isPotionActive(Potion.confusion))
 				{
 					MinecraftServer server = player.mcServer;
 					int dimension = player.dimension == 0 ? Config.dimensionCaveworld : 0;
 
 					server.getConfigurationManager().transferPlayerToDimension(player, dimension, new TeleporterCaveworld(server.worldServerForDimension(dimension)));
+
 					player.addExperienceLevel(0);
+					player.addPotionEffect(new PotionEffect(Potion.confusion.getId(), 120, 10, true));
+					player.addPotionEffect(new PotionEffect(Potion.blindness.getId(), 20, 1, true));
 
 					player.timeUntilPortal = 10;
 				}
@@ -231,7 +255,7 @@ public class BlockPortalCaveworld extends BlockPortal
 	@Override
 	public void randomDisplayTick(World world, int x, int y, int z, Random random)
 	{
-		if (random.nextInt(200) == 0)
+		if (world.provider.isSurfaceWorld() && random.nextInt(200) == 0)
 		{
 			world.playSound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "ambient.cave.cave", 0.5F, random.nextFloat() * 0.4F + 0.8F, false);
 		}
