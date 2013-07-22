@@ -61,7 +61,7 @@ public class CaveEventHooks
 						--itemstack.stackSize;
 					}
 
-					world.playSoundEffect((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "step.stone", 1.0F, 2.0F);
+					world.playSoundEffect(x, y, z, "step.stone", 1.0F, 2.0F);
 				}
 			}
 		}

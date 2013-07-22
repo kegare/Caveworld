@@ -32,6 +32,13 @@ public class Version
 
 	public static boolean isOutdated()
 	{
-		return !CURRENT.equals(LATEST);
+		try
+		{
+			return !CURRENT.equals(LATEST);
+		}
+		catch (Exception e)
+		{
+			return false;
+		}
 	}
 }

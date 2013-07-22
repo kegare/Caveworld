@@ -2,7 +2,6 @@ package kegare.caveworld.block;
 
 import java.util.Random;
 
-import kegare.caveworld.core.Caveworld;
 import kegare.caveworld.core.Config;
 import kegare.caveworld.core.TeleporterCaveworld;
 import net.minecraft.block.Block;
@@ -15,8 +14,10 @@ import net.minecraft.item.ItemMonsterPlacer;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -27,9 +28,9 @@ public class BlockPortalCaveworld extends BlockPortal
 		super(blockID);
 		this.setUnlocalizedName(name);
 		this.func_111022_d("caveworld:portal_caveworld");
-		this.setLightValue(0.5F);
-		this.setHardness(-1.0F);
-		this.setResistance(5000000.0F);
+		this.setBlockUnbreakable();
+		this.setLightOpacity(3);
+		this.setLightValue(0.75F);
 		this.setStepSound(Block.soundGlassFootstep);
 	}
 
@@ -38,30 +39,6 @@ public class BlockPortalCaveworld extends BlockPortal
 	public void registerIcons(IconRegister iconRegister)
 	{
 		blockIcon = iconRegister.registerIcon(func_111023_E());
-	}
-
-	@Override
-	public void updateTick(World world, int x, int y, int z, Random random)
-	{
-		if (world.provider.isSurfaceWorld() && random.nextInt(300) < world.difficultySetting)
-		{
-			int var1;
-
-			for (var1 = y; !world.doesBlockHaveSolidTopSurface(x, var1, z) && var1 > 0; --var1)
-			{
-				;
-			}
-
-			if (var1 > 0 && !world.isBlockNormalCube(x, var1 + 1, z))
-			{
-				Entity entity = ItemMonsterPlacer.spawnCreature(world, 65, (double)x + 0.5D, (double)var1 + 1.1D, (double)z + 0.5D);
-
-				if (entity != null)
-				{
-					entity.timeUntilPortal = 10;
-				}
-			}
-		}
 	}
 
 	@Override
@@ -187,46 +164,40 @@ public class BlockPortalCaveworld extends BlockPortal
 	@Override
 	public void onEntityCollidedWithBlock(World world, int x, int y, int z, Entity entity)
 	{
-		if (!world.isRemote && entity.isEntityAlive() && entity.ridingEntity == null && entity.riddenByEntity == null && !entity.isSneaking())
+		if (!world.isRemote && entity.isEntityAlive() && entity.ridingEntity == null && entity.riddenByEntity == null)
 		{
-			if (entity instanceof EntityPlayerMP)
+			MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+			int dimOld = entity.dimension;
+			int dimNew = entity.dimension == 0 ? Config.dimensionCaveworld : 0;
+			WorldServer worldOld = server.worldServerForDimension(dimOld);
+			WorldServer worldNew = server.worldServerForDimension(dimNew);
+			Teleporter teleporter = new TeleporterCaveworld(worldNew);
+
+			if (entity.timeUntilPortal <= 0)
 			{
-				EntityPlayerMP player = (EntityPlayerMP)entity;
-
-				if (player.timeUntilPortal == 0 && !player.isPotionActive(Potion.confusion))
+				if (entity instanceof EntityPlayerMP)
 				{
-					MinecraftServer server = player.mcServer;
-					int dimension = player.dimension == 0 ? Config.dimensionCaveworld : 0;
+					EntityPlayerMP player = (EntityPlayerMP)entity;
 
-					server.getConfigurationManager().transferPlayerToDimension(player, dimension, new TeleporterCaveworld(server.worldServerForDimension(dimension)));
+					if (!player.isSneaking() && !player.isPotionActive(Potion.confusion))
+					{
+						player.playSound("mob.endermen.portal", 0.5F, 1.0F);
 
-					player.addExperienceLevel(0);
-					player.addPotionEffect(new PotionEffect(Potion.confusion.getId(), 120, 10, true));
-					player.addPotionEffect(new PotionEffect(Potion.blindness.getId(), 20, 1, true));
+						server.getConfigurationManager().transferPlayerToDimension(player, dimNew, teleporter);
 
-					player.timeUntilPortal = 10;
+						player.addExperienceLevel(0);
+						player.addPotionEffect(new PotionEffect(Potion.confusion.getId(), 150, 10, true));
+						player.addPotionEffect(new PotionEffect(Potion.blindness.getId(), 20, 1, true));
+
+						worldNew.playSoundAtEntity(player, "mob.endermen.portal", 0.5F, 1.0F);
+
+						player.timeUntilPortal = player.getPortalCooldown();
+					}
 				}
 				else
 				{
-					player.timeUntilPortal = 10;
-				}
-			}
-			else
-			{
-				if (entity.timeUntilPortal == 0)
-				{
-					MinecraftServer server = Caveworld.proxy.getServer();
-					int dimensionOld = entity.dimension;
-					int dimensionNew = entity.dimension == 0 ? Config.dimensionCaveworld : 0;
-					WorldServer worldOld = server.worldServerForDimension(dimensionOld);
-					WorldServer worldNew = server.worldServerForDimension(dimensionNew);
-
-					entity.dimension = dimensionNew;
-					worldOld.removeEntity(entity);
-
-					entity.isDead = false;
-
-					server.getConfigurationManager().transferEntityToWorld(entity, dimensionOld, worldOld, worldNew, new TeleporterCaveworld(worldNew));
+					entity.dimension = dimNew;
+					server.getConfigurationManager().transferEntityToWorld(entity, dimOld, worldOld, worldNew, teleporter);
 
 					Entity target = EntityList.createEntityByName(EntityList.getEntityString(entity), worldNew);
 
@@ -235,17 +206,41 @@ public class BlockPortalCaveworld extends BlockPortal
 						target.copyDataFrom(entity, true);
 						worldNew.spawnEntityInWorld(target);
 
-						target.timeUntilPortal = 10;
+						target.timeUntilPortal = target.getPortalCooldown();
 					}
 
-					entity.isDead = true;
+					entity.setDead();
 
 					worldOld.resetUpdateEntityTick();
 					worldNew.resetUpdateEntityTick();
 				}
-				else
+			}
+			else
+			{
+				entity.timeUntilPortal = entity.getPortalCooldown();
+			}
+		}
+	}
+
+	@Override
+	public void updateTick(World world, int x, int y, int z, Random random)
+	{
+		if (!world.isRemote && world.provider.isSurfaceWorld() && !world.isDaytime() && random.nextInt(100) <= world.difficultySetting)
+		{
+			int var1;
+
+			for (var1 = y; !world.doesBlockHaveSolidTopSurface(x, var1, z) && var1 > 0; --var1)
+			{
+				;
+			}
+
+			if (var1 > 0 && !world.isBlockNormalCube(x, var1 + 1, z))
+			{
+				Entity entity = ItemMonsterPlacer.spawnCreature(world, 65, (double)x + 0.5D, (double)var1 + 1.1D, (double)z + 0.5D);
+
+				if (entity != null)
 				{
-					entity.timeUntilPortal = 10;
+					entity.timeUntilPortal = entity.getPortalCooldown();
 				}
 			}
 		}
