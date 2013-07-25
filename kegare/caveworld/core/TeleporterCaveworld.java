@@ -22,7 +22,7 @@ public class TeleporterCaveworld extends Teleporter
 	private final Random random;
 
 	private final LongHashMap coordCache = new LongHashMap();
-	private final List coordKeys = Lists.newArrayList();
+	private final List<Long> coordKeys = Lists.newArrayList();
 
 	public TeleporterCaveworld(WorldServer worldServer)
 	{
@@ -459,12 +459,12 @@ public class TeleporterCaveworld extends Teleporter
 	{
 		if (time % 100L == 0L)
 		{
-			Iterator iterator = coordKeys.iterator();
+			Iterator<Long> iterator = coordKeys.iterator();
 			long var1 = time - 600L;
 
 			while (iterator.hasNext())
 			{
-				Long var2 = (Long)iterator.next();
+				Long var2 = iterator.next();
 				PortalPosition portal = (PortalPosition)coordCache.getValueByKey(var2.longValue());
 
 				if (portal == null || portal.lastUpdateTime < var1)

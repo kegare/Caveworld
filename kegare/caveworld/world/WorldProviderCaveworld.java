@@ -56,13 +56,19 @@ public class WorldProviderCaveworld extends WorldProvider
 	}
 
 	@Override
+	public boolean canRespawnHere()
+	{
+		return false;
+	}
+
+	@Override
 	public boolean isDaytime()
 	{
 		return false;
 	}
 
 	@Override
-	public boolean canRespawnHere()
+	public boolean canCoordinateBeSpawn(int x, int z)
 	{
 		return false;
 	}
@@ -70,7 +76,7 @@ public class WorldProviderCaveworld extends WorldProvider
 	@Override
 	public long getSeed()
 	{
-		return Long.reverse(worldObj.getWorldInfo().getSeed());
+		return Long.reverse(super.getSeed());
 	}
 
 	@Override
@@ -80,9 +86,9 @@ public class WorldProviderCaveworld extends WorldProvider
 	}
 
 	@Override
-	public boolean canCoordinateBeSpawn(int x, int z)
+	public int getAverageGroundLevel()
 	{
-		return false;
+		return 32;
 	}
 
 	@Override
@@ -161,6 +167,13 @@ public class WorldProviderCaveworld extends WorldProvider
 	public boolean isSkyColored()
 	{
 		return false;
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
+	public boolean getWorldHasVoidParticles()
+	{
+		return true;
 	}
 
 	@SideOnly(Side.CLIENT)

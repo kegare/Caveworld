@@ -19,7 +19,6 @@ import net.minecraft.world.gen.MapGenCaves;
 import net.minecraft.world.gen.MapGenRavine;
 import net.minecraft.world.gen.feature.WorldGenDungeons;
 import net.minecraft.world.gen.feature.WorldGenLakes;
-import net.minecraft.world.gen.feature.WorldGenMinable;
 import net.minecraft.world.gen.structure.MapGenMineshaft;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.terraingen.InitMapGenEvent;
@@ -108,13 +107,13 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	{
 		BlockSand.fallInstantly = true;
 
-		int var1 = chunkX * 16;
-		int var2 = chunkZ * 16;
-		BiomeGenBase biome = worldObj.getBiomeGenForCoords(var1 + 16, var2 + 16);
+		int chunk_X = chunkX * 16;
+		int chunk_Z = chunkZ * 16;
+		BiomeGenBase biome = worldObj.getBiomeGenForCoords(chunk_X + 16, chunk_Z + 16);
 		random.setSeed(worldObj.getSeed());
-		long var3 = random.nextLong() / 2L * 2L + 1L;
-		long var4 = random.nextLong() / 2L * 2L + 1L;
-		random.setSeed((long)chunkX * var3 + (long)chunkZ * var4 ^ worldObj.getSeed());
+		long var1 = random.nextLong() / 2L * 2L + 1L;
+		long var2 = random.nextLong() / 2L * 2L + 1L;
+		random.setSeed((long)chunkX * var1 + (long)chunkZ * var2 ^ worldObj.getSeed());
 
 		MinecraftForge.EVENT_BUS.post(new PopulateChunkEvent.Pre(chunkProvider, worldObj, random, chunkX, chunkZ, false));
 
@@ -127,18 +126,18 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		{
 			if (TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.LAKE) && random.nextInt(4) == 0)
 			{
-				int x = var1 + random.nextInt(16) + 8;
+				int x = chunk_X + random.nextInt(16) + 8;
 				int y = random.nextInt(100);
-				int z = var2 + random.nextInt(16) + 8;
+				int z = chunk_Z + random.nextInt(16) + 8;
 
 				(new WorldGenLakes(Block.waterStill.blockID)).generate(worldObj, random, x, y, z);
 			}
 
 			if (TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.LAVA) && random.nextInt(8) == 0)
 			{
-				int x = var1 + random.nextInt(16) + 8;
+				int x = chunk_X + random.nextInt(16) + 8;
 				int y = random.nextInt(random.nextInt(120) + 8);
-				int z = var2 + random.nextInt(16) + 8;
+				int z = chunk_Z + random.nextInt(16) + 8;
 
 				if (y < 63 || random.nextInt(10) == 0)
 				{
@@ -147,31 +146,19 @@ public class ChunkProviderCaveworld implements IChunkProvider
 			}
 		}
 
-		if (mapFeaturesEnabled && Config.generateDungeon)
+		if (Config.generateDungeon && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.DUNGEON))
 		{
-			for (int i = 0; TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.DUNGEON) && i < 8; ++i)
+			for (int i = 0; i < 8; ++i)
 			{
-				int x = var1 + random.nextInt(16) + 8;
+				int x = chunk_X + random.nextInt(16) + 8;
 				int y = random.nextInt(100);
-				int z = var2 + random.nextInt(16) + 8;
+				int z = chunk_Z + random.nextInt(16) + 8;
 
 				(new WorldGenDungeons()).generate(worldObj, random, x, y, z);
 			}
 		}
 
-		biome.decorate(worldObj, random, var1, var2);
-
-		for (int i = 0; i < random.nextInt(3) + 2; ++i)
-		{
-			int x = var1 + random.nextInt(16) + 8;
-			int y = random.nextInt(64) + 64;
-			int z = var2 + random.nextInt(16) + 8;
-
-			if (worldObj.getBlockId(x, y, z) == Block.stone.blockID)
-			{
-				(new WorldGenMinable(Block.oreEmerald.blockID, 6)).generate(worldObj, random, x, y, z);
-			}
-		}
+		biome.decorate(worldObj, random, chunk_X, chunk_Z);
 
 		MinecraftForge.EVENT_BUS.post(new PopulateChunkEvent.Post(chunkProvider, worldObj, random, chunkX, chunkZ, false));
 
@@ -219,7 +206,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	@Override
 	public ChunkPosition findClosestStructure(World world, String name, int x, int y, int z)
 	{
-		return null;
+		return name.equals("Mineshaft") && mineshaftGenerator != null ? mineshaftGenerator.getNearestInstance(world, x, y, z) : null;
 	}
 
 	@Override
@@ -229,11 +216,11 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	}
 
 	@Override
-	public void recreateStructures(int x, int z)
+	public void recreateStructures(int chunkX, int chunkZ)
 	{
 		if (mapFeaturesEnabled && Config.generateMineshaft)
 		{
-			mineshaftGenerator.generate(this, worldObj, x, z, (byte[])null);
+			mineshaftGenerator.generate(this, worldObj, chunkX, chunkZ, (byte[])null);
 		}
 	}
 

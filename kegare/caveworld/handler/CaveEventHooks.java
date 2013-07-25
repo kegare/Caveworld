@@ -22,10 +22,9 @@ public class CaveEventHooks
 		int x = event.x;
 		int y = event.y;
 		int z = event.z;
-		int dimension = world.provider.dimensionId;
 		int face = event.face;
 
-		if (event.action == Action.RIGHT_CLICK_BLOCK && (dimension == 0 || dimension == Config.dimensionCaveworld))
+		if (event.action == Action.RIGHT_CLICK_BLOCK && (player.dimension == 0 || player.dimension == Config.dimensionCaveworld))
 		{
 			if (itemstack != null && itemstack.itemID == Item.emerald.itemID && world.getBlockId(x, y, z) == Block.cobblestoneMossy.blockID)
 			{
@@ -56,12 +55,12 @@ public class CaveEventHooks
 
 				if (player.canPlayerEdit(x, y, z, face, itemstack) && world.isAirBlock(x, y, z) && CaveBlock.portalCaveworld.tryToCreatePortal(world, x, y, z))
 				{
+					world.playSoundEffect((double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), "step.stone", 1.0F, 2.0F);
+
 					if (!player.capabilities.isCreativeMode)
 					{
 						--itemstack.stackSize;
 					}
-
-					world.playSoundEffect(x, y, z, "step.stone", 1.0F, 2.0F);
 				}
 			}
 		}
