@@ -32,68 +32,68 @@ public class TeleporterCaveworld extends Teleporter
 	}
 
 	@Override
-	public void placeInPortal(Entity entity, double x, double y, double z, float yaw)
+	public void placeInPortal(Entity entity, double posX, double posY, double posZ, float rotation)
 	{
-		if (!placeInExistingPortal(entity, x, y, z, yaw))
+		if (!placeInExistingPortal(entity, posX, posY, posZ, rotation))
 		{
 			makePortal(entity);
-			placeInExistingPortal(entity, x, y, z, yaw);
+			placeInExistingPortal(entity, posX, posY, posZ, rotation);
 		}
 	}
 
 	@Override
-	public boolean placeInExistingPortal(Entity entity, double x, double y, double z, float yaw)
+	public boolean placeInExistingPortal(Entity entity, double posX, double posY, double posZ, float rotation)
 	{
 		short var1 = 128;
 		double var2 = -1.0D;
-		int var3 = 0;
-		int var4 = 0;
-		int var5 = 0;
-		int var6 = MathHelper.floor_double(entity.posX);
-		int var7 = MathHelper.floor_double(entity.posZ);
-		long var8 = ChunkCoordIntPair.chunkXZ2Int(var6, var7);
-		boolean var9 = true;
-		double var10;
-		int var11;
+		int x = 0;
+		int y = 0;
+		int z = 0;
+		int var3 = MathHelper.floor_double(entity.posX);
+		int var4 = MathHelper.floor_double(entity.posZ);
+		long var5 = ChunkCoordIntPair.chunkXZ2Int(var3, var4);
+		boolean var6 = true;
+		double var7;
+		int var8;
 
-		if (coordCache.containsItem(var8))
+		if (coordCache.containsItem(var5))
 		{
-			PortalPosition portal = (PortalPosition)coordCache.getValueByKey(var8);
+			PortalPosition portal = (PortalPosition)coordCache.getValueByKey(var5);
 			var2 = 0.0D;
-			var3 = portal.posX;
-			var4 = portal.posY;
-			var5 = portal.posZ;
+			x = portal.posX;
+			y = portal.posY;
+			z = portal.posZ;
 			portal.lastUpdateTime = worldObj.getTotalWorldTime();
-			var9 = false;
+			var6 = false;
 		}
 		else
 		{
-			for (var11 = var6 - var1; var11 <= var6 + var1; ++var11)
+			for (var8 = var3 - var1; var8 <= var3 + var1; ++var8)
 			{
-				double var12 = (double)var11 + 0.5D - entity.posX;
+				double var12 = (double)var8 + 0.5D - entity.posX;
 
-				for (int var13 = var7 - var1; var13 <= var7 + var1; ++var13)
+				for (int var13 = var4 - var1; var13 <= var4 + var1; ++var13)
 				{
 					double var14 = (double)var13 + 0.5D - entity.posZ;
 
 					for (int var15 = worldObj.getActualHeight() - 1; var15 >= 0; --var15)
 					{
-						if (worldObj.getBlockId(var11, var15, var13) == CaveBlock.portalCaveworld.blockID)
+						if (worldObj.getBlockId(var8, var15, var13) == CaveBlock.portalCaveworld.blockID)
 						{
-							while (worldObj.getBlockId(var11, var15 - 1, var13) == CaveBlock.portalCaveworld.blockID)
+							while (worldObj.getBlockId(var8, var15 - 1, var13) == CaveBlock.portalCaveworld.blockID)
 							{
 								--var15;
 							}
 
-							var10 = (double)var15 + 0.5D - entity.posY;
-							double var16 = var12 * var12 + var10 * var10 + var14 * var14;
+							var7 = (double)var15 + 0.5D - entity.posY;
+							double var16 = var12 * var12 + var7 * var7 + var14 * var14;
 
 							if (var2 < 0.0D || var16 < var2)
 							{
 								var2 = var16;
-								var3 = var11;
-								var4 = var15;
-								var5 = var13;
+								x = var8;
+								y = var15;
+								z = var13;
 							}
 						}
 					}
@@ -103,33 +103,33 @@ public class TeleporterCaveworld extends Teleporter
 
 		if (var2 >= 0.0D)
 		{
-			if (var9)
+			if (var6)
 			{
-				coordCache.add(var8, new PortalPosition(this, var3, var4, var5, worldObj.getTotalWorldTime()));
-				coordKeys.add(Long.valueOf(var8));
+				coordCache.add(var5, new PortalPosition(this, x, y, z, worldObj.getTotalWorldTime()));
+				coordKeys.add(Long.valueOf(var5));
 			}
 
-			double var12 = (double)var3 + 0.5D;
-			double var13 = (double)var4 + 0.5D;
-			var10 = (double)var5 + 0.5D;
+			double var12 = (double)x + 0.5D;
+			double var13 = (double)y + 0.5D;
+			var7 = (double)z + 0.5D;
 			int var14 = -1;
 
-			if (worldObj.getBlockId(var3 - 1, var4, var5) == CaveBlock.portalCaveworld.blockID)
+			if (worldObj.getBlockId(x - 1, y, z) == CaveBlock.portalCaveworld.blockID)
 			{
 				var14 = 2;
 			}
 
-			if (worldObj.getBlockId(var3 + 1, var4, var5) == CaveBlock.portalCaveworld.blockID)
+			if (worldObj.getBlockId(x + 1, y, z) == CaveBlock.portalCaveworld.blockID)
 			{
 				var14 = 0;
 			}
 
-			if (worldObj.getBlockId(var3, var4, var5 - 1) == CaveBlock.portalCaveworld.blockID)
+			if (worldObj.getBlockId(x, y, z - 1) == CaveBlock.portalCaveworld.blockID)
 			{
 				var14 = 3;
 			}
 
-			if (worldObj.getBlockId(var3, var4, var5 + 1) == CaveBlock.portalCaveworld.blockID)
+			if (worldObj.getBlockId(x, y, z + 1) == CaveBlock.portalCaveworld.blockID)
 			{
 				var14 = 1;
 			}
@@ -143,8 +143,8 @@ public class TeleporterCaveworld extends Teleporter
 				int var18 = Direction.offsetZ[var14];
 				int var19 = Direction.offsetX[var16];
 				int var20 = Direction.offsetZ[var16];
-				boolean var21 = !worldObj.isAirBlock(var3 + var17 + var19, var4, var5 + var18 + var20) || !worldObj.isAirBlock(var3 + var17 + var19, var4 + 1, var5 + var18 + var20);
-				boolean var22 = !worldObj.isAirBlock(var3 + var17, var4, var5 + var18) || !worldObj.isAirBlock(var3 + var17, var4 + 1, var5 + var18);
+				boolean var21 = !worldObj.isAirBlock(x + var17 + var19, y, z + var18 + var20) || !worldObj.isAirBlock(x + var17 + var19, y + 1, z + var18 + var20);
+				boolean var22 = !worldObj.isAirBlock(x + var17, y, z + var18) || !worldObj.isAirBlock(x + var17, y + 1, z + var18);
 
 				if (var21 && var22)
 				{
@@ -154,12 +154,12 @@ public class TeleporterCaveworld extends Teleporter
 					var18 = Direction.offsetZ[var14];
 					var19 = Direction.offsetX[var16];
 					var20 = Direction.offsetZ[var16];
-					var11 = var3 - var19;
+					var8 = x - var19;
 					var12 -= (double)var19;
-					int var23 = var5 - var20;
-					var10 -= (double)var20;
-					var21 = !worldObj.isAirBlock(var11 + var17 + var19, var4, var23 + var18 + var20) || !worldObj.isAirBlock(var11 + var17 + var19, var4 + 1, var23 + var18 + var20);
-					var22 = !worldObj.isAirBlock(var11 + var17, var4, var23 + var18) || !worldObj.isAirBlock(var11 + var17, var4 + 1, var23 + var18);
+					int var23 = z - var20;
+					var7 -= (double)var20;
+					var21 = !worldObj.isAirBlock(var8 + var17 + var19, y, var23 + var18 + var20) || !worldObj.isAirBlock(var8 + var17 + var19, y + 1, var23 + var18 + var20);
+					var22 = !worldObj.isAirBlock(var8 + var17, y, var23 + var18) || !worldObj.isAirBlock(var8 + var17, y + 1, var23 + var18);
 				}
 
 				float var23 = 0.5F;
@@ -179,7 +179,7 @@ public class TeleporterCaveworld extends Teleporter
 				}
 
 				var12 += (double)((float)var19 * var23 + var24 * (float)var17);
-				var10 += (double)((float)var20 * var23 + var24 * (float)var18);
+				var7 += (double)((float)var20 * var23 + var24 * (float)var18);
 				float var25 = 0.0F;
 				float var26 = 0.0F;
 				float var27 = 0.0F;
@@ -210,14 +210,14 @@ public class TeleporterCaveworld extends Teleporter
 				double var30 = entity.motionZ;
 				entity.motionX = var29 * (double)var25 + var30 * (double)var28;
 				entity.motionZ = var29 * (double)var27 + var30 * (double)var26;
-				entity.rotationYaw = yaw - (float)(var15 * 90) + (float)(var14 * 90);
+				entity.rotationYaw = rotation - (float)(var15 * 90) + (float)(var14 * 90);
 			}
 			else
 			{
 				entity.motionX = entity.motionY = entity.motionZ = 0.0D;
 			}
 
-			entity.setLocationAndAngles(var12, var13, var10, entity.rotationYaw, entity.rotationPitch);
+			entity.setLocationAndAngles(var12, var13, var7, entity.rotationYaw, entity.rotationPitch);
 
 			return true;
 		}
@@ -417,7 +417,7 @@ public class TeleporterCaveworld extends Teleporter
 						var21 = var14 + (var17 - 1) * var29 - var15 * var28;
 						flag = var16 < 0;
 
-						worldObj.setBlock(var19, var18, var21, flag ? Block.cobblestoneMossy.blockID : 0);
+						worldObj.setBlock(var19, var18, var21, flag ? Block.cobblestoneMossy.blockID : 0, 0, 2);
 					}
 				}
 			}

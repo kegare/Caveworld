@@ -127,7 +127,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 			if (TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.LAKE) && random.nextInt(4) == 0)
 			{
 				int x = chunk_X + random.nextInt(16) + 8;
-				int y = random.nextInt(100);
+				int y = random.nextInt(112);
 				int z = chunk_Z + random.nextInt(16) + 8;
 
 				(new WorldGenLakes(Block.waterStill.blockID)).generate(worldObj, random, x, y, z);
@@ -151,7 +151,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 			for (int i = 0; i < 8; ++i)
 			{
 				int x = chunk_X + random.nextInt(16) + 8;
-				int y = random.nextInt(100);
+				int y = random.nextInt(112);
 				int z = chunk_Z + random.nextInt(16) + 8;
 
 				(new WorldGenDungeons()).generate(worldObj, random, x, y, z);

@@ -14,7 +14,7 @@ public class WorldProviderCaveworld extends WorldProvider
 	@Override
 	protected void registerWorldChunkManager()
 	{
-		worldChunkMgr = new WorldChunkManagerCaveworld();
+		worldChunkMgr = new WorldChunkManagerCaveworld(new BiomeGenCaveworld(Config.biomeCaveworld));
 		dimensionId = Config.dimensionCaveworld;
 		hasNoSky = true;
 	}
@@ -38,12 +38,6 @@ public class WorldProviderCaveworld extends WorldProvider
 	}
 
 	@Override
-	public boolean shouldMapSpin(String entity, double x, double y, double z)
-	{
-		return false;
-	}
-
-	@Override
 	public IChunkProvider createChunkGenerator()
 	{
 		return new ChunkProviderCaveworld(worldObj, worldObj.getSeed());
@@ -62,15 +56,21 @@ public class WorldProviderCaveworld extends WorldProvider
 	}
 
 	@Override
+	public boolean canCoordinateBeSpawn(int x, int z)
+	{
+		return false;
+	}
+
+	@Override
 	public boolean isDaytime()
 	{
 		return false;
 	}
 
 	@Override
-	public boolean canCoordinateBeSpawn(int x, int z)
+	public boolean shouldMapSpin(String entity, double posX, double posY, double posZ)
 	{
-		return false;
+		return true;
 	}
 
 	@Override
@@ -88,13 +88,7 @@ public class WorldProviderCaveworld extends WorldProvider
 	@Override
 	public int getAverageGroundLevel()
 	{
-		return 32;
-	}
-
-	@Override
-	public void calculateInitialWeather()
-	{
-		//NOOP
+		return 64;
 	}
 
 	@Override
@@ -116,7 +110,7 @@ public class WorldProviderCaveworld extends WorldProvider
 	}
 
 	@Override
-	public float calculateCelestialAngle(long time, float par2)
+	public float calculateCelestialAngle(long time, float ticks)
 	{
 		return 0.0F;
 	}
@@ -129,14 +123,14 @@ public class WorldProviderCaveworld extends WorldProvider
 
 	@SideOnly(Side.CLIENT)
 	@Override
-	public float[] calcSunriseSunsetColors(float par1, float par2)
+	public float[] calcSunriseSunsetColors(float angle, float ticks)
 	{
 		return null;
 	}
 
 	@SideOnly(Side.CLIENT)
 	@Override
-	public Vec3 getFogColor(float par1, float par2)
+	public Vec3 getFogColor(float angle, float ticks)
 	{
 		return worldObj.getWorldVec3Pool().getVecFromPool(0.0D, 0.0D, 0.0D);
 	}
@@ -157,7 +151,7 @@ public class WorldProviderCaveworld extends WorldProvider
 
 	@SideOnly(Side.CLIENT)
 	@Override
-	public float getStarBrightness(float par1)
+	public float getStarBrightness(float ticks)
 	{
 		return 0.0F;
 	}
@@ -178,7 +172,7 @@ public class WorldProviderCaveworld extends WorldProvider
 
 	@SideOnly(Side.CLIENT)
 	@Override
-	public boolean doesXZShowFog(int par1, int par2)
+	public boolean doesXZShowFog(int x, int z)
 	{
 		return true;
 	}

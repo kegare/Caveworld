@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import kegare.caveworld.core.CaveBiome;
 import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.biome.WorldChunkManager;
@@ -13,16 +12,23 @@ import com.google.common.collect.Lists;
 
 public class WorldChunkManagerCaveworld extends WorldChunkManager
 {
+	private final BiomeGenBase biome;
+
+	public WorldChunkManagerCaveworld(BiomeGenBase biome)
+	{
+		this.biome = biome;
+	}
+
 	@Override
 	public List getBiomesToSpawnIn()
 	{
-		return Lists.newArrayList(CaveBiome.biomeCaveworld);
+		return Lists.newArrayList(biome);
 	}
 
 	@Override
 	public BiomeGenBase getBiomeGenAt(int chunkX, int chunkZ)
 	{
-		return CaveBiome.biomeCaveworld;
+		return biome;
 	}
 
 	@Override
@@ -39,7 +45,7 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 			biomes = new BiomeGenBase[width * length];
 		}
 
-		Arrays.fill(biomes, CaveBiome.biomeCaveworld);
+		Arrays.fill(biomes, biome);
 
 		return biomes;
 	}
@@ -52,7 +58,7 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 			temperatures = new float[width * length];
 		}
 
-		Arrays.fill(temperatures, CaveBiome.biomeCaveworld.getFloatTemperature());
+		Arrays.fill(temperatures, biome.getFloatTemperature());
 
 		return temperatures;
 	}
@@ -65,20 +71,20 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 			rainfalls = new float[width * length];
 		}
 
-		Arrays.fill(rainfalls, CaveBiome.biomeCaveworld.getFloatRainfall());
+		Arrays.fill(rainfalls, biome.getFloatRainfall());
 
 		return rainfalls;
 	}
 
 	@Override
-	public ChunkPosition findBiomePosition(int x, int y, int z, List list, Random random)
+	public ChunkPosition findBiomePosition(int x, int y, int z, List biomes, Random random)
 	{
-		return list.contains(CaveBiome.biomeCaveworld) ? new ChunkPosition(x - z + random.nextInt(z * 2 + 1), 0, y - z + random.nextInt(z * 2 + 1)) : null;
+		return biomes.contains(biome) ? new ChunkPosition(x - z + random.nextInt(z * 2 + 1), 0, y - z + random.nextInt(z * 2 + 1)) : null;
 	}
 
 	@Override
-	public boolean areBiomesViable(int x, int y, int z, List list)
+	public boolean areBiomesViable(int x, int y, int z, List biomes)
 	{
-		return list.contains(CaveBiome.biomeCaveworld);
+		return biomes.contains(biome);
 	}
 }

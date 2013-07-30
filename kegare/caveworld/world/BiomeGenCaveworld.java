@@ -61,20 +61,8 @@ public class BiomeGenCaveworld extends BiomeGenBase
 
 	@SideOnly(Side.CLIENT)
 	@Override
-	public int getSkyColorByTemp(float par1)
+	public int getSkyColorByTemp(float temperature)
 	{
 		return 0;
-	}
-
-	@Override
-	public boolean canSpawnLightningBolt()
-	{
-		return false;
-	}
-
-	@Override
-	public boolean isHighHumidity()
-	{
-		return false;
 	}
 }

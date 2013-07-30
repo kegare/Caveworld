@@ -1,6 +1,5 @@
 package kegare.caveworld.world;
 
-import kegare.caveworld.core.Config;
 import net.minecraft.block.Block;
 import net.minecraft.world.biome.BiomeDecorator;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -48,12 +47,12 @@ public class BiomeCaveworldDecorator extends BiomeDecorator
 			}
 		}
 
-		if (Config.generateLakes && TerrainGen.decorate(currentWorld, randomGenerator, chunk_X, chunk_Z, EventType.LAKE))
+		if (TerrainGen.decorate(currentWorld, randomGenerator, chunk_X, chunk_Z, EventType.LAKE) && generateLakes)
 		{
 			for (int i = 0; i < 50; ++i)
 			{
 				int x = chunk_X + randomGenerator.nextInt(16) + 8;
-				int y = randomGenerator.nextInt(randomGenerator.nextInt(100) + 8);
+				int y = randomGenerator.nextInt(randomGenerator.nextInt(120) + 8);
 				int z = chunk_Z + randomGenerator.nextInt(16) + 8;
 
 				(new WorldGenLiquids(Block.waterMoving.blockID)).generate(currentWorld, randomGenerator, x, y, z);
@@ -62,7 +61,7 @@ public class BiomeCaveworldDecorator extends BiomeDecorator
 			for (int i = 0; i < 20; ++i)
 			{
 				int x = chunk_X + randomGenerator.nextInt(16) + 8;
-				int y = randomGenerator.nextInt(randomGenerator.nextInt(randomGenerator.nextInt(84) + 8) + 8);
+				int y = randomGenerator.nextInt(randomGenerator.nextInt(randomGenerator.nextInt(112) + 8) + 8);
 				int z = chunk_Z + randomGenerator.nextInt(16) + 8;
 
 				(new WorldGenLiquids(Block.lavaMoving.blockID)).generate(currentWorld, randomGenerator, x, y, z);

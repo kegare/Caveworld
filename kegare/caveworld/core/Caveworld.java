@@ -1,7 +1,7 @@
 package kegare.caveworld.core;
 
+import kegare.caveworld.handler.CaveConnectionHandler;
 import kegare.caveworld.handler.CaveEventHooks;
-import kegare.caveworld.handler.ConnectionHandler;
 import kegare.caveworld.util.Version;
 import kegare.caveworld.world.WorldProviderCaveworld;
 import net.minecraftforge.common.DimensionManager;
@@ -24,7 +24,7 @@ import cpw.mods.fml.common.network.NetworkMod;
 (
 	clientSideRequired = true,
 	serverSideRequired = false,
-	connectionHandler = ConnectionHandler.class
+	connectionHandler = CaveConnectionHandler.class
 )
 public class Caveworld
 {
@@ -41,7 +41,6 @@ public class Caveworld
 		Config.buildConfiguration();
 
 		CaveBlock.load();
-		CaveBiome.load();
 	}
 
 	@EventHandler

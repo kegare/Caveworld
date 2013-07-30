@@ -186,8 +186,8 @@ public class BlockPortalCaveworld extends BlockPortal
 						server.getConfigurationManager().transferPlayerToDimension(player, dimNew, teleporter);
 
 						player.addExperienceLevel(0);
-						player.addPotionEffect(new PotionEffect(Potion.confusion.getId(), 150, 10, true));
-						player.addPotionEffect(new PotionEffect(Potion.blindness.getId(), 20, 1, true));
+						player.addPotionEffect(new PotionEffect(Potion.confusion.getId(), 150));
+						player.addPotionEffect(new PotionEffect(Potion.blindness.getId(), 20));
 
 						worldNew.playSoundAtEntity(player, "mob.endermen.portal", 0.5F, 1.0F);
 

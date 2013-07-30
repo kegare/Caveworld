@@ -5,6 +5,8 @@ import java.util.Properties;
 
 import kegare.caveworld.core.Caveworld;
 
+import com.google.common.base.Strings;
+
 public class Version
 {
 	public static String CURRENT;
@@ -21,8 +23,6 @@ public class Version
 
 			CURRENT = Caveworld.metadata.version;
 			LATEST = mappings.getProperty("caveworld.latest", CURRENT);
-
-			Caveworld.metadata.url = mappings.getProperty("caveworld.url", Caveworld.metadata.url);
 		}
 		catch (Exception e)
 		{
@@ -32,13 +32,6 @@ public class Version
 
 	public static boolean isOutdated()
 	{
-		try
-		{
-			return !CURRENT.equals(LATEST);
-		}
-		catch (Exception e)
-		{
-			return false;
-		}
+		return !Strings.isNullOrEmpty(CURRENT) && !Strings.isNullOrEmpty(LATEST) ? !CURRENT.equals(LATEST) : false;
 	}
 }

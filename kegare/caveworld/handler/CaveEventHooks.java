@@ -17,8 +17,8 @@ public class CaveEventHooks
 	public void doCreatePortal(PlayerInteractEvent event)
 	{
 		EntityPlayer player = event.entityPlayer;
-		ItemStack itemstack = player.getCurrentEquippedItem();
 		World world = player.worldObj;
+		ItemStack itemstack = player.getCurrentEquippedItem();
 		int x = event.x;
 		int y = event.y;
 		int z = event.z;
@@ -26,7 +26,7 @@ public class CaveEventHooks
 
 		if (event.action == Action.RIGHT_CLICK_BLOCK && (player.dimension == 0 || player.dimension == Config.dimensionCaveworld))
 		{
-			if (itemstack != null && itemstack.itemID == Item.emerald.itemID && world.getBlockId(x, y, z) == Block.cobblestoneMossy.blockID)
+			if (itemstack != null && itemstack.itemID == Item.emerald.itemID)
 			{
 				if (face == 0)
 				{
@@ -53,13 +53,13 @@ public class CaveEventHooks
 					++x;
 				}
 
-				if (player.canPlayerEdit(x, y, z, face, itemstack) && world.isAirBlock(x, y, z) && CaveBlock.portalCaveworld.tryToCreatePortal(world, x, y, z))
+				if (world.getBlockId(x, y - 1, z) == Block.cobblestoneMossy.blockID && world.isAirBlock(x, y, z) && world.isAirBlock(x, y + 1, z) && world.isAirBlock(x, y + 2, z) && world.getBlockId(x, y + 3, z) == Block.cobblestoneMossy.blockID && CaveBlock.portalCaveworld.tryToCreatePortal(world, x, y, z))
 				{
 					world.playSoundEffect((double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), "step.stone", 1.0F, 2.0F);
 
-					if (!player.capabilities.isCreativeMode)
+					if (!player.capabilities.isCreativeMode && --itemstack.stackSize <= 0)
 					{
-						--itemstack.stackSize;
+						player.inventory.setInventorySlotContents(player.inventory.currentItem, (ItemStack)null);
 					}
 				}
 			}

@@ -11,7 +11,7 @@ import net.minecraft.server.MinecraftServer;
 import cpw.mods.fml.common.network.IConnectionHandler;
 import cpw.mods.fml.common.network.Player;
 
-public class ConnectionHandler implements IConnectionHandler
+public class CaveConnectionHandler implements IConnectionHandler
 {
 	@Override
 	public void playerLoggedIn(Player player, NetHandler netHandler, INetworkManager manager)
