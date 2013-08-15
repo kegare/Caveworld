@@ -2,14 +2,14 @@ package kegare.caveworld.core;
 
 import java.util.List;
 
-import kegare.caveworld.util.Color;
 import kegare.caveworld.util.Version;
 import net.minecraft.command.CommandNotFoundException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.EnumChatFormatting;
 
 import org.lwjgl.Sys;
 
@@ -19,6 +19,12 @@ import cpw.mods.fml.common.Loader;
 
 public class CommandCaveworld implements ICommand
 {
+	@Override
+	public int compareTo(Object command)
+	{
+		return getCommandName().compareTo(((ICommand)command).getCommandName());
+	}
+
 	@Override
 	public String getCommandName()
 	{
@@ -34,7 +40,7 @@ public class CommandCaveworld implements ICommand
 	@Override
 	public List getCommandAliases()
 	{
-		return Lists.newArrayList("caveworld");
+		return null;
 	}
 
 	@Override
@@ -46,29 +52,14 @@ public class CommandCaveworld implements ICommand
 		}
 		else if (args[0].equalsIgnoreCase("version"))
 		{
-			if (sender instanceof MinecraftServer)
-			{
-				MinecraftServer server = (MinecraftServer)sender;
-				StringBuilder message = new StringBuilder();
-				message.append(" Caveworld ").append(Version.CURRENT).append(" for ");
-				message.append(Loader.instance().getMCVersionString()).append(" (Latest: ").append(Version.LATEST).append(")");
+			StringBuilder message = new StringBuilder();
+			message.append(EnumChatFormatting.AQUA).append(" Caveworld ").append(EnumChatFormatting.RESET);
+			message.append(Version.CURRENT).append(" for ").append(Loader.instance().getMCVersionString());
+			message.append(EnumChatFormatting.GRAY).append(" (Latest: ").append(Version.LATEST).append(")");
 
-				server.logInfo(message.toString());
-				server.logInfo("  " + Caveworld.metadata.description);
-				server.logInfo("  " + Caveworld.metadata.url);
-			}
-			else if (sender instanceof EntityPlayer)
-			{
-				EntityPlayer player = (EntityPlayer)sender;
-				StringBuilder message = new StringBuilder();
-				message.append(Color.AQUA).append(" Caveworld ").append(Color.WHITE).append(Version.CURRENT);
-				message.append(Color.WHITE).append(" for ").append(Loader.instance().getMCVersionString());
-				message.append(Color.LIGHT_GREY).append(" (Latest: ").append(Version.LATEST).append(")");
-
-				player.addChatMessage(message.toString());
-				player.addChatMessage("  " + Caveworld.metadata.description);
-				player.addChatMessage("  " + Color.DARK_GREY + Caveworld.metadata.url);
-			}
+			Caveworld.proxy.addChatMessage(message.toString());
+			Caveworld.proxy.addChatMessage("  " + Caveworld.metadata.description);
+			Caveworld.proxy.addChatMessage("  " + EnumChatFormatting.DARK_GRAY + Caveworld.metadata.url);
 		}
 		else
 		{
@@ -79,7 +70,7 @@ public class CommandCaveworld implements ICommand
 	@Override
 	public boolean canCommandSenderUseCommand(ICommandSender sender)
 	{
-		return sender instanceof MinecraftServer || sender instanceof EntityPlayer;
+		return sender instanceof MinecraftServer || sender instanceof EntityPlayerMP;
 	}
 
 	@Override
@@ -92,11 +83,5 @@ public class CommandCaveworld implements ICommand
 	public boolean isUsernameIndex(String[] args, int index)
 	{
 		return false;
-	}
-
-	@Override
-	public int compareTo(Object command)
-	{
-		return getCommandName().compareTo(((ICommand)command).getCommandName());
 	}
 }

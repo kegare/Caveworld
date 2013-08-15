@@ -50,7 +50,7 @@ public class ItemPortalCaveworld extends ItemBlock
 
 			if (CaveBlock.portalCaveworld.tryToCreatePortal(world, x, y, z))
 			{
-				world.playSoundEffect((double)((float)x + 0.5F), (double)((float)y + 0.5F), (double)((float)z + 0.5F), "step.stone", 1.0F, 2.0F);
+				world.playSoundEffect((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "step.stone", 1.0F, 2.0F);
 
 				if (!player.capabilities.isCreativeMode && --itemstack.stackSize <= 0)
 				{
@@ -64,8 +64,8 @@ public class ItemPortalCaveworld extends ItemBlock
 		return false;
 	}
 
-	@SideOnly(Side.CLIENT)
 	@Override
+	@SideOnly(Side.CLIENT)
 	public boolean canPlaceItemBlockOnSide(World world, int x, int y, int z, int side, EntityPlayer player, ItemStack itemstack)
 	{
 		if (side == 0)

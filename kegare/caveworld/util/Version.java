@@ -1,37 +1,55 @@
 package kegare.caveworld.util;
 
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import kegare.caveworld.core.Caveworld;
 
 import com.google.common.base.Strings;
+import com.google.common.primitives.Ints;
 
 public class Version
 {
 	public static String CURRENT;
 	public static String LATEST;
 
-	public static void versionCheck()
+	static
 	{
-		try
+		if (Strings.isNullOrEmpty(CURRENT))
 		{
-			URL url = new URL("https://dl.dropboxusercontent.com/u/51943112/kegare/kegare.info");
-			Properties mappings = new Properties();
-
-			mappings.load(url.openStream());
-
 			CURRENT = Caveworld.metadata.version;
-			LATEST = mappings.getProperty("caveworld.latest", CURRENT);
 		}
-		catch (Exception e)
+
+		if (Strings.isNullOrEmpty(LATEST))
 		{
-			CaveLog.exception(e);
+			Properties properties = new Properties();
+
+			try
+			{
+				URL url = new URL(Caveworld.metadata.updateUrl);
+				URLConnection connection = url.openConnection();
+
+				connection.setDoInput(true);
+				connection.setUseCaches(false);
+				properties.load(connection.getInputStream());
+			}
+			catch (Exception e)
+			{
+				CaveLog.exception(e);
+			}
+
+			LATEST = properties.getProperty("caveworld.latest", CURRENT);
 		}
 	}
 
 	public static boolean isOutdated()
 	{
-		return !Strings.isNullOrEmpty(CURRENT) && !Strings.isNullOrEmpty(LATEST) ? !CURRENT.equals(LATEST) : false;
+		Pattern pattern = Pattern.compile("[^0-9]");
+		String current = pattern.matcher(CURRENT).replaceAll("");
+		String latest = pattern.matcher(LATEST).replaceAll("");
+
+		return Ints.tryParse(current) < Ints.tryParse(latest);
 	}
 }

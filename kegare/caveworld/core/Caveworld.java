@@ -2,6 +2,8 @@ package kegare.caveworld.core;
 
 import kegare.caveworld.handler.CaveConnectionHandler;
 import kegare.caveworld.handler.CaveEventHooks;
+import kegare.caveworld.handler.CavePacketHandler;
+import kegare.caveworld.proxy.CommonProxy;
 import kegare.caveworld.util.Version;
 import kegare.caveworld.world.WorldProviderCaveworld;
 import net.minecraftforge.common.DimensionManager;
@@ -11,6 +13,7 @@ import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.Mod.Metadata;
 import cpw.mods.fml.common.ModMetadata;
+import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
@@ -24,6 +27,8 @@ import cpw.mods.fml.common.network.NetworkMod;
 (
 	clientSideRequired = true,
 	serverSideRequired = false,
+	channels = {"caveworld.config"},
+	packetHandler = CavePacketHandler.class,
 	connectionHandler = CaveConnectionHandler.class
 )
 public class Caveworld
@@ -34,10 +39,12 @@ public class Caveworld
 	@Metadata("kegare.caveworld")
 	public static ModMetadata metadata;
 
+	@SidedProxy(modId = "kegare.caveworld", clientSide = "kegare.caveworld.proxy.ClientProxy", serverSide = "kegare.caveworld.proxy.CommonProxy")
+	public static CommonProxy proxy;
+
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event)
 	{
-		Version.versionCheck();
 		Config.buildConfiguration();
 
 		CaveBlock.load();
@@ -50,6 +57,8 @@ public class Caveworld
 		DimensionManager.registerDimension(Config.dimensionCaveworld, Config.dimensionCaveworld);
 
 		MinecraftForge.EVENT_BUS.register(new CaveEventHooks());
+
+		proxy.registerRenderers();
 	}
 
 	@EventHandler
@@ -57,9 +66,9 @@ public class Caveworld
 	{
 		event.registerServerCommand(new CommandCaveworld());
 
-		if (event.getSide().isServer() && Config.versionCheck && Version.isOutdated())
+		if (event.getSide().isServer() && Config.versionNotify && Version.isOutdated())
 		{
-			event.getServer().logInfo("A new Caveworld version is available : " + Version.LATEST);
+			proxy.addChatMessage("A new Caveworld version is available : " + Version.LATEST);
 		}
 	}
 }

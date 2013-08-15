@@ -30,7 +30,6 @@ public class ChunkProviderCaveworld implements IChunkProvider
 {
 	private final World worldObj;
 	private final Random random;
-
 	private final boolean mapFeaturesEnabled;
 
 	private MapGenBase caveGenerator = new MapGenCaves();
@@ -64,15 +63,15 @@ public class ChunkProviderCaveworld implements IChunkProvider
 			{
 				for (int y = 127; y >= 0; --y)
 				{
-					int var1 = (z * 16 + x) * 128 + y;
+					int index = (z * 16 + x) * 128 + y;
 
 					if (y <= 0 || y >= 127)
 					{
-						blocks[var1] = (byte)Block.bedrock.blockID;
+						blocks[index] = (byte)Block.bedrock.blockID;
 					}
 					else
 					{
-						blocks[var1] = (byte)Block.stone.blockID;
+						blocks[index] = (byte)Block.stone.blockID;
 					}
 				}
 			}
@@ -225,8 +224,5 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	}
 
 	@Override
-	public void func_104112_b()
-	{
-		//NOOP
-	}
+	public void func_104112_b() {}
 }

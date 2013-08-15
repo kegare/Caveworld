@@ -2,11 +2,15 @@ package kegare.caveworld.block;
 
 import java.util.Random;
 
+import kegare.caveworld.core.Caveworld;
 import kegare.caveworld.core.Config;
-import kegare.caveworld.core.TeleporterCaveworld;
+import kegare.caveworld.renderer.RenderPortalCaveworld;
+import kegare.caveworld.world.TeleporterCaveworld;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockPortal;
-import net.minecraft.client.renderer.texture.IconRegister;
+import net.minecraft.block.material.Material;
+import net.minecraft.client.particle.EntityFX;
+import net.minecraft.client.particle.EntityReddustFX;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -14,34 +18,116 @@ import net.minecraft.item.ItemMonsterPlacer;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.Vec3;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class BlockPortalCaveworld extends BlockPortal
+public class BlockPortalCaveworld extends Block
 {
 	public BlockPortalCaveworld(int blockID, String name)
 	{
-		super(blockID);
+		super(blockID, Material.portal);
 		this.setUnlocalizedName(name);
 		this.func_111022_d("caveworld:portal_caveworld");
+		this.setCreativeTab(CreativeTabs.tabTransport);
+		this.setTickRandomly(true);
 		this.setBlockUnbreakable();
 		this.setLightOpacity(3);
 		this.setLightValue(0.75F);
-		this.setStepSound(Block.soundGlassFootstep);
+		this.setStepSound(soundGlassFootstep);
+		this.disableStats();
 	}
 
-	@SideOnly(Side.CLIENT)
 	@Override
-	public void registerIcons(IconRegister iconRegister)
+	public boolean renderAsNormalBlock()
 	{
-		blockIcon = iconRegister.registerIcon(func_111023_E());
+		return false;
 	}
 
 	@Override
+	public int getRenderType()
+	{
+		return RenderPortalCaveworld.renderID;
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public boolean shouldSideBeRendered(IBlockAccess world, int x, int y, int z, int side)
+	{
+		if (world.getBlockId(x, y, z) == blockID)
+		{
+			return false;
+		}
+		else
+		{
+			boolean var1 = world.getBlockId(x - 1, y, z) == blockID && world.getBlockId(x - 2, y, z) != blockID;
+			boolean var2 = world.getBlockId(x + 1, y, z) == blockID && world.getBlockId(x + 2, y, z) != blockID;
+			boolean var3 = world.getBlockId(x, y, z - 1) == blockID && world.getBlockId(x, y, z - 2) != blockID;
+			boolean var4 = world.getBlockId(x, y, z + 1) == blockID && world.getBlockId(x, y, z + 2) != blockID;
+			boolean var5 = var1 || var2;
+			boolean var6 = var3 || var4;
+
+			return var5 && side == 4 ? true : (var5 && side == 5 ? true : (var6 && side == 2 ? true : var6 && side == 3));
+		}
+	}
+
+	@Override
+	public AxisAlignedBB getCollisionBoundingBoxFromPool(World world, int x, int y, int z)
+	{
+		return null;
+	}
+
+	@Override
+	public boolean isOpaqueCube()
+	{
+		return false;
+	}
+
+	@Override
+	public int quantityDropped(int metadata, int fortune, Random random)
+	{
+		return 0;
+	}
+
+	@Override
+	public MovingObjectPosition collisionRayTrace(World world, int x, int y, int z, Vec3 startVec, Vec3 endVec)
+	{
+		return null;
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public int getRenderBlockPass()
+	{
+		return 1;
+	}
+
+	@Override
+	public void setBlockBoundsBasedOnState(IBlockAccess world, int x, int y, int z)
+	{
+		if (world.getBlockId(x - 1, y, z) != blockID && world.getBlockId(x + 1, y, z) != blockID)
+		{
+			setBlockBounds(0.35F, 0.0F, 0.0F, 0.65F, 1.0F, 1.0F);
+		}
+		else
+		{
+			setBlockBounds(0.0F, 0.0F, 0.35F, 1.0F, 1.0F, 0.65F);
+		}
+	}
+
+	@Override
+	public void setBlockBoundsForItemRender()
+	{
+		setBlockBounds(0.0F, 0.0F, 0.35F, 1.0F, 1.0F, 0.65F);
+	}
+
 	public boolean tryToCreatePortal(World world, int x, int y, int z)
 	{
 		byte var1 = 0;
@@ -139,10 +225,7 @@ public class BlockPortalCaveworld extends BlockPortal
 
 			if (var4 == 3 && world.getBlockId(x, var3 + var4, z) == Block.cobblestoneMossy.blockID)
 			{
-				boolean var5 = world.getBlockId(x - 1, y, z) == blockID || world.getBlockId(x + 1, y, z) == blockID;
-				boolean var6 = world.getBlockId(x, y, z - 1) == blockID || world.getBlockId(x, y, z + 1) == blockID;
-
-				if (var5 && var6)
+				if ((world.getBlockId(x - 1, y, z) == blockID || world.getBlockId(x + 1, y, z) == blockID) && (world.getBlockId(x, y, z - 1) == blockID || world.getBlockId(x, y, z + 1) == blockID))
 				{
 					world.setBlockToAir(x, y, z);
 				}
@@ -166,9 +249,9 @@ public class BlockPortalCaveworld extends BlockPortal
 	{
 		if (!world.isRemote && entity.isEntityAlive() && entity.ridingEntity == null && entity.riddenByEntity == null)
 		{
-			MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+			MinecraftServer server = Caveworld.proxy.getServer();
 			int dimOld = entity.dimension;
-			int dimNew = entity.dimension == 0 ? Config.dimensionCaveworld : 0;
+			int dimNew = dimOld == 0 ? Config.dimensionCaveworld : 0;
 			WorldServer worldOld = server.worldServerForDimension(dimOld);
 			WorldServer worldNew = server.worldServerForDimension(dimNew);
 			Teleporter teleporter = new TeleporterCaveworld(worldNew);
@@ -181,7 +264,7 @@ public class BlockPortalCaveworld extends BlockPortal
 
 					if (!player.isSneaking() && !player.isPotionActive(Potion.confusion))
 					{
-						player.playSound("mob.endermen.portal", 0.5F, 1.0F);
+						player.playSound("caveworld:portal.travel", 0.5F, 1.0F);
 
 						server.getConfigurationManager().transferPlayerToDimension(player, dimNew, teleporter);
 
@@ -189,7 +272,7 @@ public class BlockPortalCaveworld extends BlockPortal
 						player.addPotionEffect(new PotionEffect(Potion.confusion.getId(), 150));
 						player.addPotionEffect(new PotionEffect(Potion.blindness.getId(), 20));
 
-						worldNew.playSoundAtEntity(player, "mob.endermen.portal", 0.5F, 1.0F);
+						worldNew.playSoundAtEntity(player, "caveworld:portal.travel", 0.75F, 1.0F);
 
 						player.timeUntilPortal = player.getPortalCooldown();
 					}
@@ -199,7 +282,7 @@ public class BlockPortalCaveworld extends BlockPortal
 					entity.dimension = dimNew;
 					server.getConfigurationManager().transferEntityToWorld(entity, dimOld, worldOld, worldNew, teleporter);
 
-					Entity target = EntityList.createEntityByName(EntityList.getEntityString(entity), worldNew);
+					Entity target = EntityList.createEntityByID(EntityList.getEntityID(entity), worldNew);
 
 					if (target != null)
 					{
@@ -225,7 +308,9 @@ public class BlockPortalCaveworld extends BlockPortal
 	@Override
 	public void updateTick(World world, int x, int y, int z, Random random)
 	{
-		if (!world.isRemote && world.provider.isSurfaceWorld() && !world.isDaytime() && random.nextInt(100) <= world.difficultySetting)
+		super.updateTick(world, x, y, z, random);
+
+		if (!world.isRemote && !world.isDaytime() && random.nextInt(100) < world.difficultySetting)
 		{
 			int var1;
 
@@ -236,7 +321,7 @@ public class BlockPortalCaveworld extends BlockPortal
 
 			if (var1 > 0 && !world.isBlockNormalCube(x, var1 + 1, z))
 			{
-				Entity entity = ItemMonsterPlacer.spawnCreature(world, 65, (double)x + 0.5D, (double)var1 + 1.1D, (double)z + 0.5D);
+				Entity entity = ItemMonsterPlacer.spawnCreature(world, 65, (double)x + 0.5D, (double)var1 + 1.0D, (double)z + 0.5D);
 
 				if (entity != null)
 				{
@@ -246,11 +331,11 @@ public class BlockPortalCaveworld extends BlockPortal
 		}
 	}
 
-	@SideOnly(Side.CLIENT)
 	@Override
+	@SideOnly(Side.CLIENT)
 	public void randomDisplayTick(World world, int x, int y, int z, Random random)
 	{
-		if (world.provider.isSurfaceWorld() && random.nextInt(200) == 0)
+		if (random.nextInt(250) == 0)
 		{
 			world.playSound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "ambient.cave.cave", 0.5F, random.nextFloat() * 0.4F + 0.8F, false);
 		}
@@ -258,10 +343,11 @@ public class BlockPortalCaveworld extends BlockPortal
 		if (random.nextInt(6) == 0)
 		{
 			double ptX = (double)((float)x + random.nextFloat());
-			double ptY = (double)((float)y + 0.8F);
+			double ptY = (double)y + 0.5D;
 			double ptZ = (double)((float)z + random.nextFloat());
+			EntityFX entityFX = new EntityReddustFX(world, ptX, ptY, ptZ, 0.5F, 1.0F, 1.0F);
 
-			world.spawnParticle("smoke", ptX, ptY, ptZ, 0.0D, 0.0D, 0.0D);
+			FMLClientHandler.instance().getClient().effectRenderer.addEffect(entityFX);
 		}
 	}
 }

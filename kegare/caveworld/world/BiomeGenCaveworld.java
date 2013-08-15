@@ -16,7 +16,7 @@ public class BiomeGenCaveworld extends BiomeGenBase
 		super(biomeID);
 		this.setBiomeName("Caveworld");
 		this.setColor(0x353535);
-		this.setMinMaxHeight(2.0F, 2.0F);
+		this.setMinMaxHeight(-2.0F, 1.0F);
 		this.setTemperatureRainfall(0.2F, 0.0F);
 		this.setDisableRain();
 		this.topBlock = (byte)Block.stone.blockID;
@@ -34,7 +34,7 @@ public class BiomeGenCaveworld extends BiomeGenBase
 	{
 		super.decorate(world, random, chunkX, chunkZ);
 
-		for (int i = 0; i < random.nextInt(6) + 4; ++i)
+		for (int i = 0; i < random.nextInt(6) + 3; ++i)
 		{
 			int x = chunkX + random.nextInt(16);
 			int y = random.nextInt(28) + 4;
@@ -46,7 +46,7 @@ public class BiomeGenCaveworld extends BiomeGenBase
 			}
 		}
 
-		for (int i = 0; i < random.nextInt(4) + 6; ++i)
+		for (int i = 0; i < random.nextInt(5) + 6; ++i)
 		{
 			int x = chunkX + random.nextInt(16);
 			int y = random.nextInt(124) + 4;
@@ -59,8 +59,8 @@ public class BiomeGenCaveworld extends BiomeGenBase
 		}
 	}
 
-	@SideOnly(Side.CLIENT)
 	@Override
+	@SideOnly(Side.CLIENT)
 	public int getSkyColorByTemp(float temperature)
 	{
 		return 0;

@@ -2,24 +2,22 @@ package kegare.caveworld.core;
 
 import java.io.File;
 
-import kegare.caveworld.util.CaveLog;
 import net.minecraftforge.common.Configuration;
 import cpw.mods.fml.common.Loader;
 
 public class Config
 {
+	public static boolean versionNotify = true;
+
 	public static int dimensionCaveworld = -75;
 	public static int biomeCaveworld = 75;
-
 	public static boolean generateCaves = true;
+	public static boolean generateLakes = true;
 	public static boolean generateRavine = true;
 	public static boolean generateMineshaft = true;
-	public static boolean generateLakes = true;
 	public static boolean generateDungeon = true;
 
 	public static int portalCaveworld = 750;
-
-	public static boolean versionCheck = true;
 
 	public static void buildConfiguration()
 	{
@@ -29,22 +27,17 @@ public class Config
 		{
 			cfg.load();
 
-			dimensionCaveworld = cfg.get("caveworld", "dimensionCaveworld", dimensionCaveworld).getInt();
-			biomeCaveworld = cfg.get("caveworld", "biomeCaveworld", biomeCaveworld).getInt();
+			versionNotify = cfg.get(Configuration.CATEGORY_GENERAL, "versionNotify", versionNotify, "Notifies when a new version is available").getBoolean(versionNotify);
 
-			generateCaves = cfg.get("caveworld", "generateCaves", generateCaves).getBoolean(generateCaves);
-			generateRavine = cfg.get("caveworld", "generateRavine", generateRavine).getBoolean(generateRavine);
-			generateMineshaft = cfg.get("caveworld", "generateMineshaft", generateMineshaft).getBoolean(generateMineshaft);
-			generateLakes = cfg.get("caveworld", "generateLakes", generateLakes).getBoolean(generateLakes);
-			generateDungeon = cfg.get("caveworld", "generateDungeon", generateDungeon).getBoolean(generateDungeon);
+			dimensionCaveworld = cfg.get("caveworld", "dimensionCaveworld", dimensionCaveworld, "Caveworld Dimension ID (Default: -75)").getInt(dimensionCaveworld);
+			biomeCaveworld = cfg.get("caveworld", "biomeCaveworld", biomeCaveworld, "Caveworld Biome ID (Default: 75)").getInt(biomeCaveworld);
+			generateCaves = cfg.get("caveworld", "generateCaves", generateCaves, "Generate caves to Caveworld (Default: true)").getBoolean(generateCaves);
+			generateLakes = cfg.get("caveworld", "generateLakes", generateLakes, "Generate lakes to Caveworld (Default: true)").getBoolean(generateLakes);
+			generateRavine = cfg.get("caveworld", "generateRavine", generateRavine, "Generate ravine to Caveworld (Default: true)").getBoolean(generateRavine);
+			generateMineshaft = cfg.get("caveworld", "generateMineshaft", generateMineshaft, "Generate mineshaft to Caveworld (Default: true)").getBoolean(generateMineshaft);
+			generateDungeon = cfg.get("caveworld", "generateDungeon", generateDungeon, "Generate dungeon to Caveworld (Default: true)").getBoolean(generateDungeon);
 
-			portalCaveworld = cfg.getBlock("portalCaveworld", portalCaveworld).getInt();
-
-			versionCheck = cfg.get("config", "versionCheck", versionCheck).getBoolean(versionCheck);
-		}
-		catch (Exception e)
-		{
-			CaveLog.exception(e);
+			portalCaveworld = cfg.getBlock("portalCaveworld", portalCaveworld, "Caveworld Portal ID (Default: 750)").getInt(portalCaveworld);
 		}
 		finally
 		{

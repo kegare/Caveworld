@@ -35,11 +35,11 @@ public class CaveLog
 		getLogger().warning(log);
 	}
 
-	public static void exception(Exception e)
+	public static void exception(Throwable throwable)
 	{
-		getLogger().severe(e.getClass().getSimpleName() + " occured in " + e.getStackTrace()[0].getClassName());
+		getLogger().severe(throwable.getClass().getSimpleName() + " occured in " + throwable.getStackTrace()[0].getClassName());
 
-		for (StackTraceElement stacktrace : e.getStackTrace())
+		for (StackTraceElement stacktrace : throwable.getStackTrace())
 		{
 			getLogger().severe("\t" + stacktrace);
 		}
