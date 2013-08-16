@@ -21,44 +21,41 @@ public class ItemPortalCaveworld extends ItemBlock
 	@Override
 	public boolean onItemUse(ItemStack itemstack, EntityPlayer player, World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ)
 	{
-		if (player.dimension == 0 || player.dimension == Config.dimensionCaveworld)
+		if (side == 0)
 		{
-			if (side == 0)
+			--y;
+		}
+		else if (side == 1)
+		{
+			++y;
+		}
+		else if (side == 2)
+		{
+			--z;
+		}
+		else if (side == 3)
+		{
+			++z;
+		}
+		else if (side == 4)
+		{
+			--x;
+		}
+		else if (side == 5)
+		{
+			++x;
+		}
+
+		if ((player.dimension == 0 || player.dimension == Config.dimensionCaveworld) && CaveBlock.portalCaveworld.tryToCreatePortal(world, x, y, z))
+		{
+			world.playSoundEffect((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "step.stone", 1.0F, 2.0F);
+
+			if (!player.capabilities.isCreativeMode && --itemstack.stackSize <= 0)
 			{
-				--y;
-			}
-			else if (side == 1)
-			{
-				++y;
-			}
-			else if (side == 2)
-			{
-				--z;
-			}
-			else if (side == 3)
-			{
-				++z;
-			}
-			else if (side == 4)
-			{
-				--x;
-			}
-			else if (side == 5)
-			{
-				++x;
+				player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
 			}
 
-			if (CaveBlock.portalCaveworld.tryToCreatePortal(world, x, y, z))
-			{
-				world.playSoundEffect((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "step.stone", 1.0F, 2.0F);
-
-				if (!player.capabilities.isCreativeMode && --itemstack.stackSize <= 0)
-				{
-					player.inventory.setInventorySlotContents(player.inventory.currentItem, (ItemStack)null);
-				}
-
-				return true;
-			}
+			return true;
 		}
 
 		return false;

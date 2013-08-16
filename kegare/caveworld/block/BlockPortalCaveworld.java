@@ -10,6 +10,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.particle.EntityFX;
 import net.minecraft.client.particle.EntityReddustFX;
+import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
@@ -19,6 +20,7 @@ import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.Icon;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.IBlockAccess;
@@ -31,6 +33,9 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockPortalCaveworld extends Block
 {
+	@SideOnly(Side.CLIENT)
+	private Icon portalIcon;
+
 	public BlockPortalCaveworld(int blockID, String name)
 	{
 		super(blockID, Material.portal);
@@ -43,6 +48,21 @@ public class BlockPortalCaveworld extends Block
 		this.setLightValue(0.75F);
 		this.setStepSound(soundGlassFootstep);
 		this.disableStats();
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public void registerIcons(IconRegister iconRegister)
+	{
+		blockIcon = iconRegister.registerIcon(func_111023_E());
+		portalIcon = iconRegister.registerIcon(func_111023_E() + "_flow");
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public Icon getIcon(int side, int metadata)
+	{
+		return side == -1 ? blockIcon : portalIcon;
 	}
 
 	@Override
@@ -79,12 +99,6 @@ public class BlockPortalCaveworld extends Block
 	}
 
 	@Override
-	public AxisAlignedBB getCollisionBoundingBoxFromPool(World world, int x, int y, int z)
-	{
-		return null;
-	}
-
-	@Override
 	public boolean isOpaqueCube()
 	{
 		return false;
@@ -94,6 +108,12 @@ public class BlockPortalCaveworld extends Block
 	public int quantityDropped(int metadata, int fortune, Random random)
 	{
 		return 0;
+	}
+
+	@Override
+	public AxisAlignedBB getCollisionBoundingBoxFromPool(World world, int x, int y, int z)
+	{
+		return null;
 	}
 
 	@Override
@@ -120,12 +140,6 @@ public class BlockPortalCaveworld extends Block
 		{
 			setBlockBounds(0.0F, 0.0F, 0.35F, 1.0F, 1.0F, 0.65F);
 		}
-	}
-
-	@Override
-	public void setBlockBoundsForItemRender()
-	{
-		setBlockBounds(0.0F, 0.0F, 0.35F, 1.0F, 1.0F, 0.65F);
 	}
 
 	public boolean tryToCreatePortal(World world, int x, int y, int z)

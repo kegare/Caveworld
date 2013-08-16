@@ -50,7 +50,7 @@ public class CommandCaveworld implements ICommand
 		{
 			Sys.openURL(Caveworld.metadata.url);
 		}
-		else if (args[0].equalsIgnoreCase("version"))
+		else if ("version".equalsIgnoreCase(args[0]))
 		{
 			StringBuilder message = new StringBuilder();
 			message.append(EnumChatFormatting.AQUA).append(" Caveworld ").append(EnumChatFormatting.RESET);

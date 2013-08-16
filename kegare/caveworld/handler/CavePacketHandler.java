@@ -17,7 +17,7 @@ public class CavePacketHandler implements IPacketHandler
 	@Override
 	public void onPacketData(INetworkManager manager, Packet250CustomPayload packet, Player player)
 	{
-		if (packet.channel.equals("caveworld.config"))
+		if ("caveworld.config".equals(packet.channel))
 		{
 			ByteArrayDataInput dat = ByteStreams.newDataInput(packet.data);
 			Config.dimensionCaveworld = dat.readInt();

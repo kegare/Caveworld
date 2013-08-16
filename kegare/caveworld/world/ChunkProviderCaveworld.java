@@ -205,7 +205,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	@Override
 	public ChunkPosition findClosestStructure(World world, String name, int x, int y, int z)
 	{
-		return name.equals("Mineshaft") && mineshaftGenerator != null ? mineshaftGenerator.getNearestInstance(world, x, y, z) : null;
+		return "Mineshaft".equals(name) && mineshaftGenerator != null ? mineshaftGenerator.getNearestInstance(world, x, y, z) : null;
 	}
 
 	@Override
