@@ -40,7 +40,7 @@ public class BlockPortalCaveworld extends Block
 	{
 		super(blockID, Material.portal);
 		this.setUnlocalizedName(name);
-		this.func_111022_d("caveworld:portal_caveworld");
+		this.setTextureName("caveworld:portal_caveworld");
 		this.setCreativeTab(CreativeTabs.tabTransport);
 		this.setTickRandomly(true);
 		this.setBlockUnbreakable();
@@ -54,15 +54,15 @@ public class BlockPortalCaveworld extends Block
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IconRegister iconRegister)
 	{
-		blockIcon = iconRegister.registerIcon(func_111023_E());
-		portalIcon = iconRegister.registerIcon(func_111023_E() + "_flow");
+		blockIcon = iconRegister.registerIcon(getTextureName());
+		portalIcon = iconRegister.registerIcon(getTextureName() + "_flow");
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public Icon getIcon(int side, int metadata)
 	{
-		return side == -1 ? blockIcon : portalIcon;
+		return metadata == 0 ? portalIcon : blockIcon;
 	}
 
 	@Override
@@ -74,7 +74,7 @@ public class BlockPortalCaveworld extends Block
 	@Override
 	public int getRenderType()
 	{
-		return RenderPortalCaveworld.renderID;
+		return RenderPortalCaveworld.renderIdPortal;
 	}
 
 	@Override
@@ -261,7 +261,7 @@ public class BlockPortalCaveworld extends Block
 	@Override
 	public void onEntityCollidedWithBlock(World world, int x, int y, int z, Entity entity)
 	{
-		if (!world.isRemote && entity.isEntityAlive() && entity.ridingEntity == null && entity.riddenByEntity == null)
+		if (!world.isRemote && entity.isEntityAlive() && entity.riddenByEntity == null && entity.ridingEntity == null)
 		{
 			MinecraftServer server = Caveworld.proxy.getServer();
 			int dimOld = entity.dimension;
@@ -278,12 +278,12 @@ public class BlockPortalCaveworld extends Block
 
 					if (!player.isSneaking() && !player.isPotionActive(Potion.confusion))
 					{
-						player.playSound("caveworld:portal.travel", 0.5F, 1.0F);
+						worldOld.playSoundToNearExcept(player, "caveworld:portal.travel", 0.5F, 1.0F);
 
 						server.getConfigurationManager().transferPlayerToDimension(player, dimNew, teleporter);
 
 						player.addExperienceLevel(0);
-						player.addPotionEffect(new PotionEffect(Potion.confusion.getId(), 150));
+						player.addPotionEffect(new PotionEffect(Potion.confusion.getId(), 120));
 						player.addPotionEffect(new PotionEffect(Potion.blindness.getId(), 20));
 
 						worldNew.playSoundAtEntity(player, "caveworld:portal.travel", 0.75F, 1.0F);
@@ -301,9 +301,12 @@ public class BlockPortalCaveworld extends Block
 					if (target != null)
 					{
 						target.copyDataFrom(entity, true);
-						worldNew.spawnEntityInWorld(target);
-
+						target.isDead = false;
+						target.forceSpawn = true;
 						target.timeUntilPortal = target.getPortalCooldown();
+
+						worldNew.spawnEntityInWorld(target);
+						worldNew.updateEntity(target);
 					}
 
 					entity.setDead();
@@ -349,9 +352,9 @@ public class BlockPortalCaveworld extends Block
 	@SideOnly(Side.CLIENT)
 	public void randomDisplayTick(World world, int x, int y, int z, Random random)
 	{
-		if (random.nextInt(250) == 0)
+		if (random.nextInt(200) == 0)
 		{
-			world.playSound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "ambient.cave.cave", 0.5F, random.nextFloat() * 0.4F + 0.8F, false);
+			world.playSound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "ambient.cave.cave", 0.25F, random.nextFloat() * 0.4F + 0.8F, false);
 		}
 
 		if (random.nextInt(6) == 0)

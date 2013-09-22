@@ -29,8 +29,9 @@ import net.minecraftforge.event.terraingen.TerrainGen;
 public class ChunkProviderCaveworld implements IChunkProvider
 {
 	private final World worldObj;
+	private final long seed;
 	private final Random random;
-	private final boolean mapFeaturesEnabled;
+	private final boolean generateStructures;
 
 	private MapGenBase caveGenerator = new MapGenCaves();
 	private MapGenBase ravineGenerator = new MapGenRavine();
@@ -42,11 +43,12 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		mineshaftGenerator = (MapGenMineshaft)TerrainGen.getModdedMapGen(mineshaftGenerator, InitMapGenEvent.EventType.MINESHAFT);
 	}
 
-	public ChunkProviderCaveworld(World world, long seed)
+	public ChunkProviderCaveworld(World world)
 	{
 		this.worldObj = world;
+		this.seed = world.getSeed();
 		this.random = new Random(seed);
-		this.mapFeaturesEnabled = world.getWorldInfo().isMapFeaturesEnabled();
+		this.generateStructures = world.getWorldInfo().isMapFeaturesEnabled();
 	}
 
 	@Override
@@ -87,12 +89,15 @@ public class ChunkProviderCaveworld implements IChunkProvider
 			ravineGenerator.generate(this, worldObj, chunkX, chunkZ, blocks);
 		}
 
-		if (mapFeaturesEnabled && Config.generateMineshaft)
+		if (Config.generateMineshaft && generateStructures)
 		{
 			mineshaftGenerator.generate(this, worldObj, chunkX, chunkZ, blocks);
 		}
 
-		return new Chunk(worldObj, blocks, chunkX, chunkZ);
+		Chunk chunk = new Chunk(worldObj, blocks, chunkX, chunkZ);
+		chunk.resetRelightChecks();
+
+		return chunk;
 	}
 
 	@Override
@@ -109,14 +114,14 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		int chunk_X = chunkX * 16;
 		int chunk_Z = chunkZ * 16;
 		BiomeGenBase biome = worldObj.getBiomeGenForCoords(chunk_X + 16, chunk_Z + 16);
-		random.setSeed(worldObj.getSeed());
+		random.setSeed(seed);
 		long var1 = random.nextLong() / 2L * 2L + 1L;
 		long var2 = random.nextLong() / 2L * 2L + 1L;
-		random.setSeed((long)chunkX * var1 + (long)chunkZ * var2 ^ worldObj.getSeed());
+		random.setSeed((long)chunkX * var1 + (long)chunkZ * var2 ^ seed);
 
 		MinecraftForge.EVENT_BUS.post(new PopulateChunkEvent.Pre(chunkProvider, worldObj, random, chunkX, chunkZ, false));
 
-		if (mapFeaturesEnabled && Config.generateMineshaft)
+		if (Config.generateMineshaft && generateStructures)
 		{
 			mineshaftGenerator.generateStructuresInChunk(worldObj, random, chunkX, chunkZ);
 		}
@@ -205,7 +210,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	@Override
 	public ChunkPosition findClosestStructure(World world, String name, int x, int y, int z)
 	{
-		return "Mineshaft".equals(name) && mineshaftGenerator != null ? mineshaftGenerator.getNearestInstance(world, x, y, z) : null;
+		return "Mineshaft".equals(name) ? mineshaftGenerator.getNearestInstance(world, x, y, z) : null;
 	}
 
 	@Override
@@ -217,12 +222,12 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	@Override
 	public void recreateStructures(int chunkX, int chunkZ)
 	{
-		if (mapFeaturesEnabled && Config.generateMineshaft)
+		if (Config.generateMineshaft && generateStructures)
 		{
 			mineshaftGenerator.generate(this, worldObj, chunkX, chunkZ, (byte[])null);
 		}
 	}
 
 	@Override
-	public void func_104112_b() {}
+	public void saveExtraData() {}
 }

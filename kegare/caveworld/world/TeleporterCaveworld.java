@@ -33,17 +33,17 @@ public class TeleporterCaveworld extends Teleporter
 	}
 
 	@Override
-	public void placeInPortal(Entity entity, double posX, double posY, double posZ, float rotation)
+	public void placeInPortal(Entity entity, double posX, double posY, double posZ, float rotationYaw)
 	{
-		if (!placeInExistingPortal(entity, posX, posY, posZ, rotation))
+		if (!placeInExistingPortal(entity, posX, posY, posZ, rotationYaw))
 		{
 			makePortal(entity);
-			placeInExistingPortal(entity, posX, posY, posZ, rotation);
+			placeInExistingPortal(entity, posX, posY, posZ, rotationYaw);
 		}
 	}
 
 	@Override
-	public boolean placeInExistingPortal(Entity entity, double posX, double posY, double posZ, float rotation)
+	public boolean placeInExistingPortal(Entity entity, double posX, double posY, double posZ, float rotationYaw)
 	{
 		short var1 = 128;
 		double var2 = -1.0D;
@@ -211,7 +211,7 @@ public class TeleporterCaveworld extends Teleporter
 				double var30 = entity.motionZ;
 				entity.motionX = var29 * (double)var25 + var30 * (double)var28;
 				entity.motionZ = var29 * (double)var27 + var30 * (double)var26;
-				entity.rotationYaw = rotation - (float)(var15 * 90) + (float)(var14 * 90);
+				entity.rotationYaw = rotationYaw - (float)(var15 * 90) + (float)(var14 * 90);
 			}
 			else
 			{

@@ -13,7 +13,7 @@ public class ClientProxy extends CommonProxy
 	@Override
 	public void registerRenderers()
 	{
-		RenderPortalCaveworld.renderID = RenderingRegistry.getNextAvailableRenderId();
+		RenderPortalCaveworld.renderIdPortal = RenderingRegistry.getNextAvailableRenderId();
 
 		RenderingRegistry.registerBlockHandler(new RenderPortalCaveworld());
 	}

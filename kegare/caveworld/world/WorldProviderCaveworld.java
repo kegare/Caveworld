@@ -5,6 +5,7 @@ import kegare.caveworld.renderer.EmptyRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.WorldProvider;
+import net.minecraft.world.WorldType;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.client.IRenderHandler;
@@ -24,7 +25,7 @@ public class WorldProviderCaveworld extends WorldProvider
 	@Override
 	public IChunkProvider createChunkGenerator()
 	{
-		return new ChunkProviderCaveworld(worldObj, worldObj.getSeed());
+		return new ChunkProviderCaveworld(worldObj);
 	}
 
 	@Override
@@ -70,7 +71,14 @@ public class WorldProviderCaveworld extends WorldProvider
 	@SideOnly(Side.CLIENT)
 	public boolean getWorldHasVoidParticles()
 	{
-		return true;
+		return terrainType != WorldType.FLAT;
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public double getVoidFogYFactor()
+	{
+		return terrainType == WorldType.FLAT ? 1.0D : 0.0625D;
 	}
 
 	@Override
@@ -150,6 +158,21 @@ public class WorldProviderCaveworld extends WorldProvider
 
 	@Override
 	public void updateWeather() {}
+
+	@Override
+	public void toggleRain() {}
+
+	@Override
+	public boolean canBlockFreeze(int x, int y, int z, boolean byWater)
+	{
+		return false;
+	}
+
+	@Override
+	public boolean canSnowAt(int x, int y, int z)
+	{
+		return false;
+	}
 
 	@Override
 	public long getSeed()

@@ -47,7 +47,7 @@ public class BiomeCaveworldDecorator extends BiomeDecorator
 			}
 		}
 
-		if (TerrainGen.decorate(currentWorld, randomGenerator, chunk_X, chunk_Z, EventType.LAKE) && generateLakes)
+		if (TerrainGen.decorate(currentWorld, randomGenerator, chunk_X, chunk_Z, EventType.LAKE))
 		{
 			for (int i = 0; i < 50; ++i)
 			{
