@@ -1,14 +1,10 @@
 package kegare.caveworld.item;
 
-import kegare.caveworld.core.CaveBlock;
-import kegare.caveworld.core.Config;
-import net.minecraft.block.Block;
+import kegare.caveworld.core.Caveworld;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
 public class ItemPortalCaveworld extends ItemBlock
 {
@@ -46,7 +42,7 @@ public class ItemPortalCaveworld extends ItemBlock
 			++x;
 		}
 
-		if ((player.dimension == 0 || player.dimension == Config.dimensionCaveworld) && CaveBlock.portalCaveworld.tryToCreatePortal(world, x, y, z))
+		if (Caveworld.portalCaveworld.tryToCreatePortal(world, x, y, z))
 		{
 			world.playSoundEffect((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "step.stone", 1.0F, 2.0F);
 
@@ -59,37 +55,5 @@ public class ItemPortalCaveworld extends ItemBlock
 		}
 
 		return false;
-	}
-
-	@Override
-	@SideOnly(Side.CLIENT)
-	public boolean canPlaceItemBlockOnSide(World world, int x, int y, int z, int side, EntityPlayer player, ItemStack itemstack)
-	{
-		if (side == 0)
-		{
-			--y;
-		}
-		else if (side == 1)
-		{
-			++y;
-		}
-		else if (side == 2)
-		{
-			--z;
-		}
-		else if (side == 3)
-		{
-			++z;
-		}
-		else if (side == 4)
-		{
-			--x;
-		}
-		else if (side == 5)
-		{
-			++x;
-		}
-
-		return world.getBlockId(x, y - 1, z) == Block.cobblestoneMossy.blockID && world.isAirBlock(x, y, z) && world.isAirBlock(x, y + 1, z) && world.isAirBlock(x, y + 2, z) && world.getBlockId(x, y + 3, z) == Block.cobblestoneMossy.blockID;
 	}
 }

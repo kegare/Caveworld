@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import kegare.caveworld.core.Config;
+import kegare.caveworld.core.Caveworld;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockSand;
 import net.minecraft.entity.EnumCreatureType;
@@ -79,17 +79,17 @@ public class ChunkProviderCaveworld implements IChunkProvider
 			}
 		}
 
-		if (Config.generateCaves)
+		if (Caveworld.generateCaves)
 		{
 			caveGenerator.generate(this, worldObj, chunkX, chunkZ, blocks);
 		}
 
-		if (Config.generateRavine)
+		if (Caveworld.generateRavine)
 		{
 			ravineGenerator.generate(this, worldObj, chunkX, chunkZ, blocks);
 		}
 
-		if (Config.generateMineshaft && generateStructures)
+		if (Caveworld.generateMineshaft && generateStructures)
 		{
 			mineshaftGenerator.generate(this, worldObj, chunkX, chunkZ, blocks);
 		}
@@ -121,12 +121,12 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 		MinecraftForge.EVENT_BUS.post(new PopulateChunkEvent.Pre(chunkProvider, worldObj, random, chunkX, chunkZ, false));
 
-		if (Config.generateMineshaft && generateStructures)
+		if (Caveworld.generateMineshaft && generateStructures)
 		{
 			mineshaftGenerator.generateStructuresInChunk(worldObj, random, chunkX, chunkZ);
 		}
 
-		if (Config.generateLakes)
+		if (Caveworld.generateLakes)
 		{
 			if (TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.LAKE) && random.nextInt(4) == 0)
 			{
@@ -150,7 +150,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 			}
 		}
 
-		if (Config.generateDungeon && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.DUNGEON))
+		if (Caveworld.generateDungeon && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.DUNGEON))
 		{
 			for (int i = 0; i < 8; ++i)
 			{
@@ -222,7 +222,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	@Override
 	public void recreateStructures(int chunkX, int chunkZ)
 	{
-		if (Config.generateMineshaft && generateStructures)
+		if (Caveworld.generateMineshaft && generateStructures)
 		{
 			mineshaftGenerator.generate(this, worldObj, chunkX, chunkZ, (byte[])null);
 		}

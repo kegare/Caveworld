@@ -3,7 +3,6 @@ package kegare.caveworld.block;
 import java.util.Random;
 
 import kegare.caveworld.core.Caveworld;
-import kegare.caveworld.core.Config;
 import kegare.caveworld.renderer.RenderPortalCaveworld;
 import kegare.caveworld.world.TeleporterCaveworld;
 import net.minecraft.block.Block;
@@ -27,14 +26,13 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockPortalCaveworld extends Block
 {
 	@SideOnly(Side.CLIENT)
-	private Icon portalIcon;
+	public Icon portalIcon;
 
 	public BlockPortalCaveworld(int blockID, String name)
 	{
@@ -55,14 +53,7 @@ public class BlockPortalCaveworld extends Block
 	public void registerIcons(IconRegister iconRegister)
 	{
 		blockIcon = iconRegister.registerIcon(getTextureName());
-		portalIcon = iconRegister.registerIcon(getTextureName() + "_flow");
-	}
-
-	@Override
-	@SideOnly(Side.CLIENT)
-	public Icon getIcon(int side, int metadata)
-	{
-		return metadata == 0 ? portalIcon : blockIcon;
+		portalIcon = iconRegister.registerIcon("caveworld:caveworld_portal");
 	}
 
 	@Override
@@ -145,23 +136,19 @@ public class BlockPortalCaveworld extends Block
 	public boolean tryToCreatePortal(World world, int x, int y, int z)
 	{
 		byte var1 = 0;
-		byte var2 = 0;
+		byte var2 = 1;
 
 		if (world.getBlockId(x - 1, y, z) == Block.cobblestoneMossy.blockID || world.getBlockId(x + 1, y, z) == Block.cobblestoneMossy.blockID)
 		{
 			var1 = 1;
+			var2 = 0;
 		}
 
-		if (world.getBlockId(x, y, z - 1) == Block.cobblestoneMossy.blockID || world.getBlockId(x, y, z + 1) == Block.cobblestoneMossy.blockID)
-		{
-			var2 = 1;
-		}
-
-		if (var1 == var2)
+		if (world.getBlockId(x - 1, y, z) == blockID || world.getBlockId(x + 1, y, z) == blockID || world.getBlockId(x, y, z - 1) == blockID || world.getBlockId(x, y, z + 1) == blockID)
 		{
 			return false;
 		}
-		else
+		if ((world.provider.dimensionId == 0 || world.provider.dimensionId == Caveworld.dimensionCaveworld) && var1 != var2)
 		{
 			if (world.isAirBlock(x - var1, y, z - var2))
 			{
@@ -185,10 +172,17 @@ public class BlockPortalCaveworld extends Block
 								return false;
 							}
 						}
-						else if (!world.isAirBlock(x + var1 * var3, y + var4, z + var2 * var3))
-						{
-							return false;
-						}
+					}
+				}
+			}
+
+			for (var3 = 0; var3 < 2; ++var3)
+			{
+				for (var4 = 0; var4 < 3; ++var4)
+				{
+					if (!world.isAirBlock(x + var1 * var3, y + var4, z + var2 * var3))
+					{
+						return false;
 					}
 				}
 			}
@@ -203,6 +197,8 @@ public class BlockPortalCaveworld extends Block
 
 			return true;
 		}
+
+		return false;
 	}
 
 	@Override
@@ -265,7 +261,7 @@ public class BlockPortalCaveworld extends Block
 		{
 			MinecraftServer server = Caveworld.proxy.getServer();
 			int dimOld = entity.dimension;
-			int dimNew = dimOld == 0 ? Config.dimensionCaveworld : 0;
+			int dimNew = dimOld == 0 ? Caveworld.dimensionCaveworld : 0;
 			WorldServer worldOld = server.worldServerForDimension(dimOld);
 			WorldServer worldNew = server.worldServerForDimension(dimNew);
 			Teleporter teleporter = new TeleporterCaveworld(worldNew);
@@ -327,7 +323,7 @@ public class BlockPortalCaveworld extends Block
 	{
 		super.updateTick(world, x, y, z, random);
 
-		if (!world.isRemote && !world.isDaytime() && random.nextInt(100) < world.difficultySetting)
+		if (!world.isRemote && world.provider.dimensionId == 0 && !world.isDaytime() && random.nextInt(200) < world.difficultySetting)
 		{
 			int var1;
 
@@ -357,14 +353,14 @@ public class BlockPortalCaveworld extends Block
 			world.playSound((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "ambient.cave.cave", 0.25F, random.nextFloat() * 0.4F + 0.8F, false);
 		}
 
-		if (random.nextInt(6) == 0)
+		if (random.nextInt(3) == 0)
 		{
 			double ptX = (double)((float)x + random.nextFloat());
 			double ptY = (double)y + 0.5D;
 			double ptZ = (double)((float)z + random.nextFloat());
 			EntityFX entityFX = new EntityReddustFX(world, ptX, ptY, ptZ, 0.5F, 1.0F, 1.0F);
 
-			FMLClientHandler.instance().getClient().effectRenderer.addEffect(entityFX);
+			Caveworld.proxy.addEffect(entityFX);
 		}
 	}
 }

@@ -1,16 +1,22 @@
 package kegare.caveworld.core;
 
+import java.io.File;
+
+import kegare.caveworld.block.BlockPortalCaveworld;
 import kegare.caveworld.handler.CaveConnectionHandler;
 import kegare.caveworld.handler.CaveEventHooks;
 import kegare.caveworld.handler.CavePacketHandler;
+import kegare.caveworld.item.ItemPortalCaveworld;
 import kegare.caveworld.proxy.CommonProxy;
 import kegare.caveworld.util.Version;
 import kegare.caveworld.world.WorldProviderCaveworld;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
-import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.Mod.Metadata;
 import cpw.mods.fml.common.ModMetadata;
 import cpw.mods.fml.common.SidedProxy;
@@ -18,6 +24,8 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.network.NetworkMod;
+import cpw.mods.fml.common.registry.GameRegistry;
+import cpw.mods.fml.common.registry.LanguageRegistry;
 
 @Mod
 (
@@ -33,8 +41,17 @@ import cpw.mods.fml.common.network.NetworkMod;
 )
 public class Caveworld
 {
-	@Instance("kegare.caveworld")
-	public static Caveworld instance;
+	public static boolean versionNotify = true;
+	public static boolean showDebugDim = true;
+
+	public static int dimensionCaveworld = -75;
+	public static boolean generateCaves = true;
+	public static boolean generateLakes = true;
+	public static boolean generateRavine = true;
+	public static boolean generateMineshaft = true;
+	public static boolean generateDungeon = true;
+
+	public static BlockPortalCaveworld portalCaveworld;
 
 	@Metadata("kegare.caveworld")
 	public static ModMetadata metadata;
@@ -45,16 +62,43 @@ public class Caveworld
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event)
 	{
-		Config.buildConfiguration();
+		Configuration cfg = new Configuration(new File(event.getModConfigurationDirectory(), "Caveworld.cfg"));
 
-		CaveBlock.load();
+		try
+		{
+			cfg.load();
+
+			versionNotify = cfg.get(Configuration.CATEGORY_GENERAL, "versionNotify", versionNotify, "Notifies when a new version is available (Default: true)").getBoolean(versionNotify);
+			showDebugDim = cfg.get(Configuration.CATEGORY_GENERAL, "showDebugDim", showDebugDim, "Debug screen will show the dimension name (Default: true)").getBoolean(showDebugDim);
+
+			dimensionCaveworld = cfg.get("caveworld", "dimensionCaveworld", dimensionCaveworld, "Caveworld DimensionID (Default: -75)").getInt(dimensionCaveworld);
+			generateCaves = cfg.get("caveworld", "generateCaves", generateCaves, "Whether or not to generate caves to Caveworld (Default: true)").getBoolean(generateCaves);
+			generateLakes = cfg.get("caveworld", "generateLakes", generateLakes, "Whether or not to generate lakes to Caveworld (Default: true)").getBoolean(generateLakes);
+			generateRavine = cfg.get("caveworld", "generateRavine", generateRavine, "Whether or not to generate ravine to Caveworld (Default: true)").getBoolean(generateRavine);
+			generateMineshaft = cfg.get("caveworld", "generateMineshaft", generateMineshaft, "Whether or not to generate mineshaft to Caveworld (Default: true)").getBoolean(generateMineshaft);
+			generateDungeon = cfg.get("caveworld", "generateDungeon", generateDungeon, "Whether or not to generate dungeon to Caveworld (Default: true)").getBoolean(generateDungeon);
+
+			portalCaveworld = new BlockPortalCaveworld(cfg.getBlock("portalCaveworld", 750, "Caveworld Portal BlockID (Default: 750)").getInt(750), "portalCaveworld");
+		}
+		finally
+		{
+			if (cfg.hasChanged())
+			{
+				cfg.save();
+			}
+		}
+
+		GameRegistry.registerBlock(portalCaveworld, ItemPortalCaveworld.class, "portalCaveworld");
+		GameRegistry.addRecipe(new ItemStack(portalCaveworld), "EDE", "DED", "EDE", 'E', Item.emerald, 'D', Item.diamond);
 	}
 
 	@EventHandler
 	public void init(FMLInitializationEvent event)
 	{
-		DimensionManager.registerProviderType(Config.dimensionCaveworld, WorldProviderCaveworld.class, true);
-		DimensionManager.registerDimension(Config.dimensionCaveworld, Config.dimensionCaveworld);
+		LanguageRegistry.addName(portalCaveworld, "Caveworld Portal");
+
+		DimensionManager.registerProviderType(dimensionCaveworld, WorldProviderCaveworld.class, true);
+		DimensionManager.registerDimension(dimensionCaveworld, dimensionCaveworld);
 
 		MinecraftForge.EVENT_BUS.register(new CaveEventHooks());
 
@@ -66,7 +110,7 @@ public class Caveworld
 	{
 		event.registerServerCommand(new CommandCaveworld());
 
-		if (event.getSide().isServer() && Config.versionNotify && Version.isOutdated())
+		if (event.getSide().isServer() && versionNotify && Version.isOutdated())
 		{
 			proxy.addChatMessage("A new Caveworld version is available : " + Version.LATEST);
 		}

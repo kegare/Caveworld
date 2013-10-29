@@ -1,6 +1,6 @@
 package kegare.caveworld.world;
 
-import kegare.caveworld.core.Config;
+import kegare.caveworld.core.Caveworld;
 import kegare.caveworld.renderer.EmptyRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Vec3;
@@ -17,8 +17,8 @@ public class WorldProviderCaveworld extends WorldProvider
 	@Override
 	protected void registerWorldChunkManager()
 	{
-		worldChunkMgr = new WorldChunkManagerCaveworld(new BiomeGenCaveworld(Config.biomeCaveworld));
-		dimensionId = Config.dimensionCaveworld;
+		worldChunkMgr = terrainType.getChunkManager(worldObj);
+		dimensionId = Caveworld.dimensionCaveworld;
 		hasNoSky = true;
 	}
 
@@ -72,20 +72,6 @@ public class WorldProviderCaveworld extends WorldProvider
 	public boolean getWorldHasVoidParticles()
 	{
 		return terrainType != WorldType.FLAT;
-	}
-
-	@Override
-	@SideOnly(Side.CLIENT)
-	public double getVoidFogYFactor()
-	{
-		return terrainType == WorldType.FLAT ? 1.0D : 0.0625D;
-	}
-
-	@Override
-	@SideOnly(Side.CLIENT)
-	public boolean doesXZShowFog(int x, int z)
-	{
-		return true;
 	}
 
 	@Override
@@ -158,9 +144,6 @@ public class WorldProviderCaveworld extends WorldProvider
 
 	@Override
 	public void updateWeather() {}
-
-	@Override
-	public void toggleRain() {}
 
 	@Override
 	public boolean canBlockFreeze(int x, int y, int z, boolean byWater)

@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import kegare.caveworld.core.CaveBlock;
+import kegare.caveworld.core.Caveworld;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Direction;
@@ -79,9 +79,9 @@ public class TeleporterCaveworld extends Teleporter
 
 					for (int var15 = worldObj.getActualHeight() - 1; var15 >= 0; --var15)
 					{
-						if (worldObj.getBlockId(var8, var15, var13) == CaveBlock.portalCaveworld.blockID)
+						if (worldObj.getBlockId(var8, var15, var13) == Caveworld.portalCaveworld.blockID)
 						{
-							while (worldObj.getBlockId(var8, var15 - 1, var13) == CaveBlock.portalCaveworld.blockID)
+							while (worldObj.getBlockId(var8, var15 - 1, var13) == Caveworld.portalCaveworld.blockID)
 							{
 								--var15;
 							}
@@ -115,22 +115,22 @@ public class TeleporterCaveworld extends Teleporter
 			var7 = (double)z + 0.5D;
 			int var14 = -1;
 
-			if (worldObj.getBlockId(x - 1, y, z) == CaveBlock.portalCaveworld.blockID)
+			if (worldObj.getBlockId(x - 1, y, z) == Caveworld.portalCaveworld.blockID)
 			{
 				var14 = 2;
 			}
 
-			if (worldObj.getBlockId(x + 1, y, z) == CaveBlock.portalCaveworld.blockID)
+			if (worldObj.getBlockId(x + 1, y, z) == Caveworld.portalCaveworld.blockID)
 			{
 				var14 = 0;
 			}
 
-			if (worldObj.getBlockId(x, y, z - 1) == CaveBlock.portalCaveworld.blockID)
+			if (worldObj.getBlockId(x, y, z - 1) == Caveworld.portalCaveworld.blockID)
 			{
 				var14 = 3;
 			}
 
-			if (worldObj.getBlockId(x, y, z + 1) == CaveBlock.portalCaveworld.blockID)
+			if (worldObj.getBlockId(x, y, z + 1) == Caveworld.portalCaveworld.blockID)
 			{
 				var14 = 1;
 			}
@@ -435,7 +435,7 @@ public class TeleporterCaveworld extends Teleporter
 					var21 = var14 + (var17 - 1) * var29;
 					flag = var17 == 0 || var17 == 3 || var16 == -1 || var16 == 3;
 
-					worldObj.setBlock(var19, var18, var21, flag ? Block.cobblestoneMossy.blockID : CaveBlock.portalCaveworld.blockID, 0, 2);
+					worldObj.setBlock(var19, var18, var21, flag ? Block.cobblestoneMossy.blockID : Caveworld.portalCaveworld.blockID, 0, 2);
 				}
 			}
 

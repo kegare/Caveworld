@@ -1,6 +1,6 @@
 package kegare.caveworld.handler;
 
-import kegare.caveworld.core.Config;
+import kegare.caveworld.core.Caveworld;
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet250CustomPayload;
@@ -20,26 +20,24 @@ public class CavePacketHandler implements IPacketHandler
 		if ("caveworld.config".equals(packet.channel))
 		{
 			ByteArrayDataInput dat = ByteStreams.newDataInput(packet.data);
-			Config.dimensionCaveworld = dat.readInt();
-			Config.biomeCaveworld = dat.readInt();
-			Config.generateCaves = dat.readBoolean();
-			Config.generateLakes = dat.readBoolean();
-			Config.generateRavine = dat.readBoolean();
-			Config.generateMineshaft = dat.readBoolean();
-			Config.generateDungeon = dat.readBoolean();
+			Caveworld.dimensionCaveworld = dat.readInt();
+			Caveworld.generateCaves = dat.readBoolean();
+			Caveworld.generateLakes = dat.readBoolean();
+			Caveworld.generateRavine = dat.readBoolean();
+			Caveworld.generateMineshaft = dat.readBoolean();
+			Caveworld.generateDungeon = dat.readBoolean();
 		}
 	}
 
 	public static Packet getPacketConfigSync()
 	{
 		ByteArrayDataOutput dat = ByteStreams.newDataOutput();
-		dat.writeInt(Config.dimensionCaveworld);
-		dat.writeInt(Config.biomeCaveworld);
-		dat.writeBoolean(Config.generateCaves);
-		dat.writeBoolean(Config.generateLakes);
-		dat.writeBoolean(Config.generateRavine);
-		dat.writeBoolean(Config.generateMineshaft);
-		dat.writeBoolean(Config.generateDungeon);
+		dat.writeInt(Caveworld.dimensionCaveworld);
+		dat.writeBoolean(Caveworld.generateCaves);
+		dat.writeBoolean(Caveworld.generateLakes);
+		dat.writeBoolean(Caveworld.generateRavine);
+		dat.writeBoolean(Caveworld.generateMineshaft);
+		dat.writeBoolean(Caveworld.generateDungeon);
 
 		return new Packet250CustomPayload("caveworld.config", dat.toByteArray());
 	}

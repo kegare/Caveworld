@@ -1,6 +1,7 @@
 package kegare.caveworld.proxy;
 
 import kegare.caveworld.renderer.RenderPortalCaveworld;
+import net.minecraft.client.particle.EntityFX;
 import net.minecraft.server.MinecraftServer;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.registry.RenderingRegistry;
@@ -16,6 +17,12 @@ public class ClientProxy extends CommonProxy
 		RenderPortalCaveworld.renderIdPortal = RenderingRegistry.getNextAvailableRenderId();
 
 		RenderingRegistry.registerBlockHandler(new RenderPortalCaveworld());
+	}
+
+	@Override
+	public void addEffect(EntityFX entityFX)
+	{
+		FMLClientHandler.instance().getClient().effectRenderer.addEffect(entityFX);
 	}
 
 	@Override

@@ -1,7 +1,6 @@
 package kegare.caveworld.handler;
 
 import kegare.caveworld.core.Caveworld;
-import kegare.caveworld.core.Config;
 import kegare.caveworld.util.Version;
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.NetLoginHandler;
@@ -38,7 +37,7 @@ public class CaveConnectionHandler implements IConnectionHandler
 	@Override
 	public void clientLoggedIn(NetHandler clientHandler, INetworkManager manager, Packet1Login login)
 	{
-		if (Config.versionNotify && Version.isOutdated())
+		if (Caveworld.versionNotify && Version.isOutdated())
 		{
 			StringBuilder message = new StringBuilder();
 			message.append("A new ").append(EnumChatFormatting.AQUA).append("Caveworld").append(EnumChatFormatting.RESET);
