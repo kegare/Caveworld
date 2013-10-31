@@ -71,10 +71,6 @@ public class ChunkProviderCaveworld implements IChunkProvider
 					{
 						blocks[index] = (byte)Block.bedrock.blockID;
 					}
-					else
-					{
-						blocks[index] = (byte)Block.stone.blockID;
-					}
 				}
 			}
 		}

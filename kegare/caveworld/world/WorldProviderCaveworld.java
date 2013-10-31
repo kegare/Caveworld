@@ -64,7 +64,7 @@ public class WorldProviderCaveworld extends WorldProvider
 	@Override
 	public int getAverageGroundLevel()
 	{
-		return 64;
+		return 30;
 	}
 
 	@Override
