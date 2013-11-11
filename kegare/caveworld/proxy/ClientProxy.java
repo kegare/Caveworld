@@ -30,10 +30,4 @@ public class ClientProxy extends CommonProxy
 	{
 		return FMLClientHandler.instance().getServer();
 	}
-
-	@Override
-	public void addChatMessage(String message)
-	{
-		FMLClientHandler.instance().getClient().ingameGUI.getChatGUI().printChatMessage(message);
-	}
 }

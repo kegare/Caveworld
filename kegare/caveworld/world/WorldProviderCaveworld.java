@@ -45,7 +45,7 @@ public class WorldProviderCaveworld extends WorldProvider
 	@SideOnly(Side.CLIENT)
 	public Vec3 getFogColor(float angle, float ticks)
 	{
-		return worldObj.getWorldVec3Pool().getVecFromPool(0.0D, 0.0D, 0.0D);
+		return worldObj.getWorldVec3Pool().getVecFromPool(0.01D, 0.01D, 0.01D);
 	}
 
 	@Override
@@ -56,15 +56,16 @@ public class WorldProviderCaveworld extends WorldProvider
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public boolean isSkyColored()
+	public float getCloudHeight()
 	{
-		return false;
+		return 256.0F;
 	}
 
 	@Override
-	public int getAverageGroundLevel()
+	@SideOnly(Side.CLIENT)
+	public boolean isSkyColored()
 	{
-		return 30;
+		return false;
 	}
 
 	@Override
@@ -81,6 +82,12 @@ public class WorldProviderCaveworld extends WorldProvider
 	}
 
 	@Override
+	public String getSaveFolder()
+	{
+		return "DIM-Caveworld";
+	}
+
+	@Override
 	public String getWelcomeMessage()
 	{
 		return "Entering the Caveworld";
@@ -90,6 +97,12 @@ public class WorldProviderCaveworld extends WorldProvider
 	public String getDepartMessage()
 	{
 		return "Leaving the Caveworld";
+	}
+
+	@Override
+	public double getMovementFactor()
+	{
+		return 3.0D;
 	}
 
 	@Override
@@ -122,14 +135,14 @@ public class WorldProviderCaveworld extends WorldProvider
 	@SideOnly(Side.CLIENT)
 	public Vec3 getSkyColor(Entity entity, float ticks)
 	{
-		return worldObj.getWorldVec3Pool().getVecFromPool(0.0D, 0.0D, 0.0D);
+		return worldObj.getWorldVec3Pool().getVecFromPool(0.01D, 0.01D, 0.01D);
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public Vec3 drawClouds(float ticks)
 	{
-		return worldObj.getWorldVec3Pool().getVecFromPool(0.0D, 0.0D, 0.0D);
+		return worldObj.getWorldVec3Pool().getVecFromPool(0.01D, 0.01D, 0.01D);
 	}
 
 	@Override
@@ -146,27 +159,21 @@ public class WorldProviderCaveworld extends WorldProvider
 	public void updateWeather() {}
 
 	@Override
-	public boolean canBlockFreeze(int x, int y, int z, boolean byWater)
-	{
-		return false;
-	}
-
-	@Override
-	public boolean canSnowAt(int x, int y, int z)
-	{
-		return false;
-	}
-
-	@Override
 	public long getSeed()
 	{
 		return Long.reverse(worldObj.getWorldInfo().getSeed());
 	}
 
 	@Override
+	public int getActualHeight()
+	{
+		return 256;
+	}
+
+	@Override
 	public double getHorizon()
 	{
-		return 127.0D;
+		return 255.0D;
 	}
 
 	@Override

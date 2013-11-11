@@ -9,6 +9,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ChatMessageComponent;
 import net.minecraft.util.EnumChatFormatting;
 
 import org.lwjgl.Sys;
@@ -52,14 +53,27 @@ public class CommandCaveworld implements ICommand
 		}
 		else if ("version".equalsIgnoreCase(args[0]))
 		{
-			StringBuilder message = new StringBuilder();
-			message.append(EnumChatFormatting.AQUA).append(" Caveworld ").append(EnumChatFormatting.RESET);
-			message.append(Version.CURRENT).append(" for ").append(Loader.instance().getMCVersionString());
-			message.append(EnumChatFormatting.GRAY).append(" (Latest: ").append(Version.LATEST).append(")");
+			if (sender instanceof MinecraftServer)
+			{
+				ChatMessageComponent message = new ChatMessageComponent();
+				message.addText(" Caveworld ").addText(Version.CURRENT).addText(" for ").addText(Loader.instance().getMCVersionString());
+				message.addText(" (Latest: ").addText(Version.LATEST).addText(")");
 
-			Caveworld.proxy.addChatMessage(message.toString());
-			Caveworld.proxy.addChatMessage("  " + Caveworld.metadata.description);
-			Caveworld.proxy.addChatMessage("  " + EnumChatFormatting.DARK_GRAY + Caveworld.metadata.url);
+				sender.sendChatToPlayer(message);
+				sender.sendChatToPlayer(ChatMessageComponent.createFromText("  ").addText(Caveworld.metadata.description));
+				sender.sendChatToPlayer(ChatMessageComponent.createFromText("  ").addText(Caveworld.metadata.url));
+			}
+			else
+			{
+				StringBuilder message = new StringBuilder();
+				message.append(EnumChatFormatting.AQUA).append(" Caveworld ").append(EnumChatFormatting.RESET);
+				message.append(Version.CURRENT).append(" for ").append(Loader.instance().getMCVersionString());
+				message.append(EnumChatFormatting.GRAY).append(" (Latest: ").append(Version.LATEST).append(")");
+
+				sender.sendChatToPlayer(ChatMessageComponent.createFromText(message.toString()));
+				sender.sendChatToPlayer(ChatMessageComponent.createFromText("  ").addText(Caveworld.metadata.description));
+				sender.sendChatToPlayer(ChatMessageComponent.createFromText("  ").addText(Caveworld.metadata.url).setColor(EnumChatFormatting.DARK_GRAY));
+			}
 		}
 		else
 		{

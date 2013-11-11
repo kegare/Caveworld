@@ -112,7 +112,7 @@ public class Caveworld
 
 		if (event.getSide().isServer() && versionNotify && Version.isOutdated())
 		{
-			proxy.addChatMessage("A new Caveworld version is available : " + Version.LATEST);
+			event.getServer().logInfo("A new Caveworld version is available : " + Version.LATEST);
 		}
 	}
 }
