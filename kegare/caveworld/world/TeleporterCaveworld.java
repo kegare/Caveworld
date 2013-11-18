@@ -76,7 +76,7 @@ public class TeleporterCaveworld extends Teleporter
 				{
 					double var11 = (double)var10 + 0.5D - entity.posZ;
 
-					for (int var12 = 128; var12 >= 0; --var12)
+					for (int var12 = 255; var12 >= 0; --var12)
 					{
 						if (worldObj.getBlockId(var8, var12, var10) == Caveworld.portalCaveworld.blockID)
 						{
@@ -264,7 +264,7 @@ public class TeleporterCaveworld extends Teleporter
 				var9 = (double)var10 + 0.5D - entity.posZ;
 				label1:
 
-				for (var11 = 128; var11 >= 0; --var11)
+				for (var11 = 254; var11 >= 0; --var11)
 				{
 					if (worldObj.isAirBlock(var7, var11, var10))
 					{
@@ -330,7 +330,7 @@ public class TeleporterCaveworld extends Teleporter
 					var9 = (double)var10 + 0.5D - entity.posZ;
 					label2:
 
-					for (var11 = 128; var11 >= 0; --var11)
+					for (var11 = 254; var11 >= 0; --var11)
 					{
 						if (worldObj.isAirBlock(var7, var11, var10))
 						{

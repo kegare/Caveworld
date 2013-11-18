@@ -1,6 +1,7 @@
 package kegare.caveworld.handler;
 
 import kegare.caveworld.core.Caveworld;
+import kegare.caveworld.world.WorldProviderCaveworld;
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet250CustomPayload;
@@ -26,6 +27,7 @@ public class CavePacketHandler implements IPacketHandler
 			Caveworld.generateRavine = dat.readBoolean();
 			Caveworld.generateMineshaft = dat.readBoolean();
 			Caveworld.generateDungeon = dat.readBoolean();
+			WorldProviderCaveworld.dimensionSeed = dat.readLong();
 		}
 	}
 
@@ -38,6 +40,7 @@ public class CavePacketHandler implements IPacketHandler
 		dat.writeBoolean(Caveworld.generateRavine);
 		dat.writeBoolean(Caveworld.generateMineshaft);
 		dat.writeBoolean(Caveworld.generateDungeon);
+		dat.writeLong(WorldProviderCaveworld.dimensionSeed);
 
 		return new Packet250CustomPayload("caveworld.config", dat.toByteArray());
 	}

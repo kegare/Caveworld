@@ -1,8 +1,14 @@
 package kegare.caveworld.block;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.Random;
 
 import kegare.caveworld.core.Caveworld;
+import kegare.caveworld.inventory.InventoryCaveworldPortal;
 import kegare.caveworld.renderer.RenderPortalCaveworld;
 import kegare.caveworld.world.TeleporterCaveworld;
 import net.minecraft.block.Block;
@@ -10,11 +16,12 @@ import net.minecraft.block.material.Material;
 import net.minecraft.client.particle.EntityFX;
 import net.minecraft.client.particle.EntityReddustFX;
 import net.minecraft.client.renderer.texture.IconRegister;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemMonsterPlacer;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
@@ -26,11 +33,75 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.common.DimensionManager;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockPortalCaveworld extends Block
 {
+	private static InventoryCaveworldPortal inventory;
+
+	public static InventoryCaveworldPortal getInventory()
+	{
+		if (inventory == null)
+		{
+			InventoryCaveworldPortal inv = new InventoryCaveworldPortal();
+
+			try
+			{
+				File root = DimensionManager.getCurrentSaveRootDirectory();
+				File dir = new File(root, "data");
+
+				if (!dir.exists())
+				{
+					dir.mkdirs();
+				}
+
+				File invFile = new File(dir, "caveworld_portal_inventory.dat");
+				invFile.createNewFile();
+
+				if (invFile.isFile())
+				{
+					DataInputStream dis = new DataInputStream(new FileInputStream(invFile));
+					NBTTagList tag = (NBTTagList)NBTBase.readNamedTag(dis);
+
+					dis.close();
+					inv.loadInventoryFromNBT(tag);
+				}
+			}
+			catch (Exception e) {}
+
+			inventory = inv;
+		}
+
+		return inventory;
+	}
+
+	public static void writeInventoryData()
+	{
+		try
+		{
+			File root = DimensionManager.getCurrentSaveRootDirectory();
+			File dir = new File(root, "data");
+
+			if (!dir.exists())
+			{
+				dir.mkdirs();
+			}
+
+			File invFile = new File(dir, "caveworld_portal_inventory.dat");
+			invFile.createNewFile();
+
+			if (invFile.isFile())
+			{
+				DataOutputStream dos = new DataOutputStream(new FileOutputStream(invFile));
+				NBTBase.writeNamedTag(getInventory().saveInventoryToNBT(), dos);
+				dos.close();
+			}
+		}
+		catch (Exception e) {}
+	}
+
 	@SideOnly(Side.CLIENT)
 	public Icon portalIcon;
 
@@ -39,7 +110,6 @@ public class BlockPortalCaveworld extends Block
 		super(blockID, Material.portal);
 		this.setUnlocalizedName(name);
 		this.setTextureName("caveworld:portal_caveworld");
-		this.setCreativeTab(CreativeTabs.tabTransport);
 		this.setTickRandomly(true);
 		this.setBlockUnbreakable();
 		this.setLightOpacity(3);
@@ -274,7 +344,7 @@ public class BlockPortalCaveworld extends Block
 
 					if (!player.isSneaking() && !player.isPotionActive(Potion.confusion))
 					{
-						worldOld.playSoundToNearExcept(player, "caveworld:portal.travel", 0.5F, 1.0F);
+						worldOld.playSoundToNearExcept(player, "caveworld:caveworld_portal", 0.5F, 1.0F);
 
 						server.getConfigurationManager().transferPlayerToDimension(player, dimNew, teleporter);
 
@@ -282,7 +352,7 @@ public class BlockPortalCaveworld extends Block
 						player.addPotionEffect(new PotionEffect(Potion.confusion.getId(), 120));
 						player.addPotionEffect(new PotionEffect(Potion.blindness.getId(), 20));
 
-						worldNew.playSoundAtEntity(player, "caveworld:portal.travel", 0.75F, 1.0F);
+						worldNew.playSoundAtEntity(player, "caveworld:caveworld_portal", 0.75F, 1.0F);
 
 						player.timeUntilPortal = player.getPortalCooldown();
 					}

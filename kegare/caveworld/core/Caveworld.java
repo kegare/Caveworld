@@ -6,12 +6,9 @@ import kegare.caveworld.block.BlockPortalCaveworld;
 import kegare.caveworld.handler.CaveConnectionHandler;
 import kegare.caveworld.handler.CaveEventHooks;
 import kegare.caveworld.handler.CavePacketHandler;
-import kegare.caveworld.item.ItemPortalCaveworld;
 import kegare.caveworld.proxy.CommonProxy;
 import kegare.caveworld.util.Version;
 import kegare.caveworld.world.WorldProviderCaveworld;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
@@ -45,6 +42,7 @@ public class Caveworld
 	public static boolean showDebugDim = true;
 
 	public static int dimensionCaveworld = -75;
+	public static int[] genBiomes = {0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 16, 17, 18, 19, 21, 22};
 	public static boolean generateCaves = true;
 	public static boolean generateLakes = true;
 	public static boolean generateRavine = true;
@@ -68,10 +66,11 @@ public class Caveworld
 		{
 			cfg.load();
 
-			versionNotify = cfg.get(Configuration.CATEGORY_GENERAL, "versionNotify", versionNotify, "Notifies when a new version is available (Default: true)").getBoolean(versionNotify);
-			showDebugDim = cfg.get(Configuration.CATEGORY_GENERAL, "showDebugDim", showDebugDim, "Debug screen will show the dimension name (Default: true)").getBoolean(showDebugDim);
+			versionNotify = cfg.get(Configuration.CATEGORY_GENERAL, "versionNotify", versionNotify, "Whether or not to notify when a new version is available (Default: true)").getBoolean(versionNotify);
+			showDebugDim = cfg.get(Configuration.CATEGORY_GENERAL, "showDebugDim", showDebugDim, "Whether or not to show the dimension name to debug screen (Default: true)").getBoolean(showDebugDim);
 
 			dimensionCaveworld = cfg.get("caveworld", "dimensionCaveworld", dimensionCaveworld, "Caveworld DimensionID (Default: -75)").getInt(dimensionCaveworld);
+			genBiomes = cfg.get("caveworld", "genBiomes", genBiomes, "Biomes to generate in Caveworld (Default: 0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 16, 17, 18, 19, 21, 22)").getIntList();
 			generateCaves = cfg.get("caveworld", "generateCaves", generateCaves, "Whether or not to generate caves to Caveworld (Default: true)").getBoolean(generateCaves);
 			generateLakes = cfg.get("caveworld", "generateLakes", generateLakes, "Whether or not to generate lakes to Caveworld (Default: true)").getBoolean(generateLakes);
 			generateRavine = cfg.get("caveworld", "generateRavine", generateRavine, "Whether or not to generate ravine to Caveworld (Default: true)").getBoolean(generateRavine);
@@ -88,8 +87,7 @@ public class Caveworld
 			}
 		}
 
-		GameRegistry.registerBlock(portalCaveworld, ItemPortalCaveworld.class, "portalCaveworld");
-		GameRegistry.addRecipe(new ItemStack(portalCaveworld), "EDE", "DED", "EDE", 'E', Item.emerald, 'D', Item.diamond);
+		GameRegistry.registerBlock(portalCaveworld, "portalCaveworld");
 	}
 
 	@EventHandler

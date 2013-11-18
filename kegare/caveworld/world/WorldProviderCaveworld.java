@@ -1,5 +1,11 @@
 package kegare.caveworld.world;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.PrintWriter;
+import java.util.Random;
+
 import kegare.caveworld.core.Caveworld;
 import kegare.caveworld.renderer.EmptyRenderer;
 import net.minecraft.entity.Entity;
@@ -9,15 +15,18 @@ import net.minecraft.world.WorldType;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.client.IRenderHandler;
+import net.minecraftforge.common.DimensionManager;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 public class WorldProviderCaveworld extends WorldProvider
 {
+	public static long dimensionSeed;
+
 	@Override
 	protected void registerWorldChunkManager()
 	{
-		worldChunkMgr = terrainType.getChunkManager(worldObj);
+		worldChunkMgr = new WorldChunkManagerCaveworld(worldObj);
 		dimensionId = Caveworld.dimensionCaveworld;
 		hasNoSky = true;
 	}
@@ -161,7 +170,46 @@ public class WorldProviderCaveworld extends WorldProvider
 	@Override
 	public long getSeed()
 	{
-		return Long.reverse(worldObj.getWorldInfo().getSeed());
+		if (!worldObj.isRemote && dimensionSeed == 0)
+		{
+			Random random = new Random();
+			long seed = Long.reverse(worldObj.getWorldInfo().getSeed());
+
+			try
+			{
+				File root = DimensionManager.getCurrentSaveRootDirectory();
+				File dir = new File(root, getSaveFolder());
+
+				if (!dir.exists())
+				{
+					dir.mkdirs();
+				}
+
+				File seedFile = new File(dir, "caveworld.txt");
+
+				if (!seedFile.exists())
+				{
+					PrintWriter writer = new PrintWriter(seedFile);
+
+					writer.print(random.nextLong());
+					writer.close();
+					writer.flush();
+				}
+
+				BufferedReader reader = new BufferedReader(new FileReader(seedFile));
+
+				seed = Long.valueOf(reader.readLine()).longValue();
+				reader.close();
+			}
+			catch (Exception e)
+			{
+				return seed;
+			}
+
+			dimensionSeed = seed;
+		}
+
+		return dimensionSeed;
 	}
 
 	@Override
