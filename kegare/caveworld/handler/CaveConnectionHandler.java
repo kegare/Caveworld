@@ -9,6 +9,7 @@ import net.minecraft.network.packet.Packet1Login;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatMessageComponent;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.StatCollector;
 import cpw.mods.fml.common.network.IConnectionHandler;
 import cpw.mods.fml.common.network.Player;
 
@@ -41,8 +42,8 @@ public class CaveConnectionHandler implements IConnectionHandler
 		if (Caveworld.versionNotify && Version.isOutdated())
 		{
 			StringBuilder message = new StringBuilder();
-			message.append("A new ").append(EnumChatFormatting.AQUA).append("Caveworld").append(EnumChatFormatting.RESET);
-			message.append(" version is available : ").append(EnumChatFormatting.YELLOW).append(Version.LATEST);
+			message.append(StatCollector.translateToLocalFormatted("caveworld.version.message", EnumChatFormatting.AQUA + "Caveworld" + EnumChatFormatting.RESET));
+			message.append(" : ").append(EnumChatFormatting.YELLOW).append(Version.LATEST);
 
 			clientHandler.getPlayer().sendChatToPlayer(ChatMessageComponent.createFromText(message.toString()));
 		}

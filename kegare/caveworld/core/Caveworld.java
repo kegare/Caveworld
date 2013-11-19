@@ -22,7 +22,6 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.common.registry.LanguageRegistry;
 
 @Mod
 (
@@ -66,18 +65,20 @@ public class Caveworld
 		{
 			cfg.load();
 
-			versionNotify = cfg.get(Configuration.CATEGORY_GENERAL, "versionNotify", versionNotify, "Whether or not to notify when a new version is available (Default: true)").getBoolean(versionNotify);
-			showDebugDim = cfg.get(Configuration.CATEGORY_GENERAL, "showDebugDim", showDebugDim, "Whether or not to show the dimension name to debug screen (Default: true)").getBoolean(showDebugDim);
+			versionNotify = cfg.get("general", "versionNotify", versionNotify, "Whether or not to notify when a new version is available. [true/false]").getBoolean(versionNotify);
+			showDebugDim = cfg.get("general", "showDebugDim", showDebugDim, "Whether or not to show the dimension name to debug screen. [true/false] Note: client-side only.").getBoolean(showDebugDim);
 
-			dimensionCaveworld = cfg.get("caveworld", "dimensionCaveworld", dimensionCaveworld, "Caveworld DimensionID (Default: -75)").getInt(dimensionCaveworld);
-			genBiomes = cfg.get("caveworld", "genBiomes", genBiomes, "Biomes to generate in Caveworld (Default: 0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 16, 17, 18, 19, 21, 22)").getIntList();
-			generateCaves = cfg.get("caveworld", "generateCaves", generateCaves, "Whether or not to generate caves to Caveworld (Default: true)").getBoolean(generateCaves);
-			generateLakes = cfg.get("caveworld", "generateLakes", generateLakes, "Whether or not to generate lakes to Caveworld (Default: true)").getBoolean(generateLakes);
-			generateRavine = cfg.get("caveworld", "generateRavine", generateRavine, "Whether or not to generate ravine to Caveworld (Default: true)").getBoolean(generateRavine);
-			generateMineshaft = cfg.get("caveworld", "generateMineshaft", generateMineshaft, "Whether or not to generate mineshaft to Caveworld (Default: true)").getBoolean(generateMineshaft);
-			generateDungeon = cfg.get("caveworld", "generateDungeon", generateDungeon, "Whether or not to generate dungeon to Caveworld (Default: true)").getBoolean(generateDungeon);
+			cfg.getCategory("caveworld").setComment("If multiplayer, server-side only.");
+			dimensionCaveworld = cfg.get("caveworld", "dimensionCaveworld", dimensionCaveworld, "DimensionID - Caveworld").getInt(dimensionCaveworld);
+			genBiomes = cfg.get("caveworld", "genBiomes", genBiomes, "Biomes to generate in Caveworld. Specify in BiomeIDs. [0-255]").getIntList();
+			generateCaves = cfg.get("caveworld", "generateCaves", generateCaves, "Whether or not to generate caves to Caveworld. [true/false]").getBoolean(generateCaves);
+			generateLakes = cfg.get("caveworld", "generateLakes", generateLakes, "Whether or not to generate lakes to Caveworld. [true/false]").getBoolean(generateLakes);
+			generateRavine = cfg.get("caveworld", "generateRavine", generateRavine, "Whether or not to generate ravine to Caveworld. [true/false]").getBoolean(generateRavine);
+			generateMineshaft = cfg.get("caveworld", "generateMineshaft", generateMineshaft, "Whether or not to generate mineshaft to Caveworld. [true/false]").getBoolean(generateMineshaft);
+			generateDungeon = cfg.get("caveworld", "generateDungeon", generateDungeon, "Whether or not to generate dungeon to Caveworld. [true/false]").getBoolean(generateDungeon);
 
-			portalCaveworld = new BlockPortalCaveworld(cfg.getBlock("portalCaveworld", 750, "Caveworld Portal BlockID (Default: 750)").getInt(750), "portalCaveworld");
+			cfg.getCategory(Configuration.CATEGORY_BLOCK).setComment("If multiplayer, values must match on client-side and server-side.");
+			portalCaveworld = new BlockPortalCaveworld(cfg.getBlock("portalCaveworld", 750, "BlockID - Caveworld Portal").getInt(750), "portalCaveworld");
 		}
 		finally
 		{
@@ -93,8 +94,6 @@ public class Caveworld
 	@EventHandler
 	public void init(FMLInitializationEvent event)
 	{
-		LanguageRegistry.addName(portalCaveworld, "Caveworld Portal");
-
 		DimensionManager.registerProviderType(dimensionCaveworld, WorldProviderCaveworld.class, true);
 		DimensionManager.registerDimension(dimensionCaveworld, dimensionCaveworld);
 

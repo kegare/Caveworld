@@ -9,7 +9,7 @@ public class InventoryCaveworldPortal extends InventoryBasic
 {
 	public InventoryCaveworldPortal()
 	{
-		super("Caveworld Portal", true, 18);
+		super("container.caveworld_portal", false, 18);
 	}
 
 	public void loadInventoryFromNBT(NBTTagList list)

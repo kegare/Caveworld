@@ -1,0 +1,7 @@
+# Localization file : en_US
+
+caveworld.version.message=A new %s version is available
+
+tile.portalCaveworld.name=Block of Caveworld Portal
+
+container.caveworld_portal=Caveworld Portal

@@ -1,18 +1,25 @@
 package kegare.caveworld.handler;
 
+import java.util.Random;
+
 import kegare.caveworld.block.BlockPortalCaveworld;
 import kegare.caveworld.core.Caveworld;
 import kegare.caveworld.util.CaveLog;
 import kegare.caveworld.world.WorldProviderCaveworld;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.passive.EntityBat;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.sound.SoundLoadEvent;
 import net.minecraftforge.event.EventPriority;
 import net.minecraftforge.event.ForgeSubscribe;
+import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import net.minecraftforge.event.world.WorldEvent;
@@ -104,6 +111,22 @@ public class CaveEventHooks
 						world.playSoundEffect((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "step.stone", 1.0F, 2.0F);
 					}
 				}
+			}
+		}
+	}
+
+	@ForgeSubscribe
+	public void onLivingDrops(LivingDropsEvent event)
+	{
+		Random random = new Random();
+		EntityLivingBase living = event.entityLiving;
+		World world = living.worldObj;
+
+		if (!world.isRemote && living.dimension == Caveworld.dimensionCaveworld)
+		{
+			if (living instanceof EntityBat)
+			{
+				event.drops.add(new EntityItem(world, living.posX, living.posY + 0.5D, living.posZ, new ItemStack(Item.coal, random.nextInt(3) + (event.lootingLevel & 3))));
 			}
 		}
 	}

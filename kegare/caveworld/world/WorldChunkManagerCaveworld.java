@@ -39,11 +39,14 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 		{
 			for (int biomeID : Caveworld.genBiomes)
 			{
-				BiomeGenBase biome = BiomeGenBase.biomeList[biomeID];
-
-				if (biome != null)
+				if (biomeID >= 0 && biomeID <= 255)
 				{
-					biomeList.add(biome);
+					BiomeGenBase biome = BiomeGenBase.biomeList[biomeID];
+
+					if (biome != null)
+					{
+						biomeList.add(biome);
+					}
 				}
 			}
 		}

@@ -1,0 +1,7 @@
+﻿# Localization file : ja_JP
+
+caveworld.version.message=%s の新しいバージョンが利用可能です
+
+tile.portalCaveworld.name=Caveworld ポータルブロック
+
+container.caveworld_portal=Caveworld ポータル
