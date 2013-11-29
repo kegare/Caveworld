@@ -6,7 +6,9 @@ import kegare.caveworld.block.BlockPortalCaveworld;
 import kegare.caveworld.handler.CaveConnectionHandler;
 import kegare.caveworld.handler.CaveEventHooks;
 import kegare.caveworld.handler.CavePacketHandler;
+import kegare.caveworld.item.ItemPortalCaveworld;
 import kegare.caveworld.proxy.CommonProxy;
+import kegare.caveworld.util.CaveLog;
 import kegare.caveworld.util.Version;
 import kegare.caveworld.world.WorldProviderCaveworld;
 import net.minecraftforge.common.Configuration;
@@ -31,7 +33,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 (
 	clientSideRequired = true,
 	serverSideRequired = false,
-	channels = {"caveworld.config"},
+	channels = {"caveworld.sync"},
 	packetHandler = CavePacketHandler.class,
 	connectionHandler = CaveConnectionHandler.class
 )
@@ -40,6 +42,8 @@ public class Caveworld
 	public static boolean versionNotify = true;
 	public static boolean showDebugDim = true;
 
+	public static BlockPortalCaveworld portalCaveworld;
+
 	public static int dimensionCaveworld = -75;
 	public static int[] genBiomes = {0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 16, 17, 18, 19, 21, 22};
 	public static boolean generateCaves = true;
@@ -47,8 +51,6 @@ public class Caveworld
 	public static boolean generateRavine = true;
 	public static boolean generateMineshaft = true;
 	public static boolean generateDungeon = true;
-
-	public static BlockPortalCaveworld portalCaveworld;
 
 	@Metadata("kegare.caveworld")
 	public static ModMetadata metadata;
@@ -65,10 +67,14 @@ public class Caveworld
 		{
 			cfg.load();
 
-			versionNotify = cfg.get("general", "versionNotify", versionNotify, "Whether or not to notify when a new version is available. [true/false]").getBoolean(versionNotify);
+			cfg.addCustomCategoryComment(Configuration.CATEGORY_BLOCK, "If multiplayer, values must match on client-side and server-side.");
+			cfg.addCustomCategoryComment("caveworld", "If multiplayer, server-side only.");
+
+			versionNotify = cfg.get("general", "versionNotify", versionNotify, "Whether or not to notify when a new Caveworld version is available. [true/false]").getBoolean(versionNotify);
 			showDebugDim = cfg.get("general", "showDebugDim", showDebugDim, "Whether or not to show the dimension name to debug screen. [true/false] Note: client-side only.").getBoolean(showDebugDim);
 
-			cfg.getCategory("caveworld").setComment("If multiplayer, server-side only.");
+			portalCaveworld = new BlockPortalCaveworld(cfg.getBlock("portalCaveworld", 750, "BlockID - Block of Caveworld Portal").getInt(750), "portalCaveworld");
+
 			dimensionCaveworld = cfg.get("caveworld", "dimensionCaveworld", dimensionCaveworld, "DimensionID - Caveworld").getInt(dimensionCaveworld);
 			genBiomes = cfg.get("caveworld", "genBiomes", genBiomes, "Biomes to generate in Caveworld. Specify in BiomeIDs. [0-255]").getIntList();
 			generateCaves = cfg.get("caveworld", "generateCaves", generateCaves, "Whether or not to generate caves to Caveworld. [true/false]").getBoolean(generateCaves);
@@ -76,9 +82,10 @@ public class Caveworld
 			generateRavine = cfg.get("caveworld", "generateRavine", generateRavine, "Whether or not to generate ravine to Caveworld. [true/false]").getBoolean(generateRavine);
 			generateMineshaft = cfg.get("caveworld", "generateMineshaft", generateMineshaft, "Whether or not to generate mineshaft to Caveworld. [true/false]").getBoolean(generateMineshaft);
 			generateDungeon = cfg.get("caveworld", "generateDungeon", generateDungeon, "Whether or not to generate dungeon to Caveworld. [true/false]").getBoolean(generateDungeon);
-
-			cfg.getCategory(Configuration.CATEGORY_BLOCK).setComment("If multiplayer, values must match on client-side and server-side.");
-			portalCaveworld = new BlockPortalCaveworld(cfg.getBlock("portalCaveworld", 750, "BlockID - Caveworld Portal").getInt(750), "portalCaveworld");
+		}
+		catch (Exception e)
+		{
+			CaveLog.exception(e);
 		}
 		finally
 		{
@@ -88,7 +95,7 @@ public class Caveworld
 			}
 		}
 
-		GameRegistry.registerBlock(portalCaveworld, "portalCaveworld");
+		GameRegistry.registerBlock(portalCaveworld, ItemPortalCaveworld.class, "portalCaveworld");
 	}
 
 	@EventHandler

@@ -22,6 +22,8 @@ import net.minecraft.world.gen.feature.WorldGenDungeons;
 import net.minecraft.world.gen.feature.WorldGenLakes;
 import net.minecraft.world.gen.feature.WorldGenMinable;
 import net.minecraft.world.gen.structure.MapGenMineshaft;
+import net.minecraftforge.common.BiomeDictionary;
+import net.minecraftforge.common.BiomeDictionary.Type;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.terraingen.DecorateBiomeEvent.Decorate;
 import net.minecraftforge.event.terraingen.InitMapGenEvent;
@@ -35,6 +37,8 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	private final World worldObj;
 	private final Random random;
 	private final boolean generateStructures;
+
+	private BiomeGenBase[] biomesForGeneration;
 
 	private MapGenBase caveGenerator = new MapGenCaves();
 	private MapGenBase ravineGenerator = new MapGenRavine();
@@ -61,6 +65,8 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		byte[] blocks = new byte[65536];
 		Arrays.fill(blocks, (byte)Block.stone.blockID);
 
+		biomesForGeneration = worldObj.getWorldChunkManager().loadBlockGeneratorData(biomesForGeneration, chunkX * 16, chunkZ * 16, 16, 16);
+
 		if (Caveworld.generateCaves)
 		{
 			caveGenerator.generate(this, worldObj, chunkX, chunkZ, blocks);
@@ -77,6 +83,13 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		}
 
 		Chunk chunk = new Chunk(worldObj, blocks, chunkX, chunkZ);
+		byte[] biomes = chunk.getBiomeArray();
+
+		for (int index = 0; index < biomes.length; ++index)
+		{
+			biomes[index] = (byte)biomesForGeneration[index].biomeID;
+		}
+
 		chunk.resetRelightChecks();
 
 		return chunk;
@@ -93,10 +106,10 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	{
 		BlockSand.fallInstantly = true;
 
-		int chunk_X = chunkX * 16;
-		int chunk_Z = chunkZ * 16;
+		int x = chunkX << 4;
+		int z = chunkZ << 4;
 		Chunk chunk = worldObj.getChunkFromChunkCoords(chunkX, chunkZ);
-		BiomeGenBase biome = worldObj.getBiomeGenForCoords(chunk_X + 16, chunk_Z + 16);
+		BiomeGenBase biome = worldObj.getWorldChunkManager().getBiomeGenAt(x + 16, z + 16);
 		BiomeDecorator decorator = biome.createBiomeDecorator();
 		long worldSeed = worldObj.getSeed();
 		random.setSeed(worldSeed);
@@ -111,45 +124,41 @@ public class ChunkProviderCaveworld implements IChunkProvider
 			mineshaftGenerator.generateStructuresInChunk(worldObj, random, chunkX, chunkZ);
 		}
 
-		int x;
-		int y;
-		int z;
+		int var1, var2, var3, i;
 
 		if (Caveworld.generateLakes)
 		{
-			if (TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.LAKE) && random.nextInt(4) == 0)
+			if (!BiomeDictionary.isBiomeOfType(biome, Type.DESERT) && random.nextInt(4) == 0 && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.LAKE))
 			{
-				x = chunk_X + random.nextInt(16) + 8;
-				y = random.nextInt(224);
-				z = chunk_Z + random.nextInt(16) + 8;
+				var1 = x + random.nextInt(16) + 8;
+				var2 = random.nextInt(224);
+				var3 = z + random.nextInt(16) + 8;
 
-				(new WorldGenLakes(Block.waterStill.blockID)).generate(worldObj, random, x, y, z);
+				(new WorldGenLakes(Block.waterStill.blockID)).generate(worldObj, random, var1, var2, var3);
 			}
 
-			if (TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.LAVA) && random.nextInt(8) == 0)
+			if (random.nextInt(8) == 0 && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.LAVA))
 			{
-				x = chunk_X + random.nextInt(16) + 8;
-				y = random.nextInt(random.nextInt(120) + 8);
-				z = chunk_Z + random.nextInt(16) + 8;
+				var1 = x + random.nextInt(16) + 8;
+				var2 = random.nextInt(random.nextInt(120) + 8);
+				var3 = z + random.nextInt(16) + 8;
 
-				if (y < 63 || random.nextInt(10) == 0)
+				if (var2 < 63 || random.nextInt(10) == 0)
 				{
-					(new WorldGenLakes(Block.lavaStill.blockID)).generate(worldObj, random, x, y, z);
+					(new WorldGenLakes(Block.lavaStill.blockID)).generate(worldObj, random, var1, var2, var3);
 				}
 			}
 		}
-
-		int i;
 
 		if (Caveworld.generateDungeon && generateStructures && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.DUNGEON))
 		{
 			for (i = 0; i < 8; ++i)
 			{
-				x = chunk_X + random.nextInt(16) + 8;
-				y = random.nextInt(224);
-				z = chunk_Z + random.nextInt(16) + 8;
+				var1 = x + random.nextInt(16) + 8;
+				var2 = random.nextInt(224);
+				var3 = z + random.nextInt(16) + 8;
 
-				(new WorldGenDungeons()).generate(worldObj, random, x, y, z);
+				(new WorldGenDungeons()).generate(worldObj, random, var1, var2, var3);
 			}
 		}
 
@@ -157,11 +166,11 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		{
 			for (i = 0; i < 20; ++i)
 			{
-				x = chunk_X + random.nextInt(16);
-				y = random.nextInt(255 - 128) + 128;
-				z = chunk_Z + random.nextInt(16);
+				var1 = x + random.nextInt(16);
+				var2 = random.nextInt(255 - 128) + 128;
+				var3 = z + random.nextInt(16);
 
-				decorator.dirtGen.generate(worldObj, random, x, y, z);
+				decorator.dirtGen.generate(worldObj, random, var1, var2, var3);
 			}
 		}
 
@@ -169,11 +178,11 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		{
 			for (i = 0; i < 10; ++i)
 			{
-				x = chunk_X + random.nextInt(16);
-				y = random.nextInt(255 - 128) + 128;
-				z = chunk_Z + random.nextInt(16);
+				var1 = x + random.nextInt(16);
+				var2 = random.nextInt(255 - 128) + 128;
+				var3 = z + random.nextInt(16);
 
-				decorator.gravelGen.generate(worldObj, random, x, y, z);
+				decorator.gravelGen.generate(worldObj, random, var1, var2, var3);
 			}
 		}
 
@@ -181,32 +190,32 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		{
 			if (random.nextInt(4) == 0)
 			{
-				x = chunk_X + random.nextInt(16);
-				y = random.nextInt(255 - 128) + 128;
-				z = chunk_Z + random.nextInt(16);
+				var1 = x + random.nextInt(16);
+				var2 = random.nextInt(255 - 128) + 128;
+				var3 = z + random.nextInt(16);
 
-				decorator.mushroomBrownGen.generate(worldObj, random, x, y, z);
+				decorator.mushroomBrownGen.generate(worldObj, random, var1, var2, var3);
 			}
 
 			if (random.nextInt(8) == 0)
 			{
-				x = chunk_X + random.nextInt(16);
-				y = random.nextInt(255 - 128) + 128;
-				z = chunk_Z + random.nextInt(16);
+				var1 = x + random.nextInt(16);
+				var2 = random.nextInt(255 - 128) + 128;
+				var3 = z + random.nextInt(16);
 
-				decorator.mushroomRedGen.generate(worldObj, random, x, y, z);
+				decorator.mushroomRedGen.generate(worldObj, random, var1, var2, var3);
 			}
 		}
 
-		if (TerrainGen.decorate(worldObj, random, chunkX, chunkZ, Decorate.EventType.REED))
+		if ((BiomeDictionary.isBiomeOfType(biome, Type.JUNGLE) || BiomeDictionary.isBiomeOfType(biome, Type.SWAMP)) && TerrainGen.decorate(worldObj, random, chunkX, chunkZ, Decorate.EventType.REED))
 		{
-			for (i = 0; i < decorator.reedsPerChunk; ++i)
+			for (i = 0; i < 10; ++i)
 			{
-				x = chunk_X + random.nextInt(16);
-				y = random.nextInt(255 - 128) + 128;
-				z = chunk_Z + random.nextInt(16);
+				var1 = x + random.nextInt(16);
+				var2 = random.nextInt(255 - 128) + 128;
+				var3 = z + random.nextInt(16);
 
-				decorator.reedGen.generate(worldObj, random, x, y, z);
+				decorator.reedGen.generate(worldObj, random, var1, var2, var3);
 			}
 		}
 
@@ -214,11 +223,11 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		{
 			for (i = 0; i < 25; ++i)
 			{
-				x = chunk_X + random.nextInt(16);
-				y = random.nextInt(255 - 128) + 128;
-				z = chunk_Z + random.nextInt(16);
+				var1 = x + random.nextInt(16);
+				var2 = random.nextInt(255 - 128) + 128;
+				var3 = z + random.nextInt(16);
 
-				decorator.coalGen.generate(worldObj, random, x, y, z);
+				decorator.coalGen.generate(worldObj, random, var1, var2, var3);
 			}
 		}
 
@@ -226,11 +235,11 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		{
 			for (i = 0; i < 25; ++i)
 			{
-				x = chunk_X + random.nextInt(16);
-				y = random.nextInt(255 - 128) + 128;
-				z = chunk_Z + random.nextInt(16);
+				var1 = x + random.nextInt(16);
+				var2 = random.nextInt(255 - 128) + 128;
+				var3 = z + random.nextInt(16);
 
-				decorator.ironGen.generate(worldObj, random, x, y, z);
+				decorator.ironGen.generate(worldObj, random, var1, var2, var3);
 			}
 		}
 
@@ -238,31 +247,31 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		{
 			for (i = 0; i < 6; ++i)
 			{
-				x = chunk_X + random.nextInt(16);
-				y = random.nextInt(255 - 128) + 128;
-				z = chunk_Z + random.nextInt(16);
+				var1 = x + random.nextInt(16);
+				var2 = random.nextInt(255 - 128) + 128;
+				var3 = z + random.nextInt(16);
 
-				decorator.goldGen.generate(worldObj, random, x, y, z);
+				decorator.goldGen.generate(worldObj, random, var1, var2, var3);
 			}
 		}
 
 		for (i = 0; i < 6; ++i)
 		{
-			x = chunk_X + random.nextInt(16);
-			y = random.nextInt(255 - 128) + 128;
-			z = chunk_Z + random.nextInt(16);
+			var1 = x + random.nextInt(16);
+			var2 = random.nextInt(255 - 128) + 128;
+			var3 = z + random.nextInt(16);
 
-			(new WorldGenMinable(Block.oreEmerald.blockID, 8)).generate(worldObj, random, x, y, z);
+			(new WorldGenMinable(Block.oreEmerald.blockID, 8)).generate(worldObj, random, var1, var2, var3);
 		}
 
-		biome.decorate(worldObj, random, chunk_X, chunk_Z);
+		biome.decorate(worldObj, random, x, z);
 
-		for (x = 0; x < 16; ++x)
+		for (var1 = 0; var1 < 16; ++var1)
 		{
-			for (z = 0; z < 16; ++z)
+			for (var2 = 0; var2 < 16; ++var2)
 			{
-				chunk.setBlockIDWithMetadata(x, 0, z, Block.bedrock.blockID, 0);
-				chunk.setBlockIDWithMetadata(x, 255, z, Block.bedrock.blockID, 0);
+				chunk.setBlockIDWithMetadata(var1, 0, var2, Block.bedrock.blockID, 0);
+				chunk.setBlockIDWithMetadata(var1, 255, var2, Block.bedrock.blockID, 0);
 			}
 		}
 
@@ -282,6 +291,9 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	{
 		return true;
 	}
+
+	@Override
+	public void saveExtraData() {}
 
 	@Override
 	public boolean unloadQueuedChunks()
@@ -304,7 +316,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	@Override
 	public List getPossibleCreatures(EnumCreatureType creature, int x, int y, int z)
 	{
-		BiomeGenBase biome = worldObj.getBiomeGenForCoords(x, z);
+		BiomeGenBase biome = worldObj.getWorldChunkManager().getBiomeGenAt(x, z);
 
 		return biome == null ? null : biome.getSpawnableList(creature);
 	}
@@ -329,7 +341,4 @@ public class ChunkProviderCaveworld implements IChunkProvider
 			mineshaftGenerator.generate(this, worldObj, chunkX, chunkZ, (byte[])null);
 		}
 	}
-
-	@Override
-	public void saveExtraData() {}
 }

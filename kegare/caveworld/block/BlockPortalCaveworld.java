@@ -3,8 +3,6 @@ package kegare.caveworld.block;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.util.Random;
 
 import kegare.caveworld.core.Caveworld;
@@ -34,6 +32,9 @@ import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
+
+import com.google.common.io.Files;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -49,8 +50,7 @@ public class BlockPortalCaveworld extends Block
 
 			try
 			{
-				File root = DimensionManager.getCurrentSaveRootDirectory();
-				File dir = new File(root, "data");
+				File dir = new File(DimensionManager.getCurrentSaveRootDirectory(), "data");
 
 				if (!dir.exists())
 				{
@@ -60,9 +60,9 @@ public class BlockPortalCaveworld extends Block
 				File invFile = new File(dir, "caveworld_portal_inventory.dat");
 				invFile.createNewFile();
 
-				if (invFile.isFile())
+				if (invFile.canRead())
 				{
-					DataInputStream dis = new DataInputStream(new FileInputStream(invFile));
+					DataInputStream dis = new DataInputStream(Files.newInputStreamSupplier(invFile).getInput());
 					NBTTagList tag = (NBTTagList)NBTBase.readNamedTag(dis);
 
 					dis.close();
@@ -81,8 +81,7 @@ public class BlockPortalCaveworld extends Block
 	{
 		try
 		{
-			File root = DimensionManager.getCurrentSaveRootDirectory();
-			File dir = new File(root, "data");
+			File dir = new File(DimensionManager.getCurrentSaveRootDirectory(), "data");
 
 			if (!dir.exists())
 			{
@@ -92,9 +91,9 @@ public class BlockPortalCaveworld extends Block
 			File invFile = new File(dir, "caveworld_portal_inventory.dat");
 			invFile.createNewFile();
 
-			if (invFile.isFile())
+			if (invFile.canWrite())
 			{
-				DataOutputStream dos = new DataOutputStream(new FileOutputStream(invFile));
+				DataOutputStream dos = new DataOutputStream(Files.newOutputStreamSupplier(invFile).getOutput());
 				NBTBase.writeNamedTag(getInventory().saveInventoryToNBT(), dos);
 				dos.close();
 			}

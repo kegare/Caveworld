@@ -10,7 +10,9 @@ import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.biome.WorldChunkManager;
+import net.minecraftforge.common.BiomeDictionary;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 public class WorldChunkManagerCaveworld extends WorldChunkManager
@@ -18,39 +20,42 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 	private final World worldObj;
 	private final Random random;
 
-	private final Set<BiomeGenBase> biomeList = Sets.newLinkedHashSet();
+	private final Set<BiomeGenBase> biomeList;
 
-	protected WorldChunkManagerCaveworld(World world)
+	public WorldChunkManagerCaveworld(World world)
 	{
 		this.worldObj = world;
 		this.random = new Random(world.getSeed());
+		this.biomeList = Sets.newHashSet(BiomeGenBase.plains);
+
+		for (int biomeID : Caveworld.genBiomes)
+		{
+			if (biomeID >= 0 && biomeID < BiomeGenBase.biomeList.length)
+			{
+				BiomeGenBase biome = BiomeGenBase.biomeList[biomeID];
+
+				if (biome != null)
+				{
+					if (BiomeDictionary.isBiomeRegistered(biome))
+					{
+						BiomeDictionary.makeBestGuess(biome);
+					}
+
+					biomeList.add(biome);
+				}
+			}
+		}
 	}
 
 	@Override
 	public List getBiomesToSpawnIn()
 	{
-		return allowedBiomes;
+		return Lists.newArrayList(biomeList);
 	}
 
 	@Override
 	public BiomeGenBase getBiomeGenAt(int x, int z)
 	{
-		if (biomeList.size() <= 0)
-		{
-			for (int biomeID : Caveworld.genBiomes)
-			{
-				if (biomeID >= 0 && biomeID <= 255)
-				{
-					BiomeGenBase biome = BiomeGenBase.biomeList[biomeID];
-
-					if (biome != null)
-					{
-						biomeList.add(biome);
-					}
-				}
-			}
-		}
-
 		long worldSeed = worldObj.getSeed();
 		random.setSeed(worldSeed);
 		long xSeed = random.nextLong() >> 2 + 1L;
@@ -69,7 +74,7 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 			rainfalls = new float[width * length];
 		}
 
-		Arrays.fill(rainfalls, getBiomeGenAt(x, z).getFloatRainfall());
+		Arrays.fill(rainfalls, 0.0F);
 
 		return rainfalls;
 	}

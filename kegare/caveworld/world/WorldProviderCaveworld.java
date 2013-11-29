@@ -1,9 +1,7 @@
 package kegare.caveworld.world;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.PrintWriter;
+import java.io.OutputStreamWriter;
 import java.util.Random;
 
 import kegare.caveworld.core.Caveworld;
@@ -16,6 +14,11 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.client.IRenderHandler;
 import net.minecraftforge.common.DimensionManager;
+
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
+import com.google.common.primitives.Longs;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -75,6 +78,12 @@ public class WorldProviderCaveworld extends WorldProvider
 	public boolean isSkyColored()
 	{
 		return false;
+	}
+
+	@Override
+	public int getAverageGroundLevel()
+	{
+		return 30;
 	}
 
 	@Override
@@ -172,41 +181,31 @@ public class WorldProviderCaveworld extends WorldProvider
 	{
 		if (!worldObj.isRemote && dimensionSeed == 0)
 		{
-			Random random = new Random();
-			long seed = Long.reverse(worldObj.getWorldInfo().getSeed());
-
 			try
 			{
-				File root = DimensionManager.getCurrentSaveRootDirectory();
-				File dir = new File(root, getSaveFolder());
+				File dir = new File(DimensionManager.getCurrentSaveRootDirectory(), getSaveFolder());
 
 				if (!dir.exists())
 				{
 					dir.mkdirs();
 				}
 
-				File seedFile = new File(dir, "caveworld.txt");
+				File file = new File(dir, "caveworld.txt");
 
-				if (!seedFile.exists())
+				if (file.createNewFile())
 				{
-					PrintWriter writer = new PrintWriter(seedFile);
+					OutputStreamWriter writer = Files.newWriterSupplier(file, Charsets.US_ASCII).getOutput();
 
-					writer.print(random.nextLong());
+					writer.write(Long.valueOf((new Random()).nextLong()).toString());
 					writer.close();
-					writer.flush();
 				}
 
-				BufferedReader reader = new BufferedReader(new FileReader(seedFile));
-
-				seed = Long.valueOf(reader.readLine()).longValue();
-				reader.close();
+				dimensionSeed = Longs.tryParse(Files.readFirstLine(file, Charsets.US_ASCII));
 			}
 			catch (Exception e)
 			{
-				return seed;
+				dimensionSeed = Long.reverse(worldObj.getWorldInfo().getSeed());
 			}
-
-			dimensionSeed = seed;
 		}
 
 		return dimensionSeed;

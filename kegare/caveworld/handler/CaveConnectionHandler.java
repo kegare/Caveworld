@@ -11,6 +11,7 @@ import net.minecraft.util.ChatMessageComponent;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.StatCollector;
 import cpw.mods.fml.common.network.IConnectionHandler;
+import cpw.mods.fml.common.network.PacketDispatcher;
 import cpw.mods.fml.common.network.Player;
 
 public class CaveConnectionHandler implements IConnectionHandler
@@ -18,7 +19,7 @@ public class CaveConnectionHandler implements IConnectionHandler
 	@Override
 	public void playerLoggedIn(Player player, NetHandler netHandler, INetworkManager manager)
 	{
-		manager.addToSendQueue(CavePacketHandler.getPacketConfigSync());
+		PacketDispatcher.sendPacketToPlayer(CavePacketHandler.getPacketConfigSync(), player);
 	}
 
 	@Override

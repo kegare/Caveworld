@@ -18,7 +18,7 @@ public class CavePacketHandler implements IPacketHandler
 	@Override
 	public void onPacketData(INetworkManager manager, Packet250CustomPayload packet, Player player)
 	{
-		if ("caveworld.config".equals(packet.channel))
+		if ("caveworld.sync".equals(packet.channel))
 		{
 			ByteArrayDataInput dat = ByteStreams.newDataInput(packet.data);
 			Caveworld.dimensionCaveworld = dat.readInt();
@@ -42,6 +42,6 @@ public class CavePacketHandler implements IPacketHandler
 		dat.writeBoolean(Caveworld.generateDungeon);
 		dat.writeLong(WorldProviderCaveworld.dimensionSeed);
 
-		return new Packet250CustomPayload("caveworld.config", dat.toByteArray());
+		return new Packet250CustomPayload("caveworld.sync", dat.toByteArray());
 	}
 }

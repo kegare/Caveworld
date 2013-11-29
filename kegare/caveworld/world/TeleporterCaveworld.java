@@ -29,6 +29,7 @@ public class TeleporterCaveworld extends Teleporter
 	{
 		super(worldServer);
 		this.worldObj = worldServer;
+		this.worldObj.customTeleporters.add(this);
 		this.random = new Random(worldServer.getSeed());
 	}
 
@@ -106,7 +107,7 @@ public class TeleporterCaveworld extends Teleporter
 			if (var6)
 			{
 				coordCache.add(var5, new PortalPosition(this, var2, var3, var4, worldObj.getTotalWorldTime()));
-				coordKeys.add(Long.valueOf(var5));
+				coordKeys.add(var5);
 			}
 
 			double var9 = (double)var2 + 0.5D;

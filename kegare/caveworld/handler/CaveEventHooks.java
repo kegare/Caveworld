@@ -104,7 +104,7 @@ public class CaveEventHooks
 			}
 			else
 			{
-				if (current != null && current.isItemEqual(new ItemStack(Block.enderChest)))
+				if (current != null && current.itemID == Block.enderChest.blockID)
 				{
 					if (Caveworld.portalCaveworld.tryToCreatePortal(world, x, y, z))
 					{
@@ -132,17 +132,20 @@ public class CaveEventHooks
 	}
 
 	@ForgeSubscribe
-	public void onWorldSave(WorldEvent.Save event)
-	{
-		BlockPortalCaveworld.writeInventoryData();
-	}
-
-	@ForgeSubscribe
 	public void onWorldUnload(WorldEvent.Unload event)
 	{
 		if (event.world.provider.dimensionId == Caveworld.dimensionCaveworld)
 		{
 			WorldProviderCaveworld.dimensionSeed = 0;
+		}
+	}
+
+	@ForgeSubscribe
+	public void onWorldSave(WorldEvent.Save event)
+	{
+		if (!event.world.isRemote)
+		{
+			BlockPortalCaveworld.writeInventoryData();
 		}
 	}
 }
