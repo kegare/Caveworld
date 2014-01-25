@@ -1,6 +1,9 @@
 package kegare.caveworld.handler;
 
-import kegare.caveworld.core.Caveworld;
+import cpw.mods.fml.common.network.IConnectionHandler;
+import cpw.mods.fml.common.network.PacketDispatcher;
+import cpw.mods.fml.common.network.Player;
+import kegare.caveworld.core.Config;
 import kegare.caveworld.util.Version;
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.NetLoginHandler;
@@ -10,16 +13,14 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatMessageComponent;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.StatCollector;
-import cpw.mods.fml.common.network.IConnectionHandler;
-import cpw.mods.fml.common.network.PacketDispatcher;
-import cpw.mods.fml.common.network.Player;
+import net.minecraftforge.classloading.FMLForgePlugin;
 
 public class CaveConnectionHandler implements IConnectionHandler
 {
 	@Override
 	public void playerLoggedIn(Player player, NetHandler netHandler, INetworkManager manager)
 	{
-		PacketDispatcher.sendPacketToPlayer(CavePacketHandler.getPacketConfigSync(), player);
+		PacketDispatcher.sendPacketToPlayer(CavePacketHandler.getPacketDataSync(), player);
 	}
 
 	@Override
@@ -40,13 +41,9 @@ public class CaveConnectionHandler implements IConnectionHandler
 	@Override
 	public void clientLoggedIn(NetHandler clientHandler, INetworkManager manager, Packet1Login login)
 	{
-		if (Caveworld.versionNotify && Version.isOutdated())
+		if (!FMLForgePlugin.RUNTIME_DEOBF || Config.versionNotify && Version.isOutdated())
 		{
-			StringBuilder message = new StringBuilder();
-			message.append(StatCollector.translateToLocalFormatted("caveworld.version.message", EnumChatFormatting.AQUA + "Caveworld" + EnumChatFormatting.RESET));
-			message.append(" : ").append(EnumChatFormatting.YELLOW).append(Version.LATEST);
-
-			clientHandler.getPlayer().sendChatToPlayer(ChatMessageComponent.createFromText(message.toString()));
+			clientHandler.getPlayer().sendChatToPlayer(ChatMessageComponent.createFromText(StatCollector.translateToLocalFormatted("caveworld.version.message", EnumChatFormatting.AQUA + "Caveworld" + EnumChatFormatting.RESET) + " : " + EnumChatFormatting.YELLOW + Version.LATEST.or(Version.CURRENT.orNull())));
 		}
 	}
 }

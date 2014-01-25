@@ -1,11 +1,10 @@
 package kegare.caveworld.block;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.util.Random;
-
+import com.google.common.io.Files;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import kegare.caveworld.core.Caveworld;
+import kegare.caveworld.core.Config;
 import kegare.caveworld.inventory.InventoryCaveworldPortal;
 import kegare.caveworld.renderer.RenderPortalCaveworld;
 import kegare.caveworld.world.TeleporterCaveworld;
@@ -25,18 +24,16 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.Icon;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 
-import com.google.common.io.Files;
-
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.util.Random;
 
 public class BlockPortalCaveworld extends Block
 {
@@ -46,7 +43,7 @@ public class BlockPortalCaveworld extends Block
 	{
 		if (inventory == null)
 		{
-			InventoryCaveworldPortal inv = new InventoryCaveworldPortal();
+			inventory = new InventoryCaveworldPortal();
 
 			try
 			{
@@ -57,48 +54,45 @@ public class BlockPortalCaveworld extends Block
 					dir.mkdirs();
 				}
 
-				File invFile = new File(dir, "caveworld_portal_inventory.dat");
-				invFile.createNewFile();
+				File file = new File(dir, "caveworld_portal_inventory.dat");
+				DataInputStream dis = new DataInputStream(Files.newInputStreamSupplier(file).getInput());
 
-				if (invFile.canRead())
+				if (file.exists() && file.canRead())
 				{
-					DataInputStream dis = new DataInputStream(Files.newInputStreamSupplier(invFile).getInput());
-					NBTTagList tag = (NBTTagList)NBTBase.readNamedTag(dis);
+					inventory.loadInventoryFromNBT((NBTTagList)NBTBase.readNamedTag(dis));
 
 					dis.close();
-					inv.loadInventoryFromNBT(tag);
 				}
 			}
-			catch (Exception e) {}
-
-			inventory = inv;
+			catch (Exception ignored) {}
 		}
 
 		return inventory;
 	}
 
-	public static void writeInventoryData()
+	public static void saveInventoryData()
 	{
-		try
+		if (inventory != null)
 		{
-			File dir = new File(DimensionManager.getCurrentSaveRootDirectory(), "data");
-
-			if (!dir.exists())
+			try
 			{
-				dir.mkdirs();
-			}
+				File dir = new File(DimensionManager.getCurrentSaveRootDirectory(), "data");
 
-			File invFile = new File(dir, "caveworld_portal_inventory.dat");
-			invFile.createNewFile();
+				if (!dir.exists())
+				{
+					dir.mkdirs();
+				}
 
-			if (invFile.canWrite())
-			{
-				DataOutputStream dos = new DataOutputStream(Files.newOutputStreamSupplier(invFile).getOutput());
-				NBTBase.writeNamedTag(getInventory().saveInventoryToNBT(), dos);
+				File file = new File(dir, "caveworld_portal_inventory.dat");
+				DataOutputStream dos = new DataOutputStream(Files.newOutputStreamSupplier(file).getOutput());
+
+				NBTBase.writeNamedTag(inventory.saveInventoryToNBT(), dos);
+
 				dos.close();
+				dos.flush();
 			}
+			catch (Exception ignored) {}
 		}
-		catch (Exception e) {}
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -109,11 +103,11 @@ public class BlockPortalCaveworld extends Block
 		super(blockID, Material.portal);
 		this.setUnlocalizedName(name);
 		this.setTextureName("caveworld:portal_caveworld");
-		this.setTickRandomly(true);
 		this.setBlockUnbreakable();
 		this.setLightOpacity(3);
-		this.setLightValue(0.75F);
+		this.setLightValue(0.6F);
 		this.setStepSound(soundGlassFootstep);
+		this.setTickRandomly(true);
 		this.disableStats();
 	}
 
@@ -154,12 +148,18 @@ public class BlockPortalCaveworld extends Block
 			boolean var5 = var1 || var2;
 			boolean var6 = var3 || var4;
 
-			return var5 && side == 4 ? true : (var5 && side == 5 ? true : (var6 && side == 2 ? true : var6 && side == 3));
+			return var5 && side == 4 || (var5 && side == 5 || (var6 && side == 2 || var6 && side == 3));
 		}
 	}
 
 	@Override
 	public boolean isOpaqueCube()
+	{
+		return false;
+	}
+
+	@Override
+	public boolean isCollidable()
 	{
 		return false;
 	}
@@ -172,12 +172,6 @@ public class BlockPortalCaveworld extends Block
 
 	@Override
 	public AxisAlignedBB getCollisionBoundingBoxFromPool(World world, int x, int y, int z)
-	{
-		return null;
-	}
-
-	@Override
-	public MovingObjectPosition collisionRayTrace(World world, int x, int y, int z, Vec3 startVec, Vec3 endVec)
 	{
 		return null;
 	}
@@ -204,6 +198,11 @@ public class BlockPortalCaveworld extends Block
 
 	public boolean tryToCreatePortal(World world, int x, int y, int z)
 	{
+		if (world.getBlockId(x - 1, y, z) == blockID || world.getBlockId(x + 1, y, z) == blockID || world.getBlockId(x, y, z - 1) == blockID || world.getBlockId(x, y, z + 1) == blockID)
+		{
+			return false;
+		}
+
 		byte var1 = 0;
 		byte var2 = 1;
 
@@ -213,61 +212,52 @@ public class BlockPortalCaveworld extends Block
 			var2 = 0;
 		}
 
-		if (world.getBlockId(x - 1, y, z) == blockID || world.getBlockId(x + 1, y, z) == blockID || world.getBlockId(x, y, z - 1) == blockID || world.getBlockId(x, y, z + 1) == blockID)
+		if (world.isAirBlock(x - var1, y, z - var2))
 		{
-			return false;
+			x -= var1;
+			z -= var2;
 		}
-		if ((world.provider.dimensionId == 0 || world.provider.dimensionId == Caveworld.dimensionCaveworld) && var1 != var2)
+
+		byte var3;
+		byte var4;
+
+		for (var3 = -1; var3 <= 2; ++var3)
 		{
-			if (world.isAirBlock(x - var1, y, z - var2))
+			for (var4 = -1; var4 <= 3; ++var4)
 			{
-				x -= var1;
-				z -= var2;
-			}
-
-			int var3;
-			int var4;
-
-			for (var3 = -1; var3 <= 2; ++var3)
-			{
-				for (var4 = -1; var4 <= 3; ++var4)
+				if (var3 != -1 && var3 != 2 || var4 != -1 && var4 != 3)
 				{
-					if (var3 != -1 && var3 != 2 || var4 != -1 && var4 != 3)
+					if (var3 == -1 || var3 == 2 || var4 == -1 || var4 == 3)
 					{
-						if (var3 == -1 || var3 == 2 || var4 == -1 || var4 == 3)
+						if (world.getBlockId(x + var1 * var3, y + var4, z + var2 * var3) != Block.cobblestoneMossy.blockID)
 						{
-							if (world.getBlockId(x + var1 * var3, y + var4, z + var2 * var3) != Block.cobblestoneMossy.blockID)
-							{
-								return false;
-							}
+							return false;
 						}
 					}
 				}
 			}
-
-			for (var3 = 0; var3 < 2; ++var3)
-			{
-				for (var4 = 0; var4 < 3; ++var4)
-				{
-					if (!world.isAirBlock(x + var1 * var3, y + var4, z + var2 * var3))
-					{
-						return false;
-					}
-				}
-			}
-
-			for (var3 = 0; var3 < 2; ++var3)
-			{
-				for (var4 = 0; var4 < 3; ++var4)
-				{
-					world.setBlock(x + var1 * var3, y + var4, z + var2 * var3, blockID, 0, 2);
-				}
-			}
-
-			return true;
 		}
 
-		return false;
+		for (var3 = 0; var3 < 2; ++var3)
+		{
+			for (var4 = 0; var4 < 3; ++var4)
+			{
+				if (!world.isAirBlock(x + var1 * var3, y + var4, z + var2 * var3))
+				{
+					return false;
+				}
+			}
+		}
+
+		for (var3 = 0; var3 < 2; ++var3)
+		{
+			for (var4 = 0; var4 < 3; ++var4)
+			{
+				world.setBlock(x + var1 * var3, y + var4, z + var2 * var3, blockID, 0, 2);
+			}
+		}
+
+		return true;
 	}
 
 	@Override
@@ -282,11 +272,11 @@ public class BlockPortalCaveworld extends Block
 			var2 = 0;
 		}
 
-		int var3;
+		int var3 = y;
 
-		for (var3 = y; world.getBlockId(x, var3 - 1, z) == blockID; --var3)
+		while (world.getBlockId(x, var3 - 1, z) == blockID)
 		{
-			;
+			--var3;
 		}
 
 		if (world.getBlockId(x, var3 - 1, z) != Block.cobblestoneMossy.blockID)
@@ -295,11 +285,11 @@ public class BlockPortalCaveworld extends Block
 		}
 		else
 		{
-			int var4;
+			int var4 = 1;
 
-			for (var4 = 1; var4 < 4 && world.getBlockId(x, var3 + var4, z) == blockID; ++var4)
+			while (var4 < 4 && world.getBlockId(x, var3 + var4, z) == blockID)
 			{
-				;
+				++var4;
 			}
 
 			if (var4 == 3 && world.getBlockId(x, var3 + var4, z) == Block.cobblestoneMossy.blockID)
@@ -330,12 +320,12 @@ public class BlockPortalCaveworld extends Block
 		{
 			MinecraftServer server = Caveworld.proxy.getServer();
 			int dimOld = entity.dimension;
-			int dimNew = dimOld == 0 ? Caveworld.dimensionCaveworld : 0;
+			int dimNew = dimOld == 0 ? Config.dimensionCaveworld : 0;
 			WorldServer worldOld = server.worldServerForDimension(dimOld);
 			WorldServer worldNew = server.worldServerForDimension(dimNew);
 			Teleporter teleporter = new TeleporterCaveworld(worldNew);
 
-			if (entity.timeUntilPortal <= 0)
+			if (entity.timeUntilPortal <= 0 && (dimOld == 0 || dimOld == Config.dimensionCaveworld))
 			{
 				if (entity instanceof EntityPlayerMP)
 				{
@@ -390,20 +380,16 @@ public class BlockPortalCaveworld extends Block
 	@Override
 	public void updateTick(World world, int x, int y, int z, Random random)
 	{
-		super.updateTick(world, x, y, z, random);
-
-		if (!world.isRemote && world.provider.dimensionId == 0 && !world.isDaytime() && random.nextInt(200) < world.difficultySetting)
+		if (!world.isRemote && world.provider.dimensionId == 0 && !world.isDaytime() && random.nextInt(300) < world.difficultySetting)
 		{
-			int var1;
-
-			for (var1 = y; !world.doesBlockHaveSolidTopSurface(x, var1, z) && var1 > 0; --var1)
+			while (!world.doesBlockHaveSolidTopSurface(x, y, z) && y > 0)
 			{
-				;
+				--y;
 			}
 
-			if (var1 > 0 && !world.isBlockNormalCube(x, var1 + 1, z))
+			if (y > 0 && !world.isBlockNormalCube(x, y + 1, z))
 			{
-				Entity entity = ItemMonsterPlacer.spawnCreature(world, 65, (double)x + 0.5D, (double)var1 + 1.0D, (double)z + 0.5D);
+				Entity entity = ItemMonsterPlacer.spawnCreature(world, 65, (double)x + 0.5D, (double)y + 1.0D, (double)z + 0.5D);
 
 				if (entity != null)
 				{

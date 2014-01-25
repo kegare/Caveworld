@@ -1,34 +1,30 @@
 package kegare.caveworld.world;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-
-import kegare.caveworld.core.Caveworld;
+import com.google.common.collect.Lists;
+import kegare.caveworld.core.Config;
 import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.biome.WorldChunkManager;
 import net.minecraftforge.common.BiomeDictionary;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
 public class WorldChunkManagerCaveworld extends WorldChunkManager
 {
 	private final World worldObj;
 	private final Random random;
 
-	private final Set<BiomeGenBase> biomeList;
+	private final List<BiomeGenBase> biomeList = Lists.newArrayList(BiomeGenBase.plains);
 
 	public WorldChunkManagerCaveworld(World world)
 	{
 		this.worldObj = world;
 		this.random = new Random(world.getSeed());
-		this.biomeList = Sets.newHashSet(BiomeGenBase.plains);
 
-		for (int biomeID : Caveworld.genBiomes)
+		for (int biomeID : Config.genBiomes)
 		{
 			if (biomeID >= 0 && biomeID < BiomeGenBase.biomeList.length)
 			{
@@ -41,7 +37,10 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 						BiomeDictionary.makeBestGuess(biome);
 					}
 
-					biomeList.add(biome);
+					if (!biomeList.contains(biome))
+					{
+						biomeList.add(biome);
+					}
 				}
 			}
 		}
@@ -61,9 +60,9 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 		long xSeed = random.nextLong() >> 2 + 1L;
 		long zSeed = random.nextLong() >> 2 + 1L;
 		random.setSeed((xSeed * (x >> 4) + zSeed * (z >> 4)) ^ worldSeed);
-		BiomeGenBase biome = biomeList.toArray(new BiomeGenBase[biomeList.size()])[random.nextInt(biomeList.size())];
+		BiomeGenBase biome = biomeList.get(random.nextInt(biomeList.size()));
 
-		return biome != null ? biome : BiomeGenBase.plains;
+		return biome == null ? BiomeGenBase.plains : biome;
 	}
 
 	@Override

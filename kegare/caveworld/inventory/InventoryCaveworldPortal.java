@@ -16,7 +16,7 @@ public class InventoryCaveworldPortal extends InventoryBasic
 	{
 		for (int slot = 0; slot < getSizeInventory(); ++slot)
 		{
-			setInventorySlotContents(slot, (ItemStack)null);
+			setInventorySlotContents(slot, null);
 		}
 
 		for (int i = 0; i < list.tagCount(); ++i)

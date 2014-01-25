@@ -1,10 +1,9 @@
 package kegare.caveworld.world;
 
-import java.io.File;
-import java.io.OutputStreamWriter;
-import java.util.Random;
-
-import kegare.caveworld.core.Caveworld;
+import com.google.common.io.Files;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import kegare.caveworld.core.Config;
 import kegare.caveworld.renderer.EmptyRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Vec3;
@@ -15,22 +14,73 @@ import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.client.IRenderHandler;
 import net.minecraftforge.common.DimensionManager;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
-import com.google.common.primitives.Longs;
-
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.util.Properties;
+import java.util.Random;
 
 public class WorldProviderCaveworld extends WorldProvider
 {
+	private static Properties worldData;
+
 	public static long dimensionSeed;
+	public static int subsurfaceHeight;
+
+	public static Properties getWorldData()
+	{
+		if (worldData == null)
+		{
+			worldData = new Properties();
+
+			try
+			{
+				File dir = new File(DimensionManager.getCurrentSaveRootDirectory(), "DIM-Caveworld");
+
+				if (!dir.exists())
+				{
+					dir.mkdirs();
+				}
+
+				File file = new File(dir, "caveworld.xml");
+
+				if (file.exists() && file.canRead())
+				{
+					worldData.loadFromXML(Files.newInputStreamSupplier(file).getInput());
+				}
+			}
+			catch (Exception ignored) {}
+		}
+
+		return worldData;
+	}
+
+	public static void saveWorldData()
+	{
+		try
+		{
+			File dir = new File(DimensionManager.getCurrentSaveRootDirectory(), "DIM-Caveworld");
+
+			if (!dir.exists())
+			{
+				dir.mkdirs();
+			}
+
+			File file = new File(dir, "caveworld.xml");
+			DataOutputStream dos = new DataOutputStream(Files.newOutputStreamSupplier(file).getOutput());
+
+			worldData.storeToXML(dos, null);
+
+			dos.close();
+			dos.flush();
+		}
+		catch (Exception ignored) {}
+	}
 
 	@Override
 	protected void registerWorldChunkManager()
 	{
 		worldChunkMgr = new WorldChunkManagerCaveworld(worldObj);
-		dimensionId = Caveworld.dimensionCaveworld;
+		dimensionId = Config.dimensionCaveworld;
 		hasNoSky = true;
 	}
 
@@ -70,7 +120,7 @@ public class WorldProviderCaveworld extends WorldProvider
 	@SideOnly(Side.CLIENT)
 	public float getCloudHeight()
 	{
-		return 256.0F;
+		return (float)getActualHeight();
 	}
 
 	@Override
@@ -83,7 +133,7 @@ public class WorldProviderCaveworld extends WorldProvider
 	@Override
 	public int getAverageGroundLevel()
 	{
-		return 30;
+		return 4;
 	}
 
 	@Override
@@ -181,31 +231,15 @@ public class WorldProviderCaveworld extends WorldProvider
 	{
 		if (!worldObj.isRemote && dimensionSeed == 0)
 		{
-			try
+			Properties data = getWorldData();
+			String key = "DimSeed";
+
+			if (!data.containsKey(key))
 			{
-				File dir = new File(DimensionManager.getCurrentSaveRootDirectory(), getSaveFolder());
-
-				if (!dir.exists())
-				{
-					dir.mkdirs();
-				}
-
-				File file = new File(dir, "caveworld.txt");
-
-				if (file.createNewFile())
-				{
-					OutputStreamWriter writer = Files.newWriterSupplier(file, Charsets.US_ASCII).getOutput();
-
-					writer.write(Long.valueOf((new Random()).nextLong()).toString());
-					writer.close();
-				}
-
-				dimensionSeed = Longs.tryParse(Files.readFirstLine(file, Charsets.US_ASCII));
+				data.setProperty(key, String.valueOf((new Random()).nextLong()));
 			}
-			catch (Exception e)
-			{
-				dimensionSeed = Long.reverse(worldObj.getWorldInfo().getSeed());
-			}
+
+			dimensionSeed = Long.valueOf(data.getProperty(key, String.valueOf(Long.reverseBytes(super.getSeed()))));
 		}
 
 		return dimensionSeed;
@@ -214,13 +248,26 @@ public class WorldProviderCaveworld extends WorldProvider
 	@Override
 	public int getActualHeight()
 	{
-		return 256;
+		if (!worldObj.isRemote && subsurfaceHeight == 0)
+		{
+			Properties data = getWorldData();
+			String key = "SubsurfaceHeight";
+
+			if (!data.containsKey(key))
+			{
+				data.setProperty(key, String.valueOf(Config.subsurfaceHeight));
+			}
+
+			subsurfaceHeight = Integer.valueOf(data.getProperty(key, String.valueOf(Config.subsurfaceHeight)));
+		}
+
+		return subsurfaceHeight + 1;
 	}
 
 	@Override
 	public double getHorizon()
 	{
-		return 255.0D;
+		return (double)getActualHeight() - 1.0D;
 	}
 
 	@Override

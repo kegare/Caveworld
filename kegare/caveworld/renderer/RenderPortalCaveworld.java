@@ -1,15 +1,13 @@
 package kegare.caveworld.renderer;
 
-import kegare.caveworld.core.Caveworld;
+import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
+import kegare.caveworld.block.CaveBlock;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.Icon;
 import net.minecraft.world.IBlockAccess;
-
 import org.lwjgl.opengl.GL11;
-
-import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 
 public class RenderPortalCaveworld implements ISimpleBlockRenderingHandler
 {
@@ -52,7 +50,7 @@ public class RenderPortalCaveworld implements ISimpleBlockRenderingHandler
 	@Override
 	public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId, RenderBlocks renderer)
 	{
-		renderer.setOverrideBlockTexture(Caveworld.portalCaveworld.portalIcon);
+		renderer.setOverrideBlockTexture(CaveBlock.portalCaveworld.portalIcon);
 
 		if (world.getBlockId(x - 1, y, z) != block.blockID && world.getBlockId(x + 1, y, z) != block.blockID)
 		{

@@ -1,6 +1,6 @@
 package kegare.caveworld.item;
 
-import kegare.caveworld.core.Caveworld;
+import kegare.caveworld.block.CaveBlock;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -44,13 +44,13 @@ public class ItemPortalCaveworld extends ItemBlock
 				++x;
 			}
 
-			if (Caveworld.portalCaveworld.tryToCreatePortal(world, x, y, z))
+			if (CaveBlock.portalCaveworld.tryToCreatePortal(world, x, y, z))
 			{
 				world.playSoundEffect((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "step.stone", 1.0F, 2.0F);
 
 				if (!player.capabilities.isCreativeMode && --itemstack.stackSize <= 0)
 				{
-					player.inventory.setInventorySlotContents(player.inventory.currentItem, (ItemStack)null);
+					player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
 				}
 
 				return true;

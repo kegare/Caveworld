@@ -1,7 +1,6 @@
 package kegare.caveworld.core;
 
-import java.util.List;
-
+import cpw.mods.fml.common.Loader;
 import kegare.caveworld.util.Version;
 import net.minecraft.command.CommandNotFoundException;
 import net.minecraft.command.ICommand;
@@ -10,7 +9,8 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatMessageComponent;
 import net.minecraft.util.EnumChatFormatting;
-import cpw.mods.fml.common.Loader;
+
+import java.util.List;
 
 public class CommandCaveworld implements ICommand
 {
@@ -41,27 +41,23 @@ public class CommandCaveworld implements ICommand
 	@Override
 	public void processCommand(ICommandSender sender, String[] args)
 	{
-		if (sender instanceof MinecraftServer)
-		{
-			ChatMessageComponent message = new ChatMessageComponent();
-			message.addText(" Caveworld ").addText(Version.CURRENT).addText(" for ").addText(Loader.instance().getMCVersionString());
-			message.addText(" (Latest: ").addText(Version.LATEST).addText(")");
+		StringBuilder message = new StringBuilder();
 
-			sender.sendChatToPlayer(message);
-			sender.sendChatToPlayer(ChatMessageComponent.createFromText("  ").addText(Caveworld.metadata.description));
-			sender.sendChatToPlayer(ChatMessageComponent.createFromText("  ").addText(Caveworld.metadata.url));
+		if (sender instanceof EntityPlayerMP)
+		{
+			message.append(EnumChatFormatting.AQUA).append(" Caveworld ").append(EnumChatFormatting.RESET);
+			message.append(Version.CURRENT.orNull()).append(" for ").append(Loader.instance().getMCVersionString());
+			message.append(EnumChatFormatting.GRAY).append(" (Latest: ").append(Version.LATEST.orNull()).append(")");
 		}
 		else
 		{
-			StringBuilder message = new StringBuilder();
-			message.append(EnumChatFormatting.AQUA).append(" Caveworld ").append(EnumChatFormatting.RESET);
-			message.append(Version.CURRENT).append(" for ").append(Loader.instance().getMCVersionString());
-			message.append(EnumChatFormatting.GRAY).append(" (Latest: ").append(Version.LATEST).append(")");
-
-			sender.sendChatToPlayer(ChatMessageComponent.createFromText(message.toString()));
-			sender.sendChatToPlayer(ChatMessageComponent.createFromText("  ").addText(Caveworld.metadata.description));
-			sender.sendChatToPlayer(ChatMessageComponent.createFromText("  ").addText(Caveworld.metadata.url).setColor(EnumChatFormatting.DARK_GRAY));
+			message.append(" Caveworld ").append(Version.CURRENT.orNull()).append(" for ").append(Loader.instance().getMCVersionString());
+			message.append(" (Latest: ").append(Version.LATEST.orNull()).append(")");
 		}
+
+		sender.sendChatToPlayer(ChatMessageComponent.createFromText(message.toString()));
+		sender.sendChatToPlayer(ChatMessageComponent.createFromText("  " + Caveworld.metadata.description));
+		sender.sendChatToPlayer(ChatMessageComponent.createFromText("  " + Caveworld.metadata.url).setColor(EnumChatFormatting.DARK_GRAY));
 	}
 
 	@Override

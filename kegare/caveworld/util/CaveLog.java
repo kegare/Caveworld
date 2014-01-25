@@ -1,9 +1,9 @@
 package kegare.caveworld.util;
 
+import cpw.mods.fml.common.FMLLog;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import cpw.mods.fml.common.FMLLog;
 
 public class CaveLog
 {
@@ -30,12 +30,17 @@ public class CaveLog
 		getLogger().severe(log);
 	}
 
-	public static void warning(String log)
+	public static void severe(String log, Throwable throwable)
 	{
-		getLogger().warning(log);
+		getLogger().severe(log);
+
+		for (StackTraceElement stacktrace : throwable.getStackTrace())
+		{
+			getLogger().severe("\t" + stacktrace);
+		}
 	}
 
-	public static void exception(Throwable throwable)
+	public static void severe(Throwable throwable)
 	{
 		getLogger().severe(throwable.getClass().getSimpleName() + " occured in " + throwable.getStackTrace()[0].getClassName());
 
@@ -43,5 +48,10 @@ public class CaveLog
 		{
 			getLogger().severe("\t" + stacktrace);
 		}
+	}
+
+	public static void warning(String log)
+	{
+		getLogger().warning(log);
 	}
 }

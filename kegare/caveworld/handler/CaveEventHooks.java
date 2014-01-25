@@ -1,31 +1,37 @@
 package kegare.caveworld.handler;
 
-import java.util.Random;
-
+import com.google.common.base.Strings;
+import cpw.mods.fml.client.FMLClientHandler;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import kegare.caveworld.block.BlockPortalCaveworld;
-import kegare.caveworld.core.Caveworld;
+import kegare.caveworld.block.CaveBlock;
+import kegare.caveworld.core.Config;
 import kegare.caveworld.util.CaveLog;
 import kegare.caveworld.world.WorldProviderCaveworld;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.passive.EntityBat;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.sound.SoundLoadEvent;
 import net.minecraftforge.event.EventPriority;
 import net.minecraftforge.event.ForgeSubscribe;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import net.minecraftforge.event.world.WorldEvent;
-import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+
+import java.util.Random;
 
 public class CaveEventHooks
 {
@@ -39,7 +45,7 @@ public class CaveEventHooks
 		}
 		catch (Exception e)
 		{
-			CaveLog.exception(e);
+			CaveLog.severe(e);
 		}
 	}
 
@@ -49,8 +55,16 @@ public class CaveEventHooks
 	{
 		Minecraft mc = FMLClientHandler.instance().getClient();
 
-		if (Caveworld.showDebugDim && mc != null && mc.gameSettings.showDebugInfo)
+		if (mc != null && mc.gameSettings.showDebugInfo && mc.thePlayer.dimension == Config.dimensionCaveworld)
 		{
+			for (String str : event.left)
+			{
+				if (!Strings.isNullOrEmpty(str) && str.startsWith("dim:"))
+				{
+					return;
+				}
+			}
+
 			event.left.add("dim: " + mc.thePlayer.worldObj.provider.getDimensionName());
 		}
 	}
@@ -95,22 +109,31 @@ public class CaveEventHooks
 
 			if (player.isSneaking())
 			{
-				if (world.getBlockId(x, y, z) == Caveworld.portalCaveworld.blockID)
+				if (world.getBlockId(x, y, z) == CaveBlock.portalCaveworld.blockID)
 				{
 					world.playSoundAtEntity(player, "random.click", 0.8F, 1.5F);
 
 					player.displayGUIChest(BlockPortalCaveworld.getInventory());
 				}
 			}
-			else
+			else if (current != null && current.itemID == Block.enderChest.blockID && CaveBlock.portalCaveworld.tryToCreatePortal(world, x, y, z))
 			{
-				if (current != null && current.itemID == Block.enderChest.blockID)
-				{
-					if (Caveworld.portalCaveworld.tryToCreatePortal(world, x, y, z))
-					{
-						world.playSoundEffect((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "step.stone", 1.0F, 2.0F);
-					}
-				}
+				world.playSoundEffect((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "step.stone", 1.0F, 2.0F);
+			}
+		}
+	}
+
+	@ForgeSubscribe
+	public void onEntityJoinWorld(EntityJoinWorldEvent event)
+	{
+		World world = event.world;
+		Entity entity = event.entity;
+
+		if (!world.isRemote && entity.dimension == Config.dimensionCaveworld)
+		{
+			if (entity instanceof EntityLiving && MathHelper.floor_double(entity.posY) >= world.provider.getActualHeight())
+			{
+				event.setCanceled(true);
 			}
 		}
 	}
@@ -121,12 +144,16 @@ public class CaveEventHooks
 		Random random = new Random();
 		EntityLivingBase living = event.entityLiving;
 		World world = living.worldObj;
+		double posX = living.posX;
+		double posY = living.posY;
+		double posZ = living.posZ;
+		int looting = event.lootingLevel;
 
-		if (!world.isRemote && living.dimension == Caveworld.dimensionCaveworld)
+		if (!world.isRemote && living.dimension == Config.dimensionCaveworld)
 		{
 			if (living instanceof EntityBat)
 			{
-				event.drops.add(new EntityItem(world, living.posX, living.posY + 0.5D, living.posZ, new ItemStack(Item.coal, random.nextInt(3) + (event.lootingLevel & 3))));
+				event.drops.add(new EntityItem(world, posX, posY + 0.5D, posZ, new ItemStack(Item.coal, random.nextInt(3) + Math.min(looting, 3))));
 			}
 		}
 	}
@@ -134,9 +161,10 @@ public class CaveEventHooks
 	@ForgeSubscribe
 	public void onWorldUnload(WorldEvent.Unload event)
 	{
-		if (event.world.provider.dimensionId == Caveworld.dimensionCaveworld)
+		if (event.world.provider.dimensionId == Config.dimensionCaveworld)
 		{
 			WorldProviderCaveworld.dimensionSeed = 0;
+			WorldProviderCaveworld.subsurfaceHeight = 0;
 		}
 	}
 
@@ -145,7 +173,9 @@ public class CaveEventHooks
 	{
 		if (!event.world.isRemote)
 		{
-			BlockPortalCaveworld.writeInventoryData();
+			WorldProviderCaveworld.saveWorldData();
+
+			BlockPortalCaveworld.saveInventoryData();
 		}
 	}
 }
