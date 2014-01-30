@@ -67,7 +67,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		random.setSeed((long)chunkX * 341873128712L + (long)chunkZ * 132897987541L);
 
 		int worldHeight = worldObj.provider.getActualHeight();
-		byte[] blocks = new byte[256 * worldHeight];
+		byte[] blocks = new byte[256 * Math.max(worldHeight, 128)];
 
 		Arrays.fill(blocks, (byte)Block.stone.blockID);
 
@@ -91,9 +91,9 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		Chunk chunk = new Chunk(worldObj, blocks, chunkX, chunkZ);
 		byte[] biomes = chunk.getBiomeArray();
 
-		for (int index = 0; index < biomes.length; ++index)
+		for (int i = 0; i < biomes.length; ++i)
 		{
-			biomes[index] = (byte)biomesForGeneration[index].biomeID;
+			biomes[i] = (byte)biomesForGeneration[i].biomeID;
 		}
 
 		for (int x = 0; x < 16; ++x)
@@ -102,6 +102,12 @@ public class ChunkProviderCaveworld implements IChunkProvider
 			{
 				chunk.setBlockIDWithMetadata(x, 0, z, Block.bedrock.blockID, 0);
 				chunk.setBlockIDWithMetadata(x, worldHeight - 1, z, Block.bedrock.blockID, 0);
+				chunk.setBlockIDWithMetadata(x, worldHeight - 2, z, Block.stone.blockID, 0);
+
+				for (int y = worldHeight; worldHeight < 128 && y < 256; ++y)
+				{
+					chunk.setBlockIDWithMetadata(x, y, z, 0, 0);
+				}
 			}
 		}
 
