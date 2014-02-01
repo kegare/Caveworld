@@ -1,46 +1,41 @@
 package kegare.caveworld.world;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import kegare.caveworld.core.Config;
+import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.biome.WorldChunkManager;
-import net.minecraftforge.common.BiomeDictionary;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 public class WorldChunkManagerCaveworld extends WorldChunkManager
 {
 	private final World worldObj;
 	private final Random random;
 
-	private final List<BiomeGenBase> biomeList = Lists.newArrayList(BiomeGenBase.plains);
+	private static final Set<BiomeGenBase> biomeSet = Sets.newHashSet();
+	protected static final Map<Long, BiomeGenBase> biomeMap = Maps.newHashMap();
 
 	public WorldChunkManagerCaveworld(World world)
 	{
 		this.worldObj = world;
 		this.random = new Random(world.getSeed());
 
-		for (int biomeID : Config.genBiomes)
+		if (biomeSet.isEmpty())
 		{
-			if (biomeID >= 0 && biomeID < BiomeGenBase.biomeList.length)
+			for (int i : Config.genBiomes)
 			{
-				BiomeGenBase biome = BiomeGenBase.biomeList[biomeID];
-
-				if (biome != null)
+				if (i >= 0 && i < BiomeGenBase.biomeList.length && BiomeGenBase.biomeList[i] != null)
 				{
-					if (BiomeDictionary.isBiomeRegistered(biome))
-					{
-						BiomeDictionary.makeBestGuess(biome);
-					}
-
-					if (!biomeList.contains(biome))
-					{
-						biomeList.add(biome);
-					}
+					biomeSet.add(BiomeGenBase.biomeList[i]);
 				}
 			}
 		}
@@ -49,18 +44,33 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 	@Override
 	public List getBiomesToSpawnIn()
 	{
-		return Lists.newArrayList(biomeList);
+		return Lists.newArrayList(biomeSet);
 	}
 
 	@Override
 	public BiomeGenBase getBiomeGenAt(int x, int z)
 	{
-		long worldSeed = worldObj.getSeed();
-		random.setSeed(worldSeed);
-		long xSeed = random.nextLong() >> 2 + 1L;
-		long zSeed = random.nextLong() >> 2 + 1L;
-		random.setSeed((xSeed * (x >> 4) + zSeed * (z >> 4)) ^ worldSeed);
-		BiomeGenBase biome = biomeList.get(random.nextInt(biomeList.size()));
+		BiomeGenBase biome;
+		int chunkX = x >> 4;
+		int chunkZ = z >> 4;
+		long chunkSeed = ChunkCoordIntPair.chunkXZ2Int(chunkX, chunkZ);
+
+		if (!biomeMap.containsKey(chunkSeed))
+		{
+			long worldSeed = worldObj.getSeed();
+			random.setSeed(worldSeed);
+			long xSeed = random.nextLong() >> 2 + 1L;
+			long zSeed = random.nextLong() >> 2 + 1L;
+			random.setSeed(chunkX * xSeed + chunkZ * zSeed ^ worldSeed);
+
+			biome = Lists.newArrayList(biomeSet).get(random.nextInt(biomeSet.size()));
+
+			if (biome != null) biomeMap.put(chunkSeed, biome);
+		}
+		else
+		{
+			biome = biomeMap.get(chunkSeed);
+		}
 
 		return biome == null ? BiomeGenBase.plains : biome;
 	}
@@ -105,22 +115,15 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 	}
 
 	@Override
-	public BiomeGenBase[] loadBlockGeneratorData(BiomeGenBase[] biomes, int x, int z, int width, int depth)
+	public BiomeGenBase[] loadBlockGeneratorData(BiomeGenBase[] biomes, int x, int z, int width, int length)
 	{
-		return getBiomeGenAt(biomes, x, z, width, depth, true);
+		return getBiomesForGeneration(biomes, x, z, width, length);
 	}
 
 	@Override
 	public BiomeGenBase[] getBiomeGenAt(BiomeGenBase[] biomes, int x, int z, int width, int length, boolean flag)
 	{
-		if (biomes == null || biomes.length < width * length)
-		{
-			biomes = new BiomeGenBase[width * length];
-		}
-
-		Arrays.fill(biomes, getBiomeGenAt(x, z));
-
-		return biomes;
+		return getBiomesForGeneration(biomes, x, z, width, length);
 	}
 
 	@Override

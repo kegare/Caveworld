@@ -222,20 +222,18 @@ public class TeleporterCaveworld extends Teleporter
 
 			return true;
 		}
-		else
-		{
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
 	public boolean makePortal(Entity entity)
 	{
 		int worldHeight = worldObj.provider.getActualHeight();
-		double var1 = -1.0D;
 		int x = MathHelper.floor_double(entity.posX);
 		int y = MathHelper.floor_double(entity.posY);
 		int z = MathHelper.floor_double(entity.posZ);
+		double var1 = -1.0D;
 		int var2 = x;
 		int var3 = y;
 		int var4 = z;
@@ -379,32 +377,20 @@ public class TeleporterCaveworld extends Teleporter
 			}
 		}
 
-		int var22 = var2;
-		int var23 = var3;
-		var10 = var4;
-		int var24 = var5 % 2;
-		int var25 = 1 - var24;
+		var18 = var5 % 2;
+		var19 = 1 - var18;
 
 		if (var5 % 4 >= 2)
 		{
-			var24 = -var24;
-			var25 = -var25;
+			var18 = -var18;
+			var19 = -var19;
 		}
 
-		boolean var26;
+		boolean var22;
 
 		if (var1 < 0.0D)
 		{
-			if (var3 < 30)
-			{
-				var3 = 30;
-			}
-			else if (var3 > worldHeight - 10)
-			{
-				var3 = worldHeight - 10;
-			}
-
-			var23 = var3;
+			var3 = Math.min(Math.max(var3, 10), worldHeight - 8);
 
 			for (var11 = -1; var11 <= 1; ++var11)
 			{
@@ -412,18 +398,18 @@ public class TeleporterCaveworld extends Teleporter
 				{
 					for (var12 = -1; var12 < 3; ++var12)
 					{
-						var15 = var22 + (var13 - 1) * var24 + var11 * var25;
-						var14 = var23 + var12;
-						var17 = var10 + (var13 - 1) * var25 - var11 * var24;
-						var26 = var12 < 0;
+						var15 = var2 + (var13 - 1) * var18 + var11 * var19;
+						var14 = var3 + var12;
+						var17 = var4 + (var13 - 1) * var19 - var11 * var18;
+						var22 = var12 < 0;
 
-						worldObj.setBlock(var15, var14, var17, var26 ? Block.cobblestoneMossy.blockID : 0);
+						worldObj.setBlock(var15, var14, var17, var22 ? Block.cobblestoneMossy.blockID : 0);
 					}
 				}
 			}
 		}
 
-		boolean var27 = false;
+		boolean var23 = false;
 
 		for (var11 = 0; var11 < 4; ++var11)
 		{
@@ -431,22 +417,22 @@ public class TeleporterCaveworld extends Teleporter
 			{
 				for (var12 = -1; var12 < 4; ++var12)
 				{
-					var15 = var22 + (var13 - 1) * var24;
-					var14 = var23 + var12;
-					var17 = var10 + (var13 - 1) * var25;
-					var26 = var13 == 0 || var13 == 3 || var12 == -1 || var12 == 3;
+					var15 = var2 + (var13 - 1) * var18;
+					var14 = var3 + var12;
+					var17 = var4 + (var13 - 1) * var19;
+					var22 = var13 == 0 || var13 == 3 || var12 == -1 || var12 == 3;
 
 					if (var12 < 0 && worldObj.getBlockId(var15, var14, var17) == Block.bedrock.blockID)
 					{
-						var27 = true;
+						var23 = true;
 					}
 
-					if (var27)
+					if (var23)
 					{
 						++var14;
 					}
 
-					worldObj.setBlock(var15, var14, var17, var26 ? Block.cobblestoneMossy.blockID : CaveBlock.portalCaveworld.blockID, 0, 2);
+					worldObj.setBlock(var15, var14, var17, var22 ? Block.cobblestoneMossy.blockID : CaveBlock.portalCaveworld.blockID, 0, 2);
 				}
 			}
 
@@ -454,11 +440,11 @@ public class TeleporterCaveworld extends Teleporter
 			{
 				for (var12 = -1; var12 < 4; ++var12)
 				{
-					var15 = var22 + (var13 - 1) * var24;
-					var14 = var23 + var12;
-					var17 = var10 + (var13 - 1) * var25;
+					var15 = var2 + (var13 - 1) * var18;
+					var14 = var3 + var12;
+					var17 = var4 + (var13 - 1) * var19;
 
-					if (var27)
+					if (var23)
 					{
 						++var14;
 					}
@@ -481,13 +467,13 @@ public class TeleporterCaveworld extends Teleporter
 
 			while (iterator.hasNext())
 			{
-				Long var2 = iterator.next();
-				PortalPosition portal = (PortalPosition)coordCache.getValueByKey(var2);
+				Long chunkSeed = iterator.next();
+				PortalPosition portal = (PortalPosition)coordCache.getValueByKey(chunkSeed);
 
 				if (portal == null || portal.lastUpdateTime < var1)
 				{
 					iterator.remove();
-					coordCache.remove(var2);
+					coordCache.remove(chunkSeed);
 				}
 			}
 		}

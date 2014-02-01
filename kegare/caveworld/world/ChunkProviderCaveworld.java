@@ -16,15 +16,18 @@ import net.minecraft.world.gen.MapGenCaves;
 import net.minecraft.world.gen.MapGenRavine;
 import net.minecraft.world.gen.feature.WorldGenDungeons;
 import net.minecraft.world.gen.feature.WorldGenLakes;
+import net.minecraft.world.gen.feature.WorldGenLiquids;
 import net.minecraft.world.gen.feature.WorldGenMinable;
+import net.minecraft.world.gen.feature.WorldGenVines;
+import net.minecraft.world.gen.feature.WorldGenerator;
 import net.minecraft.world.gen.structure.MapGenMineshaft;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.Event.Result;
-import net.minecraftforge.event.ForgeSubscribe;
+import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
 import net.minecraftforge.event.terraingen.DecorateBiomeEvent.Decorate;
 import net.minecraftforge.event.terraingen.InitMapGenEvent;
+import net.minecraftforge.event.terraingen.OreGenEvent;
 import net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable;
 import net.minecraftforge.event.terraingen.PopulateChunkEvent;
 import net.minecraftforge.event.terraingen.PopulateChunkEvent.Populate.EventType;
@@ -40,11 +43,23 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	private final Random random;
 	private final boolean generateStructures;
 
-	private BiomeGenBase[] biomesForGeneration;
-
 	private MapGenBase caveGenerator = new MapGenCaves();
 	private MapGenBase ravineGenerator = new MapGenRavine();
 	private MapGenMineshaft mineshaftGenerator = new MapGenMineshaft();
+
+	private final WorldGenerator lakeWaterGen = new WorldGenLakes(Block.waterStill.blockID);
+	private final WorldGenerator lakeLavaGen = new WorldGenLakes(Block.lavaStill.blockID);
+	private final WorldGenerator dungeonGen = new WorldGenDungeons();
+	private final WorldGenerator coalGen = new WorldGenMinable(Block.oreCoal.blockID, 15);
+	private final WorldGenerator ironGen = new WorldGenMinable(Block.oreIron.blockID, 10);
+	private final WorldGenerator goldGen = new WorldGenMinable(Block.oreGold.blockID, 8);
+	private final WorldGenerator redstoneGen = new WorldGenMinable(Block.oreRedstone.blockID, 8);
+	private final WorldGenerator lapisGen = new WorldGenMinable(Block.oreLapis.blockID, 5);
+	private final WorldGenerator diamondGen = new WorldGenMinable(Block.oreDiamond.blockID, 8);
+	private final WorldGenerator emeraldGen = new WorldGenMinable(Block.oreEmerald.blockID, 8);
+	private final WorldGenerator liquidWaterGen = new WorldGenLiquids(Block.waterMoving.blockID);
+	private final WorldGenerator liquidLavaGen = new WorldGenLiquids(Block.lavaMoving.blockID);
+	private final WorldGenerator vinesGen = new WorldGenVines();
 
 	{
 		caveGenerator = TerrainGen.getModdedMapGen(caveGenerator, InitMapGenEvent.EventType.CAVE);
@@ -57,8 +72,6 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		this.worldObj = world;
 		this.random = new Random(world.getSeed());
 		this.generateStructures = world.getWorldInfo().isMapFeaturesEnabled();
-
-		MinecraftForge.TERRAIN_GEN_BUS.register(this);
 	}
 
 	@Override
@@ -70,8 +83,6 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		byte[] blocks = new byte[256 * Math.max(worldHeight, 128)];
 
 		Arrays.fill(blocks, (byte)Block.stone.blockID);
-
-		biomesForGeneration = worldObj.getWorldChunkManager().loadBlockGeneratorData(biomesForGeneration, chunkX * 16, chunkZ * 16, 16, 16);
 
 		if (Config.generateCaves)
 		{
@@ -89,12 +100,8 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		}
 
 		Chunk chunk = new Chunk(worldObj, blocks, chunkX, chunkZ);
-		byte[] biomes = chunk.getBiomeArray();
 
-		for (int i = 0; i < biomes.length; ++i)
-		{
-			biomes[i] = (byte)biomesForGeneration[i].biomeID;
-		}
+		Arrays.fill(chunk.getBiomeArray(), (byte)worldObj.getWorldChunkManager().getBiomeGenAt(chunkX << 4, chunkZ << 4).biomeID);
 
 		for (int x = 0; x < 16; ++x)
 		{
@@ -104,7 +111,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 				chunk.setBlockIDWithMetadata(x, worldHeight - 1, z, Block.bedrock.blockID, 0);
 				chunk.setBlockIDWithMetadata(x, worldHeight - 2, z, Block.stone.blockID, 0);
 
-				for (int y = worldHeight; worldHeight < 128 && y < 256; ++y)
+				for (int y = worldHeight; worldHeight < 128 && y < 128; ++y)
 				{
 					chunk.setBlockIDWithMetadata(x, y, z, 0, 0);
 				}
@@ -127,145 +134,149 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	{
 		BlockSand.fallInstantly = true;
 
-		MinecraftForge.EVENT_BUS.post(new PopulateChunkEvent.Pre(chunkProvider, worldObj, random, chunkX, chunkZ, false));
-
-		int x = chunkX << 4;
-		int z = chunkZ << 4;
-		BiomeGenBase biome = worldObj.getWorldChunkManager().getBiomeGenAt(x + 16, z + 16);
-		BiomeDecorator decorator = biome.createBiomeDecorator();
+		int worldX = chunkX << 4;
+		int worldZ = chunkZ << 4;
+		BiomeGenBase biome = worldObj.getBiomeGenForCoords(worldX + 16, worldZ + 16);
+		BiomeDecorator decorator = biome.theBiomeDecorator;
 		long worldSeed = worldObj.getSeed();
 		int worldHeight = worldObj.provider.getActualHeight();
 		random.setSeed(worldSeed);
 		long xSeed = random.nextLong() >> 2 + 1L;
 		long zSeed = random.nextLong() >> 2 + 1L;
-		random.setSeed((xSeed * chunkX + zSeed * chunkZ) ^ worldSeed);
+		random.setSeed(chunkX * xSeed + chunkZ * zSeed ^ worldSeed);
 
-		int var1, var2, var3, i;
+		MinecraftForge.EVENT_BUS.post(new PopulateChunkEvent.Pre(chunkProvider, worldObj, random, chunkX, chunkZ, false));
 
 		if (Config.generateMineshaft && generateStructures)
 		{
 			mineshaftGenerator.generateStructuresInChunk(worldObj, random, chunkX, chunkZ);
 		}
 
-		if (Config.generateLakes && !BiomeDictionary.isBiomeOfType(biome, Type.DESERT) && random.nextInt(4) == 0 && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.LAKE))
-		{
-			var1 = x + random.nextInt(16) + 8;
-			var2 = random.nextInt(worldHeight - 32);
-			var3 = z + random.nextInt(16) + 8;
+		int i, x, y, z;
 
-			(new WorldGenLakes(Block.waterStill.blockID)).generate(worldObj, random, var1, var2, var3);
+		if (Config.generateLakes)
+		{
+			if (random.nextInt(4) == 0 && !BiomeDictionary.isBiomeOfType(biome, Type.DESERT) && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.LAKE))
+			{
+				x = worldX + random.nextInt(16) + 8;
+				y = random.nextInt(worldHeight - 16);
+				z = worldZ + random.nextInt(16) + 8;
+
+				lakeWaterGen.generate(worldObj, random, x, y, z);
+			}
+
+			if (random.nextInt(20) == 0 && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.LAVA))
+			{
+				x = worldX + random.nextInt(16) + 8;
+				y = random.nextInt(worldHeight / 2);
+				z = worldZ + random.nextInt(16) + 8;
+
+				lakeLavaGen.generate(worldObj, random, x, y, z);
+			}
 		}
 
 		if (Config.generateDungeon && generateStructures && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.DUNGEON))
 		{
 			for (i = 0; i < 8; ++i)
 			{
-				var1 = x + random.nextInt(16) + 8;
-				var2 = random.nextInt(worldHeight - 24);
-				var3 = z + random.nextInt(16) + 8;
+				x = worldX + random.nextInt(16) + 8;
+				y = random.nextInt(worldHeight - 24);
+				z = worldZ + random.nextInt(16) + 8;
 
-				(new WorldGenDungeons()).generate(worldObj, random, var1, var2, var3);
+				dungeonGen.generate(worldObj, random, x, y, z);
 			}
 		}
 
-		biome.decorate(worldObj, random, x, z);
+		MinecraftForge.ORE_GEN_BUS.post(new OreGenEvent.Pre(worldObj, random, worldX, worldZ));
 
-		if (worldHeight > 64 && TerrainGen.decorate(worldObj, random, chunkX, chunkZ, Decorate.EventType.SHROOM))
+		generateOre(Config.genRateDirt, decorator.dirtGen, worldX, worldZ, 0, worldHeight, GenerateMinable.EventType.DIRT);
+		generateOre(Config.genRateGravel, decorator.gravelGen, worldX, worldZ, 0, worldHeight, GenerateMinable.EventType.GRAVEL);
+		generateOre(Config.genRateCoal, coalGen, worldX, worldZ, 0, worldHeight, GenerateMinable.EventType.COAL);
+		generateOre(Config.genRateIron, ironGen, worldX, worldZ, 0, worldHeight, GenerateMinable.EventType.IRON);
+		generateOre(Config.genRateGold, goldGen, worldX, worldZ, 0, worldHeight / 2, GenerateMinable.EventType.GOLD);
+		generateOre(Config.genRateRedstone, redstoneGen, worldX, worldZ, 0, worldHeight / 4, GenerateMinable.EventType.REDSTONE);
+		generateOre(Config.genRateLapis, lapisGen, worldX, worldZ, 0, 32, GenerateMinable.EventType.LAPIS);
+		generateOre(Config.genRateDiamond, diamondGen, worldX, worldZ, 0, 16, GenerateMinable.EventType.DIAMOND);
+		generateOre(Config.genRateEmerald, emeraldGen, worldX, worldZ, worldHeight - (worldHeight / 3), worldHeight, GenerateMinable.EventType.CUSTOM);
+
+		MinecraftForge.ORE_GEN_BUS.post(new OreGenEvent.Post(worldObj, random, worldX, worldZ));
+		MinecraftForge.EVENT_BUS.post(new DecorateBiomeEvent.Pre(worldObj, random, worldX, worldZ));
+
+		if (TerrainGen.decorate(worldObj, random, worldX, worldZ, Decorate.EventType.SHROOM))
 		{
-			if (random.nextInt(3) == 0)
+			if (random.nextInt(3) <= (BiomeDictionary.isBiomeOfType(biome, Type.MUSHROOM) ? 1 : 0))
 			{
-				var1 = x + random.nextInt(16);
-				var2 = random.nextInt(192) + 64;
-				var3 = z + random.nextInt(16);
+				x = worldX + random.nextInt(16) + 8;
+				y = random.nextInt(worldHeight - 16) + 4;
+				z = worldZ + random.nextInt(16) + 8;
 
-				decorator.mushroomBrownGen.generate(worldObj, random, var1, var2, var3);
+				decorator.mushroomBrownGen.generate(worldObj, random, x, y, z);
 			}
 
-			if (random.nextInt(8) == 0)
+			if (random.nextInt(8) <= (BiomeDictionary.isBiomeOfType(biome, Type.MUSHROOM) ? 2 : 0))
 			{
-				var1 = x + random.nextInt(16);
-				var2 = random.nextInt(192) + 64;
-				var3 = z + random.nextInt(16);
+				x = worldX + random.nextInt(16) + 8;
+				y = random.nextInt(worldHeight - 16) + 4;
+				z = worldZ + random.nextInt(16) + 8;
 
-				decorator.mushroomRedGen.generate(worldObj, random, var1, var2, var3);
+				decorator.mushroomRedGen.generate(worldObj, random, x, y, z);
 			}
 		}
 
-		if (TerrainGen.generateOre(worldObj, random, decorator.coalGen, chunkX, chunkZ, GenerateMinable.EventType.COAL))
+		if (TerrainGen.decorate(worldObj, random, worldX, worldZ, Decorate.EventType.LAKE))
 		{
-			for (i = 0; i < 30; ++i)
+			for (i = 0; i < 50; ++i)
 			{
-				var1 = x + random.nextInt(16);
-				var2 = random.nextInt(worldHeight - 4) + 4;
-				var3 = z + random.nextInt(16);
+				x = worldX + random.nextInt(16) + 8;
+				y = random.nextInt(random.nextInt(worldHeight - 16) + 10);
+				z = worldZ + random.nextInt(16) + 8;
 
-				decorator.coalGen.generate(worldObj, random, var1, var2, var3);
+				liquidWaterGen.generate(worldObj, random, x, y, z);
+			}
+
+			for (i = 0; i < 20; ++i)
+			{
+				x = worldX + random.nextInt(16) + 8;
+				y = random.nextInt(worldHeight / 2);
+				z = worldZ + random.nextInt(16) + 8;
+
+				liquidLavaGen.generate(worldObj, random, x, y, z);
 			}
 		}
 
-		if (TerrainGen.generateOre(worldObj, random, decorator.ironGen, chunkX, chunkZ, GenerateMinable.EventType.IRON))
+		if (Config.decorateVines && BiomeDictionary.isBiomeOfType(biome, Type.FOREST) && random.nextInt(10) == 0)
 		{
-			for (i = 0; i < 30; ++i)
+			for (i = 0; i < 50; ++i)
 			{
-				var1 = x + random.nextInt(16);
-				var2 = random.nextInt(worldHeight - 4) + 4;
-				var3 = z + random.nextInt(16);
+				x = worldX + random.nextInt(16) + 8;
+				y = random.nextInt(worldHeight - 30) + 30;
+				z = worldZ + random.nextInt(16) + 8;
 
-				decorator.ironGen.generate(worldObj, random, var1, var2, var3);
+				vinesGen.generate(worldObj, random, x, y, z);
 			}
 		}
 
-		if (TerrainGen.generateOre(worldObj, random, decorator.goldGen, chunkX, chunkZ, GenerateMinable.EventType.GOLD))
-		{
-			for (i = 0; i < 8; ++i)
-			{
-				var1 = x + random.nextInt(16);
-				var2 = random.nextInt(worldHeight - 4) + 4;
-				var3 = z + random.nextInt(16);
-
-				decorator.goldGen.generate(worldObj, random, var1, var2, var3);
-			}
-		}
-
-		if (worldHeight > 128)
-		{
-			if (TerrainGen.generateOre(worldObj, random, decorator.dirtGen, chunkX, chunkZ, GenerateMinable.EventType.DIRT))
-			{
-				for (i = 0; i < 20; ++i)
-				{
-					var1 = x + random.nextInt(16);
-					var2 = random.nextInt(128) + 128;
-					var3 = z + random.nextInt(16);
-
-					decorator.dirtGen.generate(worldObj, random, var1, var2, var3);
-				}
-			}
-
-			if (TerrainGen.generateOre(worldObj, random, decorator.gravelGen, chunkX, chunkZ, GenerateMinable.EventType.GRAVEL))
-			{
-				for (i = 0; i < 15; ++i)
-				{
-					var1 = x + random.nextInt(16);
-					var2 = random.nextInt(128) + 128;
-					var3 = z + random.nextInt(16);
-
-					decorator.gravelGen.generate(worldObj, random, var1, var2, var3);
-				}
-			}
-
-			for (i = 0; i < 6; ++i)
-			{
-				var1 = x + random.nextInt(16);
-				var2 = random.nextInt(128) + 128;
-				var3 = z + random.nextInt(16);
-
-				(new WorldGenMinable(Block.oreEmerald.blockID, 8)).generate(worldObj, random, var1, var2, var3);
-			}
-		}
-
+		MinecraftForge.EVENT_BUS.post(new DecorateBiomeEvent.Post(worldObj, random, worldX, worldZ));
 		MinecraftForge.EVENT_BUS.post(new PopulateChunkEvent.Post(chunkProvider, worldObj, random, chunkX, chunkZ, false));
 
 		BlockSand.fallInstantly = false;
+	}
+
+	private void generateOre(int count, WorldGenerator worldGenerator, int worldX, int worldZ, int minY, int maxY, GenerateMinable.EventType type)
+	{
+		if (count > 0 && TerrainGen.generateOre(worldObj, random, worldGenerator, worldX, worldZ, type))
+		{
+			int i, x, y, z;
+
+			for (i = 0; i < count; ++i)
+			{
+				x = worldX + random.nextInt(16);
+				y = random.nextInt(maxY - minY) + minY;
+				z = worldZ + random.nextInt(16);
+
+				worldGenerator.generate(worldObj, random, x, y, z);
+			}
+		}
 	}
 
 	@Override
@@ -327,25 +338,6 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		if (Config.generateMineshaft && generateStructures)
 		{
 			mineshaftGenerator.generate(this, worldObj, chunkX, chunkZ, null);
-		}
-	}
-
-	@ForgeSubscribe
-	public void onDecorate(Decorate event)
-	{
-		World world = event.world;
-		Decorate.EventType type = event.type;
-
-		if (world.provider.dimensionId == Config.dimensionCaveworld)
-		{
-			if (type == Decorate.EventType.BIG_SHROOM)
-			{
-				event.setResult(Result.DENY);
-			}
-			else if (type == Decorate.EventType.TREE)
-			{
-				event.setResult(Result.DENY);
-			}
 		}
 	}
 }

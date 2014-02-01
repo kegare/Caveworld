@@ -25,6 +25,16 @@ public class Config
 	public static boolean generateRavine;
 	public static boolean generateMineshaft;
 	public static boolean generateDungeon;
+	public static boolean decorateVines;
+	public static int genRateDirt;
+	public static int genRateGravel;
+	public static int genRateCoal;
+	public static int genRateIron;
+	public static int genRateGold;
+	public static int genRateRedstone;
+	public static int genRateLapis;
+	public static int genRateDiamond;
+	public static int genRateEmerald;
 
 	public static void buildConfig()
 	{
@@ -37,7 +47,7 @@ public class Config
 		}
 		catch (Exception e)
 		{
-			File dest = new File(cfgFile.getParentFile(),"Caveworld.cfg.bak");
+			File dest = new File(cfgFile.getParentFile(), "Caveworld.cfg.bak");
 
 			if (dest.exists())
 			{
@@ -64,6 +74,16 @@ public class Config
 		generateRavine = config.get("caveworld", "generateRavine", true, "Whether or not to generate ravine to Caveworld. [true/false]").getBoolean(true);
 		generateMineshaft = config.get("caveworld", "generateMineshaft", true, "Whether or not to generate mineshaft to Caveworld. [true/false]").getBoolean(true);
 		generateDungeon = config.get("caveworld", "generateDungeon", true, "Whether or not to generate dungeon to Caveworld. [true/false]").getBoolean(true);
+		decorateVines = config.get("caveworld", "decorateVines", true, "Whether or not to decorate vines to Caveworld. [true/false]").getBoolean(true);
+		genRateDirt = Math.min(Math.max(config.get("caveworld", "genRateDirt", 20, "Specify the generate rate of \"Dirt\" in Caveworld. [0-50]").getInt(20), 0), 50);
+		genRateGravel = Math.min(Math.max(config.get("caveworld", "genRateGravel", 15, "Specify the generate rate of \"Gravel\" in Caveworld. [0-50]").getInt(15), 0), 50);
+		genRateCoal = Math.min(Math.max(config.get("caveworld", "genRateCoal", 20, "Specify the generate rate of \"Coal Ore\" in Caveworld. [0-50]").getInt(20), 0), 50);
+		genRateIron = Math.min(Math.max(config.get("caveworld", "genRateIron", 28, "Specify the generate rate of \"Iron Ore\" in Caveworld. [0-50]").getInt(28), 0), 50);
+		genRateGold = Math.min(Math.max(config.get("caveworld", "genRateGold", 2, "Specify the generate rate of \"Gold Ore\" in Caveworld. [0-20]").getInt(2), 0), 20);
+		genRateRedstone = Math.min(Math.max(config.get("caveworld", "genRateRedstone", 8, "Specify the generate rate of \"Redstone Ore\" in Caveworld. [0-20]").getInt(8), 0), 20);
+		genRateLapis = Math.min(Math.max(config.get("caveworld", "genRateLapis", 1, "Specify the generate rate of \"Lapis Lazuli Ore\" in Caveworld. [0-20]").getInt(1), 0), 20);
+		genRateDiamond = Math.min(Math.max(config.get("caveworld", "genRateDiamond", 1, "Specify the generate rate of \"Diamond Ore\" in Caveworld. [0-10]").getInt(1), 0), 10);
+		genRateEmerald = Math.min(Math.max(config.get("caveworld", "genRateEmerald", 2, "Specify the generate rate of \"Emerald Ore\" in Caveworld. [0-20]").getInt(2), 0), 20);
 	}
 
 	public static boolean saveConfig(boolean forced)

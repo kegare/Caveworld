@@ -26,6 +26,16 @@ public class CavePacketHandler implements IPacketHandler
 			Config.generateRavine = dat.readBoolean();
 			Config.generateMineshaft = dat.readBoolean();
 			Config.generateDungeon = dat.readBoolean();
+			Config.decorateVines = dat.readBoolean();
+			Config.genRateDirt = dat.readInt();
+			Config.genRateGravel = dat.readInt();
+			Config.genRateCoal = dat.readInt();
+			Config.genRateIron = dat.readInt();
+			Config.genRateGold = dat.readInt();
+			Config.genRateRedstone = dat.readInt();
+			Config.genRateLapis = dat.readInt();
+			Config.genRateDiamond = dat.readInt();
+			Config.genRateEmerald = dat.readInt();
 			WorldProviderCaveworld.dimensionSeed = dat.readLong();
 			WorldProviderCaveworld.subsurfaceHeight = dat.readInt();
 		}
@@ -41,6 +51,16 @@ public class CavePacketHandler implements IPacketHandler
 		dat.writeBoolean(Config.generateRavine);
 		dat.writeBoolean(Config.generateMineshaft);
 		dat.writeBoolean(Config.generateDungeon);
+		dat.writeBoolean(Config.decorateVines);
+		dat.writeInt(Config.genRateDirt);
+		dat.writeInt(Config.genRateGravel);
+		dat.writeInt(Config.genRateCoal);
+		dat.writeInt(Config.genRateIron);
+		dat.writeInt(Config.genRateGold);
+		dat.writeInt(Config.genRateRedstone);
+		dat.writeInt(Config.genRateLapis);
+		dat.writeInt(Config.genRateDiamond);
+		dat.writeInt(Config.genRateEmerald);
 		dat.writeLong(WorldProviderCaveworld.dimensionSeed);
 		dat.writeInt(WorldProviderCaveworld.subsurfaceHeight);
 

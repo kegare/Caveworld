@@ -56,24 +56,38 @@ public class WorldProviderCaveworld extends WorldProvider
 
 	public static void saveWorldData()
 	{
-		try
+		if (worldData != null && !worldData.isEmpty())
 		{
-			File dir = new File(DimensionManager.getCurrentSaveRootDirectory(), "DIM-Caveworld");
-
-			if (!dir.exists())
+			try
 			{
-				dir.mkdirs();
+				File dir = new File(DimensionManager.getCurrentSaveRootDirectory(), "DIM-Caveworld");
+
+				if (!dir.exists())
+				{
+					dir.mkdirs();
+				}
+
+				File file = new File(dir, "caveworld.xml");
+				DataOutputStream dos = new DataOutputStream(Files.newOutputStreamSupplier(file).getOutput());
+
+				worldData.storeToXML(dos, null);
+
+				dos.close();
+				dos.flush();
 			}
-
-			File file = new File(dir, "caveworld.xml");
-			DataOutputStream dos = new DataOutputStream(Files.newOutputStreamSupplier(file).getOutput());
-
-			worldData.storeToXML(dos, null);
-
-			dos.close();
-			dos.flush();
+			catch (Exception ignored) {}
 		}
-		catch (Exception ignored) {}
+	}
+
+	public static void clearWorldData()
+	{
+		saveWorldData();
+
+		worldData = null;
+		dimensionSeed = 0;
+		subsurfaceHeight = 0;
+
+		WorldChunkManagerCaveworld.biomeMap.clear();
 	}
 
 	@Override
@@ -258,7 +272,7 @@ public class WorldProviderCaveworld extends WorldProvider
 				data.setProperty(key, String.valueOf(Config.subsurfaceHeight));
 			}
 
-			subsurfaceHeight = Integer.valueOf(data.getProperty(key, String.valueOf(Config.subsurfaceHeight)));
+			subsurfaceHeight = Math.min(Math.max(Integer.valueOf(data.getProperty(key, String.valueOf(Config.subsurfaceHeight))), 63), 255);
 		}
 
 		return subsurfaceHeight + 1;

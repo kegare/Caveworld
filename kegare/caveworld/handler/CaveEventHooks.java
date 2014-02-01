@@ -161,20 +161,21 @@ public class CaveEventHooks
 	@ForgeSubscribe
 	public void onWorldUnload(WorldEvent.Unload event)
 	{
-		if (event.world.provider.dimensionId == Config.dimensionCaveworld)
+		World world = event.world;
+
+		if (!world.isRemote && world.provider.dimensionId == Config.dimensionCaveworld)
 		{
-			WorldProviderCaveworld.dimensionSeed = 0;
-			WorldProviderCaveworld.subsurfaceHeight = 0;
+			WorldProviderCaveworld.clearWorldData();
 		}
 	}
 
 	@ForgeSubscribe
 	public void onWorldSave(WorldEvent.Save event)
 	{
-		if (!event.world.isRemote)
-		{
-			WorldProviderCaveworld.saveWorldData();
+		World world = event.world;
 
+		if (!world.isRemote && world.provider.dimensionId == Config.dimensionCaveworld)
+		{
 			BlockPortalCaveworld.saveInventoryData();
 		}
 	}
