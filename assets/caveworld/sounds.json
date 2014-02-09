@@ -1,0 +1,11 @@
+{
+  "caveworld_portal": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "caveworld_portal",
+        "stream": false
+      }
+    ]
+  }
+}
