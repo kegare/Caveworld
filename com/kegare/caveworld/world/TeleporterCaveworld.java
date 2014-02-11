@@ -1,10 +1,8 @@
 package com.kegare.caveworld.world;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.kegare.caveworld.block.CaveBlocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.Direction;
@@ -13,9 +11,10 @@ import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.WorldServer;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.kegare.caveworld.block.CaveBlocks;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 public class TeleporterCaveworld extends Teleporter
 {

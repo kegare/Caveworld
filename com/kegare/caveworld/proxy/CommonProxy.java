@@ -1,8 +1,8 @@
 package com.kegare.caveworld.proxy;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import net.minecraft.client.particle.EntityFX;
 import net.minecraft.server.MinecraftServer;
-import cpw.mods.fml.common.FMLCommonHandler;
 
 public class CommonProxy
 {

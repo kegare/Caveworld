@@ -1,18 +1,17 @@
 package com.kegare.caveworld.world;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-
+import com.google.common.collect.Maps;
+import com.kegare.caveworld.core.CaveBiomeManager;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.biome.WorldChunkManager;
 
-import com.google.common.collect.Maps;
-import com.kegare.caveworld.core.CaveBiomeManager;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 public class WorldChunkManagerCaveworld extends WorldChunkManager
 {
@@ -36,12 +35,25 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 	@Override
 	public BiomeGenBase getBiomeGenAt(int x, int z)
 	{
-		long chunkSeed = ChunkCoordIntPair.chunkXZ2Int(x >> 4, z >> 4);
 		BiomeGenBase biome;
+		int chunkX = x >> 4;
+		int chunkZ = z >> 4;
+		long chunkSeed = ChunkCoordIntPair.chunkXZ2Int(chunkX, chunkZ);
 
 		if (!biomeMap.containsKey(chunkSeed))
 		{
+			long worldSeed = worldObj.getSeed();
+			random.setSeed(worldSeed);
+			long xSeed = random.nextLong() >> 2 + 1L;
+			long zSeed = random.nextLong() >> 2 + 1L;
+			random.setSeed(chunkX * xSeed + chunkZ * zSeed ^ worldSeed);
+
 			biome = CaveBiomeManager.getRandomBiome(random);
+
+			if (biome != null)
+			{
+				biomeMap.put(chunkSeed, biome);
+			}
 		}
 		else
 		{

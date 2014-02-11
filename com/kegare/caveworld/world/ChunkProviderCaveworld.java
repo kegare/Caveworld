@@ -1,9 +1,10 @@
 package com.kegare.caveworld.world;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-
+import com.kegare.caveworld.core.CaveOreManager;
+import com.kegare.caveworld.core.CaveOreManager.CaveOre;
+import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.world.gen.MapGenCavesCaveworld;
+import com.kegare.caveworld.world.gen.MapGenRavineCaveworld;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.entity.EnumCreatureType;
@@ -31,14 +32,13 @@ import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
 import net.minecraftforge.event.terraingen.DecorateBiomeEvent.Decorate;
 import net.minecraftforge.event.terraingen.InitMapGenEvent;
 import net.minecraftforge.event.terraingen.OreGenEvent;
-import net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable;
 import net.minecraftforge.event.terraingen.PopulateChunkEvent;
 import net.minecraftforge.event.terraingen.PopulateChunkEvent.Populate.EventType;
 import net.minecraftforge.event.terraingen.TerrainGen;
 
-import com.kegare.caveworld.core.Config;
-import com.kegare.caveworld.world.gen.MapGenCavesCaveworld;
-import com.kegare.caveworld.world.gen.MapGenRavineCaveworld;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
 public class ChunkProviderCaveworld implements IChunkProvider
 {
@@ -54,17 +54,6 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	private final WorldGenerator lakeLavaGen = new WorldGenLakes(Blocks.lava);
 	private final WorldGenerator dungeonGen = new WorldGenDungeons();
 	private final WorldGenerator glowStoneGen = new WorldGenGlowStone1();
-	private final WorldGenerator dirtGen = new WorldGenMinable(Blocks.dirt, 24);
-	private final WorldGenerator gravelGen = new WorldGenMinable(Blocks.gravel, 20);
-	private final WorldGenerator coalGen = new WorldGenMinable(Blocks.coal_ore, 15);
-	private final WorldGenerator ironGen = new WorldGenMinable(Blocks.iron_ore, 10);
-	private final WorldGenerator goldGen = new WorldGenMinable(Blocks.gold_ore, 8);
-	private final WorldGenerator redstoneGen = new WorldGenMinable(Blocks.redstone_ore, 8);
-	private final WorldGenerator lapisGen = new WorldGenMinable(Blocks.lapis_ore, 5);
-	private final WorldGenerator diamondGen = new WorldGenMinable(Blocks.diamond_ore, 8);
-	private final WorldGenerator emeraldGen = new WorldGenMinable(Blocks.emerald_ore, 5);
-	private final WorldGenerator soulSandGen = new WorldGenMinable(Blocks.soul_sand, 20, Blocks.netherrack);
-	private final WorldGenerator quartzGen = new WorldGenMinable(Blocks.quartz_ore, 10, Blocks.netherrack);
 	private final WorldGenerator liquidWaterGen = new WorldGenLiquids(Blocks.flowing_water);
 	private final WorldGenerator liquidLavaGen = new WorldGenLiquids(Blocks.flowing_lava);
 	private final WorldGenerator vinesGen = new WorldGenVines();
@@ -89,7 +78,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 		BiomeGenBase biome = worldObj.getWorldChunkManager().getBiomeGenAt(chunkX << 4, chunkZ << 4);
 		int worldHeight = worldObj.provider.getActualHeight();
-		Block[] blocks = new Block[256 * Math.max(worldHeight, 128)];
+		Block[] blocks = new Block[256 * Math.min(Math.max(worldHeight, 128), 256)];
 		Block block = Blocks.stone;
 
 		if (BiomeDictionary.isBiomeOfType(biome, Type.NETHER))
@@ -128,6 +117,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 			{
 				chunk.func_150807_a(x, 0, z, Blocks.bedrock, 0);
 				chunk.func_150807_a(x, worldHeight - 1, z, Blocks.bedrock, 0);
+				chunk.func_150807_a(x, worldHeight - 2, z, block, 0);
 
 				for (int y = worldHeight; worldHeight < 128 && y < 128; ++y)
 				{
@@ -154,7 +144,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 		int worldX = chunkX << 4;
 		int worldZ = chunkZ << 4;
-		BiomeGenBase biome = worldObj.getBiomeGenForCoords(worldX + 16, worldZ + 16);
+		BiomeGenBase biome = worldObj.getWorldChunkManager().getBiomeGenAt(worldX, worldZ);
 		BiomeDecorator decorator = biome.theBiomeDecorator;
 		long worldSeed = worldObj.getSeed();
 		int worldHeight = worldObj.provider.getActualHeight();
@@ -230,27 +220,11 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 		MinecraftForge.ORE_GEN_BUS.post(new OreGenEvent.Pre(worldObj, random, worldX, worldZ));
 
-		if (BiomeDictionary.isBiomeOfType(biome, Type.NETHER))
+		for (CaveOre ore : CaveOreManager.getCaveOreList())
 		{
-			generateOre(Config.genRateGravel, soulSandGen, worldX, worldZ, 0, worldHeight, GenerateMinable.EventType.CUSTOM);
-			generateOre(16, quartzGen, worldX, worldZ, 10, worldHeight, GenerateMinable.EventType.CUSTOM);
-		}
-		else if (!BiomeDictionary.isBiomeOfType(biome, Type.END))
-		{
-			generateOre(Config.genRateCoal, coalGen, worldX, worldZ, 0, worldHeight, GenerateMinable.EventType.COAL);
-			generateOre(Config.genRateIron, ironGen, worldX, worldZ, 0, worldHeight, GenerateMinable.EventType.IRON);
-			generateOre(Config.genRateGold, goldGen, worldX, worldZ, 0, worldHeight / 2, GenerateMinable.EventType.GOLD);
-			generateOre(Config.genRateRedstone, redstoneGen, worldX, worldZ, 0, Math.max(worldHeight / 3, 32), GenerateMinable.EventType.REDSTONE);
-			generateOre(Config.genRateLapis, lapisGen, worldX, worldZ, 0, Math.max(worldHeight / 4, 32), GenerateMinable.EventType.LAPIS);
-			generateOre(Config.genRateDiamond, diamondGen, worldX, worldZ, 0, 20, GenerateMinable.EventType.DIAMOND);
-			generateOre(Config.genRateEmerald, emeraldGen, worldX, worldZ, worldHeight - worldHeight / 3, worldHeight, GenerateMinable.EventType.CUSTOM);
-			generateOre(Config.genRateDirt, dirtGen, worldX, worldZ, 0, worldHeight, GenerateMinable.EventType.DIRT);
-			generateOre(Config.genRateGravel, gravelGen, worldX, worldZ, 0, worldHeight, GenerateMinable.EventType.GRAVEL);
-
-			if (BiomeDictionary.isBiomeOfType(biome, Type.DESERT))
+			if (ore.genBiomes.isEmpty() || ore.genBiomes.contains(biome))
 			{
-				generateOre(Config.genRateGravel, decorator.sandGen, worldX, worldZ, 0, worldHeight, GenerateMinable.EventType.CUSTOM);
-				generateOre(Config.genRateGravel, decorator.gravelAsSandGen, worldX, worldZ, 0, worldHeight, GenerateMinable.EventType.CUSTOM);
+				generateOre(ore.genRarity, new WorldGenMinable(ore.block, ore.blockMetadata, ore.genBlockCount, ore.genTargetBlock), worldX, worldZ, ore.genMinHeight, ore.genMaxHeight);
 			}
 		}
 
@@ -335,12 +309,12 @@ public class ChunkProviderCaveworld implements IChunkProvider
 			}
 		}
 
-		if (Config.decorateVines && (BiomeDictionary.isBiomeOfType(biome, Type.FOREST) || BiomeDictionary.isBiomeOfType(biome, Type.HILLS)) && random.nextInt(10) == 0)
+		if (Config.decorateVines && (BiomeDictionary.isBiomeOfType(biome, Type.FOREST) || BiomeDictionary.isBiomeOfType(biome, Type.HILLS)) && random.nextInt(8) == 0)
 		{
 			for (i = 0; i < 50; ++i)
 			{
 				x = worldX + random.nextInt(16) + 8;
-				y = random.nextInt(worldHeight - 30) + 30;
+				y = random.nextInt(worldHeight - 40) + 40;
 				z = worldZ + random.nextInt(16) + 8;
 
 				vinesGen.generate(worldObj, random, x, y, z);
@@ -353,21 +327,24 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		BlockFalling.fallInstantly = false;
 	}
 
-	private void generateOre(int count, WorldGenerator worldGenerator, int worldX, int worldZ, int minY, int maxY, GenerateMinable.EventType type)
+	private void generateOre(int rarity, WorldGenerator worldGenerator, int worldX, int worldZ, int minY, int maxY)
 	{
-		if (count > 0 && TerrainGen.generateOre(worldObj, random, worldGenerator, worldX, worldZ, type))
-		{
-			int i, x, y, z;
+		int worldHeight = worldObj.getActualHeight();
 
-			for (i = 0; i < count; ++i)
+		if (rarity > 0 && minY < worldHeight && minY < maxY)
+		{
+			int x, y, z;
+
+			for (int i = 0; i < rarity; ++i)
 			{
 				x = worldX + random.nextInt(16);
-				y = random.nextInt(maxY - minY) + minY;
+				y = random.nextInt(Math.min(maxY, worldHeight - 1) - minY) + minY;
 				z = worldZ + random.nextInt(16);
 
 				worldGenerator.generate(worldObj, random, x, y, z);
 			}
 		}
+
 	}
 
 	@Override

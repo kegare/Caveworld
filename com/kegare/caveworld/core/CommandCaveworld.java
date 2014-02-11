@@ -1,8 +1,7 @@
 package com.kegare.caveworld.core;
 
-import java.util.List;
-import java.util.regex.Pattern;
-
+import com.kegare.caveworld.util.Version;
+import cpw.mods.fml.common.Loader;
 import net.minecraft.command.CommandNotFoundException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
@@ -13,9 +12,8 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
 
-import com.kegare.caveworld.util.Version;
-
-import cpw.mods.fml.common.Loader;
+import java.util.List;
+import java.util.regex.Pattern;
 
 public class CommandCaveworld implements ICommand
 {

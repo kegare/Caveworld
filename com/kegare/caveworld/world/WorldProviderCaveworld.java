@@ -1,15 +1,12 @@
 package com.kegare.caveworld.world;
 
+import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.packet.AbstractPacket;
+import com.kegare.caveworld.renderer.EmptyRenderer;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.security.SecureRandom;
-import java.util.Properties;
-
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -21,12 +18,12 @@ import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.client.IRenderHandler;
 import net.minecraftforge.common.DimensionManager;
 
-import com.kegare.caveworld.core.Config;
-import com.kegare.caveworld.packet.AbstractPacket;
-import com.kegare.caveworld.renderer.EmptyRenderer;
-
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.security.SecureRandom;
+import java.util.Properties;
 
 public class WorldProviderCaveworld extends WorldProvider
 {

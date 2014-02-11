@@ -1,15 +1,11 @@
 package com.kegare.caveworld.core;
 
-import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.common.MinecraftForge;
-
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.handler.CaveEventHooks;
 import com.kegare.caveworld.packet.PacketPipeline;
 import com.kegare.caveworld.proxy.CommonProxy;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
-
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
@@ -20,6 +16,8 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.common.MinecraftForge;
 
 @Mod(modid = "kegare.caveworld")
 public class Caveworld
@@ -63,6 +61,7 @@ public class Caveworld
 	public void postInit(FMLPostInitializationEvent event)
 	{
 		CaveBiomeManager.loadCaveBiomes();
+		CaveOreManager.loadCaveOres();
 
 		packetPipeline.postInit();
 	}

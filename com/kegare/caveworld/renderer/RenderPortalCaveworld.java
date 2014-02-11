@@ -1,16 +1,13 @@
 package com.kegare.caveworld.renderer;
 
+import com.kegare.caveworld.block.CaveBlocks;
+import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
-
 import org.lwjgl.opengl.GL11;
-
-import com.kegare.caveworld.block.CaveBlocks;
-
-import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 
 public class RenderPortalCaveworld implements ISimpleBlockRenderingHandler
 {
@@ -20,7 +17,7 @@ public class RenderPortalCaveworld implements ISimpleBlockRenderingHandler
 	public void renderInventoryBlock(Block block, int metadata, int modelId, RenderBlocks renderer)
 	{
 		Tessellator tessellator = Tessellator.instance;
-		IIcon icon = block.getBlockTextureFromSide(1);
+		IIcon icon = renderer.getBlockIcon(block);
 		GL11.glTranslatef(-0.5F, -0.5F, -0.5F);
 		renderer.setRenderBounds(0.0D, 0.0D, 0.375D, 1.0D, 1.0D, 0.625D);
 		tessellator.startDrawingQuads();

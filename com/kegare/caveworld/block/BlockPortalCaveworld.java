@@ -1,8 +1,12 @@
 package com.kegare.caveworld.block;
 
-import java.io.File;
-import java.util.Random;
-
+import com.kegare.caveworld.core.Caveworld;
+import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.inventory.InventoryCaveworldPortal;
+import com.kegare.caveworld.renderer.RenderPortalCaveworld;
+import com.kegare.caveworld.world.TeleporterCaveworld;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockPortal;
 import net.minecraft.block.material.Material;
@@ -28,14 +32,8 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 
-import com.kegare.caveworld.core.Caveworld;
-import com.kegare.caveworld.core.Config;
-import com.kegare.caveworld.inventory.InventoryCaveworldPortal;
-import com.kegare.caveworld.renderer.RenderPortalCaveworld;
-import com.kegare.caveworld.world.TeleporterCaveworld;
-
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import java.io.File;
+import java.util.Random;
 
 public class BlockPortalCaveworld extends BlockPortal
 {

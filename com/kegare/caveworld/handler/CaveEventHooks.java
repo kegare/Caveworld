@@ -1,8 +1,19 @@
 package com.kegare.caveworld.handler;
 
-import java.security.SecureRandom;
-import java.util.Random;
-
+import com.google.common.base.Strings;
+import com.kegare.caveworld.block.BlockPortalCaveworld;
+import com.kegare.caveworld.block.CaveBlocks;
+import com.kegare.caveworld.core.Caveworld;
+import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.util.Version;
+import com.kegare.caveworld.world.WorldProviderCaveworld;
+import cpw.mods.fml.client.FMLClientHandler;
+import cpw.mods.fml.common.eventhandler.EventPriority;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
+import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
@@ -31,21 +42,8 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import net.minecraftforge.event.world.WorldEvent;
 
-import com.google.common.base.Strings;
-import com.kegare.caveworld.block.BlockPortalCaveworld;
-import com.kegare.caveworld.block.CaveBlocks;
-import com.kegare.caveworld.core.Caveworld;
-import com.kegare.caveworld.core.Config;
-import com.kegare.caveworld.util.Version;
-import com.kegare.caveworld.world.WorldProviderCaveworld;
-
-import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.common.eventhandler.EventPriority;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
-import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import java.security.SecureRandom;
+import java.util.Random;
 
 public class CaveEventHooks
 {

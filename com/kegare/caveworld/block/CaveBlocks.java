@@ -1,7 +1,6 @@
 package com.kegare.caveworld.block;
 
 import com.kegare.caveworld.item.ItemPortalCaveworld;
-
 import cpw.mods.fml.common.registry.GameRegistry;
 
 public class CaveBlocks

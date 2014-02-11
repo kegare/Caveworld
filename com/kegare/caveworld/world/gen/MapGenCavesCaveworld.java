@@ -1,23 +1,20 @@
 package com.kegare.caveworld.world.gen;
 
-import java.security.SecureRandom;
-import java.util.Random;
-
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.MapGenCaves;
 
+import java.util.Random;
+
 public class MapGenCavesCaveworld extends MapGenCaves
 {
 	@Override
 	protected void func_151541_a(long caveSeed, int chunkX, int chunkZ, Block[] blocks, double blockX, double blockY, double blockZ, float scale, float leftRightRadian, float upDownRadian, int currentY, int targetY, double scaleHeight)
 	{
-		int worldHeight = blocks.length / 256;
-		Random random = new SecureRandom();
-		random.setSeed(caveSeed);
-
+		int worldHeight = worldObj.getActualHeight();
+		Random random = new Random(caveSeed);
 		double centerX = (chunkX << 4) + 8;
 		double centerZ = (chunkZ << 4) + 8;
 		float leftRightChange = 0.0F;
@@ -90,7 +87,7 @@ public class MapGenCavesCaveworld extends MapGenCaves
 					int xLow = Math.max(MathHelper.floor_double(blockX - roomWidth) - (chunkX << 4) - 1, 0);
 					int xHigh = Math.min(MathHelper.floor_double(blockX + roomWidth) - (chunkX << 4) + 1, 16);
 					int yLow = Math.max(MathHelper.floor_double(blockY - roomHeight) - 1, 1);
-					int yHigh = Math.min(MathHelper.floor_double(blockY + roomHeight) + 1, worldHeight - 4);
+					int yHigh = Math.min(MathHelper.floor_double(blockY + roomHeight) + 1, worldHeight - 8);
 					int zLow = Math.max(MathHelper.floor_double(blockZ - roomWidth) - (chunkZ << 4) - 1, 0);
 					int zHigh = Math.min(MathHelper.floor_double(blockZ + roomWidth) - (chunkZ << 4) + 1, 16);
 
@@ -101,7 +98,7 @@ public class MapGenCavesCaveworld extends MapGenCaves
 						for (int z = zLow; z < zHigh; ++z)
 						{
 							double zScale = (z + (chunkZ << 4) + 0.5D - blockZ) / roomWidth;
-							int index = (x * 16 + z) * worldHeight + yHigh;
+							int index = ((x << 4) + z) * 128 + yHigh;
 
 							if (xScale * xScale + zScale * zScale < 1.0D)
 							{
@@ -111,13 +108,13 @@ public class MapGenCavesCaveworld extends MapGenCaves
 
 									if (yScale > -0.7D && xScale * xScale + yScale * yScale + zScale * zScale < 1.0D)
 									{
-										if (y >= 10)
+										if (y < 10)
 										{
-											blocks[index] = null;
+											blocks[index] = Blocks.lava;
 										}
 										else
 										{
-											blocks[index] = Blocks.lava;
+											blocks[index] = null;
 										}
 									}
 
@@ -140,9 +137,9 @@ public class MapGenCavesCaveworld extends MapGenCaves
 	protected void func_151538_a(World world, int x, int z, int chunkX, int chunkZ, Block[] blocks)
 	{
 		int worldHeight = world.provider.getActualHeight();
-		int chance = rand.nextInt(rand.nextInt(rand.nextInt(40) + 1) + 1);
+		int chance = rand.nextInt(rand.nextInt(rand.nextInt(15) + 1) + 1);
 
-		if (rand.nextInt(12) != 0)
+		if (rand.nextInt(6) != 0)
 		{
 			chance = 0;
 		}

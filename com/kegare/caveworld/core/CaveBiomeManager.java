@@ -1,5 +1,16 @@
 package com.kegare.caveworld.core;
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.kegare.caveworld.util.CaveLog;
+import cpw.mods.fml.common.Loader;
+import net.minecraft.util.WeightedRandom;
+import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraftforge.common.BiomeDictionary;
+import net.minecraftforge.common.BiomeDictionary.Type;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -9,19 +20,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
-
-import net.minecraft.util.WeightedRandom;
-import net.minecraft.world.biome.BiomeGenBase;
-import net.minecraftforge.common.BiomeDictionary;
-import net.minecraftforge.common.BiomeDictionary.Type;
-
-import com.google.common.base.Charsets;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.kegare.caveworld.util.CaveLog;
-
-import cpw.mods.fml.common.Loader;
 
 public class CaveBiomeManager
 {
@@ -50,6 +48,8 @@ public class CaveBiomeManager
 		addCaveBiome(BiomeGenBase.river, 3);
 		addCaveBiome(BiomeGenBase.mushroomIsland, 2);
 		addCaveBiome(BiomeGenBase.mushroomIslandShore, 1);
+		addCaveBiome(BiomeGenBase.savanna, 30);
+		addCaveBiome(BiomeGenBase.mesa, 3);
 	}
 
 	protected static void loadCaveBiomes()
@@ -73,18 +73,18 @@ public class CaveBiomeManager
 				FileOutputStream fos = new FileOutputStream(file);
 				BufferedWriter buffer = new BufferedWriter(new OutputStreamWriter(fos, Charsets.UTF_8));
 
-				buffer.write("# Caveworld biomes");
-				buffer.newLine();
-				buffer.write("#  Specify the biomes to generate in Caveworld, and rarity.");
-				buffer.newLine();
-				buffer.write("#  Format: {BiomeID}={Rarity[1-100]}");
-				buffer.newLine();
-				buffer.write("#  Note: If specify 0 for rarity, it will not be generated.");
-				buffer.newLine();
-				buffer.newLine();
-
 				try
 				{
+					buffer.write("# Caveworld biomes");
+					buffer.newLine();
+					buffer.write("#  Specify the biomes to generate in Caveworld, and rarity.");
+					buffer.newLine();
+					buffer.write("#  Format: {BiomeID}={Rarity[1-100]}");
+					buffer.newLine();
+					buffer.write("#  Note: If specify 0 for rarity, it will not be generated.");
+					buffer.newLine();
+					buffer.newLine();
+
 					for (int i = 0; i < 256; ++i)
 					{
 						biome = BiomeGenBase.getBiome(i);
@@ -157,6 +157,7 @@ public class CaveBiomeManager
 		}
 	}
 
+	@SuppressWarnings("unused")
 	public static int addCaveBiome(BiomeGenBase biome, int rarity)
 	{
 		if (biome != null && rarity > 0)
@@ -175,6 +176,7 @@ public class CaveBiomeManager
 		return rarity;
 	}
 
+	@SuppressWarnings("unused")
 	public static int removeCaveBiome(BiomeGenBase biome)
 	{
 		if (biome != null)
@@ -223,6 +225,7 @@ public class CaveBiomeManager
 		CAVE_BIOMES.clear();
 	}
 
+	@SuppressWarnings("unused")
 	public static Set<CaveBiome> getCaveBiomes()
 	{
 		return CAVE_BIOMES;
