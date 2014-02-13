@@ -3,6 +3,7 @@ package com.kegare.caveworld.world.gen;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
+import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.gen.MapGenRavine;
 
 import java.util.Random;
@@ -89,11 +90,11 @@ public class MapGenRavineCaveworld extends MapGenRavine
 
 					for (int x = xLow; x < xHigh; ++x)
 					{
-						double xScale = (x + (chunkX << 4) + 0.5D - blockX) / roomWidth;
+						double xScale = ((chunkX << 4) + x + 0.5D - blockX) / roomWidth;
 
 						for (int z = zLow; z < zHigh; ++z)
 						{
-							double zScale = (z + (chunkZ << 4) + 0.5D - blockZ) / roomWidth;
+							double zScale = ((chunkZ << 4) + z + 0.5D - blockZ) / roomWidth;
 							int index = ((x << 4) + z) * 128 + yHigh;
 
 							if (xScale * xScale + zScale * zScale < 1.0D)
@@ -104,14 +105,7 @@ public class MapGenRavineCaveworld extends MapGenRavine
 
 									if ((xScale * xScale + zScale * zScale) * field_75046_d[y] + yScale * yScale / 6.0D < 1.0D)
 									{
-										if (y < 10)
-										{
-											blocks[index] = Blocks.flowing_lava;
-										}
-										else
-										{
-											blocks[index] = null;
-										}
+										digBlock(blocks, index, x, y, z, chunkX, chunkZ, false);
 									}
 
 									--index;
@@ -125,6 +119,27 @@ public class MapGenRavineCaveworld extends MapGenRavine
 						break;
 					}
 				}
+			}
+		}
+	}
+
+	@Override
+	protected void digBlock(Block[] blocks, int index, int x, int y, int z, int chunkX, int chunkZ, boolean foundTop)
+	{
+		BiomeGenBase biome = worldObj.getBiomeGenForCoords((chunkX << 4) + x, (chunkZ << 4) + z);
+		Block top = biome.topBlock;
+		Block filler = biome.fillerBlock;
+		Block block = blocks[index];
+
+		if (block == Blocks.stone || block == Blocks.netherrack || block == Blocks.end_stone || block == top || block == filler)
+		{
+			if (y < 10)
+			{
+				blocks[index] = Blocks.flowing_lava;
+			}
+			else
+			{
+				blocks[index] = null;
 			}
 		}
 	}

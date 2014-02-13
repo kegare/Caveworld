@@ -25,7 +25,7 @@ public class CaveBiomeManager
 {
 	private static final Set<CaveBiome> CAVE_BIOMES = Sets.newHashSet();
 
-	protected static void initCaveBiomes()
+	private static void initCaveBiomes()
 	{
 		clearCaveBiomes();
 
@@ -157,7 +157,6 @@ public class CaveBiomeManager
 		}
 	}
 
-	@SuppressWarnings("unused")
 	public static int addCaveBiome(BiomeGenBase biome, int rarity)
 	{
 		if (biome != null && rarity > 0)
@@ -176,7 +175,6 @@ public class CaveBiomeManager
 		return rarity;
 	}
 
-	@SuppressWarnings("unused")
 	public static int removeCaveBiome(BiomeGenBase biome)
 	{
 		if (biome != null)
@@ -197,11 +195,14 @@ public class CaveBiomeManager
 
 	public static int getBiomeRarity(BiomeGenBase biome)
 	{
-		for (CaveBiome caveBiome : CAVE_BIOMES)
+		if (biome != null)
 		{
-			if (caveBiome.biome.biomeID == biome.biomeID)
+			for (CaveBiome caveBiome : CAVE_BIOMES)
 			{
-				return caveBiome.itemWeight;
+				if (caveBiome.biome.biomeID == biome.biomeID)
+				{
+					return caveBiome.itemWeight;
+				}
 			}
 		}
 
@@ -220,12 +221,6 @@ public class CaveBiomeManager
 		return caveBiome.biome;
 	}
 
-	public static void clearCaveBiomes()
-	{
-		CAVE_BIOMES.clear();
-	}
-
-	@SuppressWarnings("unused")
 	public static Set<CaveBiome> getCaveBiomes()
 	{
 		return CAVE_BIOMES;
@@ -233,14 +228,19 @@ public class CaveBiomeManager
 
 	public static List<BiomeGenBase> getBiomeList()
 	{
-		List<BiomeGenBase> biomes = Lists.newArrayList();
+		Set<BiomeGenBase> biomes = Sets.newHashSet();
 
 		for (CaveBiome caveBiome : CAVE_BIOMES)
 		{
 			biomes.add(caveBiome.biome);
 		}
 
-		return biomes;
+		return Lists.newArrayList(biomes);
+	}
+
+	public static void clearCaveBiomes()
+	{
+		CAVE_BIOMES.clear();
 	}
 
 	public static class CaveBiome extends WeightedRandom.Item

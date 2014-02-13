@@ -1,6 +1,7 @@
 package com.kegare.caveworld.util;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
 import com.kegare.caveworld.core.Caveworld;
@@ -93,7 +94,7 @@ public class Version
 					String version = versions.get(MinecraftForge.MC_VERSION);
 					ArtifactVersion current = new DefaultArtifactVersion(CURRENT.or("1.0.0"));
 
-					if (version != null)
+					if (!Strings.isNullOrEmpty(version))
 					{
 						ArtifactVersion latest = new DefaultArtifactVersion(version);
 						int diff = latest.compareTo(current);
@@ -115,6 +116,13 @@ public class Version
 					}
 					else
 					{
+						version = versions.get("latest");
+
+						if (!Strings.isNullOrEmpty(version))
+						{
+							LATEST = Optional.of(version);
+						}
+
 						status = Status.FAILED;
 					}
 				}

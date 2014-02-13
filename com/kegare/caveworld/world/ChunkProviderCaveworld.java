@@ -21,7 +21,6 @@ import net.minecraft.world.gen.feature.WorldGenDungeons;
 import net.minecraft.world.gen.feature.WorldGenGlowStone1;
 import net.minecraft.world.gen.feature.WorldGenLakes;
 import net.minecraft.world.gen.feature.WorldGenLiquids;
-import net.minecraft.world.gen.feature.WorldGenMinable;
 import net.minecraft.world.gen.feature.WorldGenVines;
 import net.minecraft.world.gen.feature.WorldGenerator;
 import net.minecraft.world.gen.structure.MapGenMineshaft;
@@ -220,12 +219,9 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 		MinecraftForge.ORE_GEN_BUS.post(new OreGenEvent.Pre(worldObj, random, worldX, worldZ));
 
-		for (CaveOre ore : CaveOreManager.getCaveOreList())
+		for (CaveOre ore : CaveOreManager.getCaveOres())
 		{
-			if (ore.genBiomes.isEmpty() || ore.genBiomes.contains(biome))
-			{
-				generateOre(ore.genRarity, new WorldGenMinable(ore.block, ore.blockMetadata, ore.genBlockCount, ore.genTargetBlock), worldX, worldZ, ore.genMinHeight, ore.genMaxHeight);
-			}
+			generateOre(ore.getGenRarity(), ore, worldX, worldZ, ore.getGenMinHeight(), ore.getGenMaxHeight());
 		}
 
 		MinecraftForge.ORE_GEN_BUS.post(new OreGenEvent.Post(worldObj, random, worldX, worldZ));
@@ -309,7 +305,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 			}
 		}
 
-		if (Config.decorateVines && (BiomeDictionary.isBiomeOfType(biome, Type.FOREST) || BiomeDictionary.isBiomeOfType(biome, Type.HILLS)) && random.nextInt(8) == 0)
+		if (Config.decorateVines && (BiomeDictionary.isBiomeOfType(biome, Type.FOREST) || BiomeDictionary.isBiomeOfType(biome, Type.MOUNTAIN)) && random.nextInt(6) == 0)
 		{
 			for (i = 0; i < 50; ++i)
 			{
@@ -344,7 +340,6 @@ public class ChunkProviderCaveworld implements IChunkProvider
 				worldGenerator.generate(worldObj, random, x, y, z);
 			}
 		}
-
 	}
 
 	@Override

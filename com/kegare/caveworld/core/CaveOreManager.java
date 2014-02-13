@@ -2,7 +2,6 @@ package com.kegare.caveworld.core;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
@@ -11,7 +10,10 @@ import com.kegare.caveworld.util.CaveLog;
 import cpw.mods.fml.common.Loader;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.MathHelper;
+import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraft.world.gen.feature.WorldGenerator;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
 
@@ -22,38 +24,39 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 public class CaveOreManager
 {
-	private static final List<CaveOre> CAVE_ORES = Lists.newArrayList();
+	private static final LinkedHashSet<CaveOre> CAVE_ORES = Sets.newLinkedHashSet();
 
-	protected static void initCaveOres()
+	private static void initCaveOres()
 	{
 		clearCaveOres();
 
-		addCaveOre(Blocks.dirt).setGenBlockCount(24).setGenRarity(18);
-		addCaveOre(Blocks.gravel).setGenBlockCount(20).setGenRarity(6);
-		addCaveOre(Blocks.sand).setGenBlockCount(20).setGenRarity(8).addGenBiomes(Type.DESERT);
-		addCaveOre(Blocks.sand).setGenBlockCount(20).setGenRarity(8).setGenMinHeight(20).setGenTargetBlock(Blocks.gravel).addGenBiomes(Type.DESERT);
-		addCaveOre(Blocks.soul_sand).setGenBlockCount(20).setGenRarity(10).setGenTargetBlock(Blocks.netherrack).addGenBiomes(Type.NETHER);
-		addCaveOre(Blocks.coal_ore).setGenBlockCount(16).setGenRarity(20);
-		addCaveOre(Blocks.iron_ore).setGenBlockCount(10).setGenRarity(30);
-		addCaveOre(Blocks.gold_ore).setGenBlockCount(8).setGenRarity(2).setGenMaxHeight(127);
-		addCaveOre(Blocks.redstone_ore).setGenBlockCount(7).setGenRarity(8).setGenMaxHeight(63);
-		addCaveOre(Blocks.lapis_ore).setGenBlockCount(5).setGenMaxHeight(40);
-		addCaveOre(Blocks.diamond_ore).setGenBlockCount(8).setGenMaxHeight(20);
-		addCaveOre(Blocks.emerald_ore).setGenBlockCount(5).setGenRarity(2).setGenMinHeight(50);
-		addCaveOre(Blocks.quartz_ore).setGenBlockCount(10).setGenRarity(16).setGenTargetBlock(Blocks.netherrack).addGenBiomes(Type.NETHER);
-		addCaveOre(Blocks.hardened_clay).setBlockMetadata(1).setGenBlockCount(24).setGenRarity(20).setGenTargetBlock(Blocks.dirt).addGenBiomes(BiomeGenBase.mesa, BiomeGenBase.mesaPlateau, BiomeGenBase.mesaPlateau_F);
-		addCaveOre(Blocks.hardened_clay).setBlockMetadata(12).setGenBlockCount(24).setGenRarity(14).setGenTargetBlock(Blocks.dirt).addGenBiomes(BiomeGenBase.mesa, BiomeGenBase.mesaPlateau, BiomeGenBase.mesaPlateau_F);
+		addCaveOre(new CaveOre(Blocks.coal_ore).setGenBlockCount(16).setGenRarity(20));
+		addCaveOre(new CaveOre(Blocks.iron_ore).setGenBlockCount(10).setGenRarity(30));
+		addCaveOre(new CaveOre(Blocks.gold_ore).setGenBlockCount(8).setGenRarity(2).setGenMaxHeight(127));
+		addCaveOre(new CaveOre(Blocks.redstone_ore).setGenBlockCount(7).setGenRarity(8).setGenMaxHeight(40));
+		addCaveOre(new CaveOre(Blocks.lapis_ore).setGenBlockCount(5).setGenMaxHeight(40));
+		addCaveOre(new CaveOre(Blocks.diamond_ore).setGenBlockCount(8).setGenMaxHeight(20));
+		addCaveOre(new CaveOre(Blocks.emerald_ore).setGenBlockCount(5).setGenRarity(3).setGenMinHeight(50).addGenBiomes(Type.MOUNTAIN, Type.HILLS));
+		addCaveOre(new CaveOre(Blocks.quartz_ore).setGenBlockCount(10).setGenRarity(16).setGenTargetBlock(Blocks.netherrack).addGenBiomes(Type.NETHER));
+		addCaveOre(new CaveOre(Blocks.dirt).setGenBlockCount(24).setGenRarity(18));
+		addCaveOre(new CaveOre(Blocks.gravel).setGenBlockCount(20).setGenRarity(6));
+		addCaveOre(new CaveOre(Blocks.sand).setGenBlockCount(20).setGenRarity(8).addGenBiomes(Type.DESERT));
+		addCaveOre(new CaveOre(Blocks.sand).setGenBlockCount(20).setGenRarity(8).setGenMinHeight(20).setGenTargetBlock(Blocks.gravel).addGenBiomes(Type.DESERT));
+		addCaveOre(new CaveOre(Blocks.soul_sand).setGenBlockCount(20).setGenRarity(10).setGenTargetBlock(Blocks.netherrack).addGenBiomes(Type.NETHER));
+		addCaveOre(new CaveOre(Blocks.hardened_clay).setBlockMetadata(1).setGenBlockCount(24).setGenRarity(20).setGenTargetBlock(Blocks.dirt).addGenBiomes(BiomeGenBase.mesa, BiomeGenBase.mesaPlateau, BiomeGenBase.mesaPlateau_F));
+		addCaveOre(new CaveOre(Blocks.hardened_clay).setBlockMetadata(12).setGenBlockCount(24).setGenRarity(14).setGenTargetBlock(Blocks.dirt).addGenBiomes(BiomeGenBase.mesa, BiomeGenBase.mesaPlateau, BiomeGenBase.mesaPlateau_F));
 	}
 
-	@SuppressWarnings("unchecked")
 	protected static void loadCaveOres()
 	{
 		try
@@ -128,7 +131,7 @@ public class CaveOreManager
 							{
 								buffer.write(((Type)iterator.next()).name());
 
-								if (iterator.hasNext())
+								if (iterator.hasNext() || !ore.genBiomeIds.isEmpty())
 								{
 									buffer.write(',');
 								}
@@ -182,7 +185,7 @@ public class CaveOreManager
 
 					if (block != null)
 					{
-						CaveOre ore = addCaveOre(block);
+						CaveOre ore = new CaveOre(block);
 						if (entry.containsKey("blockMetadata")) ore.setBlockMetadata(Integer.valueOf(entry.get("blockMetadata")));
 						if (entry.containsKey("genBlockCount")) ore.setGenBlockCount(Integer.valueOf(entry.get("genBlockCount")));
 						if (entry.containsKey("genRarity")) ore.setGenRarity(Integer.valueOf(entry.get("genRarity")));
@@ -207,9 +210,9 @@ public class CaveOreManager
 									ore.addGenBiomes(Integer.valueOf(str));
 								}
 							}
-
-							ore.refreshGenBiomes();
 						}
+
+						addCaveOre(ore);
 					}
 				}
 			}
@@ -218,26 +221,31 @@ public class CaveOreManager
 		{
 			CaveLog.severe(e);
 		}
-		finally
+	}
+
+	public static boolean addCaveOre(CaveOre ore)
+	{
+		for (CaveOre caveOre : CAVE_ORES)
 		{
-			if (CAVE_ORES.isEmpty())
+			if (caveOre.block == ore.block && caveOre.blockMetadata == ore.blockMetadata && caveOre.genTargetBlock == ore.genTargetBlock)
 			{
-				initCaveOres();
+				caveOre.genBlockCount += ore.genBlockCount;
+				caveOre.genRarity += ore.genRarity;
+				caveOre.setGenMinHeight(Math.min(caveOre.genMinHeight, ore.genMinHeight));
+				caveOre.setGenMaxHeight(Math.max(caveOre.genMaxHeight, ore.genMaxHeight));
+
+				for (BiomeGenBase biome : ore.genBiomes)
+				{
+					caveOre.addGenBiomes(biome);
+				}
+
+				return false;
 			}
 		}
+
+		return CAVE_ORES.add(ore);
 	}
 
-	@SuppressWarnings("unused")
-	public static CaveOre addCaveOre(Block block)
-	{
-		CaveOre ore = new CaveOre(block);
-
-		CAVE_ORES.add(ore);
-
-		return ore;
-	}
-
-	@SuppressWarnings("unused")
 	public static void removeCaveOre(Block block, int metadata)
 	{
 		Iterator<CaveOre> ores = CAVE_ORES.iterator();
@@ -253,7 +261,7 @@ public class CaveOreManager
 		}
 	}
 
-	public static List<CaveOre> getCaveOreList()
+	public static LinkedHashSet<CaveOre> getCaveOres()
 	{
 		return CAVE_ORES;
 	}
@@ -263,19 +271,19 @@ public class CaveOreManager
 		CAVE_ORES.clear();
 	}
 
-	public static class CaveOre
+	public static class CaveOre extends WorldGenerator
 	{
-		public final Block block;
-		public int blockMetadata = 0;
-		public int genBlockCount = 1;
-		public int genRarity = 1;
-		public int genMinHeight = 0;
-		public int genMaxHeight = 255;
-		public Block genTargetBlock = Blocks.stone;
-		public final Set<BiomeGenBase> genBiomes = Sets.newHashSet();
+		private final Block block;
+		private int blockMetadata = 0;
+		private int genBlockCount = 1;
+		private int genRarity = 1;
+		private int genMinHeight = 0;
+		private int genMaxHeight = 255;
+		private Block genTargetBlock = Blocks.stone;
+		private final Set<BiomeGenBase> genBiomes = Sets.newHashSet();
 
-		final TreeSet<Type> genBiomeTypes = Sets.newTreeSet();
-		final TreeSet<Integer> genBiomeIds = Sets.newTreeSet();
+		private final TreeSet<Type> genBiomeTypes = Sets.newTreeSet();
+		private final TreeSet<Integer> genBiomeIds = Sets.newTreeSet();
 
 		public CaveOre(Block block)
 		{
@@ -330,41 +338,157 @@ public class CaveOreManager
 			{
 				if (obj instanceof Type)
 				{
-					genBiomeTypes.add((Type)obj);
+					Type type = (Type)obj;
+
+					Collections.addAll(genBiomes, BiomeDictionary.getBiomesForType(type));
+
+					genBiomeTypes.add(type);
 				}
 				else if (obj instanceof BiomeGenBase)
 				{
-					genBiomeIds.add(((BiomeGenBase)obj).biomeID);
+					BiomeGenBase biome = (BiomeGenBase)obj;
+
+					genBiomes.add(biome);
+					genBiomeIds.add(biome.biomeID);
 				}
 				else if (obj instanceof Integer)
 				{
-					genBiomeIds.add((Integer)obj);
+					BiomeGenBase biome = BiomeGenBase.getBiome((Integer)obj);
+
+					if (biome != null)
+					{
+						genBiomes.add(biome);
+						genBiomeIds.add(biome.biomeID);
+					}
 				}
 			}
 
 			return this;
 		}
 
-		public Set<BiomeGenBase> refreshGenBiomes()
+		public Block getBlock()
+		{
+			return block;
+		}
+
+		public int getGenBlockCount()
+		{
+			return Math.min(Math.max(genBlockCount, 1), 100);
+		}
+
+		public int getGenRarity()
+		{
+			return Math.min(Math.max(genRarity, 1), 100);
+		}
+
+		public int getGenMinHeight()
+		{
+			return Math.min(Math.max(genMinHeight, 0), 255);
+		}
+
+		public int getGenMaxHeight()
+		{
+			return Math.min(Math.max(genMaxHeight, 1), 255);
+		}
+
+		public Block getGenTargetBlock()
+		{
+			return genTargetBlock == null ? Blocks.stone : genTargetBlock;
+		}
+
+		public Set<BiomeGenBase> getGenBiomes()
+		{
+			return genBiomes;
+		}
+
+		public void clearGenBiomes(boolean flag)
 		{
 			genBiomes.clear();
 
-			for (Type type : genBiomeTypes)
+			if (flag)
 			{
-				Collections.addAll(genBiomes, BiomeDictionary.getBiomesForType(type));
+				genBiomeTypes.clear();
+				genBiomeIds.clear();
 			}
+		}
 
-			for (int id : genBiomeIds)
+		@Override
+		public boolean generate(World world, Random random, int x, int y, int z)
+		{
+			float var1 = random.nextFloat() * (float)Math.PI;
+			double var2 = x + 8 + MathHelper.sin(var1) * genBlockCount / 8.0F;
+			double var3 = x + 8 - MathHelper.sin(var1) * genBlockCount / 8.0F;
+			double var4 = z + 8 + MathHelper.cos(var1) * genBlockCount / 8.0F;
+			double var5 = z + 8 - MathHelper.cos(var1) * genBlockCount / 8.0F;
+			double var6 = y + random.nextInt(3) - 2;
+			double var7 = y + random.nextInt(3) - 2;
+
+			for (int count = 0; count <= genBlockCount; ++count)
 			{
-				BiomeGenBase biome = BiomeGenBase.getBiome(id);
+				double var8 = var2 + (var3 - var2) * count / genBlockCount;
+				double var9 = var6 + (var7 - var6) * count / genBlockCount;
+				double var10 = var4 + (var5 - var4) * count / genBlockCount;
+				double var11 = random.nextDouble() * genBlockCount / 16.0D;
+				double var12 = (MathHelper.sin(count * (float)Math.PI / genBlockCount) + 1.0F) * var11 + 1.0D;
+				double var13 = (MathHelper.sin(count * (float)Math.PI / genBlockCount) + 1.0F) * var11 + 1.0D;
+				int var14 = MathHelper.floor_double(var8 - var12 / 2.0D);
+				int var15 = MathHelper.floor_double(var9 - var13 / 2.0D);
+				int var16 = MathHelper.floor_double(var10 - var12 / 2.0D);
+				int var17 = MathHelper.floor_double(var8 + var12 / 2.0D);
+				int var18 = MathHelper.floor_double(var9 + var13 / 2.0D);
+				int var19 = MathHelper.floor_double(var10 + var12 / 2.0D);
 
-				if (biome != null)
+				for (int blockX = var14; blockX <= var17; ++blockX)
 				{
-					genBiomes.add(biome);
+					double xScale = ((double)blockX + 0.5D - var8) / (var12 / 2.0D);
+
+					if (xScale * xScale < 1.0D)
+					{
+						for (int blockY = var15; blockY <= var18; ++blockY)
+						{
+							double yScale = ((double)blockY + 0.5D - var9) / (var13 / 2.0D);
+
+							if (xScale * xScale + yScale * yScale < 1.0D)
+							{
+								for (int blockZ = var16; blockZ <= var19; ++blockZ)
+								{
+									double zScale = ((double)blockZ + 0.5D - var10) / (var12 / 2.0D);
+
+									if (xScale * xScale + yScale * yScale + zScale * zScale < 1.0D && world.getBlock(blockX, blockY, blockZ).isReplaceableOreGen(world, blockX, blockY, blockZ, genTargetBlock))
+									{
+										BiomeGenBase biome = world.getBiomeGenForCoords(blockX, blockZ);
+										boolean flag = false;
+
+										if (genBiomes.isEmpty())
+										{
+											flag = true;
+										}
+										else
+										{
+											for (BiomeGenBase obj : genBiomes)
+											{
+												if (obj.biomeID == biome.biomeID)
+												{
+													flag = true;
+
+													break;
+												}
+											}
+										}
+
+										if (flag)
+										{
+											world.setBlock(blockX, blockY, blockZ, block, blockMetadata, 2);
+										}
+									}
+								}
+							}
+						}
+					}
 				}
 			}
 
-			return genBiomes;
+			return true;
 		}
 	}
 }
