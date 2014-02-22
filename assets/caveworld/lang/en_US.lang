@@ -5,3 +5,8 @@ caveworld.version.message=A new %s version is available
 tile.portalCaveworld.name=Block of Caveworld Portal
 
 container.caveworld_portal=Caveworld Portal
+
+achievement.caveworld.caveworld=Caveworld
+achievement.caveworld.caveworld.desc=Visit to Caveworld
+achievement.caveworld.miner=Miner
+achievement.caveworld.miner.desc=Mining many ores

@@ -1,17 +1,36 @@
+/*
+ * Caveworld
+ *
+ * Copyright (c) 2014 kegare
+ * https://github.com/kegare
+ *
+ * This mod is distributed under the terms of the Minecraft Mod Public License 1.0, or MMPL.
+ * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
+ */
+
 package com.kegare.caveworld.handler;
 
 import com.google.common.base.Strings;
-import com.kegare.caveworld.block.BlockPortalCaveworld;
 import com.kegare.caveworld.block.CaveBlocks;
+import com.kegare.caveworld.core.CaveAchievementList;
+import com.kegare.caveworld.core.CaveOreManager;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.packet.CaveBiomeSyncPacket;
+import com.kegare.caveworld.packet.CaveOreSyncPacket;
+import com.kegare.caveworld.packet.ConfigSyncPacket;
+import com.kegare.caveworld.packet.DataSyncPacket;
+import com.kegare.caveworld.packet.PlayCaveSoundPacket;
+import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
+import cpw.mods.fml.common.gameevent.TickEvent.Phase;
+import cpw.mods.fml.common.gameevent.TickEvent.WorldTickEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.Minecraft;
@@ -20,12 +39,15 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.passive.EntityBat;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.ChatStyle;
@@ -38,8 +60,10 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
+import net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent;
 import net.minecraftforge.event.world.WorldEvent;
 
 import java.security.SecureRandom;
@@ -50,22 +74,22 @@ public class CaveEventHooks
 	public static final CaveEventHooks instance = new CaveEventHooks();
 
 	@SideOnly(Side.CLIENT)
-	@SubscribeEvent(priority = EventPriority.HIGH)
-	public void onRenderOverlayText(RenderGameOverlayEvent.Text event)
+	@SubscribeEvent
+	public void onRenderGameOverlay(RenderGameOverlayEvent.Text event)
 	{
 		Minecraft mc = FMLClientHandler.instance().getClient();
 
-		if (mc != null && mc.gameSettings.showDebugInfo && mc.thePlayer.dimension == Config.dimensionCaveworld)
+		if (mc != null && mc.theWorld.provider.dimensionId == Config.dimensionCaveworld)
 		{
-			for (String str : event.left)
+			if (mc.gameSettings.showDebugInfo)
 			{
-				if (!Strings.isNullOrEmpty(str) && str.startsWith("dim:"))
+				for (String str : event.left)
 				{
-					return;
+					if (!Strings.isNullOrEmpty(str) && str.startsWith("dim:")) return;
 				}
-			}
 
-			event.left.add("dim: " + mc.thePlayer.worldObj.provider.getDimensionName());
+				event.left.add("dim: Caveworld");
+			}
 		}
 	}
 
@@ -76,18 +100,17 @@ public class CaveEventHooks
 		{
 			EntityPlayerMP player = (EntityPlayerMP)event.player;
 
-			Caveworld.packetPipeline.sendPacketToPlayer(new Config.ConfigSyncPacket(), player);
-			Caveworld.packetPipeline.sendPacketToPlayer(new WorldProviderCaveworld.DataSyncPacket(), player);
+			Caveworld.packetPipeline.sendPacketToPlayer(new ConfigSyncPacket(), player);
+			Caveworld.packetPipeline.sendPacketToPlayer(new DataSyncPacket(), player);
+			Caveworld.packetPipeline.sendPacketToPlayer(new CaveBiomeSyncPacket(), player);
+			Caveworld.packetPipeline.sendPacketToPlayer(new CaveOreSyncPacket(), player);
 
 			if (Version.DEV_DEBUG || Config.versionNotify && Version.isOutdated())
 			{
 				ChatStyle style = new ChatStyle();
 				style.setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, Caveworld.metadata.url));
-				StringBuilder message = new StringBuilder();
-				message.append(StatCollector.translateToLocalFormatted("caveworld.version.message", EnumChatFormatting.AQUA + "Caveworld" + EnumChatFormatting.RESET));
-				message.append(" : ").append(EnumChatFormatting.YELLOW).append(Version.LATEST.or(Version.CURRENT.orNull())).append(EnumChatFormatting.RESET);
 
-				player.addChatMessage(new ChatComponentText(message.toString()).setChatStyle(style));
+				player.addChatMessage(new ChatComponentText(StatCollector.translateToLocalFormatted("caveworld.version.message", EnumChatFormatting.AQUA + "Caveworld" + EnumChatFormatting.RESET) + " : " + EnumChatFormatting.YELLOW + Version.getLatest()).setChatStyle(style));
 			}
 		}
 	}
@@ -102,6 +125,132 @@ public class CaveEventHooks
 			if (player.dimension == Config.dimensionCaveworld)
 			{
 				player.setSpawnChunk(null, true, player.dimension);
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onPlayerChangedDimension(PlayerChangedDimensionEvent event)
+	{
+		if (event.player instanceof EntityPlayerMP)
+		{
+			EntityPlayerMP player = (EntityPlayerMP)event.player;
+
+			if (event.toDim == Config.dimensionCaveworld)
+			{
+				player.triggerAchievement(CaveAchievementList.caveworld);
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onBreakSpeed(BreakSpeed event)
+	{
+		EntityPlayer player = event.entityPlayer;
+		ItemStack current = player.getCurrentEquippedItem();
+
+		if (player.dimension == Config.dimensionCaveworld && player.isSneaking() && current != null && current.getItem() instanceof ItemPickaxe)
+		{
+			if (CaveOreManager.containsBlock(event.block, event.metadata) && Caveworld.proxy.hasAchievementUnlocked(player, CaveAchievementList.miner))
+			{
+				int level = CaveUtils.getMiningLevel(player);
+
+				if (level > 2)
+				{
+					event.newSpeed *= 2.0F;
+				}
+				else if (level > 0)
+				{
+					event.newSpeed *= 1.75F;
+				}
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onHarvestDrops(HarvestDropsEvent event)
+	{
+		EntityPlayer player = event.harvester;
+
+		if (player != null && player.dimension == Config.dimensionCaveworld)
+		{
+			ItemStack current = player.getCurrentEquippedItem();
+
+			if (current != null && current.getItem() instanceof ItemPickaxe && CaveOreManager.containsBlock(event.block, event.blockMetadata))
+			{
+				if (CaveUtils.getMiningLevel(player) > 0)
+				{
+					player.triggerAchievement(CaveAchievementList.miner);
+				}
+				else
+				{
+					NBTTagCompound data = player.getEntityData();
+					int count = data.getInteger("Caveworld:MiningCount");
+
+					data.setInteger("Caveworld:MiningCount", ++count);
+				}
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onPlayerInteract(PlayerInteractEvent event)
+	{
+		if (event.entityPlayer instanceof EntityPlayerMP && event.action == Action.RIGHT_CLICK_BLOCK)
+		{
+			EntityPlayerMP player = (EntityPlayerMP)event.entityPlayer;
+			WorldServer world = player.getServerForPlayer();
+			int x = event.x;
+			int y = event.y;
+			int z = event.z;
+			int face = event.face;
+			ItemStack current = player.getCurrentEquippedItem();
+
+			if (!player.isSneaking() && current != null && current.getItem() == Item.getItemFromBlock(Blocks.ender_chest))
+			{
+				if (face == 0)
+				{
+					--y;
+				}
+				else if (face == 1)
+				{
+					++y;
+				}
+				else if (face == 2)
+				{
+					--z;
+				}
+				else if (face == 3)
+				{
+					++z;
+				}
+				else if (face == 4)
+				{
+					--x;
+				}
+				else if (face == 5)
+				{
+					++x;
+				}
+
+				if (CaveBlocks.caveworld_portal.func_150000_e(world, x, y, z))
+				{
+					world.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, "step.stone", 1.0F, 2.0F);
+
+					event.setCanceled(true);
+				}
+			}
+			else if (player.dimension == Config.dimensionCaveworld && world.getBlock(x, y, z).isBed(world, x, y, z, player) && world.isAirBlock(x, y + 1, z))
+			{
+				if (player.capabilities.isCreativeMode || player.getEntityData().getLong("Caveworld:LastSetTime") + 6000L < world.getTotalWorldTime())
+				{
+					player.getEntityData().setLong("Caveworld:LastSetTime", world.getTotalWorldTime());
+
+					player.setSpawnChunk(new ChunkCoordinates(x, y + 1, z), true, player.dimension);
+					player.addChatMessage(new ChatComponentTranslation("[%s] Respawn point set: %s, %s, %s", EnumChatFormatting.AQUA + "Caveworld" + EnumChatFormatting.RESET, x, y + 1, z));
+				}
+
+				event.setCanceled(true);
 			}
 		}
 	}
@@ -142,85 +291,40 @@ public class CaveEventHooks
 	}
 
 	@SubscribeEvent
-	public void onPlayerInteract(PlayerInteractEvent event)
-	{
-		if (event.entityPlayer instanceof EntityPlayerMP && event.action != Action.LEFT_CLICK_BLOCK)
-		{
-			EntityPlayerMP player = (EntityPlayerMP)event.entityPlayer;
-			WorldServer world = player.getServerForPlayer();
-			int x = event.x;
-			int y = event.y;
-			int z = event.z;
-			int face = event.face;
-			ItemStack current = player.getCurrentEquippedItem();
-
-			if (player.dimension == Config.dimensionCaveworld && world.getBlock(x, y, z) == Blocks.bed && world.isAirBlock(x, y + 1, z))
-			{
-				if (player.capabilities.isCreativeMode || player.getEntityData().getLong("Caveworld:LastSetTime") + 6000L < world.getTotalWorldTime())
-				{
-					player.getEntityData().setLong("Caveworld:LastSetTime", world.getTotalWorldTime());
-
-					player.setSpawnChunk(new ChunkCoordinates(x, y + 1, z), true, player.dimension);
-					player.addChatMessage(new ChatComponentTranslation("[%s] Respawn point set: %s, %s, %s", EnumChatFormatting.AQUA + "Caveworld" + EnumChatFormatting.RESET, x, y + 1, z));
-				}
-
-				event.setCanceled(true);
-
-				return;
-			}
-
-			if (face == 0)
-			{
-				--y;
-			}
-			else if (face == 1)
-			{
-				++y;
-			}
-			else if (face == 2)
-			{
-				--z;
-			}
-			else if (face == 3)
-			{
-				++z;
-			}
-			else if (face == 4)
-			{
-				--x;
-			}
-			else if (face == 5)
-			{
-				++x;
-			}
-
-			if (player.isSneaking())
-			{
-				if (world.getBlock(x, y, z) == CaveBlocks.caveworld_portal)
-				{
-					world.playSoundAtEntity(player, "random.click", 0.8F, 1.5F);
-
-					player.displayGUIChest(BlockPortalCaveworld.getInventory());
-				}
-			}
-			else if (current != null && current.getItem() == Item.getItemFromBlock(Blocks.ender_chest) && CaveBlocks.caveworld_portal.func_150000_e(world, x, y, z))
-			{
-				world.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, "step.stone", 1.0F, 2.0F);
-			}
-		}
-	}
-
-	@SubscribeEvent
 	public void onWorldUnload(WorldEvent.Unload event)
 	{
 		World world = event.world;
 
 		if (!world.isRemote && world.provider.dimensionId == Config.dimensionCaveworld)
 		{
-			WorldProviderCaveworld.saveDimensionData();
-			WorldProviderCaveworld.clearDimensionData();
+			WorldProviderCaveworld.clearDimData(true);
+		}
+	}
 
-			BlockPortalCaveworld.saveInventoryData();
+	@SubscribeEvent
+	public void onWorldSave(WorldEvent.Save event)
+	{
+		World world = event.world;
+
+		if (!world.isRemote && world.provider.dimensionId == Config.dimensionCaveworld)
+		{
+			CaveBlocks.caveworld_portal.getInventory().saveInventoryToNBT();
+		}
+	}
+
+	@SubscribeEvent
+	public void onWorldTick(WorldTickEvent event)
+	{
+		World world = event.world;
+
+		if (event.side.isServer() && event.phase == Phase.END)
+		{
+			int dimension = world.provider.dimensionId;
+
+			if (dimension == Config.dimensionCaveworld && world.getTotalWorldTime() % 18000 == 0)
+			{
+				Caveworld.packetPipeline.sendPacketToAllInDimension(new PlayCaveSoundPacket("ambient.cave"), dimension);
+			}
 		}
 	}
 }

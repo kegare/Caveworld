@@ -1,11 +1,17 @@
 {
+  "ambient.cave": {
+    "category": "ambient",
+    "sounds": [
+      {
+        "name": "ambient/cave",
+        "stream": true
+      }
+    ]
+  },
   "caveworld_portal": {
     "category": "block",
     "sounds": [
-      {
-        "name": "caveworld_portal",
-        "stream": false
-      }
+      "caveworld_portal"
     ]
   }
 }

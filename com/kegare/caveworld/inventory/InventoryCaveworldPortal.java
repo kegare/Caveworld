@@ -1,5 +1,16 @@
+/*
+ * Caveworld
+ *
+ * Copyright (c) 2014 kegare
+ * https://github.com/kegare
+ *
+ * This mod is distributed under the terms of the Minecraft Mod Public License 1.0, or MMPL.
+ * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
+ */
+
 package com.kegare.caveworld.inventory;
 
+import com.kegare.caveworld.world.WorldProviderCaveworld;
 import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -12,8 +23,17 @@ public class InventoryCaveworldPortal extends InventoryBasic
 		super("container.caveworld_portal", false, 18);
 	}
 
-	public void loadInventoryFromNBT(NBTTagList list)
+	public InventoryCaveworldPortal loadInventoryFromNBT()
 	{
+		NBTTagCompound data = WorldProviderCaveworld.getDimData();
+
+		if (!data.hasKey("PortalItems"))
+		{
+			data.setTag("PortalItems", new NBTTagList());
+		}
+
+		NBTTagList list = (NBTTagList)data.getTag("PortalItems");
+
 		for (int slot = 0; slot < getSizeInventory(); ++slot)
 		{
 			setInventorySlotContents(slot, null);
@@ -29,9 +49,11 @@ public class InventoryCaveworldPortal extends InventoryBasic
 				setInventorySlotContents(slot, ItemStack.loadItemStackFromNBT(nbttag));
 			}
 		}
+
+		return this;
 	}
 
-	public NBTTagList saveInventoryToNBT()
+	public InventoryCaveworldPortal saveInventoryToNBT()
 	{
 		NBTTagList list = new NBTTagList();
 
@@ -42,12 +64,14 @@ public class InventoryCaveworldPortal extends InventoryBasic
 			if (itemstack != null)
 			{
 				NBTTagCompound nbttag = new NBTTagCompound();
-				nbttag.setByte("Slot", (byte)slot);
+				nbttag.setByte("Slot", (byte) slot);
 				itemstack.writeToNBT(nbttag);
 				list.appendTag(nbttag);
 			}
 		}
 
-		return list;
+		WorldProviderCaveworld.getDimData().setTag("PortalItems", list);
+
+		return this;
 	}
 }

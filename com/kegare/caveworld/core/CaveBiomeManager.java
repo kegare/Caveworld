@@ -1,23 +1,36 @@
+/*
+ * Caveworld
+ *
+ * Copyright (c) 2014 kegare
+ * https://github.com/kegare
+ *
+ * This mod is distributed under the terms of the Minecraft Mod Public License 1.0, or MMPL.
+ * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
+ */
+
 package com.kegare.caveworld.core;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.io.Files;
+import com.google.common.io.LineProcessor;
 import com.kegare.caveworld.util.CaveLog;
 import cpw.mods.fml.common.Loader;
 import net.minecraft.util.WeightedRandom;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
+import org.apache.logging.log4j.Level;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
+import java.io.IOException;
 import java.util.List;
-import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 
@@ -52,7 +65,7 @@ public class CaveBiomeManager
 		addCaveBiome(BiomeGenBase.mesa, 3);
 	}
 
-	protected static void loadCaveBiomes()
+	static void loadCaveBiomes()
 	{
 		try
 		{
@@ -69,9 +82,7 @@ public class CaveBiomeManager
 			{
 				initCaveBiomes();
 
-				BiomeGenBase biome;
-				FileOutputStream fos = new FileOutputStream(file);
-				BufferedWriter buffer = new BufferedWriter(new OutputStreamWriter(fos, Charsets.UTF_8));
+				BufferedWriter buffer = Files.newWriter(file, Charsets.UTF_8);
 
 				try
 				{
@@ -87,7 +98,7 @@ public class CaveBiomeManager
 
 					for (int i = 0; i < 256; ++i)
 					{
-						biome = BiomeGenBase.getBiome(i);
+						BiomeGenBase biome = BiomeGenBase.getBiome(i);
 
 						if (biome != null)
 						{
@@ -115,38 +126,42 @@ public class CaveBiomeManager
 				finally
 				{
 					buffer.close();
-					fos.close();
 				}
 			}
 			else if (file.exists() && file.canRead())
 			{
-				Properties props = new Properties();
-				FileInputStream fis = new FileInputStream(file);
-
-				try
+				String data = Files.readLines(file, Charsets.UTF_8, new LineProcessor<String>()
 				{
-					props.load(fis);
+					private final StringBuilder builder = new StringBuilder();
 
-					for (String key : props.stringPropertyNames())
+					@Override
+					public boolean processLine(String line) throws IOException
 					{
-						int id = Integer.valueOf(key);
-						int rarity = Integer.valueOf(props.getProperty(key, "0"));
-
-						if (id >= 0 && id < 256)
+						if (!Strings.isNullOrEmpty(line) && !line.startsWith("#"))
 						{
-							addCaveBiome(BiomeGenBase.getBiome(id), rarity);
+							builder.append(line.trim());
+							builder.append(',');
 						}
+
+						return true;
 					}
-				}
-				finally
+
+					@Override
+					public String getResult()
+					{
+						return builder.toString();
+					}
+				});
+
+				if (!Strings.isNullOrEmpty(data))
 				{
-					fis.close();
+					loadCaveBiomesFromString(data);
 				}
 			}
 		}
 		catch (Exception e)
 		{
-			CaveLog.severe(e);
+			CaveLog.log(Level.ERROR, e, "An error occurred trying to loading cave biomes");
 		}
 		finally
 		{
@@ -154,6 +169,29 @@ public class CaveBiomeManager
 			{
 				initCaveBiomes();
 			}
+
+			CaveLog.info("Loaded %d cave biomes", CAVE_BIOMES.size());
+		}
+	}
+
+	public static void loadCaveBiomesFromString(String data)
+	{
+		try
+		{
+			for (String entry : Splitter.on(',').omitEmptyStrings().trimResults().split(data))
+			{
+				int id = Integer.valueOf(entry.split("=")[0]);
+				int rarity = Integer.valueOf(entry.split("=")[1]);
+
+				if (id >= 0 && id < 256)
+				{
+					addCaveBiome(BiomeGenBase.getBiome(id), rarity);
+				}
+			}
+		}
+		catch (Exception e)
+		{
+			CaveLog.log(Level.ERROR, e, "An error occurred trying to loading cave biomes from string");
 		}
 	}
 
@@ -163,7 +201,7 @@ public class CaveBiomeManager
 		{
 			for (CaveBiome caveBiome : CAVE_BIOMES)
 			{
-				if (caveBiome.biome.biomeID == biome.biomeID)
+				if (caveBiome.biome.isEqualTo(biome))
 				{
 					return caveBiome.itemWeight += rarity;
 				}
@@ -181,7 +219,7 @@ public class CaveBiomeManager
 		{
 			for (CaveBiome caveBiome : CAVE_BIOMES)
 			{
-				if (caveBiome.biome.biomeID == biome.biomeID)
+				if (caveBiome.biome.isEqualTo(biome))
 				{
 					CAVE_BIOMES.remove(caveBiome);
 
@@ -211,19 +249,24 @@ public class CaveBiomeManager
 
 	public static BiomeGenBase getRandomBiome(Random random)
 	{
-		CaveBiome caveBiome = (CaveBiome)WeightedRandom.getRandomItem(random, CAVE_BIOMES);
-
-		if (caveBiome == null)
+		try
+		{
+			return ((CaveBiome)WeightedRandom.getRandomItem(random, CAVE_BIOMES)).biome;
+		}
+		catch (Exception e)
 		{
 			return BiomeGenBase.plains;
 		}
-
-		return caveBiome.biome;
 	}
 
-	public static Set<CaveBiome> getCaveBiomes()
+	public static void clearCaveBiomes()
 	{
-		return CAVE_BIOMES;
+		CAVE_BIOMES.clear();
+	}
+
+	public static ImmutableSet<CaveBiome> getCaveBiomes()
+	{
+		return new ImmutableSet.Builder<CaveBiome>().addAll(CAVE_BIOMES).build();
 	}
 
 	public static List<BiomeGenBase> getBiomeList()
@@ -238,11 +281,6 @@ public class CaveBiomeManager
 		return Lists.newArrayList(biomes);
 	}
 
-	public static void clearCaveBiomes()
-	{
-		CAVE_BIOMES.clear();
-	}
-
 	public static class CaveBiome extends WeightedRandom.Item
 	{
 		public final BiomeGenBase biome;
@@ -251,6 +289,12 @@ public class CaveBiomeManager
 		{
 			super(rarity);
 			this.biome = biome;
+		}
+
+		@Override
+		public String toString()
+		{
+			return biome.biomeID + "=" + itemWeight;
 		}
 
 		@Override

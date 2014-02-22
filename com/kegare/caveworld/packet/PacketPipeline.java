@@ -1,3 +1,13 @@
+/*
+ * Caveworld
+ *
+ * Copyright (c) 2014 kegare
+ * https://github.com/kegare
+ *
+ * This mod is distributed under the terms of the Minecraft Mod Public License 1.0, or MMPL.
+ * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
+ */
+
 package com.kegare.caveworld.packet;
 
 import com.google.common.collect.Lists;
@@ -14,6 +24,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageCodec;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.INetHandler;
@@ -64,10 +75,12 @@ public class PacketPipeline extends MessageToMessageCodec<FMLProxyPacket, Abstra
 			public int compare(Class<? extends AbstractPacket> clazz1, Class<? extends AbstractPacket> clazz2)
 			{
 				int com = String.CASE_INSENSITIVE_ORDER.compare(clazz1.getCanonicalName(), clazz2.getCanonicalName());
+
 				if (com == 0)
 				{
 					com = clazz1.getCanonicalName().compareTo(clazz2.getCanonicalName());
 				}
+
 				return com;
 			}
 		});
@@ -112,13 +125,13 @@ public class PacketPipeline extends MessageToMessageCodec<FMLProxyPacket, Abstra
 		{
 			case CLIENT:
 				player = getClientPlayer();
-				pkt.handleClientSide(player);
+				pkt.handleClientSide((EntityPlayerSP)player);
 
 				break;
 			case SERVER:
 				INetHandler netHandler = ctx.channel().attr(NetworkRegistry.NET_HANDLER).get();
 				player = ((NetHandlerPlayServer)netHandler).playerEntity;
-				pkt.handleServerSide(player);
+				pkt.handleServerSide((EntityPlayerMP)player);
 
 				break;
 			default:

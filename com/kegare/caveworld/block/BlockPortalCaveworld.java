@@ -1,9 +1,19 @@
+/*
+ * Caveworld
+ *
+ * Copyright (c) 2014 kegare
+ * https://github.com/kegare
+ *
+ * This mod is distributed under the terms of the Minecraft Mod Public License 1.0, or MMPL.
+ * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
+ */
+
 package com.kegare.caveworld.block;
 
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.inventory.InventoryCaveworldPortal;
-import com.kegare.caveworld.renderer.RenderPortalCaveworld;
+import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.world.TeleporterCaveworld;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -13,80 +23,39 @@ import net.minecraft.block.material.Material;
 import net.minecraft.client.particle.EntityFX;
 import net.minecraft.client.particle.EntityReddustFX;
 import net.minecraft.client.renderer.texture.IIconRegister;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemMonsterPlacer;
-import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.Direction;
 import net.minecraft.util.IIcon;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import net.minecraftforge.common.DimensionManager;
 
-import java.io.File;
 import java.util.Random;
 
 public class BlockPortalCaveworld extends BlockPortal
 {
-	private static InventoryCaveworldPortal inventory;
+	private InventoryCaveworldPortal inventory;
 
-	public static InventoryCaveworldPortal getInventory()
+	public InventoryCaveworldPortal getInventory()
 	{
 		if (inventory == null)
 		{
-			inventory = new InventoryCaveworldPortal();
-
-			try
-			{
-				File dir = new File(DimensionManager.getCurrentSaveRootDirectory(), "data");
-
-				if (!dir.exists())
-				{
-					dir.mkdirs();
-				}
-
-				File file = new File(dir, "caveworld_portal.dat");
-
-				if (file.exists() && file.canRead())
-				{
-					inventory.loadInventoryFromNBT((NBTTagList)CompressedStreamTools.read(file).getTag("PortalItems"));
-				}
-			}
-			catch (Exception ignored) {}
+			inventory = new InventoryCaveworldPortal().loadInventoryFromNBT();
 		}
 
 		return inventory;
-	}
-
-	public static void saveInventoryData()
-	{
-		if (inventory != null)
-		{
-			try
-			{
-				NBTTagCompound data = new NBTTagCompound();
-				File dir = new File(DimensionManager.getCurrentSaveRootDirectory(), "data");
-
-				if (!dir.exists())
-				{
-					dir.mkdirs();
-				}
-
-				data.setTag("PortalItems", inventory.saveInventoryToNBT());
-
-				CompressedStreamTools.write(data, new File(dir, "caveworld_portal.dat"));
-			}
-			catch (Exception ignored) {}
-		}
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -102,6 +71,11 @@ public class BlockPortalCaveworld extends BlockPortal
 		this.setLightLevel(0.6F);
 		this.setStepSound(soundTypeGlass);
 		this.disableStats();
+
+		if (Version.DEV_DEBUG || Config.portalCraftRecipe)
+		{
+			this.setCreativeTab(CreativeTabs.tabDecorations);
+		}
 	}
 
 	@Override
@@ -115,12 +89,65 @@ public class BlockPortalCaveworld extends BlockPortal
 	@Override
 	public int getRenderType()
 	{
-		return RenderPortalCaveworld.renderIdPortal;
+		return Config.RENDER_TYPE_PORTAL;
 	}
 
 	@Override
-	public boolean isCollidable()
+	public void setBlockBoundsBasedOnState(IBlockAccess world, int x, int y, int z)
 	{
+		int metadata = func_149999_b(world.getBlockMetadata(x, y, z));
+
+		if (metadata == 0)
+		{
+			if (world.getBlock(x - 1, y, z) != this && world.getBlock(x + 1, y, z) != this)
+			{
+				metadata = 2;
+			}
+			else
+			{
+				metadata = 1;
+			}
+
+			if (world instanceof World && !((World)world).isRemote)
+			{
+				((World)world).setBlockMetadataWithNotify(x, y, z, metadata, 2);
+			}
+		}
+
+		float var1 = 0.15F;
+		float var2 = 0.15F;
+
+		if (metadata == 1)
+		{
+			var1 = 0.5F;
+		}
+		else if (metadata == 2)
+		{
+			var2 = 0.5F;
+		}
+
+		this.setBlockBounds(0.5F - var1, 0.0F, 0.5F - var2, 0.5F + var1, 1.0F, 0.5F + var2);
+	}
+
+	@Override
+	public boolean func_150000_e(World world, int x, int y, int z)
+	{
+		Size size1 = new Size(world, x, y, z, 1);
+		Size size2 = new Size(world, x, y, z, 2);
+
+		if (size1.canCreatePortal() && size1.portalBlockCount == 0)
+		{
+			size1.setPortalBlocks();
+
+			return true;
+		}
+		else if (size2.canCreatePortal() && size2.portalBlockCount == 0)
+		{
+			size2.setPortalBlocks();
+
+			return true;
+		}
+
 		return false;
 	}
 
@@ -131,40 +158,31 @@ public class BlockPortalCaveworld extends BlockPortal
 		Size size1 = new Size(world, x, y, z, 1);
 		Size size2 = new Size(world, x, y, z, 2);
 
-		if (metadata == 1 && (!size1.func_150860_b() || size1.portalBlockCount < size1.portalWidth * size1.portalHeight))
+		if (metadata == 1 && (!size1.canCreatePortal() || size1.portalBlockCount < size1.portalWidth * size1.portalHeight))
 		{
 			world.setBlock(x, y, z, Blocks.air);
 		}
-		else if (metadata == 2 && (!size2.func_150860_b() || size2.portalBlockCount < size2.portalWidth * size2.portalHeight))
+		else if (metadata == 2 && (!size2.canCreatePortal() || size2.portalBlockCount < size2.portalWidth * size2.portalHeight))
 		{
 			world.setBlock(x, y, z, Blocks.air);
 		}
-		else if (metadata == 0 && !size1.func_150860_b() && !size2.func_150860_b())
+		else if (metadata == 0 && !size1.canCreatePortal() && !size2.canCreatePortal())
 		{
 			world.setBlock(x, y, z, Blocks.air);
 		}
 	}
 
 	@Override
-	public boolean func_150000_e(World world, int x, int y, int z)
+	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX, float hitY, float hitZ)
 	{
-		Size size1 = new Size(world, x, y, z, 1);
-		Size size2 = new Size(world, x, y, z, 2);
-
-		if (size1.func_150860_b() && size1.portalBlockCount == 0)
+		if (!world.isRemote)
 		{
-			size1.setPortalBlocks();
+			world.playSoundAtEntity(player, "random.click", 0.8F, 1.5F);
 
-			return true;
-		}
-		else if (size2.func_150860_b() && size2.portalBlockCount == 0)
-		{
-			size2.setPortalBlocks();
-
-			return true;
+			player.displayGUIChest(getInventory());
 		}
 
-		return false;
+		return true;
 	}
 
 	@Override
@@ -181,7 +199,7 @@ public class BlockPortalCaveworld extends BlockPortal
 
 			if (entity.timeUntilPortal <= 0 && (dimOld == 0 || dimOld == Config.dimensionCaveworld))
 			{
-				if (entity instanceof EntityPlayerMP)
+				if (entity instanceof EntityPlayer)
 				{
 					EntityPlayerMP player = (EntityPlayerMP)entity;
 
@@ -196,9 +214,9 @@ public class BlockPortalCaveworld extends BlockPortal
 						player.addPotionEffect(new PotionEffect(Potion.blindness.getId(), 20));
 
 						worldNew.playSoundAtEntity(player, "caveworld:caveworld_portal", 0.75F, 1.0F);
-
-						player.timeUntilPortal = player.getPortalCooldown();
 					}
+
+					player.timeUntilPortal = player.getPortalCooldown();
 				}
 				else
 				{
@@ -234,9 +252,11 @@ public class BlockPortalCaveworld extends BlockPortal
 	@Override
 	public void updateTick(World world, int x, int y, int z, Random random)
 	{
+		super.updateTick(world, x, y, z, random);
+
 		if (!world.isRemote && world.provider.dimensionId == 0 && world.getGameRules().getGameRuleBooleanValue("doMobSpawning") && !world.isDaytime() && random.nextInt(300) < world.difficultySetting.getDifficultyId())
 		{
-			while (!world.doesBlockHaveSolidTopSurface(world, x, y, z) && y > 0)
+			while (!World.doesBlockHaveSolidTopSurface(world, x, y, z) && y > 0)
 			{
 				--y;
 			}
@@ -273,10 +293,17 @@ public class BlockPortalCaveworld extends BlockPortal
 		}
 	}
 
+	@Override
+	@SideOnly(Side.CLIENT)
+	public Item getItem(World world, int x, int y, int z)
+	{
+		return Item.getItemFromBlock(this);
+	}
+
 	public static class Size
 	{
 		private final World worldObj;
-		private final int blockMetadata;
+		private final int portalMetadata;
 		private final int field_150863_d;
 		private final int field_150866_c;
 
@@ -289,21 +316,23 @@ public class BlockPortalCaveworld extends BlockPortal
 		public Size(World world, int x, int y, int z, int metadata)
 		{
 			this.worldObj = world;
-			this.blockMetadata = metadata;
+			this.portalMetadata = metadata;
 			this.field_150863_d = BlockPortal.field_150001_a[metadata][0];
 			this.field_150866_c = BlockPortal.field_150001_a[metadata][1];
 
-			for (int i = y; y > i - 21 && y > 0 && func_150857_a(world.getBlock(x, y - 1, z)); --y)
+			int i = y;
+
+			while (y > i - 21 && y > 0 && isReplaceablePortal(world.getBlock(x, y - 1, z)))
 			{
-				;
+				--y;
 			}
 
-			int var1 = func_150853_a(x, y, z, field_150863_d) - 1;
+			i = getPortalWidth(x, y, z, field_150863_d) - 1;
 
-			if (var1 >= 0)
+			if (i >= 0)
 			{
-				this.portalCoord = new ChunkCoordinates(x + var1 * Direction.offsetX[field_150863_d], y, z + var1 * Direction.offsetZ[field_150863_d]);
-				this.portalWidth = func_150853_a(portalCoord.posX, portalCoord.posY, portalCoord.posZ, field_150866_c);
+				this.portalCoord = new ChunkCoordinates(x + i * Direction.offsetX[field_150863_d], y, z + i * Direction.offsetZ[field_150863_d]);
+				this.portalWidth = getPortalWidth(portalCoord.posX, portalCoord.posY, portalCoord.posZ, field_150866_c);
 
 				if (portalWidth < 2 || portalWidth > 21)
 				{
@@ -314,11 +343,11 @@ public class BlockPortalCaveworld extends BlockPortal
 
 			if (portalCoord != null)
 			{
-				this.portalHeight = func_150858_a();
+				this.portalHeight = getPortalHeight();
 			}
 		}
 
-		protected int func_150853_a(int x, int y, int z, int par4)
+		protected int getPortalWidth(int x, int y, int z, int par4)
 		{
 			int var1 = Direction.offsetX[par4];
 			int var2 = Direction.offsetZ[par4];
@@ -326,7 +355,7 @@ public class BlockPortalCaveworld extends BlockPortal
 
 			for (i = 0; i < 22; ++i)
 			{
-				if (!func_150857_a(worldObj.getBlock(x + var1 * i, y, z + var2 * i)))
+				if (!isReplaceablePortal(worldObj.getBlock(x + var1 * i, y, z + var2 * i)))
 				{
 					break;
 				}
@@ -340,7 +369,7 @@ public class BlockPortalCaveworld extends BlockPortal
 			return worldObj.getBlock(x + var1 * i, y, z + var2 * i) == Blocks.mossy_cobblestone ? i : 0;
 		}
 
-		protected int func_150858_a()
+		protected int getPortalHeight()
 		{
 			int i, j, k, l;
 
@@ -355,7 +384,7 @@ public class BlockPortalCaveworld extends BlockPortal
 					l = portalCoord.posZ + j * Direction.offsetZ[field_150866_c];
 					Block block = worldObj.getBlock(k, i, l);
 
-					if (!func_150857_a(block))
+					if (!isReplaceablePortal(block))
 					{
 						break label;
 					}
@@ -414,12 +443,12 @@ public class BlockPortalCaveworld extends BlockPortal
 			}
 		}
 
-		protected boolean func_150857_a(Block block)
+		protected boolean isReplaceablePortal(Block block)
 		{
 			return block.getMaterial() == Material.air || block == CaveBlocks.caveworld_portal;
 		}
 
-		public boolean func_150860_b()
+		public boolean canCreatePortal()
 		{
 			if (portalCoord != null && portalWidth >= 2 && portalWidth <= 21 && portalHeight >= 3 && portalHeight <= 21)
 			{
@@ -430,7 +459,7 @@ public class BlockPortalCaveworld extends BlockPortal
 
 					for (int j = 0; j < portalHeight; ++j)
 					{
-						if (blockMetadata == 1)
+						if (portalMetadata == 1)
 						{
 							if (worldObj.getBlock(x, portalCoord.posY + j, z + 1) == CaveBlocks.caveworld_portal)
 							{
@@ -441,7 +470,7 @@ public class BlockPortalCaveworld extends BlockPortal
 								return false;
 							}
 						}
-						else if (blockMetadata == 2)
+						else if (portalMetadata == 2)
 						{
 							if (worldObj.getBlock(x + 1, portalCoord.posY + j, z) == CaveBlocks.caveworld_portal)
 							{
@@ -470,7 +499,7 @@ public class BlockPortalCaveworld extends BlockPortal
 
 				for (int j = 0; j < portalHeight; ++j)
 				{
-					worldObj.setBlock(x, portalCoord.posY + j, z, CaveBlocks.caveworld_portal, blockMetadata, 2);
+					worldObj.setBlock(x, portalCoord.posY + j, z, CaveBlocks.caveworld_portal, portalMetadata, 2);
 				}
 			}
 		}

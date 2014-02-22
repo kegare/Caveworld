@@ -1,11 +1,17 @@
+/*
+ * Caveworld
+ *
+ * Copyright (c) 2014 kegare
+ * https://github.com/kegare
+ *
+ * This mod is distributed under the terms of the Minecraft Mod Public License 1.0, or MMPL.
+ * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
+ */
+
 package com.kegare.caveworld.core;
 
-import com.kegare.caveworld.packet.AbstractPacket;
 import com.kegare.caveworld.util.CaveLog;
 import cpw.mods.fml.common.Loader;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
@@ -15,6 +21,9 @@ public class Config
 {
 	public static boolean versionNotify = true;
 
+	public static boolean portalCraftRecipe = true;
+	public static boolean mossStoneCraftRecipe = true;
+
 	public static int dimensionCaveworld = -75;
 	public static int subsurfaceHeight = 127;
 	public static boolean generateCaves = true;
@@ -23,6 +32,8 @@ public class Config
 	public static boolean generateLakes = true;
 	public static boolean generateDungeons = true;
 	public static boolean decorateVines = true;
+
+	public static final int RENDER_TYPE_PORTAL = Caveworld.proxy.getUniqueRenderType();
 
 	private static Configuration getConfig(String name)
 	{
@@ -70,7 +81,30 @@ public class Config
 		{
 			prop = config.get(category, "versionNotify", versionNotify);
 			prop.comment = "Whether or not to notify when a new Caveworld version is available. [true/false]";
+			prop.comment += Configuration.NEW_LINE;
+			prop.comment += "Note: If multiplayer, does not have to match client-side and server-side.";
 			versionNotify = prop.getBoolean(versionNotify);
+		}
+		finally
+		{
+			if (config.hasChanged())
+			{
+				config.save();
+			}
+		}
+
+		category = "recipes";
+		config.addCustomCategoryComment(category, "If multiplayer, values must match on client-side and server-side.");
+
+		try
+		{
+			prop = config.get(category, "portalCraftRecipe", portalCraftRecipe);
+			prop.comment = "Whether or not to add crafting recipe of Caveworld Portal. [true/false]";
+			portalCraftRecipe = prop.getBoolean(portalCraftRecipe);
+
+			prop = config.get(category, "mossStoneCraftRecipe", mossStoneCraftRecipe);
+			prop.comment = "Whether or not to add crafting recipe of Moss Stone. [true/false]";
+			mossStoneCraftRecipe = prop.getBoolean(mossStoneCraftRecipe);
 		}
 		finally
 		{
@@ -82,7 +116,7 @@ public class Config
 
 		category = "caveworld";
 		config = getConfig("dimension");
-		config.addCustomCategoryComment("caveworld", "If multiplayer, server-side only.");
+		config.addCustomCategoryComment(category, "If multiplayer, server-side only.");
 
 		try
 		{
@@ -91,7 +125,7 @@ public class Config
 			dimensionCaveworld = prop.getInt(dimensionCaveworld);
 			prop = config.get(category, "subsurfaceHeight", subsurfaceHeight);
 			prop.comment = "Specify the subsurface layer height of Caveworld. [63-255]";
-			subsurfaceHeight = roundIntValue(prop, 63, 255).getInt();
+			subsurfaceHeight = getIntBounded(prop, subsurfaceHeight, 63, 255);
 			prop = config.get(category, "generateCaves", generateCaves);
 			prop.comment = "Whether or not to generate caves to Caveworld. [true/false]";
 			generateCaves = prop.getBoolean(generateCaves);
@@ -120,81 +154,15 @@ public class Config
 		}
 	}
 
-	private static Property roundIntValue(Property prop, int min, int max)
+	private static int getIntBounded(Property prop, int num, int min, int max)
 	{
-		int value = Math.min(Math.max(prop.getInt(), min), max);
+		int value = Math.min(Math.max(prop.getInt(num), min), max);
 
-		if (prop.getInt() != value)
+		if (prop.getInt(num) != value)
 		{
 			prop.set(value);
 		}
 
-		return prop;
-	}
-
-	public static class ConfigSyncPacket extends AbstractPacket
-	{
-		private int dimensionCaveworld;
-		private int subsurfaceHeight;
-		private boolean generateCaves;
-		private boolean generateRavine;
-		private boolean generateMineshaft;
-		private boolean generateLakes;
-		private boolean generateDungeons;
-		private boolean decorateVines;
-
-		public ConfigSyncPacket()
-		{
-			dimensionCaveworld = Config.dimensionCaveworld;
-			subsurfaceHeight = Config.subsurfaceHeight;
-			generateCaves = Config.generateCaves;
-			generateRavine = Config.generateRavine;
-			generateMineshaft = Config.generateMineshaft;
-			generateLakes = Config.generateLakes;
-			generateDungeons = Config.generateDungeons;
-			decorateVines = Config.decorateVines;
-		}
-
-		@Override
-		public void encodeInto(ChannelHandlerContext ctx, ByteBuf buffer)
-		{
-			buffer.writeInt(dimensionCaveworld);
-			buffer.writeInt(subsurfaceHeight);
-			buffer.writeBoolean(generateCaves);
-			buffer.writeBoolean(generateRavine);
-			buffer.writeBoolean(generateMineshaft);
-			buffer.writeBoolean(generateLakes);
-			buffer.writeBoolean(generateDungeons);
-			buffer.writeBoolean(decorateVines);
-		}
-
-		@Override
-		public void decodeInto(ChannelHandlerContext ctx, ByteBuf buffer)
-		{
-			dimensionCaveworld = buffer.readInt();
-			subsurfaceHeight = buffer.readInt();
-			generateCaves = buffer.readBoolean();
-			generateRavine = buffer.readBoolean();
-			generateMineshaft = buffer.readBoolean();
-			generateLakes = buffer.readBoolean();
-			generateDungeons = buffer.readBoolean();
-			decorateVines = buffer.readBoolean();
-		}
-
-		@Override
-		public void handleClientSide(EntityPlayer player)
-		{
-			Config.dimensionCaveworld = dimensionCaveworld;
-			Config.subsurfaceHeight = subsurfaceHeight;
-			Config.generateCaves = generateCaves;
-			Config.generateRavine = generateRavine;
-			Config.generateMineshaft = generateMineshaft;
-			Config.generateLakes = generateLakes;
-			Config.generateDungeons = generateDungeons;
-			Config.decorateVines = decorateVines;
-		}
-
-		@Override
-		public void handleServerSide(EntityPlayer player) {}
+		return prop.getInt(value);
 	}
 }

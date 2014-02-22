@@ -1,15 +1,24 @@
+/*
+ * Caveworld
+ *
+ * Copyright (c) 2014 kegare
+ * https://github.com/kegare
+ *
+ * This mod is distributed under the terms of the Minecraft Mod Public License 1.0, or MMPL.
+ * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
+ */
+
 package com.kegare.caveworld.world;
 
 import com.kegare.caveworld.core.Config;
-import com.kegare.caveworld.packet.AbstractPacket;
 import com.kegare.caveworld.renderer.EmptyRenderer;
+import com.kegare.caveworld.util.CaveLog;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.nbt.CompressedStreamTools;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.WorldType;
@@ -17,98 +26,80 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.client.IRenderHandler;
 import net.minecraftforge.common.DimensionManager;
+import org.apache.logging.log4j.Level;
 
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.security.SecureRandom;
-import java.util.Properties;
 
 public class WorldProviderCaveworld extends WorldProvider
 {
-	private static final Properties dimensionData = new Properties();
-
 	public static long dimensionSeed;
 	public static int subsurfaceHeight;
 
-	public static void loadDimensionData()
+	private static NBTTagCompound dimData;
+
+	public static NBTTagCompound getDimData()
 	{
-		if (dimensionData.isEmpty())
+		if (dimData == null)
 		{
-			try
+			readDimData();
+		}
+
+		return dimData;
+	}
+
+	static void readDimData()
+	{
+		try
+		{
+			File dir = new File(DimensionManager.getCurrentSaveRootDirectory(), "DIM-Caveworld");
+
+			if (!dir.exists())
 			{
-				File dir = new File(DimensionManager.getCurrentSaveRootDirectory(), "DIM-Caveworld");
-
-				if (!dir.exists())
-				{
-					dir.mkdirs();
-				}
-
-				File file = new File(dir, "caveworld.xml");
-
-				if (file.exists() && file.canRead())
-				{
-					FileInputStream fis = new FileInputStream(file);
-
-					try
-					{
-						dimensionData.loadFromXML(fis);
-					}
-					finally
-					{
-						fis.close();
-					}
-				}
+				dir.mkdirs();
 			}
-			catch (Exception ignored)
+
+			dimData = CompressedStreamTools.read(new File(dir, "caveworld.dat"));
+		}
+		catch (Exception e)
+		{
+			CaveLog.log(Level.ERROR, e, "An error occurred trying to reading Caveworld dimension data");
+		}
+		finally
+		{
+			if (dimData == null)
 			{
-				dimensionData.clear();
+				dimData = new NBTTagCompound();
 			}
 		}
 	}
 
-	public static void saveDimensionData()
+	static void writeDimData()
 	{
-		if (!dimensionData.isEmpty())
+		try
 		{
-			try
+			File dir = new File(DimensionManager.getCurrentSaveRootDirectory(), "DIM-Caveworld");
+
+			if (!dir.exists())
 			{
-				File dir = new File(DimensionManager.getCurrentSaveRootDirectory(), "DIM-Caveworld");
-
-				if (!dir.exists())
-				{
-					dir.mkdirs();
-				}
-
-				File file = new File(dir, "caveworld.xml");
-				DataOutputStream dos = new DataOutputStream(new FileOutputStream(file));
-
-				try
-				{
-					dimensionData.storeToXML(dos, null);
-				}
-				finally
-				{
-					dos.close();
-				}
+				dir.mkdirs();
 			}
-			catch (Exception ignored) {}
+
+			CompressedStreamTools.write(getDimData(), new File(dir, "caveworld.dat"));
+		}
+		catch (Exception e)
+		{
+			CaveLog.log(Level.ERROR, e, "An error occurred trying to writing Caveworld dimension data");
 		}
 	}
 
-	public static Properties getDimensionData()
+	public static void clearDimData(boolean flag)
 	{
-		loadDimensionData();
+		if (flag) writeDimData();
 
-		return dimensionData;
-	}
-
-	public static void clearDimensionData()
-	{
-		dimensionData.clear();
 		dimensionSeed = 0;
 		subsurfaceHeight = 0;
+		dimData = null;
 
 		WorldChunkManagerCaveworld.biomeMap.clear();
 	}
@@ -279,15 +270,24 @@ public class WorldProviderCaveworld extends WorldProvider
 	{
 		if (!worldObj.isRemote && dimensionSeed == 0)
 		{
-			Properties data = getDimensionData();
-			String key = "DimSeed";
-
-			if (!data.containsKey(key))
+			try
 			{
-				data.setProperty(key, String.valueOf(new SecureRandom().nextLong()));
-			}
+				NBTTagCompound data = getDimData();
 
-			dimensionSeed = Long.valueOf(data.getProperty(key, String.valueOf(Long.reverseBytes(super.getSeed()))));
+				if (!data.hasKey("DimSeed"))
+				{
+					data.setLong("DimSeed", new SecureRandom().nextLong());
+				}
+
+				dimensionSeed = data.getLong("DimSeed");
+			}
+			finally
+			{
+				if (dimensionSeed == 0)
+				{
+					dimensionSeed = Long.reverseBytes(super.getSeed());
+				}
+			}
 		}
 
 		return dimensionSeed;
@@ -298,15 +298,14 @@ public class WorldProviderCaveworld extends WorldProvider
 	{
 		if (!worldObj.isRemote && subsurfaceHeight == 0)
 		{
-			Properties data = getDimensionData();
-			String key = "SubsurfaceHeight";
+			NBTTagCompound data = getDimData();
 
-			if (!data.containsKey(key))
+			if (!data.hasKey("SubsurfaceHeight"))
 			{
-				data.setProperty(key, String.valueOf(Config.subsurfaceHeight));
+				data.setInteger("SubsurfaceHeight", Config.subsurfaceHeight);
 			}
 
-			subsurfaceHeight = Math.min(Math.max(Integer.valueOf(data.getProperty(key, String.valueOf(Config.subsurfaceHeight))), 63), 255);
+			subsurfaceHeight = Math.min(Math.max(data.getInteger("SubsurfaceHeight"), 63), 255);
 		}
 
 		return subsurfaceHeight + 1;
@@ -328,41 +327,5 @@ public class WorldProviderCaveworld extends WorldProvider
 	public boolean canDoRainSnowIce(Chunk chunk)
 	{
 		return false;
-	}
-
-	public static class DataSyncPacket extends AbstractPacket
-	{
-		private long dimensionSeed;
-		private int subsurfaceHeight;
-
-		public DataSyncPacket()
-		{
-			dimensionSeed = WorldProviderCaveworld.dimensionSeed;
-			subsurfaceHeight = WorldProviderCaveworld.subsurfaceHeight;
-		}
-
-		@Override
-		public void encodeInto(ChannelHandlerContext ctx, ByteBuf buffer)
-		{
-			buffer.writeLong(dimensionSeed);
-			buffer.writeInt(subsurfaceHeight);
-		}
-
-		@Override
-		public void decodeInto(ChannelHandlerContext ctx, ByteBuf buffer)
-		{
-			dimensionSeed = buffer.readLong();
-			subsurfaceHeight = buffer.readInt();
-		}
-
-		@Override
-		public void handleClientSide(EntityPlayer player)
-		{
-			WorldProviderCaveworld.dimensionSeed = dimensionSeed;
-			WorldProviderCaveworld.subsurfaceHeight = subsurfaceHeight;
-		}
-
-		@Override
-		public void handleServerSide(EntityPlayer player) {}
 	}
 }

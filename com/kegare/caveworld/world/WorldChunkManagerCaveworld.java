@@ -1,3 +1,13 @@
+/*
+ * Caveworld
+ *
+ * Copyright (c) 2014 kegare
+ * https://github.com/kegare
+ *
+ * This mod is distributed under the terms of the Minecraft Mod Public License 1.0, or MMPL.
+ * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
+ */
+
 package com.kegare.caveworld.world;
 
 import com.google.common.collect.Maps;
@@ -42,11 +52,7 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 
 		if (!biomeMap.containsKey(chunkSeed))
 		{
-			long worldSeed = worldObj.getSeed();
-			random.setSeed(worldSeed);
-			long xSeed = random.nextLong() >> 2 + 1L;
-			long zSeed = random.nextLong() >> 2 + 1L;
-			random.setSeed(chunkX * xSeed + chunkZ * zSeed ^ worldSeed);
+			random.setSeed(chunkX + chunkZ ^ worldObj.getSeed());
 
 			biome = CaveBiomeManager.getRandomBiome(random);
 
