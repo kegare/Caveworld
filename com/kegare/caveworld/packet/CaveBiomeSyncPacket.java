@@ -23,7 +23,6 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayerMP;
 
 import java.util.Iterator;
-import java.util.Set;
 
 public class CaveBiomeSyncPacket extends AbstractPacket
 {
@@ -31,19 +30,28 @@ public class CaveBiomeSyncPacket extends AbstractPacket
 
 	public CaveBiomeSyncPacket()
 	{
-		data = "";
+		StringBuilder builder = new StringBuilder(1024);
 
-		Iterator<CaveBiome> biomes = CaveBiomeManager.getCaveBiomes().iterator();
+		builder.append('{');
 
-		while (biomes.hasNext())
+		for (Iterator<CaveBiome> biomes = CaveBiomeManager.getCaveBiomes().iterator(); biomes.hasNext();)
 		{
-			data += biomes.next();
+			CaveBiome biome = biomes.next();
+
+			if (biome.itemWeight <= 0)
+			{
+				continue;
+			}
+
+			builder.append(biome);
 
 			if (biomes.hasNext())
 			{
-				data += ",";
+				builder.append(',');
 			}
 		}
+
+		this.data = builder.append('}').toString();
 	}
 
 	@Override
@@ -65,13 +73,10 @@ public class CaveBiomeSyncPacket extends AbstractPacket
 		if (!Strings.isNullOrEmpty(data))
 		{
 			CaveBiomeManager.clearCaveBiomes();
-			CaveBiomeManager.loadCaveBiomesFromString(data);
 
-			Set<CaveBiome> biomes = CaveBiomeManager.getCaveBiomes();
-
-			if (!biomes.isEmpty())
+			if (CaveBiomeManager.loadCaveBiomesFromString(data))
 			{
-				CaveLog.info("Loaded %d cave biomes from server", biomes.size());
+				CaveLog.info("Loaded %d cave biomes from server", CaveBiomeManager.getActiveBiomeCount());
 			}
 		}
 	}

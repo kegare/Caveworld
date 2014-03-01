@@ -12,10 +12,7 @@ package com.kegare.caveworld.proxy;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import net.minecraft.client.particle.EntityFX;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.stats.Achievement;
 
 public class CommonProxy
 {
@@ -31,10 +28,5 @@ public class CommonProxy
 	public MinecraftServer getServer()
 	{
 		return FMLCommonHandler.instance().getMinecraftServerInstance();
-	}
-
-	public boolean hasAchievementUnlocked(EntityPlayer player, Achievement achievement)
-	{
-		return ((EntityPlayerMP)player).func_147099_x().hasAchievementUnlocked(achievement);
 	}
 }

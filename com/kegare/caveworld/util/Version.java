@@ -82,6 +82,11 @@ public class Version
 		{
 			DEV_DEBUG = true;
 		}
+
+		if (DEV_DEBUG)
+		{
+			Caveworld.metadata.version += "-dev";
+		}
 	}
 
 	public static void versionCheck()

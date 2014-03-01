@@ -23,6 +23,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.MathHelper;
+import net.minecraft.world.ChunkPosition;
+import net.minecraft.world.WorldServer;
 
 import java.awt.*;
 import java.net.URI;
@@ -84,6 +87,37 @@ public class CommandCaveworld implements ICommand
 				Desktop.getDesktop().browse(new URI(Caveworld.metadata.url));
 			}
 			catch (Exception ignored) {}
+		}
+		else if (Version.DEV_DEBUG)
+		{
+			if (args[0].equalsIgnoreCase("mineshaft"))
+			{
+				if (sender instanceof EntityPlayerMP)
+				{
+					EntityPlayerMP player = (EntityPlayerMP)sender;
+					WorldServer world = player.getServerForPlayer();
+					int x = MathHelper.floor_double(player.posX);
+					int y = MathHelper.floor_double(player.posY);
+					int z = MathHelper.floor_double(player.posZ);
+					ChunkPosition pos = world.getChunkProvider().func_147416_a(world, "Mineshaft", x, y, z);
+
+					if (pos != null) player.playerNetServerHandler.setPlayerLocation(pos.chunkPosX, pos.chunkPosY + 1.5D, pos.chunkPosZ, player.rotationYaw, player.rotationPitch);
+				}
+			}
+			else if (args[0].equalsIgnoreCase("stronghold"))
+			{
+				if (sender instanceof EntityPlayerMP)
+				{
+					EntityPlayerMP player = (EntityPlayerMP)sender;
+					WorldServer world = player.getServerForPlayer();
+					int x = MathHelper.floor_double(player.posX);
+					int y = MathHelper.floor_double(player.posY);
+					int z = MathHelper.floor_double(player.posZ);
+					ChunkPosition pos = world.getChunkProvider().func_147416_a(world, "Stronghold", x, y, z);
+
+					if (pos != null) player.playerNetServerHandler.setPlayerLocation(pos.chunkPosX, pos.chunkPosY + 1.5D, pos.chunkPosZ, player.rotationYaw, player.rotationPitch);
+				}
+			}
 		}
 	}
 

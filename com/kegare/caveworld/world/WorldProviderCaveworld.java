@@ -13,17 +13,21 @@ package com.kegare.caveworld.world;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.renderer.EmptyRenderer;
 import com.kegare.caveworld.util.CaveLog;
+import com.kegare.caveworld.world.gen.MapGenStrongholdCaveworld;
+import com.kegare.caveworld.world.gen.StructureStrongholdPiecesCaveworld;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
+import net.minecraft.world.gen.structure.MapGenStructureIO;
 import net.minecraftforge.client.IRenderHandler;
 import net.minecraftforge.common.DimensionManager;
 import org.apache.logging.log4j.Level;
@@ -74,7 +78,7 @@ public class WorldProviderCaveworld extends WorldProvider
 		}
 	}
 
-	static void writeDimData()
+	public static void writeDimData()
 	{
 		try
 		{
@@ -93,10 +97,8 @@ public class WorldProviderCaveworld extends WorldProvider
 		}
 	}
 
-	public static void clearDimData(boolean flag)
+	public static void clearDimData()
 	{
-		if (flag) writeDimData();
-
 		dimensionSeed = 0;
 		subsurfaceHeight = 0;
 		dimData = null;
@@ -110,6 +112,9 @@ public class WorldProviderCaveworld extends WorldProvider
 		worldChunkMgr = new WorldChunkManagerCaveworld(worldObj);
 		dimensionId = Config.dimensionCaveworld;
 		hasNoSky = true;
+
+		MapGenStructureIO.registerStructure(MapGenStrongholdCaveworld.Start.class, "Caveworld.Stronghold");
+		StructureStrongholdPiecesCaveworld.registerStrongholdPieces();
 	}
 
 	@Override
@@ -305,7 +310,7 @@ public class WorldProviderCaveworld extends WorldProvider
 				data.setInteger("SubsurfaceHeight", Config.subsurfaceHeight);
 			}
 
-			subsurfaceHeight = Math.min(Math.max(data.getInteger("SubsurfaceHeight"), 63), 255);
+			subsurfaceHeight = MathHelper.clamp_int(data.getInteger("SubsurfaceHeight"), 63, 255);
 		}
 
 		return subsurfaceHeight + 1;

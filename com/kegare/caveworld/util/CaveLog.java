@@ -10,7 +10,7 @@
 
 package com.kegare.caveworld.util;
 
-import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.relauncher.FMLLaunchHandler;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,7 +30,7 @@ public class CaveLog
 	private static void configureLogging()
 	{
 		log.myLog = LogManager.getLogger("Caveworld");
-		ThreadContext.put("side", FMLCommonHandler.instance().getEffectiveSide().name().toLowerCase(Locale.ENGLISH));
+		ThreadContext.put("side", FMLLaunchHandler.side().name().toLowerCase(Locale.ENGLISH));
 
 		configured = true;
 	}

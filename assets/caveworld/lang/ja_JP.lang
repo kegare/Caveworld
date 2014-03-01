@@ -4,7 +4,7 @@ caveworld.version.message=%s の新しいバージョンが利用可能です
 
 tile.portalCaveworld.name=Caveworld ポータルブロック
 
-container.caveworld_portal=Caveworld ポータル
+inventory.portal.caveworld=Caveworld ポータル
 
 achievement.caveworld.caveworld=Caveworld
 achievement.caveworld.caveworld.desc=Caveworldへ行く

@@ -28,7 +28,7 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 	private final World worldObj;
 	private final Random random;
 
-	protected static final Map<Long, BiomeGenBase> biomeMap = Maps.newHashMap();
+	static final Map<Long, BiomeGenBase> biomeMap = Maps.newHashMap();
 
 	public WorldChunkManagerCaveworld(World world)
 	{
@@ -50,7 +50,11 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 		int chunkZ = z >> 4;
 		long chunkSeed = ChunkCoordIntPair.chunkXZ2Int(chunkX, chunkZ);
 
-		if (!biomeMap.containsKey(chunkSeed))
+		if (biomeMap.containsKey(chunkSeed))
+		{
+			biome = biomeMap.get(chunkSeed);
+		}
+		else
 		{
 			random.setSeed(chunkX + chunkZ ^ worldObj.getSeed());
 
@@ -60,10 +64,6 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 			{
 				biomeMap.put(chunkSeed, biome);
 			}
-		}
-		else
-		{
-			biome = biomeMap.get(chunkSeed);
 		}
 
 		return biome == null ? BiomeGenBase.plains : biome;

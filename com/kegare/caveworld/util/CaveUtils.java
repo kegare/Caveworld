@@ -23,8 +23,13 @@ public class CaveUtils
 		return patternControlCode.matcher(str).replaceAll("");
 	}
 
+	public static int getMiningCount(EntityPlayer player)
+	{
+		return player.getEntityData().getInteger("Caveworld:MiningCount");
+	}
+
 	public static int getMiningLevel(EntityPlayer player)
 	{
-		return player.getEntityData().getInteger("Caveworld:MiningCount") / 1728;
+		return getMiningCount(player) / 500;
 	}
 }

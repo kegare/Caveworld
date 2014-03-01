@@ -397,7 +397,7 @@ public class TeleporterCaveworld extends Teleporter
 
 		if (var1 < 0.0D)
 		{
-			var3 = Math.min(Math.max(var3, 10), worldHeight - 10);
+			var3 = MathHelper.clamp_int(var3, 10, worldHeight - 10);
 
 			for (var6 = -1; var6 <= 1; ++var6)
 			{

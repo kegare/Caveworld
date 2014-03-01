@@ -12,135 +12,104 @@ package com.kegare.caveworld.core;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import com.google.common.io.LineProcessor;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.kegare.caveworld.util.CaveLog;
-import cpw.mods.fml.common.Loader;
+import net.minecraft.block.Block;
+import net.minecraft.init.Blocks;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.WeightedRandom;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
+import net.minecraftforge.common.config.Configuration;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.SortedSet;
 
 public class CaveBiomeManager
 {
-	private static final Set<CaveBiome> CAVE_BIOMES = Sets.newHashSet();
+	private static final SortedSet<CaveBiome> CAVE_BIOMES = Sets.newTreeSet(new Comparator<CaveBiome>()
+	{
+		@Override
+		public int compare(CaveBiome o1, CaveBiome o2)
+		{
+			return Integer.valueOf(o1.biome.biomeID).compareTo(o2.biome.biomeID);
+		}
+	});
+
+	private static final Map<Integer, Integer> genWeightMap = Maps.newHashMap();
+	private static final Map<Integer, Block> terrainBlockMap = Maps.newHashMap();
 
 	private static void initCaveBiomes()
 	{
 		clearCaveBiomes();
 
-		addCaveBiome(BiomeGenBase.ocean, 30);
-		addCaveBiome(BiomeGenBase.plains, 100);
-		addCaveBiome(BiomeGenBase.desert, 90);
-		addCaveBiome(BiomeGenBase.desertHills, 10);
-		addCaveBiome(BiomeGenBase.forest, 100);
-		addCaveBiome(BiomeGenBase.forestHills, 15);
-		addCaveBiome(BiomeGenBase.taiga, 100);
-		addCaveBiome(BiomeGenBase.taigaHills, 15);
-		addCaveBiome(BiomeGenBase.jungle, 90);
-		addCaveBiome(BiomeGenBase.jungleHills, 10);
-		addCaveBiome(BiomeGenBase.swampland, 50);
-		addCaveBiome(BiomeGenBase.extremeHills, 30);
-		addCaveBiome(BiomeGenBase.extremeHillsEdge, 10);
-		addCaveBiome(BiomeGenBase.icePlains, 20);
-		addCaveBiome(BiomeGenBase.iceMountains, 20);
-		addCaveBiome(BiomeGenBase.beach, 3);
-		addCaveBiome(BiomeGenBase.river, 3);
-		addCaveBiome(BiomeGenBase.mushroomIsland, 2);
-		addCaveBiome(BiomeGenBase.mushroomIslandShore, 1);
-		addCaveBiome(BiomeGenBase.savanna, 30);
-		addCaveBiome(BiomeGenBase.mesa, 3);
+		addCaveBiome(new CaveBiome(BiomeGenBase.ocean, 30));
+		addCaveBiome(new CaveBiome(BiomeGenBase.plains, 100));
+		addCaveBiome(new CaveBiome(BiomeGenBase.desert, 90));
+		addCaveBiome(new CaveBiome(BiomeGenBase.desertHills, 10));
+		addCaveBiome(new CaveBiome(BiomeGenBase.forest, 100));
+		addCaveBiome(new CaveBiome(BiomeGenBase.forestHills, 15));
+		addCaveBiome(new CaveBiome(BiomeGenBase.taiga, 100));
+		addCaveBiome(new CaveBiome(BiomeGenBase.taigaHills, 15));
+		addCaveBiome(new CaveBiome(BiomeGenBase.jungle, 90));
+		addCaveBiome(new CaveBiome(BiomeGenBase.jungleHills, 10));
+		addCaveBiome(new CaveBiome(BiomeGenBase.swampland, 50));
+		addCaveBiome(new CaveBiome(BiomeGenBase.extremeHills, 30));
+		addCaveBiome(new CaveBiome(BiomeGenBase.extremeHillsEdge, 10));
+		addCaveBiome(new CaveBiome(BiomeGenBase.icePlains, 20));
+		addCaveBiome(new CaveBiome(BiomeGenBase.iceMountains, 20));
+		addCaveBiome(new CaveBiome(BiomeGenBase.beach, 3));
+		addCaveBiome(new CaveBiome(BiomeGenBase.river, 3));
+		addCaveBiome(new CaveBiome(BiomeGenBase.mushroomIsland, 2));
+		addCaveBiome(new CaveBiome(BiomeGenBase.mushroomIslandShore, 1));
+		addCaveBiome(new CaveBiome(BiomeGenBase.savanna, 30));
+		addCaveBiome(new CaveBiome(BiomeGenBase.mesa, 3));
+		addCaveBiome(new CaveBiome(BiomeGenBase.hell, 0, Blocks.netherrack));
+		addCaveBiome(new CaveBiome(BiomeGenBase.sky, 0, Blocks.end_stone));
 	}
 
-	static void loadCaveBiomes()
+	static boolean loadCaveBiomes()
 	{
+		File file = Config.getConfigFile("biomes");
+
 		try
 		{
-			File dir = new File(Loader.instance().getConfigDir(), "caveworld");
-
-			if (!dir.exists())
+			if (file.exists() && file.canRead())
 			{
-				dir.mkdirs();
-			}
-
-			File file = new File(dir, "caveworld-biomes.cfg");
-
-			if (file.createNewFile())
-			{
-				initCaveBiomes();
-
-				BufferedWriter buffer = Files.newWriter(file, Charsets.UTF_8);
-
-				try
-				{
-					buffer.write("# Caveworld biomes");
-					buffer.newLine();
-					buffer.write("#  Specify the biomes to generate in Caveworld, and rarity.");
-					buffer.newLine();
-					buffer.write("#  Format: {BiomeID}={Rarity[1-100]}");
-					buffer.newLine();
-					buffer.write("#  Note: If specify 0 for rarity, it will not be generated.");
-					buffer.newLine();
-					buffer.newLine();
-
-					for (int i = 0; i < 256; ++i)
-					{
-						BiomeGenBase biome = BiomeGenBase.getBiome(i);
-
-						if (biome != null)
-						{
-							buffer.write("# " + biome.biomeName);
-
-							if (BiomeDictionary.isBiomeRegistered(biome))
-							{
-								Set<String> types = Sets.newHashSet();
-
-								for (Type type : BiomeDictionary.getTypesForBiome(biome))
-								{
-									types.add(type.toString());
-								}
-
-								buffer.write(" [" + Joiner.on(", ").skipNulls().join(types) + "]");
-							}
-
-							buffer.newLine();
-							buffer.write(biome.biomeID + "=" + getBiomeRarity(biome));
-							buffer.newLine();
-							buffer.newLine();
-						}
-					}
-				}
-				finally
-				{
-					buffer.close();
-				}
-			}
-			else if (file.exists() && file.canRead())
-			{
-				String data = Files.readLines(file, Charsets.UTF_8, new LineProcessor<String>()
+				String data = Files.readLines(file, Charsets.US_ASCII, new LineProcessor<String>()
 				{
 					private final StringBuilder builder = new StringBuilder();
 
 					@Override
 					public boolean processLine(String line) throws IOException
 					{
-						if (!Strings.isNullOrEmpty(line) && !line.startsWith("#"))
+						if (!Strings.isNullOrEmpty(line))
 						{
-							builder.append(line.trim());
-							builder.append(',');
+							line = StringUtils.deleteWhitespace(line);
+
+							if (!line.startsWith("#"))
+							{
+								builder.append(line);
+							}
 						}
 
 						return true;
@@ -153,15 +122,26 @@ public class CaveBiomeManager
 					}
 				});
 
-				if (!Strings.isNullOrEmpty(data))
+				if (!Strings.isNullOrEmpty(data) && loadCaveBiomesFromString(data))
 				{
-					loadCaveBiomesFromString(data);
+					return true;
 				}
 			}
+
+			return !CAVE_BIOMES.isEmpty();
 		}
 		catch (Exception e)
 		{
-			CaveLog.log(Level.ERROR, e, "An error occurred trying to loading cave biomes");
+			File dest = new File(file.getParentFile(), file.getName() + ".bak");
+
+			if (dest.exists())
+			{
+				dest.delete();
+			}
+
+			file.renameTo(dest);
+
+			CaveLog.severe("A critical error occured reading the " + file.getName() + " file, defaults will be used - the invalid file is backed up at " + dest.getName(), e);
 		}
 		finally
 		{
@@ -170,81 +150,239 @@ public class CaveBiomeManager
 				initCaveBiomes();
 			}
 
-			CaveLog.info("Loaded %d cave biomes", CAVE_BIOMES.size());
+			for (BiomeGenBase biome : BiomeGenBase.getBiomeGenArray())
+			{
+				if (biome != null)
+				{
+					addCaveBiome(new CaveBiome(biome, 0));
+				}
+			}
+
+			CaveLog.info("Loaded %d cave biomes", getActiveBiomeCount());
+
+			saveCaveBiomes();
 		}
+
+		return false;
 	}
 
-	public static void loadCaveBiomesFromString(String data)
+	public static boolean loadCaveBiomesFromString(String data)
 	{
-		try
+		Map<String, Map<String, Object>> json = new Gson().fromJson(data, new TypeToken<Map<String, Map<String, Object>>>(){}.getType());
+
+		for (String key : json.keySet())
 		{
-			for (String entry : Splitter.on(',').omitEmptyStrings().trimResults().split(data))
+			Map<String, Object> entry = json.get(key);
+			int weight = entry.containsKey("genWeight") ? ((Number)entry.get("genWeight")).intValue() : 1;
+			Block block = entry.containsKey("terrainBlock") ? Block.getBlockFromName((String)entry.get("terrainBlock")) : Blocks.stone;
+
+			if (block == null || block.getMaterial().isLiquid() || !block.getMaterial().isSolid() || block.getMaterial().isReplaceable())
 			{
-				int id = Integer.valueOf(entry.split("=")[0]);
-				int rarity = Integer.valueOf(entry.split("=")[1]);
+				block = Blocks.stone;
+			}
+
+			if (key.matches("^[0-9]{1,3}$"))
+			{
+				int id = MathHelper.parseIntWithDefault(key, -1);
 
 				if (id >= 0 && id < 256)
 				{
-					addCaveBiome(BiomeGenBase.getBiome(id), rarity);
+					addCaveBiome(new CaveBiome(BiomeGenBase.getBiome(id), weight, block));
 				}
 			}
+			else
+			{
+				Type type = Type.valueOf(key.toUpperCase(Locale.ENGLISH));
+
+				if (type != null)
+				{
+					for (BiomeGenBase biome : BiomeDictionary.getBiomesForType(type))
+					{
+						addCaveBiome(new CaveBiome(biome, weight, block));
+					}
+				}
+			}
+		}
+
+		return !CAVE_BIOMES.isEmpty();
+	}
+
+	static boolean saveCaveBiomes()
+	{
+		try
+		{
+			File file = Config.getConfigFile("biomes");
+			StringBuilder builder = new StringBuilder(2048);
+
+			try
+			{
+				builder.append("# Configuration file - Caveworld biomes").append(Configuration.NEW_LINE);
+				builder.append(Configuration.NEW_LINE);
+				builder.append('{').append(Configuration.NEW_LINE);
+
+				for (Iterator<CaveBiome> biomes = CAVE_BIOMES.iterator(); biomes.hasNext();)
+				{
+					CaveBiome caveBiome = biomes.next();
+					BiomeGenBase biome = caveBiome.biome;
+
+					builder.append("  # ").append(biome.biomeName);
+
+					if (BiomeDictionary.isBiomeRegistered(biome))
+					{
+						Set<String> types = Sets.newHashSet();
+
+						for (Type type : BiomeDictionary.getTypesForBiome(biome))
+						{
+							types.add(type.name());
+						}
+
+						builder.append(" [").append(Joiner.on(", ").skipNulls().join(types)).append(']');
+					}
+
+					builder.append(Configuration.NEW_LINE);
+					builder.append("  \"").append(biome.biomeID).append("\": {").append(Configuration.NEW_LINE);
+					builder.append("    \"genWeight\": ").append(caveBiome.itemWeight);
+
+					if (caveBiome.terrainBlock != Blocks.stone)
+					{
+						builder.append(',').append(Configuration.NEW_LINE);
+						builder.append("    \"terrainBlock\": \"").append(Block.blockRegistry.getNameForObject(caveBiome.terrainBlock)).append("\"");
+					}
+
+					builder.append(Configuration.NEW_LINE);
+					builder.append("  }");
+
+					if (biomes.hasNext())
+					{
+						builder.append(',');
+					}
+
+					builder.append(Configuration.NEW_LINE);
+				}
+
+				builder.append('}');
+			}
+			finally
+			{
+				builder.trimToSize();
+			}
+
+			String data = builder.toString();
+
+			if (file.exists() && file.canRead())
+			{
+				String dest = FileUtils.readFileToString(file);
+
+				if (!Strings.isNullOrEmpty(dest) && data.equals(dest))
+				{
+					return false;
+				}
+			}
+
+			FileUtils.writeStringToFile(file, data);
+
+			return true;
 		}
 		catch (Exception e)
 		{
-			CaveLog.log(Level.ERROR, e, "An error occurred trying to loading cave biomes from string");
-		}
-	}
-
-	public static int addCaveBiome(BiomeGenBase biome, int rarity)
-	{
-		if (biome != null && rarity > 0)
-		{
-			for (CaveBiome caveBiome : CAVE_BIOMES)
-			{
-				if (caveBiome.biome.isEqualTo(biome))
-				{
-					return caveBiome.itemWeight += rarity;
-				}
-			}
-
-			CAVE_BIOMES.add(new CaveBiome(biome, Math.min(Math.max(rarity, 1), 100)));
+			CaveLog.log(Level.ERROR, e, "An error occurred trying to saving cave biomes");
 		}
 
-		return rarity;
+		return false;
 	}
 
-	public static int removeCaveBiome(BiomeGenBase biome)
+	public static boolean addCaveBiome(CaveBiome biome)
 	{
-		if (biome != null)
+		for (CaveBiome caveBiome : CAVE_BIOMES)
 		{
-			for (CaveBiome caveBiome : CAVE_BIOMES)
+			if (caveBiome.biome.biomeID == biome.biome.biomeID)
 			{
-				if (caveBiome.biome.isEqualTo(biome))
-				{
-					CAVE_BIOMES.remove(caveBiome);
+				caveBiome.itemWeight += biome.itemWeight;
 
-					return caveBiome.itemWeight;
-				}
+				return false;
 			}
 		}
 
-		return 0;
+		return CAVE_BIOMES.add(biome);
 	}
 
-	public static int getBiomeRarity(BiomeGenBase biome)
+	public static boolean removeCaveBiome(BiomeGenBase biome)
 	{
-		if (biome != null)
+		for (CaveBiome caveBiome : CAVE_BIOMES)
+		{
+			if (caveBiome.biome.biomeID == biome.biomeID)
+			{
+				return CAVE_BIOMES.remove(caveBiome);
+			}
+		}
+
+		return false;
+	}
+
+	public static int getActiveBiomeCount()
+	{
+		int count = 0;
+
+		for (CaveBiome caveBiome : CAVE_BIOMES)
+		{
+			if (caveBiome.itemWeight > 0)
+			{
+				++count;
+			}
+		}
+
+		return count;
+	}
+
+	public static int getBiomeGenWeight(BiomeGenBase biome)
+	{
+		if (genWeightMap.containsKey(biome.biomeID))
+		{
+			return genWeightMap.get(biome.biomeID);
+		}
+		else
 		{
 			for (CaveBiome caveBiome : CAVE_BIOMES)
 			{
 				if (caveBiome.biome.biomeID == biome.biomeID)
 				{
+					genWeightMap.put(biome.biomeID, caveBiome.itemWeight);
+
 					return caveBiome.itemWeight;
 				}
 			}
 		}
 
 		return 0;
+	}
+
+	public static Block getBiomeTerrainBlock(BiomeGenBase biome)
+	{
+		if (terrainBlockMap.containsKey(biome.biomeID))
+		{
+			return terrainBlockMap.get(biome.biomeID);
+		}
+		else
+		{
+			for (CaveBiome caveBiome : CAVE_BIOMES)
+			{
+				if (caveBiome.biome.biomeID == biome.biomeID)
+				{
+					Block block = caveBiome.terrainBlock;
+
+					if (block == null || block.getMaterial().isLiquid() || !block.getMaterial().isSolid() || block.getMaterial().isReplaceable())
+					{
+						block = Blocks.stone;
+					}
+
+					terrainBlockMap.put(biome.biomeID, block);
+
+					return block;
+				}
+			}
+		}
+
+		return Blocks.stone;
 	}
 
 	public static BiomeGenBase getRandomBiome(Random random)
@@ -269,7 +407,7 @@ public class CaveBiomeManager
 		return new ImmutableSet.Builder<CaveBiome>().addAll(CAVE_BIOMES).build();
 	}
 
-	public static List<BiomeGenBase> getBiomeList()
+	public static ImmutableList<BiomeGenBase> getBiomeList()
 	{
 		Set<BiomeGenBase> biomes = Sets.newHashSet();
 
@@ -278,23 +416,30 @@ public class CaveBiomeManager
 			biomes.add(caveBiome.biome);
 		}
 
-		return Lists.newArrayList(biomes);
+		return new ImmutableList.Builder<BiomeGenBase>().addAll(biomes).build();
 	}
 
 	public static class CaveBiome extends WeightedRandom.Item
 	{
 		public final BiomeGenBase biome;
+		public final Block terrainBlock;
 
-		public CaveBiome(BiomeGenBase biome, int rarity)
+		public CaveBiome(BiomeGenBase biome, int weight)
 		{
-			super(rarity);
+			this(biome, weight, Blocks.stone);
+		}
+
+		public CaveBiome(BiomeGenBase biome, int weight, Block block)
+		{
+			super(weight);
 			this.biome = biome;
+			this.terrainBlock = block;
 		}
 
 		@Override
 		public String toString()
 		{
-			return biome.biomeID + "=" + itemWeight;
+			return "\"" + biome.biomeID + "\":{" + "\"genWeight\":" + itemWeight + ',' + "\"terrainBlock\":\"" + Block.blockRegistry.getNameForObject(terrainBlock) + "\"}";
 		}
 
 		@Override

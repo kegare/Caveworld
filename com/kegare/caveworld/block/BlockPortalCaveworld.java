@@ -13,7 +13,6 @@ package com.kegare.caveworld.block;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.inventory.InventoryCaveworldPortal;
-import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.world.TeleporterCaveworld;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -48,6 +47,22 @@ public class BlockPortalCaveworld extends BlockPortal
 {
 	private InventoryCaveworldPortal inventory;
 
+	@SideOnly(Side.CLIENT)
+	public IIcon portalIcon;
+
+	public BlockPortalCaveworld(String name)
+	{
+		super();
+		this.setBlockName(name);
+		this.setBlockTextureName("caveworld:caveworld_portal");
+		this.setBlockUnbreakable();
+		this.setLightOpacity(3);
+		this.setLightLevel(0.6F);
+		this.setStepSound(soundTypeGlass);
+		this.disableStats();
+		this.setCreativeTab(CreativeTabs.tabDecorations);
+	}
+
 	public InventoryCaveworldPortal getInventory()
 	{
 		if (inventory == null)
@@ -58,32 +73,12 @@ public class BlockPortalCaveworld extends BlockPortal
 		return inventory;
 	}
 
-	@SideOnly(Side.CLIENT)
-	public IIcon portalIcon;
-
-	public BlockPortalCaveworld(String name)
-	{
-		super();
-		this.setBlockName(name);
-		this.setBlockTextureName("caveworld:portal_caveworld");
-		this.setBlockUnbreakable();
-		this.setLightOpacity(3);
-		this.setLightLevel(0.6F);
-		this.setStepSound(soundTypeGlass);
-		this.disableStats();
-
-		if (Version.DEV_DEBUG || Config.portalCraftRecipe)
-		{
-			this.setCreativeTab(CreativeTabs.tabDecorations);
-		}
-	}
-
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerBlockIcons(IIconRegister iconRegister)
 	{
-		blockIcon = iconRegister.registerIcon(getTextureName());
-		portalIcon = iconRegister.registerIcon("caveworld:caveworld_portal");
+		blockIcon = iconRegister.registerIcon(getTextureName() + "_block");
+		portalIcon = iconRegister.registerIcon(getTextureName());
 	}
 
 	@Override
@@ -126,7 +121,7 @@ public class BlockPortalCaveworld extends BlockPortal
 			var2 = 0.5F;
 		}
 
-		this.setBlockBounds(0.5F - var1, 0.0F, 0.5F - var2, 0.5F + var1, 1.0F, 0.5F + var2);
+		setBlockBounds(0.5F - var1, 0.0F, 0.5F - var2, 0.5F + var1, 1.0F, 0.5F + var2);
 	}
 
 	@Override
@@ -179,7 +174,7 @@ public class BlockPortalCaveworld extends BlockPortal
 		{
 			world.playSoundAtEntity(player, "random.click", 0.8F, 1.5F);
 
-			player.displayGUIChest(getInventory());
+			player.displayGUIChest(getInventory().setPortalPosition(x, y, z));
 		}
 
 		return true;
@@ -199,7 +194,7 @@ public class BlockPortalCaveworld extends BlockPortal
 
 			if (entity.timeUntilPortal <= 0 && (dimOld == 0 || dimOld == Config.dimensionCaveworld))
 			{
-				if (entity instanceof EntityPlayer)
+				if (entity instanceof EntityPlayerMP)
 				{
 					EntityPlayerMP player = (EntityPlayerMP)entity;
 
@@ -221,6 +216,7 @@ public class BlockPortalCaveworld extends BlockPortal
 				else
 				{
 					entity.dimension = dimNew;
+
 					server.getConfigurationManager().transferEntityToWorld(entity, dimOld, worldOld, worldNew, teleporter);
 
 					Entity target = EntityList.createEntityByID(EntityList.getEntityID(entity), worldNew);

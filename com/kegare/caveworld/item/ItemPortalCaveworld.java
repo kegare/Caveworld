@@ -57,7 +57,7 @@ public class ItemPortalCaveworld extends ItemBlock
 
 			if (CaveBlocks.caveworld_portal.func_150000_e(world, x, y, z))
 			{
-				world.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, "step.stone", 1.0F, 2.0F);
+				world.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, field_150939_a.stepSound.func_150496_b(), 1.0F, 2.0F);
 
 				if (!player.capabilities.isCreativeMode && --itemstack.stackSize <= 0)
 				{

@@ -11,7 +11,9 @@
 package com.kegare.caveworld.core;
 
 import com.kegare.caveworld.util.CaveLog;
+import com.kegare.caveworld.util.Version;
 import cpw.mods.fml.common.Loader;
+import net.minecraft.util.MathHelper;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
@@ -21,7 +23,7 @@ public class Config
 {
 	public static boolean versionNotify = true;
 
-	public static boolean portalCraftRecipe = true;
+	public static boolean portalCraftRecipe = false;
 	public static boolean mossStoneCraftRecipe = true;
 
 	public static int dimensionCaveworld = -75;
@@ -29,13 +31,14 @@ public class Config
 	public static boolean generateCaves = true;
 	public static boolean generateRavine = true;
 	public static boolean generateMineshaft = true;
+	public static boolean generateStronghold = true;
 	public static boolean generateLakes = true;
 	public static boolean generateDungeons = true;
 	public static boolean decorateVines = true;
 
 	public static final int RENDER_TYPE_PORTAL = Caveworld.proxy.getUniqueRenderType();
 
-	private static Configuration getConfig(String name)
+	public static File getConfigFile(String name)
 	{
 		File dir = new File(Loader.instance().getConfigDir(), "caveworld");
 
@@ -44,7 +47,12 @@ public class Config
 			dir.mkdirs();
 		}
 
-		File file = new File(dir, "caveworld-" + name + ".cfg");
+		return new File(dir, "caveworld-" + name + ".cfg");
+	}
+
+	private static Configuration getConfig(String name)
+	{
+		File file = getConfigFile(name);
 		Configuration config = new Configuration(file);
 
 		try
@@ -98,7 +106,7 @@ public class Config
 
 		try
 		{
-			prop = config.get(category, "portalCraftRecipe", portalCraftRecipe);
+			prop = config.get(category, "portalCraftRecipe", Version.DEV_DEBUG);
 			prop.comment = "Whether or not to add crafting recipe of Caveworld Portal. [true/false]";
 			portalCraftRecipe = prop.getBoolean(portalCraftRecipe);
 
@@ -135,6 +143,9 @@ public class Config
 			prop = config.get(category, "generateMineshaft", generateMineshaft);
 			prop.comment = "Whether or not to generate mineshaft to Caveworld. [true/false]";
 			generateMineshaft = prop.getBoolean(generateMineshaft);
+			prop = config.get(category, "generateStronghold", generateStronghold);
+			prop.comment = "Whether or not to generate stronghold to Caveworld. [true/false]";
+			generateStronghold = prop.getBoolean(generateStronghold);
 			prop = config.get(category, "generateLakes", generateLakes);
 			prop.comment = "Whether or not to generate lakes to Caveworld. [true/false]";
 			generateLakes = prop.getBoolean(generateLakes);
@@ -156,7 +167,7 @@ public class Config
 
 	private static int getIntBounded(Property prop, int num, int min, int max)
 	{
-		int value = Math.min(Math.max(prop.getInt(num), min), max);
+		int value = MathHelper.clamp_int(prop.getInt(num), min, max);
 
 		if (prop.getInt(num) != value)
 		{

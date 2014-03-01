@@ -23,7 +23,6 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayerMP;
 
 import java.util.Iterator;
-import java.util.Set;
 
 public class CaveOreSyncPacket extends AbstractPacket
 {
@@ -31,21 +30,21 @@ public class CaveOreSyncPacket extends AbstractPacket
 
 	public CaveOreSyncPacket()
 	{
-		data = "[";
+		StringBuilder builder = new StringBuilder(1024);
 
-		Iterator<CaveOre> ores = CaveOreManager.getCaveOres().iterator();
+		builder.append('[');
 
-		while (ores.hasNext())
+		for (Iterator<CaveOre> ores = CaveOreManager.getCaveOres().iterator(); ores.hasNext();)
 		{
-			data += ores.next();
+			builder.append(ores.next());
 
 			if (ores.hasNext())
 			{
-				data += ",";
+				builder.append(',');
 			}
 		}
 
-		data += "]";
+		this.data = builder.append(']').toString();
 	}
 
 	@Override
@@ -67,13 +66,10 @@ public class CaveOreSyncPacket extends AbstractPacket
 		if (!Strings.isNullOrEmpty(data))
 		{
 			CaveOreManager.clearCaveOres();
-			CaveOreManager.loadCaveOresFromJson(data);
 
-			Set<CaveOre> ores = CaveOreManager.getCaveOres();
-
-			if (!ores.isEmpty())
+			if (CaveOreManager.loadCaveOresFromString(data))
 			{
-				CaveLog.info("Loaded %d cave ores from server", ores.size());
+				CaveLog.info("Loaded %d cave ores from server", CaveOreManager.getCaveOres().size());
 			}
 		}
 	}

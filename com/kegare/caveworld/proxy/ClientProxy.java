@@ -16,9 +16,7 @@ import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.particle.EntityFX;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.stats.Achievement;
 
 @SideOnly(Side.CLIENT)
 public class ClientProxy extends CommonProxy
@@ -45,11 +43,5 @@ public class ClientProxy extends CommonProxy
 	public MinecraftServer getServer()
 	{
 		return FMLClientHandler.instance().getServer();
-	}
-
-	@Override
-	public boolean hasAchievementUnlocked(EntityPlayer player, Achievement achievement)
-	{
-		return FMLClientHandler.instance().getClientPlayerEntity().getStatFileWriter().hasAchievementUnlocked(achievement);
 	}
 }

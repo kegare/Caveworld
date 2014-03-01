@@ -22,27 +22,14 @@ import java.util.Set;
 
 public class CaveAchievementList
 {
-	private static final Set<Achievement> CAVE_ACHIEVEMENTS = Sets.newHashSet();
+	static final Set<Achievement> CAVE_ACHIEVEMENTS = Sets.newHashSet();
 
 	public static final Achievement caveworld = new CaveAchievement("caveworld", 0, 0, CaveBlocks.caveworld_portal, null).initIndependentStat().registerStat();
 	public static final Achievement miner = new CaveAchievement("miner", 2, 1, Items.iron_pickaxe, caveworld).registerStat();
 
-	static Achievement[] toArray()
+	public static Achievement[] getAchievementArray()
 	{
-		Object[] array = CAVE_ACHIEVEMENTS.toArray();
-		Achievement[] achievements = new Achievement[array.length];
-
-		for (int i = 0; i < array.length; ++i)
-		{
-			Object obj = array[i];
-
-			if (obj != null && obj instanceof Achievement)
-			{
-				achievements[i] = (Achievement)obj;
-			}
-		}
-
-		return achievements;
+		return CAVE_ACHIEVEMENTS.toArray(new Achievement[CAVE_ACHIEVEMENTS.size()]);
 	}
 
 	static class CaveAchievement extends Achievement

@@ -25,6 +25,7 @@ public class ConfigSyncPacket extends AbstractPacket
 	private boolean generateCaves;
 	private boolean generateRavine;
 	private boolean generateMineshaft;
+	private boolean generateStronghold;
 	private boolean generateLakes;
 	private boolean generateDungeons;
 	private boolean decorateVines;
@@ -36,6 +37,7 @@ public class ConfigSyncPacket extends AbstractPacket
 		generateCaves = Config.generateCaves;
 		generateRavine = Config.generateRavine;
 		generateMineshaft = Config.generateMineshaft;
+		generateStronghold = Config.generateStronghold;
 		generateLakes = Config.generateLakes;
 		generateDungeons = Config.generateDungeons;
 		decorateVines = Config.decorateVines;
@@ -49,6 +51,7 @@ public class ConfigSyncPacket extends AbstractPacket
 		buffer.writeBoolean(generateCaves);
 		buffer.writeBoolean(generateRavine);
 		buffer.writeBoolean(generateMineshaft);
+		buffer.writeBoolean(generateStronghold);
 		buffer.writeBoolean(generateLakes);
 		buffer.writeBoolean(generateDungeons);
 		buffer.writeBoolean(decorateVines);
@@ -62,6 +65,7 @@ public class ConfigSyncPacket extends AbstractPacket
 		generateCaves = buffer.readBoolean();
 		generateRavine = buffer.readBoolean();
 		generateMineshaft = buffer.readBoolean();
+		generateStronghold = buffer.readBoolean();
 		generateLakes = buffer.readBoolean();
 		generateDungeons = buffer.readBoolean();
 		decorateVines = buffer.readBoolean();
@@ -76,6 +80,7 @@ public class ConfigSyncPacket extends AbstractPacket
 		Config.generateCaves = generateCaves;
 		Config.generateRavine = generateRavine;
 		Config.generateMineshaft = generateMineshaft;
+		Config.generateStronghold = generateStronghold;
 		Config.generateLakes = generateLakes;
 		Config.generateDungeons = generateDungeons;
 		Config.decorateVines = decorateVines;

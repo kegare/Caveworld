@@ -16,6 +16,7 @@ import com.kegare.caveworld.packet.CaveBiomeSyncPacket;
 import com.kegare.caveworld.packet.CaveOreSyncPacket;
 import com.kegare.caveworld.packet.ConfigSyncPacket;
 import com.kegare.caveworld.packet.DataSyncPacket;
+import com.kegare.caveworld.packet.MiningCountPacket;
 import com.kegare.caveworld.packet.PacketPipeline;
 import com.kegare.caveworld.packet.PlayCaveSoundPacket;
 import com.kegare.caveworld.proxy.CommonProxy;
@@ -67,7 +68,7 @@ public class Caveworld
 
 		proxy.registerRenderers();
 
-		AchievementPage.registerAchievementPage(new AchievementPage("Caveworld", CaveAchievementList.toArray()));
+		AchievementPage.registerAchievementPage(new AchievementPage("Caveworld", CaveAchievementList.getAchievementArray()));
 
 		DimensionManager.registerProviderType(Config.dimensionCaveworld, WorldProviderCaveworld.class, true);
 		DimensionManager.registerDimension(Config.dimensionCaveworld, Config.dimensionCaveworld);
@@ -82,6 +83,7 @@ public class Caveworld
 		packetPipeline.registerPacket(CaveBiomeSyncPacket.class);
 		packetPipeline.registerPacket(CaveOreSyncPacket.class);
 		packetPipeline.registerPacket(PlayCaveSoundPacket.class);
+		packetPipeline.registerPacket(MiningCountPacket.class);
 	}
 
 	private void initRecipes()

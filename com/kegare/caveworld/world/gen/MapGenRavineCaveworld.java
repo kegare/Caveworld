@@ -13,7 +13,6 @@ package com.kegare.caveworld.world.gen;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
-import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.gen.MapGenRavine;
 
 import java.util.Random;
@@ -136,21 +135,13 @@ public class MapGenRavineCaveworld extends MapGenRavine
 	@Override
 	protected void digBlock(Block[] blocks, int index, int x, int y, int z, int chunkX, int chunkZ, boolean foundTop)
 	{
-		BiomeGenBase biome = worldObj.getBiomeGenForCoords((chunkX << 4) + x, (chunkZ << 4) + z);
-		Block top = biome.topBlock;
-		Block filler = biome.fillerBlock;
-		Block block = blocks[index];
-
-		if (block == Blocks.stone || block == Blocks.netherrack || block == Blocks.end_stone || block == top || block == filler)
+		if (y < 10)
 		{
-			if (y < 10)
-			{
-				blocks[index] = Blocks.flowing_lava;
-			}
-			else
-			{
-				blocks[index] = null;
-			}
+			blocks[index] = Blocks.flowing_lava;
+		}
+		else
+		{
+			blocks[index] = null;
 		}
 	}
 }

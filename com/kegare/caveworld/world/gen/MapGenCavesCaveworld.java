@@ -14,7 +14,6 @@ import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.gen.MapGenCaves;
 
 import java.util.Random;
@@ -181,21 +180,13 @@ public class MapGenCavesCaveworld extends MapGenCaves
 	@Override
 	protected void digBlock(Block[] blocks, int index, int x, int y, int z, int chunkX, int chunkZ, boolean foundTop)
 	{
-		BiomeGenBase biome = worldObj.getBiomeGenForCoords((chunkX << 4) + x, (chunkZ << 4) + z);
-		Block top = biome.topBlock;
-		Block filler = biome.fillerBlock;
-		Block block = blocks[index];
-
-		if (block == Blocks.stone || block == Blocks.netherrack || block == Blocks.end_stone || block == top || block == filler)
+		if (y < 10)
 		{
-			if (y < 10)
-			{
-				blocks[index] = Blocks.lava;
-			}
-			else
-			{
-				blocks[index] = null;
-			}
+			blocks[index] = Blocks.lava;
+		}
+		else
+		{
+			blocks[index] = null;
 		}
 	}
 }
