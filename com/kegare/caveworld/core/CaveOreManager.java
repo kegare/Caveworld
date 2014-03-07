@@ -29,9 +29,9 @@ import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.gen.feature.WorldGenerator;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
-import net.minecraftforge.common.config.Configuration;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.StrBuilder;
 import org.apache.logging.log4j.Level;
 
 import java.io.File;
@@ -55,7 +55,7 @@ public class CaveOreManager
 		clearCaveOres();
 
 		addCaveOre(new CaveOre(Blocks.coal_ore).setGenBlockCount(16).setGenRarity(20));
-		addCaveOre(new CaveOre(Blocks.iron_ore).setGenBlockCount(10).setGenRarity(30));
+		addCaveOre(new CaveOre(Blocks.iron_ore).setGenBlockCount(10).setGenRarity(28));
 		addCaveOre(new CaveOre(Blocks.gold_ore).setGenBlockCount(8).setGenRarity(2).setGenMaxHeight(127));
 		addCaveOre(new CaveOre(Blocks.redstone_ore).setGenBlockCount(7).setGenRarity(8).setGenMaxHeight(40));
 		addCaveOre(new CaveOre(Blocks.lapis_ore).setGenBlockCount(5).setGenMaxHeight(40));
@@ -201,93 +201,86 @@ public class CaveOreManager
 		try
 		{
 			File file = Config.getConfigFile("ores");
-			StringBuilder builder = new StringBuilder(2048);
-
-			try
-			{
-				builder.append("# Configuration file - Caveworld ores").append(Configuration.NEW_LINE);
-				builder.append(Configuration.NEW_LINE);
-				builder.append('[').append(Configuration.NEW_LINE);
-
-				for (Iterator<CaveOre> ores = CAVE_ORES.iterator(); ores.hasNext();)
-				{
-					CaveOre ore = ores.next();
-
-					builder.append("  {").append(Configuration.NEW_LINE);
-					builder.append("    \"block\": \"").append(Block.blockRegistry.getNameForObject(ore.block)).append("\",").append(Configuration.NEW_LINE);
-
-					if (ore.blockMetadata != 0)
-					{
-						builder.append("    \"blockMetadata\": ").append(ore.blockMetadata).append(',').append(Configuration.NEW_LINE);
-					}
-
-					builder.append("    \"genBlockCount\": ").append(ore.genBlockCount).append(',').append(Configuration.NEW_LINE);
-					builder.append("    \"genRarity\": ").append(ore.genRarity).append(',').append(Configuration.NEW_LINE);
-					builder.append("    \"genMinHeight\": ").append(ore.genMinHeight).append(',').append(Configuration.NEW_LINE);
-					builder.append("    \"genMaxHeight\": ").append(ore.genMaxHeight);
-
-					if (ore.genTargetBlock != Blocks.stone)
-					{
-						builder.append(',').append(Configuration.NEW_LINE);
-						builder.append("    \"genTargetBlock\": \"").append(Block.blockRegistry.getNameForObject(ore.genTargetBlock)).append("\"");
-					}
-
-					if (!ore.genBiomeTypes.isEmpty() || !ore.genBiomeIds.isEmpty())
-					{
-						builder.append(',').append(Configuration.NEW_LINE);
-						builder.append("    \"genBiomes\": \"");
-
-						for (Iterator<Type> types = ore.genBiomeTypes.iterator(); types.hasNext();)
-						{
-							builder.append(types.next().name());
-
-							if (types.hasNext() || !ore.genBiomeIds.isEmpty())
-							{
-								builder.append(',');
-							}
-						}
-
-						for (Iterator<Integer> ids = ore.genBiomeIds.iterator(); ids.hasNext();)
-						{
-							builder.append(String.valueOf(ids.next()));
-
-							if (ids.hasNext())
-							{
-								builder.append(',');
-							}
-						}
-
-						builder.append("\"");
-					}
-
-					builder.append(Configuration.NEW_LINE);
-					builder.append("  }");
-
-					if (ores.hasNext())
-					{
-						builder.append(',');
-					}
-
-					builder.append(Configuration.NEW_LINE);
-				}
-
-				builder.append(']');
-			}
-			finally
-			{
-				builder.trimToSize();
-			}
-
-			String data = builder.toString();
+			String dest = null;
 
 			if (file.exists() && file.canRead())
 			{
-				String dest = FileUtils.readFileToString(file);
+				dest = FileUtils.readFileToString(file);
+			}
 
-				if (!Strings.isNullOrEmpty(dest) && data.equals(dest))
+			StrBuilder builder = new StrBuilder(dest == null ? 2048 : dest.length());
+
+			builder.appendln("# Configuration file - Caveworld ores");
+			builder.appendNewLine();
+			builder.appendln('[');
+
+			for (Iterator<CaveOre> ores = CAVE_ORES.iterator(); ores.hasNext();)
+			{
+				CaveOre ore = ores.next();
+
+				builder.appendln("  {");
+				builder.append("    \"block\": \"").append(Block.blockRegistry.getNameForObject(ore.block)).appendln("\",");
+
+				if (ore.blockMetadata != 0)
 				{
-					return false;
+					builder.append("    \"blockMetadata\": ").append(ore.blockMetadata).appendln(',');
 				}
+
+				builder.append("    \"genBlockCount\": ").append(ore.genBlockCount).appendln(',');
+				builder.append("    \"genRarity\": ").append(ore.genRarity).appendln(',');
+				builder.append("    \"genMinHeight\": ").append(ore.genMinHeight).appendln(',');
+				builder.append("    \"genMaxHeight\": ").append(ore.genMaxHeight);
+
+				if (ore.genTargetBlock != Blocks.stone)
+				{
+					builder.appendln(',');
+					builder.append("    \"genTargetBlock\": \"").append(Block.blockRegistry.getNameForObject(ore.genTargetBlock)).append("\"");
+				}
+
+				if (!ore.genBiomeTypes.isEmpty() || !ore.genBiomeIds.isEmpty())
+				{
+					builder.appendln(',');
+					builder.append("    \"genBiomes\": \"");
+
+					for (Iterator<Type> types = ore.genBiomeTypes.iterator(); types.hasNext();)
+					{
+						builder.append(types.next().name());
+
+						if (types.hasNext() || !ore.genBiomeIds.isEmpty())
+						{
+							builder.append(',');
+						}
+					}
+
+					for (Iterator<Integer> ids = ore.genBiomeIds.iterator(); ids.hasNext();)
+					{
+						builder.append(String.valueOf(ids.next()));
+
+						if (ids.hasNext())
+						{
+							builder.append(',');
+						}
+					}
+
+					builder.append("\"");
+				}
+
+				builder.appendNewLine();
+				builder.append("  }");
+
+				if (ores.hasNext())
+				{
+					builder.append(',');
+				}
+
+				builder.appendNewLine();
+			}
+
+			String data = builder.append(']').toString();
+
+			if (dest != null && data.equals(dest))
+			{
+				return false;
 			}
 
 			FileUtils.writeStringToFile(file, data);
@@ -345,13 +338,13 @@ public class CaveOreManager
 		return count;
 	}
 
-	public static boolean containsBlock(Block block, int metadata, boolean flag)
+	public static boolean containsOre(Block block, int metadata)
 	{
 		for (CaveOre ore : CAVE_ORES)
 		{
 			if (ore.block == block && ore.blockMetadata == metadata)
 			{
-				return !flag || ore.block.getMaterial() == Material.rock;
+				return ore.block.getMaterial() == Material.rock;
 			}
 		}
 

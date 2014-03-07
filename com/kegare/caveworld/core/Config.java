@@ -14,6 +14,7 @@ import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.Version;
 import cpw.mods.fml.common.Loader;
 import net.minecraft.util.MathHelper;
+import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
@@ -131,6 +132,14 @@ public class Config
 			prop = config.get(category, "dimensionCaveworld", dimensionCaveworld);
 			prop.comment = "DimensionID - Caveworld";
 			dimensionCaveworld = prop.getInt(dimensionCaveworld);
+
+			if (DimensionManager.isDimensionRegistered(dimensionCaveworld))
+			{
+				dimensionCaveworld = DimensionManager.getNextFreeDimId();
+
+				prop.set(dimensionCaveworld);
+			}
+
 			prop = config.get(category, "subsurfaceHeight", subsurfaceHeight);
 			prop.comment = "Specify the subsurface layer height of Caveworld. [63-255]";
 			subsurfaceHeight = getIntBounded(prop, subsurfaceHeight, 63, 255);

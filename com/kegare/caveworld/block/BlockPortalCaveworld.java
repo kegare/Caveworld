@@ -183,7 +183,7 @@ public class BlockPortalCaveworld extends BlockPortal
 	@Override
 	public void onEntityCollidedWithBlock(World world, int x, int y, int z, Entity entity)
 	{
-		if (!world.isRemote && entity.isEntityAlive() && entity.riddenByEntity == null && entity.ridingEntity == null)
+		if (!world.isRemote && entity.isEntityAlive() && (entity.dimension == 0 || entity.dimension == Config.dimensionCaveworld))
 		{
 			MinecraftServer server = Caveworld.proxy.getServer();
 			int dimOld = entity.dimension;
@@ -192,14 +192,19 @@ public class BlockPortalCaveworld extends BlockPortal
 			WorldServer worldNew = server.worldServerForDimension(dimNew);
 			Teleporter teleporter = new TeleporterCaveworld(worldNew);
 
-			if (entity.timeUntilPortal <= 0 && (dimOld == 0 || dimOld == Config.dimensionCaveworld))
+			if (entity.timeUntilPortal <= 0)
 			{
+				entity.worldObj.removeEntity(entity);
+				entity.isDead = false;
+
 				if (entity instanceof EntityPlayerMP)
 				{
 					EntityPlayerMP player = (EntityPlayerMP)entity;
 
 					if (!player.isSneaking() && !player.isPotionActive(Potion.confusion))
 					{
+						player.closeScreen();
+
 						worldOld.playSoundToNearExcept(player, "caveworld:caveworld_portal", 0.5F, 1.0F);
 
 						server.getConfigurationManager().transferPlayerToDimension(player, dimNew, teleporter);
@@ -219,17 +224,18 @@ public class BlockPortalCaveworld extends BlockPortal
 
 					server.getConfigurationManager().transferEntityToWorld(entity, dimOld, worldOld, worldNew, teleporter);
 
-					Entity target = EntityList.createEntityByID(EntityList.getEntityID(entity), worldNew);
+					Entity target = EntityList.createEntityByName(EntityList.getEntityString(entity), worldNew);
 
 					if (target != null)
 					{
+						worldOld.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, "caveworld:caveworld_portal", 0.25F, 1.15F);
+
 						target.copyDataFrom(entity, true);
-						target.isDead = false;
 						target.forceSpawn = true;
 						target.timeUntilPortal = target.getPortalCooldown();
 
 						worldNew.spawnEntityInWorld(target);
-						worldNew.updateEntity(target);
+						worldNew.playSoundAtEntity(target, "caveworld:caveworld_portal", 0.5F, 1.15F);
 					}
 
 					entity.setDead();

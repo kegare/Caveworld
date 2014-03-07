@@ -2,6 +2,8 @@
 
 caveworld.version.message=%s の新しいバージョンが利用可能です
 
+caveworld.mining.count=採掘カウント
+
 tile.portalCaveworld.name=Caveworld ポータルブロック
 
 inventory.portal.caveworld=Caveworld ポータル

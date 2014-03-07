@@ -37,6 +37,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockBed;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
@@ -68,7 +69,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
-import net.minecraftforge.event.world.BlockEvent.BreakEvent;
+import net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent;
 import net.minecraftforge.event.world.WorldEvent;
 
 import java.security.SecureRandom;
@@ -101,7 +102,7 @@ public class CaveEventHooks
 					int level = CaveUtils.getMiningLevel(mc.thePlayer);
 					StringBuilder builder = new StringBuilder();
 
-					builder.append("Mining Count: ").append(count);
+					builder.append(I18n.format("caveworld.mining.count")).append(": ").append(count);
 
 					if (level > 0)
 					{
@@ -123,13 +124,8 @@ public class CaveEventHooks
 
 			Caveworld.packetPipeline.sendPacketToPlayer(new ConfigSyncPacket(), player);
 			Caveworld.packetPipeline.sendPacketToPlayer(new DataSyncPacket(), player);
-
-			if (!player.mcServer.isSinglePlayer())
-			{
-				Caveworld.packetPipeline.sendPacketToPlayer(new CaveBiomeSyncPacket(), player);
-				Caveworld.packetPipeline.sendPacketToPlayer(new CaveOreSyncPacket(), player);
-			}
-
+			Caveworld.packetPipeline.sendPacketToPlayer(new CaveBiomeSyncPacket(), player);
+			Caveworld.packetPipeline.sendPacketToPlayer(new CaveOreSyncPacket(), player);
 			Caveworld.packetPipeline.sendPacketToPlayer(new MiningCountPacket(player), player);
 
 			if (Version.DEV_DEBUG || Config.versionNotify && Version.isOutdated())
@@ -181,11 +177,11 @@ public class CaveEventHooks
 	}
 
 	@SubscribeEvent
-	public void onBlockBreak(BreakEvent event)
+	public void onHarvestDrops(HarvestDropsEvent event)
 	{
-		if (event.getPlayer() instanceof EntityPlayerMP)
+		if (event.harvester != null && event.harvester instanceof EntityPlayerMP)
 		{
-			EntityPlayerMP player = (EntityPlayerMP)event.getPlayer();
+			EntityPlayerMP player = (EntityPlayerMP)event.harvester;
 
 			if (player.dimension == Config.dimensionCaveworld && (Version.DEV_DEBUG || !player.capabilities.isCreativeMode))
 			{
@@ -193,7 +189,7 @@ public class CaveEventHooks
 				Block block = event.block;
 				int metadata = event.blockMetadata;
 
-				if (current != null && current.getItem().getToolClasses(current).contains("pickaxe") && CaveOreManager.containsBlock(block, metadata, true))
+				if (current != null && current.getItem().getToolClasses(current).contains("pickaxe") && CaveOreManager.containsOre(block, metadata))
 				{
 					NBTTagCompound data = player.getEntityData();
 					int count = data.getInteger("Caveworld:MiningCount");
@@ -222,7 +218,7 @@ public class CaveEventHooks
 			Block block = event.block;
 			int metadata = event.metadata;
 
-			if (current != null && current.getItem().getToolClasses(current).contains("pickaxe") && CaveOreManager.containsBlock(block, metadata, true))
+			if (current != null && current.getItem().getToolClasses(current).contains("pickaxe") && CaveOreManager.containsOre(block, metadata))
 			{
 				int level = CaveUtils.getMiningLevel(player);
 
@@ -464,11 +460,11 @@ public class CaveEventHooks
 		if (event.side.isServer() && event.phase == Phase.END)
 		{
 			World world = event.world;
-			int dimension = world.provider.dimensionId;
+			int dim = world.provider.dimensionId;
 
-			if (dimension == Config.dimensionCaveworld && world.getTotalWorldTime() % 15000L == 0L && world.rand.nextBoolean())
+			if (dim == Config.dimensionCaveworld && world.getTotalWorldTime() % 20000L == 0L && world.rand.nextBoolean())
 			{
-				Caveworld.packetPipeline.sendPacketToAllInDimension(new PlayCaveSoundPacket("ambient.cave"), dimension);
+				Caveworld.packetPipeline.sendPacketToAllInDimension(new PlayCaveSoundPacket("ambient.cave"), dim);
 			}
 		}
 	}

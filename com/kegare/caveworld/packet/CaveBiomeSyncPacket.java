@@ -21,8 +21,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayerMP;
-
-import java.util.Iterator;
+import org.apache.logging.log4j.Level;
 
 public class CaveBiomeSyncPacket extends AbstractPacket
 {
@@ -34,24 +33,17 @@ public class CaveBiomeSyncPacket extends AbstractPacket
 
 		builder.append('{');
 
-		for (Iterator<CaveBiome> biomes = CaveBiomeManager.getCaveBiomes().iterator(); biomes.hasNext();)
+		for (CaveBiome biome : CaveBiomeManager.getCaveBiomes())
 		{
-			CaveBiome biome = biomes.next();
-
 			if (biome.itemWeight <= 0)
 			{
 				continue;
 			}
 
-			builder.append(biome);
-
-			if (biomes.hasNext())
-			{
-				builder.append(',');
-			}
+			builder.append(biome).append(',');
 		}
 
-		this.data = builder.append('}').toString();
+		this.data = builder.deleteCharAt(builder.lastIndexOf(",")).append('}').toString();
 	}
 
 	@Override
@@ -74,9 +66,16 @@ public class CaveBiomeSyncPacket extends AbstractPacket
 		{
 			CaveBiomeManager.clearCaveBiomes();
 
-			if (CaveBiomeManager.loadCaveBiomesFromString(data))
+			try
 			{
-				CaveLog.info("Loaded %d cave biomes from server", CaveBiomeManager.getActiveBiomeCount());
+				if (CaveBiomeManager.loadCaveBiomesFromString(data))
+				{
+					CaveLog.info("Loaded %d cave biomes from server", CaveBiomeManager.getActiveBiomeCount());
+				}
+			}
+			catch (Exception e)
+			{
+				CaveLog.log(Level.WARN, e, "An error occurred trying to loading cave biomes from server");
 			}
 		}
 	}

@@ -21,8 +21,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayerMP;
-
-import java.util.Iterator;
+import org.apache.logging.log4j.Level;
 
 public class CaveOreSyncPacket extends AbstractPacket
 {
@@ -34,17 +33,12 @@ public class CaveOreSyncPacket extends AbstractPacket
 
 		builder.append('[');
 
-		for (Iterator<CaveOre> ores = CaveOreManager.getCaveOres().iterator(); ores.hasNext();)
+		for (CaveOre ore : CaveOreManager.getCaveOres())
 		{
-			builder.append(ores.next());
-
-			if (ores.hasNext())
-			{
-				builder.append(',');
-			}
+			builder.append(ore).append(',');
 		}
 
-		this.data = builder.append(']').toString();
+		this.data = builder.deleteCharAt(builder.lastIndexOf(",")).append(']').toString();
 	}
 
 	@Override
@@ -67,9 +61,16 @@ public class CaveOreSyncPacket extends AbstractPacket
 		{
 			CaveOreManager.clearCaveOres();
 
-			if (CaveOreManager.loadCaveOresFromString(data))
+			try
 			{
-				CaveLog.info("Loaded %d cave ores from server", CaveOreManager.getCaveOres().size());
+				if (CaveOreManager.loadCaveOresFromString(data))
+				{
+					CaveLog.info("Loaded %d cave ores from server", CaveOreManager.getCaveOres().size());
+				}
+			}
+			catch (Exception e)
+			{
+				CaveLog.log(Level.WARN, e, "An error occurred trying to loading cave ores from server");
 			}
 		}
 	}

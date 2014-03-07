@@ -2,6 +2,8 @@
 
 caveworld.version.message=A new %s version is available
 
+caveworld.mining.count=Mining Count
+
 tile.portalCaveworld.name=Caveworld Portal Block
 
 inventory.portal.caveworld=Caveworld Portal

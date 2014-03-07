@@ -29,9 +29,9 @@ import net.minecraft.util.WeightedRandom;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
-import net.minecraftforge.common.config.Configuration;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.StrBuilder;
 import org.apache.logging.log4j.Level;
 
 import java.io.File;
@@ -212,71 +212,64 @@ public class CaveBiomeManager
 		try
 		{
 			File file = Config.getConfigFile("biomes");
-			StringBuilder builder = new StringBuilder(2048);
-
-			try
-			{
-				builder.append("# Configuration file - Caveworld biomes").append(Configuration.NEW_LINE);
-				builder.append(Configuration.NEW_LINE);
-				builder.append('{').append(Configuration.NEW_LINE);
-
-				for (Iterator<CaveBiome> biomes = CAVE_BIOMES.iterator(); biomes.hasNext();)
-				{
-					CaveBiome caveBiome = biomes.next();
-					BiomeGenBase biome = caveBiome.biome;
-
-					builder.append("  # ").append(biome.biomeName);
-
-					if (BiomeDictionary.isBiomeRegistered(biome))
-					{
-						Set<String> types = Sets.newHashSet();
-
-						for (Type type : BiomeDictionary.getTypesForBiome(biome))
-						{
-							types.add(type.name());
-						}
-
-						builder.append(" [").append(Joiner.on(", ").skipNulls().join(types)).append(']');
-					}
-
-					builder.append(Configuration.NEW_LINE);
-					builder.append("  \"").append(biome.biomeID).append("\": {").append(Configuration.NEW_LINE);
-					builder.append("    \"genWeight\": ").append(caveBiome.itemWeight);
-
-					if (caveBiome.terrainBlock != Blocks.stone)
-					{
-						builder.append(',').append(Configuration.NEW_LINE);
-						builder.append("    \"terrainBlock\": \"").append(Block.blockRegistry.getNameForObject(caveBiome.terrainBlock)).append("\"");
-					}
-
-					builder.append(Configuration.NEW_LINE);
-					builder.append("  }");
-
-					if (biomes.hasNext())
-					{
-						builder.append(',');
-					}
-
-					builder.append(Configuration.NEW_LINE);
-				}
-
-				builder.append('}');
-			}
-			finally
-			{
-				builder.trimToSize();
-			}
-
-			String data = builder.toString();
+			String dest = null;
 
 			if (file.exists() && file.canRead())
 			{
-				String dest = FileUtils.readFileToString(file);
+				dest = FileUtils.readFileToString(file);
+			}
 
-				if (!Strings.isNullOrEmpty(dest) && data.equals(dest))
+			StrBuilder builder = new StrBuilder(dest == null ? 2048 : dest.length());
+
+			builder.appendln("# Configuration file - Caveworld biomes");
+			builder.appendNewLine();
+			builder.appendln('{');
+
+			for (Iterator<CaveBiome> biomes = CAVE_BIOMES.iterator(); biomes.hasNext();)
+			{
+				CaveBiome caveBiome = biomes.next();
+				BiomeGenBase biome = caveBiome.biome;
+
+				builder.append("  # ").append(biome.biomeName);
+
+				if (BiomeDictionary.isBiomeRegistered(biome))
 				{
-					return false;
+					Set<String> types = Sets.newHashSet();
+
+					for (Type type : BiomeDictionary.getTypesForBiome(biome))
+					{
+						types.add(type.name());
+					}
+
+					builder.append(" [").append(Joiner.on(", ").skipNulls().join(types)).append(']');
 				}
+
+				builder.appendNewLine();
+				builder.append("  \"").append(biome.biomeID).appendln("\": {");
+				builder.append("    \"genWeight\": ").append(caveBiome.itemWeight);
+
+				if (caveBiome.terrainBlock != Blocks.stone)
+				{
+					builder.appendln(',');
+					builder.append("    \"terrainBlock\": \"").append(Block.blockRegistry.getNameForObject(caveBiome.terrainBlock)).append("\"");
+				}
+
+				builder.appendNewLine();
+				builder.append("  }");
+
+				if (biomes.hasNext())
+				{
+					builder.append(',');
+				}
+
+				builder.appendNewLine();
+			}
+
+			String data = builder.append('}').toString();
+
+			if (dest != null && data.equals(dest))
+			{
+				return false;
 			}
 
 			FileUtils.writeStringToFile(file, data);
@@ -439,7 +432,7 @@ public class CaveBiomeManager
 		@Override
 		public String toString()
 		{
-			return "\"" + biome.biomeID + "\":{" + "\"genWeight\":" + itemWeight + ',' + "\"terrainBlock\":\"" + Block.blockRegistry.getNameForObject(terrainBlock) + "\"}";
+			return "\"" + biome.biomeID + "\":{\"genWeight\":" + itemWeight + ',' + "\"terrainBlock\":\"" + Block.blockRegistry.getNameForObject(terrainBlock) + "\"}";
 		}
 
 		@Override
