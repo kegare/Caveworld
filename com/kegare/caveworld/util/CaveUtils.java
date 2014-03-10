@@ -10,8 +10,6 @@
 
 package com.kegare.caveworld.util;
 
-import net.minecraft.entity.player.EntityPlayer;
-
 import java.util.regex.Pattern;
 
 public class CaveUtils
@@ -21,15 +19,5 @@ public class CaveUtils
 	public static String stripControlCodes(String str)
 	{
 		return patternControlCode.matcher(str).replaceAll("");
-	}
-
-	public static int getMiningCount(EntityPlayer player)
-	{
-		return player.getEntityData().getInteger("Caveworld:MiningCount");
-	}
-
-	public static int getMiningLevel(EntityPlayer player)
-	{
-		return getMiningCount(player) / 500;
 	}
 }

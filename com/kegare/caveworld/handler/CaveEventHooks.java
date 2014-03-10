@@ -12,6 +12,7 @@ package com.kegare.caveworld.handler;
 
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.core.CaveAchievementList;
+import com.kegare.caveworld.core.CaveMiningManager;
 import com.kegare.caveworld.core.CaveOreManager;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
@@ -19,13 +20,10 @@ import com.kegare.caveworld.packet.CaveBiomeSyncPacket;
 import com.kegare.caveworld.packet.CaveOreSyncPacket;
 import com.kegare.caveworld.packet.ConfigSyncPacket;
 import com.kegare.caveworld.packet.DataSyncPacket;
-import com.kegare.caveworld.packet.MiningCountPacket;
 import com.kegare.caveworld.packet.PlayCaveSoundPacket;
-import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
@@ -56,6 +54,7 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.ChunkCoordinates;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
@@ -80,7 +79,7 @@ public class CaveEventHooks
 	public static final CaveEventHooks instance = new CaveEventHooks();
 
 	@SideOnly(Side.CLIENT)
-	@SubscribeEvent(priority = EventPriority.HIGHEST)
+	@SubscribeEvent
 	public void onRenderGameOverlay(RenderGameOverlayEvent.Text event)
 	{
 		Minecraft mc = FMLClientHandler.instance().getClient();
@@ -93,13 +92,13 @@ public class CaveEventHooks
 			{
 				event.left.add("dim: Caveworld");
 			}
-			else if (mc.thePlayer.isSneaking() && current != null && current.getItem().getToolClasses(current).contains("pickaxe"))
+			else if ((mc.gameSettings.advancedItemTooltips || mc.thePlayer.isSneaking()) && current != null && current.getItem().getToolClasses(current).contains("pickaxe"))
 			{
-				int count = CaveUtils.getMiningCount(mc.thePlayer);
+				int count = CaveMiningManager.getMiningCount(mc.thePlayer);
 
 				if (count > 0)
 				{
-					int level = CaveUtils.getMiningLevel(mc.thePlayer);
+					int level = CaveMiningManager.getMiningLevel(mc.thePlayer);
 					StringBuilder builder = new StringBuilder();
 
 					builder.append(I18n.format("caveworld.mining.count")).append(": ").append(count);
@@ -126,7 +125,8 @@ public class CaveEventHooks
 			Caveworld.packetPipeline.sendPacketToPlayer(new DataSyncPacket(), player);
 			Caveworld.packetPipeline.sendPacketToPlayer(new CaveBiomeSyncPacket(), player);
 			Caveworld.packetPipeline.sendPacketToPlayer(new CaveOreSyncPacket(), player);
-			Caveworld.packetPipeline.sendPacketToPlayer(new MiningCountPacket(player), player);
+
+			CaveMiningManager.syncMiningCount(player);
 
 			if (Version.DEV_DEBUG || Config.versionNotify && Version.isOutdated())
 			{
@@ -183,7 +183,7 @@ public class CaveEventHooks
 		{
 			EntityPlayerMP player = (EntityPlayerMP)event.harvester;
 
-			if (player.dimension == Config.dimensionCaveworld && (Version.DEV_DEBUG || !player.capabilities.isCreativeMode))
+			if (player.dimension == Config.dimensionCaveworld)
 			{
 				ItemStack current = player.getCurrentEquippedItem();
 				Block block = event.block;
@@ -191,17 +191,14 @@ public class CaveEventHooks
 
 				if (current != null && current.getItem().getToolClasses(current).contains("pickaxe") && CaveOreManager.containsOre(block, metadata))
 				{
-					NBTTagCompound data = player.getEntityData();
-					int count = data.getInteger("Caveworld:MiningCount");
+					int count = CaveMiningManager.getMiningCount(player);
 
-					data.setInteger("Caveworld:MiningCount", ++count);
-
-					if (count > 500 && count % 500 == 0)
+					if (count >= 500 && count % 500 == 0)
 					{
 						player.triggerAchievement(CaveAchievementList.miner);
 					}
 
-					Caveworld.packetPipeline.sendPacketToPlayer(new MiningCountPacket(count), player);
+					CaveMiningManager.addMiningCount(player, 1);
 				}
 			}
 		}
@@ -220,7 +217,7 @@ public class CaveEventHooks
 
 			if (current != null && current.getItem().getToolClasses(current).contains("pickaxe") && CaveOreManager.containsOre(block, metadata))
 			{
-				int level = CaveUtils.getMiningLevel(player);
+				int level = CaveMiningManager.getMiningLevel(player);
 
 				if (level > 2)
 				{
@@ -415,6 +412,8 @@ public class CaveEventHooks
 	public void onLivingDrops(LivingDropsEvent event)
 	{
 		Random random = new SecureRandom();
+		DamageSource source = event.source;
+		Entity entity = source.getEntity();
 		EntityLivingBase living = event.entityLiving;
 		World world = living.worldObj;
 		double posX = living.posX;
@@ -422,12 +421,23 @@ public class CaveEventHooks
 		double posZ = living.posZ;
 		int looting = event.lootingLevel;
 
-		if (!world.isRemote && living.dimension == Config.dimensionCaveworld)
+		if (!world.isRemote && living.dimension == Config.dimensionCaveworld && entity != null && entity instanceof EntityPlayerMP)
 		{
 			if (living instanceof EntityBat)
 			{
 				event.drops.add(new EntityItem(world, posX, posY + 0.5D, posZ, new ItemStack(Items.coal, random.nextInt(3) + Math.min(looting, 3))));
 			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onWorldUnload(WorldEvent.Load event)
+	{
+		World world = event.world;
+
+		if (!world.isRemote && world.provider.dimensionId == Config.dimensionCaveworld)
+		{
+			CaveMiningManager.loadMiningData();
 		}
 	}
 
@@ -438,6 +448,9 @@ public class CaveEventHooks
 
 		if (!world.isRemote && world.provider.dimensionId == Config.dimensionCaveworld)
 		{
+			CaveMiningManager.saveMiningData();
+			CaveMiningManager.clearMiningData();
+
 			WorldProviderCaveworld.writeDimData();
 			WorldProviderCaveworld.clearDimData();
 		}

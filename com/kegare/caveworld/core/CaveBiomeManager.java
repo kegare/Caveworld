@@ -24,13 +24,13 @@ import com.google.gson.reflect.TypeToken;
 import com.kegare.caveworld.util.CaveLog;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.MathHelper;
 import net.minecraft.util.WeightedRandom;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.text.StrBuilder;
 import org.apache.logging.log4j.Level;
 
@@ -183,11 +183,18 @@ public class CaveBiomeManager
 
 			if (key.matches("^[0-9]{1,3}$"))
 			{
-				int id = MathHelper.parseIntWithDefault(key, -1);
+				int id = NumberUtils.toInt(key, -1);
 
-				if (id >= 0 && id < 256)
+				if (id < 0 || id >= BiomeGenBase.getBiomeGenArray().length)
 				{
-					addCaveBiome(new CaveBiome(BiomeGenBase.getBiome(id), weight, block));
+					continue;
+				}
+
+				BiomeGenBase biome = BiomeGenBase.getBiomeGenArray()[id];
+
+				if (biome != null)
+				{
+					addCaveBiome(new CaveBiome(biome, weight, block));
 				}
 			}
 			else

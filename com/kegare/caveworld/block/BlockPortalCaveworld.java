@@ -254,8 +254,6 @@ public class BlockPortalCaveworld extends BlockPortal
 	@Override
 	public void updateTick(World world, int x, int y, int z, Random random)
 	{
-		super.updateTick(world, x, y, z, random);
-
 		if (!world.isRemote && world.provider.dimensionId == 0 && world.getGameRules().getGameRuleBooleanValue("doMobSpawning") && !world.isDaytime() && random.nextInt(300) < world.difficultySetting.getDifficultyId())
 		{
 			while (!World.doesBlockHaveSolidTopSurface(world, x, y, z) && y > 0)

@@ -31,6 +31,7 @@ import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.text.StrBuilder;
 import org.apache.logging.log4j.Level;
 
@@ -171,7 +172,7 @@ public class CaveOreManager
 				{
 					if (str.matches("^[0-9]{1,3}$"))
 					{
-						int id = MathHelper.parseIntWithDefault(str, -1);
+						int id = NumberUtils.toInt(str, -1);
 
 						if (id >= 0 && id < 256)
 						{

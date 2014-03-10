@@ -46,24 +46,38 @@ public class WorldProviderCaveworld extends WorldProvider
 	{
 		if (dimData == null)
 		{
-			readDimData();
+			dimData = readDimData();
 		}
 
 		return dimData;
 	}
 
-	static void readDimData()
+	public static File getDimDir()
 	{
+		File root = DimensionManager.getCurrentSaveRootDirectory();
+
+		if (root == null || !root.exists() || root.isFile())
+		{
+			return null;
+		}
+
+		File dir = new File(root, "DIM-Caveworld");
+
+		if (!dir.exists())
+		{
+			dir.mkdirs();
+		}
+
+		return dir;
+	}
+
+	private static NBTTagCompound readDimData()
+	{
+		NBTTagCompound data = null;
+
 		try
 		{
-			File dir = new File(DimensionManager.getCurrentSaveRootDirectory(), "DIM-Caveworld");
-
-			if (!dir.exists())
-			{
-				dir.mkdirs();
-			}
-
-			dimData = CompressedStreamTools.read(new File(dir, "caveworld.dat"));
+			data = CompressedStreamTools.read(new File(getDimDir(), "caveworld.dat"));
 		}
 		catch (Exception e)
 		{
@@ -71,25 +85,20 @@ public class WorldProviderCaveworld extends WorldProvider
 		}
 		finally
 		{
-			if (dimData == null)
+			if (data == null)
 			{
-				dimData = new NBTTagCompound();
+				data = new NBTTagCompound();
 			}
 		}
+
+		return data;
 	}
 
 	public static void writeDimData()
 	{
 		try
 		{
-			File dir = new File(DimensionManager.getCurrentSaveRootDirectory(), "DIM-Caveworld");
-
-			if (!dir.exists())
-			{
-				dir.mkdirs();
-			}
-
-			CompressedStreamTools.write(getDimData(), new File(dir, "caveworld.dat"));
+			CompressedStreamTools.write(getDimData(), new File(getDimDir(), "caveworld.dat"));
 		}
 		catch (Exception e)
 		{

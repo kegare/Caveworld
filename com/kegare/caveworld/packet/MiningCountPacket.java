@@ -10,13 +10,12 @@
 
 package com.kegare.caveworld.packet;
 
-import com.kegare.caveworld.util.CaveUtils;
+import com.kegare.caveworld.core.CaveMiningManager;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 
 public class MiningCountPacket extends AbstractPacket
@@ -28,11 +27,6 @@ public class MiningCountPacket extends AbstractPacket
 	public MiningCountPacket(int count)
 	{
 		this.count = count;
-	}
-
-	public MiningCountPacket(EntityPlayer player)
-	{
-		this.count = CaveUtils.getMiningCount(player);
 	}
 
 	@Override
@@ -51,10 +45,7 @@ public class MiningCountPacket extends AbstractPacket
 	@SideOnly(Side.CLIENT)
 	public void handleClientSide(EntityPlayerSP player)
 	{
-		if (count > 0)
-		{
-			player.getEntityData().setInteger("Caveworld:MiningCount", count);
-		}
+		CaveMiningManager.setMiningCount(player, count);
 	}
 
 	@Override

@@ -14,6 +14,7 @@ import com.google.common.collect.Lists;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Version;
 import cpw.mods.fml.common.Loader;
+import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandNotFoundException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
@@ -30,6 +31,7 @@ import net.minecraft.world.WorldServer;
 import java.awt.*;
 import java.net.URI;
 import java.util.List;
+import java.util.Locale;
 
 public class CommandCaveworld implements ICommand
 {
@@ -88,34 +90,61 @@ public class CommandCaveworld implements ICommand
 			}
 			catch (Exception ignored) {}
 		}
-		else if (Version.DEV_DEBUG)
+		else if (Version.DEV_DEBUG && sender instanceof EntityPlayerMP && ((EntityPlayerMP)sender).capabilities.isCreativeMode)
 		{
+			EntityPlayerMP player = (EntityPlayerMP)sender;
+
 			if (args[0].equalsIgnoreCase("mineshaft"))
 			{
-				if (sender instanceof EntityPlayerMP)
-				{
-					EntityPlayerMP player = (EntityPlayerMP)sender;
-					WorldServer world = player.getServerForPlayer();
-					int x = MathHelper.floor_double(player.posX);
-					int y = MathHelper.floor_double(player.posY);
-					int z = MathHelper.floor_double(player.posZ);
-					ChunkPosition pos = world.getChunkProvider().func_147416_a(world, "Mineshaft", x, y, z);
+				WorldServer world = player.getServerForPlayer();
+				int x = MathHelper.floor_double(player.posX);
+				int y = MathHelper.floor_double(player.posY);
+				int z = MathHelper.floor_double(player.posZ);
+				ChunkPosition pos = world.getChunkProvider().func_147416_a(world, "Mineshaft", x, y, z);
 
-					if (pos != null) player.playerNetServerHandler.setPlayerLocation(pos.chunkPosX, pos.chunkPosY + 1.5D, pos.chunkPosZ, player.rotationYaw, player.rotationPitch);
-				}
+				if (pos != null) player.playerNetServerHandler.setPlayerLocation(pos.chunkPosX, pos.chunkPosY + 1.5D, pos.chunkPosZ, player.rotationYaw, player.rotationPitch);
 			}
 			else if (args[0].equalsIgnoreCase("stronghold"))
 			{
-				if (sender instanceof EntityPlayerMP)
-				{
-					EntityPlayerMP player = (EntityPlayerMP)sender;
-					WorldServer world = player.getServerForPlayer();
-					int x = MathHelper.floor_double(player.posX);
-					int y = MathHelper.floor_double(player.posY);
-					int z = MathHelper.floor_double(player.posZ);
-					ChunkPosition pos = world.getChunkProvider().func_147416_a(world, "Stronghold", x, y, z);
+				WorldServer world = player.getServerForPlayer();
+				int x = MathHelper.floor_double(player.posX);
+				int y = MathHelper.floor_double(player.posY);
+				int z = MathHelper.floor_double(player.posZ);
+				ChunkPosition pos = world.getChunkProvider().func_147416_a(world, "Stronghold", x, y, z);
 
-					if (pos != null) player.playerNetServerHandler.setPlayerLocation(pos.chunkPosX, pos.chunkPosY + 1.5D, pos.chunkPosZ, player.rotationYaw, player.rotationPitch);
+				if (pos != null) player.playerNetServerHandler.setPlayerLocation(pos.chunkPosX, pos.chunkPosY + 1.5D, pos.chunkPosZ, player.rotationYaw, player.rotationPitch);
+			}
+			else if (args[0].equalsIgnoreCase("mining") && args.length > 2)
+			{
+				String str = args[2];
+				boolean flag = str.toUpperCase(Locale.ENGLISH).endsWith("L");
+
+				if (flag)
+				{
+					str = str.substring(0, str.length() - 1);
+				}
+
+				int value = 0;
+
+				if (args[1].equalsIgnoreCase("add"))
+				{
+					value = CommandBase.parseIntBounded(sender, str, Short.MIN_VALUE, Short.MAX_VALUE);
+				}
+				else if (args[1].equalsIgnoreCase("remove") || args[1].equalsIgnoreCase("reduce"))
+				{
+					value = - CommandBase.parseIntBounded(sender, str, Short.MIN_VALUE, Short.MAX_VALUE);
+				}
+
+				if (value != 0)
+				{
+					if (flag)
+					{
+						CaveMiningManager.addMiningLevel(player, value);
+					}
+					else
+					{
+						CaveMiningManager.addMiningCount(player, value);
+					}
 				}
 			}
 		}

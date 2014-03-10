@@ -59,13 +59,35 @@ public class Caveworld
 		Config.buildConfig();
 
 		CaveBlocks.configure();
+
+		registerRecipes();
+	}
+
+	private void registerRecipes()
+	{
+		if (Version.DEV_DEBUG || Config.portalCraftRecipe)
+		{
+			GameRegistry.addShapedRecipe(new ItemStack(CaveBlocks.caveworld_portal),
+					" E ", "EPE", " D ",
+					'E', Items.emerald,
+					'P', Items.ender_pearl,
+					'D', Items.diamond
+			);
+		}
+
+		if (Version.DEV_DEBUG || Config.mossStoneCraftRecipe)
+		{
+			GameRegistry.addShapedRecipe(new ItemStack(Blocks.mossy_cobblestone),
+					" V ", "VCV", " V ",
+					'V', Blocks.vine,
+					'C', Blocks.cobblestone
+			);
+		}
 	}
 
 	@EventHandler
 	public void init(FMLInitializationEvent event)
 	{
-		initRecipes();
-
 		proxy.registerRenderers();
 
 		AchievementPage.registerAchievementPage(new AchievementPage("Caveworld", CaveAchievementList.getAchievementArray()));
@@ -84,25 +106,6 @@ public class Caveworld
 		packetPipeline.registerPacket(CaveOreSyncPacket.class);
 		packetPipeline.registerPacket(PlayCaveSoundPacket.class);
 		packetPipeline.registerPacket(MiningCountPacket.class);
-	}
-
-	private void initRecipes()
-	{
-		if (Version.DEV_DEBUG || Config.portalCraftRecipe)
-		{
-			GameRegistry.addShapedRecipe(new ItemStack(CaveBlocks.caveworld_portal),
-					" E ", "EPE", " D ",
-					'E', Items.emerald, 'P', Items.ender_pearl, 'D', Items.diamond
-			);
-		}
-
-		if (Version.DEV_DEBUG || Config.mossStoneCraftRecipe)
-		{
-			GameRegistry.addShapedRecipe(new ItemStack(Blocks.mossy_cobblestone),
-					" V ", "VCV", " V ",
-					'V', Blocks.vine, 'C', Blocks.cobblestone
-			);
-		}
 	}
 
 	@EventHandler
