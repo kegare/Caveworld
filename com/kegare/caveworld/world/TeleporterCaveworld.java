@@ -13,8 +13,11 @@ package com.kegare.caveworld.world;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.block.CaveBlocks;
+import com.kegare.caveworld.core.Config;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.Direction;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.ChunkCoordIntPair;
@@ -226,6 +229,15 @@ public class TeleporterCaveworld extends Teleporter
 			}
 
 			entity.setLocationAndAngles(var2, var3, var4, entity.rotationYaw, entity.rotationPitch);
+
+			if (Config.hardcoreEnabled && entity.dimension == Config.dimensionCaveworld && entity instanceof EntityPlayer)
+			{
+				blockX = MathHelper.floor_double(var2);
+				blockY = MathHelper.floor_double(var3);
+				blockZ = MathHelper.floor_double(var4);
+
+				((EntityPlayer)entity).setSpawnChunk(new ChunkCoordinates(blockX, blockY, blockZ), true, entity.dimension);
+			}
 
 			return true;
 		}

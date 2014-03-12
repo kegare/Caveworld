@@ -11,8 +11,6 @@
 package com.kegare.caveworld.packet;
 
 import com.kegare.caveworld.core.Config;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -29,9 +27,11 @@ public class ConfigSyncPacket extends AbstractPacket
 	private boolean generateLakes;
 	private boolean generateDungeons;
 	private boolean decorateVines;
+	private boolean hardcoreEnabled;
 
 	public ConfigSyncPacket()
 	{
+		hardcoreEnabled = Config.hardcoreEnabled;
 		dimensionCaveworld = Config.dimensionCaveworld;
 		subsurfaceHeight = Config.subsurfaceHeight;
 		generateCaves = Config.generateCaves;
@@ -46,6 +46,7 @@ public class ConfigSyncPacket extends AbstractPacket
 	@Override
 	public void encodeInto(ChannelHandlerContext ctx, ByteBuf buffer)
 	{
+		buffer.writeBoolean(hardcoreEnabled);
 		buffer.writeInt(dimensionCaveworld);
 		buffer.writeInt(subsurfaceHeight);
 		buffer.writeBoolean(generateCaves);
@@ -60,6 +61,7 @@ public class ConfigSyncPacket extends AbstractPacket
 	@Override
 	public void decodeInto(ChannelHandlerContext ctx, ByteBuf buffer)
 	{
+		hardcoreEnabled = buffer.readBoolean();
 		dimensionCaveworld = buffer.readInt();
 		subsurfaceHeight = buffer.readInt();
 		generateCaves = buffer.readBoolean();
@@ -72,9 +74,9 @@ public class ConfigSyncPacket extends AbstractPacket
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
 	public void handleClientSide(EntityPlayerSP player)
 	{
+		Config.hardcoreEnabled = hardcoreEnabled;
 		Config.dimensionCaveworld = dimensionCaveworld;
 		Config.subsurfaceHeight = subsurfaceHeight;
 		Config.generateCaves = generateCaves;
@@ -87,6 +89,5 @@ public class ConfigSyncPacket extends AbstractPacket
 	}
 
 	@Override
-	@SideOnly(Side.SERVER)
 	public void handleServerSide(EntityPlayerMP player) {}
 }

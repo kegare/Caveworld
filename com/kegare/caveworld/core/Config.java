@@ -22,6 +22,8 @@ import java.io.File;
 
 public class Config
 {
+	public static boolean hardcoreEnabled = false;
+
 	public static boolean versionNotify = true;
 
 	public static boolean portalCraftRecipe = false;

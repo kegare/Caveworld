@@ -15,11 +15,13 @@ import com.google.common.base.Strings;
 import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
 import com.kegare.caveworld.core.Caveworld;
+import com.kegare.caveworld.core.Config;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.versioning.ArtifactVersion;
 import cpw.mods.fml.common.versioning.DefaultArtifactVersion;
 import net.minecraftforge.classloading.FMLForgePlugin;
 import net.minecraftforge.common.MinecraftForge;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Level;
 
 import java.io.File;
@@ -49,43 +51,50 @@ public class Version
 	{
 		CURRENT = Optional.of(Caveworld.metadata.version);
 
-		if (FMLForgePlugin.RUNTIME_DEOBF)
+		try
 		{
-			try
-			{
-				File file = Loader.instance().activeModContainer().getSource();
+			File file = Loader.instance().activeModContainer().getSource();
 
-				if (file.exists() && file.isFile())
+			if (file != null && file.exists())
+			{
+				if (file.isFile())
 				{
-					String name = file.getName().substring(0, file.getName().lastIndexOf('.'));
+					String name = FilenameUtils.getBaseName(file.getName());
 
 					if (name.endsWith("dev"))
 					{
 						DEV_DEBUG = true;
 					}
-					else if (name.substring(name.lastIndexOf('-') + 1).startsWith("dev"))
+					else if (name.endsWith("hardcore"))
 					{
-						DEV_DEBUG = true;
-					}
-					else if (name.substring(name.lastIndexOf('_') + 1).startsWith("dev"))
-					{
-						DEV_DEBUG = true;
+						Config.hardcoreEnabled = true;
 					}
 				}
-			}
-			catch (Exception e)
-			{
-				DEV_DEBUG = false;
+				else if (file.isDirectory())
+				{
+					DEV_DEBUG = true;
+				}
 			}
 		}
-		else
+		catch (Exception e)
 		{
-			DEV_DEBUG = true;
+			DEV_DEBUG = false;
+		}
+		finally
+		{
+			if (!FMLForgePlugin.RUNTIME_DEOBF)
+			{
+				DEV_DEBUG = true;
+			}
 		}
 
 		if (DEV_DEBUG)
 		{
 			Caveworld.metadata.version += "-dev";
+		}
+		else if (Config.hardcoreEnabled)
+		{
+			Caveworld.metadata.version += "-hardcore";
 		}
 	}
 

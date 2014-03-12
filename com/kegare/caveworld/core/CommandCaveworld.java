@@ -74,6 +74,10 @@ public class CommandCaveworld implements ICommand
 			{
 				builder.append(EnumChatFormatting.RED).append(" dev").append(EnumChatFormatting.RESET);
 			}
+			else if (Config.hardcoreEnabled)
+			{
+				builder.append(EnumChatFormatting.RED).append(" hardcore").append(EnumChatFormatting.RESET);
+			}
 
 			builder.append(" for ").append(Loader.instance().getMCVersionString());
 			builder.append(EnumChatFormatting.GRAY).append(" (Latest: ").append(Version.getLatest()).append(")");

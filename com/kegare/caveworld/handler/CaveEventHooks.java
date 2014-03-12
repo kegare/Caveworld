@@ -419,13 +419,18 @@ public class CaveEventHooks
 		double posX = living.posX;
 		double posY = living.posY;
 		double posZ = living.posZ;
-		int looting = event.lootingLevel;
+		int looting = Math.max(event.lootingLevel, 0);
 
 		if (!world.isRemote && living.dimension == Config.dimensionCaveworld && entity != null && entity instanceof EntityPlayerMP)
 		{
 			if (living instanceof EntityBat)
 			{
 				event.drops.add(new EntityItem(world, posX, posY + 0.5D, posZ, new ItemStack(Items.coal, random.nextInt(3) + Math.min(looting, 3))));
+
+				if (random.nextInt(3) == Math.min(looting, 2))
+				{
+					event.drops.add(new EntityItem(world, posX, posY + 0.25D, posZ, new ItemStack(Items.leather, 1)));
+				}
 			}
 		}
 	}

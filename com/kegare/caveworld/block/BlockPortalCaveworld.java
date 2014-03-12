@@ -183,7 +183,7 @@ public class BlockPortalCaveworld extends BlockPortal
 	@Override
 	public void onEntityCollidedWithBlock(World world, int x, int y, int z, Entity entity)
 	{
-		if (!world.isRemote && entity.isEntityAlive() && (entity.dimension == 0 || entity.dimension == Config.dimensionCaveworld))
+		if (!world.isRemote && entity.isEntityAlive() && (entity.dimension == 0 || !Config.hardcoreEnabled && entity.dimension == Config.dimensionCaveworld))
 		{
 			MinecraftServer server = Caveworld.proxy.getServer();
 			int dimOld = entity.dimension;

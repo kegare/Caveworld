@@ -15,8 +15,6 @@ import com.kegare.caveworld.core.CaveOreManager;
 import com.kegare.caveworld.core.CaveOreManager.CaveOre;
 import com.kegare.caveworld.util.CaveLog;
 import cpw.mods.fml.common.network.ByteBufUtils;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -54,7 +52,6 @@ public class CaveOreSyncPacket extends AbstractPacket
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
 	public void handleClientSide(EntityPlayerSP player)
 	{
 		if (!Strings.isNullOrEmpty(data))
@@ -76,6 +73,5 @@ public class CaveOreSyncPacket extends AbstractPacket
 	}
 
 	@Override
-	@SideOnly(Side.SERVER)
 	public void handleServerSide(EntityPlayerMP player) {}
 }

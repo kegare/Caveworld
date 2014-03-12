@@ -3,8 +3,6 @@ package com.kegare.caveworld.packet;
 import com.google.common.base.Strings;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.network.ByteBufUtils;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.Minecraft;
@@ -46,7 +44,6 @@ public class PlayCaveSoundPacket extends AbstractPacket
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
 	public void handleClientSide(EntityPlayerSP player)
 	{
 		Minecraft mc = FMLClientHandler.instance().getClient();
@@ -58,6 +55,5 @@ public class PlayCaveSoundPacket extends AbstractPacket
 	}
 
 	@Override
-	@SideOnly(Side.SERVER)
 	public void handleServerSide(EntityPlayerMP player) {}
 }

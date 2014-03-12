@@ -11,8 +11,6 @@
 package com.kegare.caveworld.packet;
 
 import com.kegare.caveworld.world.WorldProviderCaveworld;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -44,7 +42,6 @@ public class DataSyncPacket extends AbstractPacket
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
 	public void handleClientSide(EntityPlayerSP player)
 	{
 		WorldProviderCaveworld.dimensionSeed = dimensionSeed;
@@ -52,6 +49,5 @@ public class DataSyncPacket extends AbstractPacket
 	}
 
 	@Override
-	@SideOnly(Side.SERVER)
 	public void handleServerSide(EntityPlayerMP player) {}
 }

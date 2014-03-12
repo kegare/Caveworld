@@ -10,6 +10,7 @@
 
 package com.kegare.caveworld.world;
 
+import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.renderer.EmptyRenderer;
 import com.kegare.caveworld.util.CaveLog;
@@ -111,8 +112,6 @@ public class WorldProviderCaveworld extends WorldProvider
 		dimensionSeed = 0;
 		subsurfaceHeight = 0;
 		dimData = null;
-
-		WorldChunkManagerCaveworld.biomeMap.clear();
 	}
 
 	@Override
@@ -238,7 +237,7 @@ public class WorldProviderCaveworld extends WorldProvider
 	@Override
 	public int getRespawnDimension(EntityPlayerMP player)
 	{
-		if (player.getBedLocation(dimensionId) != null)
+		if (Config.hardcoreEnabled || player.getBedLocation(dimensionId) != null)
 		{
 			return dimensionId;
 		}
@@ -249,7 +248,7 @@ public class WorldProviderCaveworld extends WorldProvider
 	@Override
 	public boolean isDaytime()
 	{
-		return worldObj.getWorldTime() <= 12500;
+		return Caveworld.proxy.getServer().getEntityWorld().isDaytime();
 	}
 
 	@Override
