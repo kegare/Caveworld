@@ -10,14 +10,9 @@
 
 package com.kegare.caveworld.world;
 
-import com.kegare.caveworld.core.Caveworld;
-import com.kegare.caveworld.core.Config;
-import com.kegare.caveworld.renderer.EmptyRenderer;
-import com.kegare.caveworld.util.CaveLog;
-import com.kegare.caveworld.world.gen.MapGenStrongholdCaveworld;
-import com.kegare.caveworld.world.gen.StructureStrongholdPiecesCaveworld;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import java.io.File;
+import java.security.SecureRandom;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.CompressedStreamTools;
@@ -31,26 +26,34 @@ import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.structure.MapGenStructureIO;
 import net.minecraftforge.client.IRenderHandler;
 import net.minecraftforge.common.DimensionManager;
+
 import org.apache.logging.log4j.Level;
 
-import java.io.File;
-import java.security.SecureRandom;
+import com.google.common.base.Optional;
+import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.renderer.EmptyRenderer;
+import com.kegare.caveworld.util.CaveLog;
+import com.kegare.caveworld.world.gen.MapGenStrongholdCaveworld;
+import com.kegare.caveworld.world.gen.StructureStrongholdPiecesCaveworld;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class WorldProviderCaveworld extends WorldProvider
 {
-	public static long dimensionSeed;
-	public static int subsurfaceHeight;
+	private static Optional<NBTTagCompound> dimData = Optional.absent();
 
-	private static NBTTagCompound dimData;
+	public static Optional<Long> dimensionSeed = Optional.absent();
+	public static Optional<Integer> subsurfaceHeight = Optional.absent();
 
 	public static NBTTagCompound getDimData()
 	{
-		if (dimData == null)
+		if (!dimData.isPresent())
 		{
-			dimData = readDimData();
+			dimData = Optional.of(readDimData());
 		}
 
-		return dimData;
+		return dimData.or(new NBTTagCompound());
 	}
 
 	public static File getDimDir()
@@ -109,9 +112,9 @@ public class WorldProviderCaveworld extends WorldProvider
 
 	public static void clearDimData()
 	{
-		dimensionSeed = 0;
-		subsurfaceHeight = 0;
-		dimData = null;
+		dimData = Optional.absent();
+		dimensionSeed = Optional.absent();
+		subsurfaceHeight = Optional.absent();
 	}
 
 	@Override
@@ -134,7 +137,7 @@ public class WorldProviderCaveworld extends WorldProvider
 	@Override
 	public boolean canCoordinateBeSpawn(int x, int z)
 	{
-		return false;
+		return true;
 	}
 
 	@Override
@@ -248,7 +251,7 @@ public class WorldProviderCaveworld extends WorldProvider
 	@Override
 	public boolean isDaytime()
 	{
-		return Caveworld.proxy.getServer().getEntityWorld().isDaytime();
+		return worldObj.getWorldInfo().getWorldTime() < 12500;
 	}
 
 	@Override
@@ -281,35 +284,25 @@ public class WorldProviderCaveworld extends WorldProvider
 	@Override
 	public long getSeed()
 	{
-		if (!worldObj.isRemote && dimensionSeed == 0)
+		if (!worldObj.isRemote && !dimensionSeed.isPresent())
 		{
-			try
-			{
-				NBTTagCompound data = getDimData();
+			NBTTagCompound data = getDimData();
 
-				if (!data.hasKey("DimSeed"))
-				{
-					data.setLong("DimSeed", new SecureRandom().nextLong());
-				}
-
-				dimensionSeed = data.getLong("DimSeed");
-			}
-			finally
+			if (!data.hasKey("DimSeed"))
 			{
-				if (dimensionSeed == 0)
-				{
-					dimensionSeed = Long.reverseBytes(super.getSeed());
-				}
+				data.setLong("DimSeed", new SecureRandom().nextLong());
 			}
+
+			dimensionSeed = Optional.of(data.getLong("DimSeed"));
 		}
 
-		return dimensionSeed;
+		return dimensionSeed.or(Long.reverseBytes(super.getSeed()));
 	}
 
 	@Override
 	public int getActualHeight()
 	{
-		if (!worldObj.isRemote && subsurfaceHeight == 0)
+		if (!worldObj.isRemote && !subsurfaceHeight.isPresent())
 		{
 			NBTTagCompound data = getDimData();
 
@@ -318,10 +311,10 @@ public class WorldProviderCaveworld extends WorldProvider
 				data.setInteger("SubsurfaceHeight", Config.subsurfaceHeight);
 			}
 
-			subsurfaceHeight = MathHelper.clamp_int(data.getInteger("SubsurfaceHeight"), 63, 255);
+			subsurfaceHeight = Optional.of(MathHelper.clamp_int(data.getInteger("SubsurfaceHeight"), 63, 255));
 		}
 
-		return subsurfaceHeight + 1;
+		return subsurfaceHeight.or(127) + 1;
 	}
 
 	@Override

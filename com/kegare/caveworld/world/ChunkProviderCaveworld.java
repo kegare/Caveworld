@@ -10,13 +10,10 @@
 
 package com.kegare.caveworld.world;
 
-import com.kegare.caveworld.core.CaveBiomeManager;
-import com.kegare.caveworld.core.CaveOreManager;
-import com.kegare.caveworld.core.CaveOreManager.CaveOre;
-import com.kegare.caveworld.core.Config;
-import com.kegare.caveworld.world.gen.MapGenCavesCaveworld;
-import com.kegare.caveworld.world.gen.MapGenRavineCaveworld;
-import com.kegare.caveworld.world.gen.MapGenStrongholdCaveworld;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.entity.EnumCreatureType;
@@ -49,9 +46,14 @@ import net.minecraftforge.event.terraingen.PopulateChunkEvent;
 import net.minecraftforge.event.terraingen.PopulateChunkEvent.Populate.EventType;
 import net.minecraftforge.event.terraingen.TerrainGen;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import com.kegare.caveworld.core.CaveBiomeManager;
+import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome.BlockEntry;
+import com.kegare.caveworld.core.CaveOreManager;
+import com.kegare.caveworld.core.CaveOreManager.CaveOre;
+import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.world.gen.MapGenCavesCaveworld;
+import com.kegare.caveworld.world.gen.MapGenRavineCaveworld;
+import com.kegare.caveworld.world.gen.MapGenStrongholdCaveworld;
 
 public class ChunkProviderCaveworld implements IChunkProvider
 {
@@ -91,12 +93,16 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	{
 		random.setSeed(chunkX * 341873128712L + chunkZ * 132897987541L);
 
-		BiomeGenBase biome = worldObj.getWorldChunkManager().getBiomeGenAt(chunkX << 4, chunkZ << 4);
 		int worldHeight = worldObj.provider.getActualHeight();
+		BiomeGenBase biome = worldObj.getWorldChunkManager().getBiomeGenAt(chunkX << 4, chunkZ << 4);
 		Block[] blocks = new Block[256 * MathHelper.clamp_int(worldHeight, 128, 256)];
-		Block block = CaveBiomeManager.getBiomeTerrainBlock(biome);
+		byte[] metadata = new byte[blocks.length];
+		BlockEntry entry = CaveBiomeManager.getBiomeTerrainBlock(biome);
+		Block block = entry.block;
+		int meta = entry.blockMetadata;
 
 		Arrays.fill(blocks, block);
+		Arrays.fill(metadata, (byte)meta);
 
 		if (Config.generateCaves) caveGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
 		if (Config.generateRavine) ravineGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
@@ -107,7 +113,17 @@ public class ChunkProviderCaveworld implements IChunkProvider
 			if (Config.generateStronghold) strongholdGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
 		}
 
-		Chunk chunk = new Chunk(worldObj, blocks, chunkX, chunkZ);
+		int i;
+
+		for (i = 0; meta != 0 && i < blocks.length; ++i)
+		{
+			if (blocks[i] != block)
+			{
+				metadata[i] = 0;
+			}
+		}
+
+		Chunk chunk = new Chunk(worldObj, blocks, metadata, chunkX, chunkZ);
 
 		Arrays.fill(chunk.getBiomeArray(), (byte)biome.biomeID);
 
@@ -119,9 +135,9 @@ public class ChunkProviderCaveworld implements IChunkProvider
 				chunk.func_150807_a(x, worldHeight - 1, z, Blocks.bedrock, 0);
 				chunk.func_150807_a(x, worldHeight - 2, z, block, 0);
 
-				for (int y = worldHeight; worldHeight < 128 && y < 128; ++y)
+				for (i = worldHeight; worldHeight < 128 && i < 128; ++i)
 				{
-					chunk.func_150807_a(x, y, z, Blocks.air, 0);
+					chunk.func_150807_a(x, i, z, Blocks.air, 0);
 				}
 			}
 		}

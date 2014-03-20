@@ -10,14 +10,19 @@
 
 package com.kegare.caveworld.packet;
 
-import com.kegare.caveworld.core.Config;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayerMP;
 
+import com.kegare.caveworld.core.Config;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
 public class ConfigSyncPacket extends AbstractPacket
 {
+	private boolean hardcoreEnabled;
 	private int dimensionCaveworld;
 	private int subsurfaceHeight;
 	private boolean generateCaves;
@@ -27,7 +32,6 @@ public class ConfigSyncPacket extends AbstractPacket
 	private boolean generateLakes;
 	private boolean generateDungeons;
 	private boolean decorateVines;
-	private boolean hardcoreEnabled;
 
 	public ConfigSyncPacket()
 	{
@@ -74,6 +78,7 @@ public class ConfigSyncPacket extends AbstractPacket
 	}
 
 	@Override
+	@SideOnly(Side.CLIENT)
 	public void handleClientSide(EntityPlayerSP player)
 	{
 		Config.hardcoreEnabled = hardcoreEnabled;
@@ -89,5 +94,6 @@ public class ConfigSyncPacket extends AbstractPacket
 	}
 
 	@Override
+	@SideOnly(Side.SERVER)
 	public void handleServerSide(EntityPlayerMP player) {}
 }

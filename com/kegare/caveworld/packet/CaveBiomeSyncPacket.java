@@ -10,16 +10,21 @@
 
 package com.kegare.caveworld.packet;
 
-import com.google.common.base.Strings;
-import com.kegare.caveworld.core.CaveBiomeManager;
-import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome;
-import com.kegare.caveworld.util.CaveLog;
-import cpw.mods.fml.common.network.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayerMP;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
+
+import com.kegare.caveworld.core.CaveBiomeManager;
+import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome;
+import com.kegare.caveworld.util.CaveLog;
+
+import cpw.mods.fml.common.network.ByteBufUtils;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class CaveBiomeSyncPacket extends AbstractPacket
 {
@@ -41,7 +46,9 @@ public class CaveBiomeSyncPacket extends AbstractPacket
 			builder.append(biome).append(',');
 		}
 
-		this.data = builder.deleteCharAt(builder.lastIndexOf(",")).append('}').toString();
+		builder.deleteCharAt(builder.lastIndexOf(",")).append('}');
+
+		this.data = StringUtils.deleteWhitespace(builder.toString());
 	}
 
 	@Override
@@ -57,26 +64,25 @@ public class CaveBiomeSyncPacket extends AbstractPacket
 	}
 
 	@Override
+	@SideOnly(Side.CLIENT)
 	public void handleClientSide(EntityPlayerSP player)
 	{
-		if (!Strings.isNullOrEmpty(data))
-		{
-			CaveBiomeManager.clearCaveBiomes();
+		CaveBiomeManager.clearCaveBiomes();
 
-			try
+		try
+		{
+			if (CaveBiomeManager.loadCaveBiomesFromString(data))
 			{
-				if (CaveBiomeManager.loadCaveBiomesFromString(data))
-				{
-					CaveLog.info("Loaded %d cave biomes from server", CaveBiomeManager.getActiveBiomeCount());
-				}
+				CaveLog.info("Loaded %d cave biomes from server", CaveBiomeManager.getActiveBiomeCount());
 			}
-			catch (Exception e)
-			{
-				CaveLog.log(Level.WARN, e, "An error occurred trying to loading cave biomes from server");
-			}
+		}
+		catch (Exception e)
+		{
+			CaveLog.log(Level.WARN, e, "An error occurred trying to loading cave biomes from server");
 		}
 	}
 
 	@Override
+	@SideOnly(Side.SERVER)
 	public void handleServerSide(EntityPlayerMP player) {}
 }

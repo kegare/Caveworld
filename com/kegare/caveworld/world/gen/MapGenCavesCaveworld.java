@@ -10,13 +10,13 @@
 
 package com.kegare.caveworld.world.gen;
 
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.MapGenCaves;
-
-import java.util.Random;
 
 public class MapGenCavesCaveworld extends MapGenCaves
 {

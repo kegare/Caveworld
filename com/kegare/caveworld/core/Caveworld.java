@@ -10,18 +10,26 @@
 
 package com.kegare.caveworld.core;
 
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
+import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.common.MinecraftForge;
+
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.handler.CaveEventHooks;
+import com.kegare.caveworld.handler.CaveFuelHandler;
 import com.kegare.caveworld.packet.CaveBiomeSyncPacket;
+import com.kegare.caveworld.packet.CaveDimSyncPacket;
+import com.kegare.caveworld.packet.CaveMiningSyncPacket;
 import com.kegare.caveworld.packet.CaveOreSyncPacket;
 import com.kegare.caveworld.packet.ConfigSyncPacket;
-import com.kegare.caveworld.packet.DataSyncPacket;
-import com.kegare.caveworld.packet.MiningCountPacket;
 import com.kegare.caveworld.packet.PacketPipeline;
 import com.kegare.caveworld.packet.PlayCaveSoundPacket;
 import com.kegare.caveworld.proxy.CommonProxy;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
+
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
@@ -33,12 +41,6 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
-import net.minecraftforge.common.AchievementPage;
-import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.common.MinecraftForge;
 
 @Mod(modid = "kegare.caveworld")
 public class Caveworld
@@ -58,29 +60,33 @@ public class Caveworld
 
 		Config.buildConfig();
 
-		CaveBlocks.configure();
+		CaveBlocks.register();
 
-		registerRecipes();
+		CaveAchievementList.register();
+
+		registerExtraRecipes();
+
+		GameRegistry.registerFuelHandler(new CaveFuelHandler());
 	}
 
-	private void registerRecipes()
+	private void registerExtraRecipes()
 	{
-		if (Version.DEV_DEBUG || Config.portalCraftRecipe)
+		if (Config.portalCraftRecipe)
 		{
 			GameRegistry.addShapedRecipe(new ItemStack(CaveBlocks.caveworld_portal),
-					" E ", "EPE", " D ",
-					'E', Items.emerald,
-					'P', Items.ender_pearl,
-					'D', Items.diamond
+				" E ", "EPE", " D ",
+				'E', Items.emerald,
+				'P', Items.ender_pearl,
+				'D', Items.diamond
 			);
 		}
 
-		if (Version.DEV_DEBUG || Config.mossStoneCraftRecipe)
+		if (Config.mossStoneCraftRecipe)
 		{
 			GameRegistry.addShapedRecipe(new ItemStack(Blocks.mossy_cobblestone),
-					" V ", "VCV", " V ",
-					'V', Blocks.vine,
-					'C', Blocks.cobblestone
+				" V ", "VCV", " V ",
+				'V', Blocks.vine,
+				'C', Blocks.cobblestone
 			);
 		}
 	}
@@ -89,8 +95,6 @@ public class Caveworld
 	public void init(FMLInitializationEvent event)
 	{
 		proxy.registerRenderers();
-
-		AchievementPage.registerAchievementPage(new AchievementPage("Caveworld", CaveAchievementList.getAchievementArray()));
 
 		DimensionManager.registerProviderType(Config.dimensionCaveworld, WorldProviderCaveworld.class, true);
 		DimensionManager.registerDimension(Config.dimensionCaveworld, Config.dimensionCaveworld);
@@ -101,11 +105,11 @@ public class Caveworld
 
 		packetPipeline.init("kegare.caveworld");
 		packetPipeline.registerPacket(ConfigSyncPacket.class);
-		packetPipeline.registerPacket(DataSyncPacket.class);
+		packetPipeline.registerPacket(CaveDimSyncPacket.class);
 		packetPipeline.registerPacket(CaveBiomeSyncPacket.class);
 		packetPipeline.registerPacket(CaveOreSyncPacket.class);
+		packetPipeline.registerPacket(CaveMiningSyncPacket.class);
 		packetPipeline.registerPacket(PlayCaveSoundPacket.class);
-		packetPipeline.registerPacket(MiningCountPacket.class);
 	}
 
 	@EventHandler

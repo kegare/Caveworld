@@ -10,6 +10,28 @@
 
 package com.kegare.caveworld.core;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.SortedSet;
+
+import net.minecraft.block.Block;
+import net.minecraft.init.Blocks;
+import net.minecraft.util.WeightedRandom;
+import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraftforge.common.BiomeDictionary;
+import net.minecraftforge.common.BiomeDictionary.Type;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.commons.lang3.text.StrBuilder;
+import org.apache.logging.log4j.Level;
+
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
@@ -21,28 +43,8 @@ import com.google.common.io.Files;
 import com.google.common.io.LineProcessor;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome.BlockEntry;
 import com.kegare.caveworld.util.CaveLog;
-import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.WeightedRandom;
-import net.minecraft.world.biome.BiomeGenBase;
-import net.minecraftforge.common.BiomeDictionary;
-import net.minecraftforge.common.BiomeDictionary.Type;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.commons.lang3.text.StrBuilder;
-import org.apache.logging.log4j.Level;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.SortedSet;
 
 public class CaveBiomeManager
 {
@@ -56,14 +58,14 @@ public class CaveBiomeManager
 	});
 
 	private static final Map<Integer, Integer> genWeightMap = Maps.newHashMap();
-	private static final Map<Integer, Block> terrainBlockMap = Maps.newHashMap();
+	private static final Map<Integer, BlockEntry> terrainBlockMap = Maps.newHashMap();
 
 	private static void initCaveBiomes()
 	{
 		clearCaveBiomes();
 
 		addCaveBiome(new CaveBiome(BiomeGenBase.ocean, 30));
-		addCaveBiome(new CaveBiome(BiomeGenBase.plains, 100));
+		addCaveBiome(new CaveBiome(BiomeGenBase.plains, 150));
 		addCaveBiome(new CaveBiome(BiomeGenBase.desert, 90));
 		addCaveBiome(new CaveBiome(BiomeGenBase.desertHills, 10));
 		addCaveBiome(new CaveBiome(BiomeGenBase.forest, 100));
@@ -83,8 +85,8 @@ public class CaveBiomeManager
 		addCaveBiome(new CaveBiome(BiomeGenBase.mushroomIslandShore, 1));
 		addCaveBiome(new CaveBiome(BiomeGenBase.savanna, 30));
 		addCaveBiome(new CaveBiome(BiomeGenBase.mesa, 3));
-		addCaveBiome(new CaveBiome(BiomeGenBase.hell, 0, Blocks.netherrack));
-		addCaveBiome(new CaveBiome(BiomeGenBase.sky, 0, Blocks.end_stone));
+		addCaveBiome(new CaveBiome(BiomeGenBase.hell, 0, new BlockEntry(Blocks.netherrack, 0)));
+		addCaveBiome(new CaveBiome(BiomeGenBase.sky, 0, new BlockEntry(Blocks.end_stone, 0)));
 	}
 
 	static boolean loadCaveBiomes()
@@ -141,7 +143,7 @@ public class CaveBiomeManager
 
 			file.renameTo(dest);
 
-			CaveLog.severe("A critical error occured reading the " + file.getName() + " file, defaults will be used - the invalid file is backed up at " + dest.getName(), e);
+			CaveLog.log(Level.ERROR, e, "A critical error occured reading the " + file.getName() + " file, defaults will be used - the invalid file is backed up at " + dest.getName());
 		}
 		finally
 		{
@@ -175,6 +177,7 @@ public class CaveBiomeManager
 			Map<String, Object> entry = json.get(key);
 			int weight = entry.containsKey("genWeight") ? ((Number)entry.get("genWeight")).intValue() : 1;
 			Block block = entry.containsKey("terrainBlock") ? Block.getBlockFromName((String)entry.get("terrainBlock")) : Blocks.stone;
+			int metadata = entry.containsKey("terrainBlockMetadata") ? ((Number)entry.get("terrainBlockMetadata")).intValue() : 0;
 
 			if (block == null || block.getMaterial().isLiquid() || !block.getMaterial().isSolid() || block.getMaterial().isReplaceable())
 			{
@@ -194,18 +197,37 @@ public class CaveBiomeManager
 
 				if (biome != null)
 				{
-					addCaveBiome(new CaveBiome(biome, weight, block));
+					addCaveBiome(new CaveBiome(biome, weight, new BlockEntry(block, metadata)));
 				}
 			}
 			else
 			{
-				Type type = Type.valueOf(key.toUpperCase(Locale.ENGLISH));
+				Type type;
 
-				if (type != null)
+				try
+				{
+					type = Type.valueOf(key);
+				}
+				catch (Exception e)
+				{
+					type = null;
+				}
+
+				if (type == null)
+				{
+					for (BiomeGenBase biome : BiomeGenBase.getBiomeGenArray())
+					{
+						if (biome != null && biome.biomeName.equals(key))
+						{
+							addCaveBiome(new CaveBiome(biome, weight, new BlockEntry(block, metadata)));
+						}
+					}
+				}
+				else
 				{
 					for (BiomeGenBase biome : BiomeDictionary.getBiomesForType(type))
 					{
-						addCaveBiome(new CaveBiome(biome, weight, block));
+						addCaveBiome(new CaveBiome(biome, weight, new BlockEntry(block, metadata)));
 					}
 				}
 			}
@@ -255,10 +277,18 @@ public class CaveBiomeManager
 				builder.append("  \"").append(biome.biomeID).appendln("\": {");
 				builder.append("    \"genWeight\": ").append(caveBiome.itemWeight);
 
-				if (caveBiome.terrainBlock != Blocks.stone)
+				BlockEntry entry = caveBiome.terrainBlock;
+
+				if (entry.block != Blocks.stone)
 				{
 					builder.appendln(',');
-					builder.append("    \"terrainBlock\": \"").append(Block.blockRegistry.getNameForObject(caveBiome.terrainBlock)).append("\"");
+					builder.append("    \"terrainBlock\": \"").append(Block.blockRegistry.getNameForObject(entry.block)).append("\"");
+				}
+
+				if (entry.blockMetadata != 0)
+				{
+					builder.appendln(',');
+					builder.append("    \"terrainBlockMetadata\": ").append(entry.blockMetadata);
 				}
 
 				builder.appendNewLine();
@@ -356,7 +386,7 @@ public class CaveBiomeManager
 		return 0;
 	}
 
-	public static Block getBiomeTerrainBlock(BiomeGenBase biome)
+	public static BlockEntry getBiomeTerrainBlock(BiomeGenBase biome)
 	{
 		if (terrainBlockMap.containsKey(biome.biomeID))
 		{
@@ -368,24 +398,25 @@ public class CaveBiomeManager
 			{
 				if (caveBiome.biome.biomeID == biome.biomeID)
 				{
-					Block block = caveBiome.terrainBlock;
+					BlockEntry entry = caveBiome.terrainBlock;
+					Block block = entry.block;
 
 					if (block == null || block.getMaterial().isLiquid() || !block.getMaterial().isSolid() || block.getMaterial().isReplaceable())
 					{
-						block = Blocks.stone;
+						entry = new BlockEntry(Blocks.stone, 0);
 					}
 
-					terrainBlockMap.put(biome.biomeID, block);
+					terrainBlockMap.put(biome.biomeID, entry);
 
-					return block;
+					return entry;
 				}
 			}
 		}
 
-		return Blocks.stone;
+		return new BlockEntry(Blocks.stone, 0);
 	}
 
-	public static BiomeGenBase getRandomBiome(Random random)
+	public static BiomeGenBase getRandomCaveBiome(Random random)
 	{
 		try
 		{
@@ -422,14 +453,14 @@ public class CaveBiomeManager
 	public static class CaveBiome extends WeightedRandom.Item
 	{
 		public final BiomeGenBase biome;
-		public final Block terrainBlock;
+		public final BlockEntry terrainBlock;
 
 		public CaveBiome(BiomeGenBase biome, int weight)
 		{
-			this(biome, weight, Blocks.stone);
+			this(biome, weight, new BlockEntry(Blocks.stone, 0));
 		}
 
-		public CaveBiome(BiomeGenBase biome, int weight, Block block)
+		public CaveBiome(BiomeGenBase biome, int weight, BlockEntry block)
 		{
 			super(weight);
 			this.biome = biome;
@@ -439,13 +470,25 @@ public class CaveBiomeManager
 		@Override
 		public String toString()
 		{
-			return "\"" + biome.biomeID + "\":{\"genWeight\":" + itemWeight + ',' + "\"terrainBlock\":\"" + Block.blockRegistry.getNameForObject(terrainBlock) + "\"}";
+			return "\"" + biome.biomeID + "\":{\"genWeight\":" + itemWeight + ",\"terrainBlock\":\"" + Block.blockRegistry.getNameForObject(terrainBlock.block) + "\",\"terrainBlockMetadata\":" + terrainBlock.blockMetadata + "}";
 		}
 
 		@Override
 		public boolean equals(Object target)
 		{
 			return target instanceof CaveBiome && biome.biomeID == ((CaveBiome)target).biome.biomeID;
+		}
+
+		public static class BlockEntry
+		{
+			public final Block block;
+			public final int blockMetadata;
+
+			public BlockEntry(Block block, int metadata)
+			{
+				this.block = block;
+				this.blockMetadata = metadata;
+			}
 		}
 	}
 }

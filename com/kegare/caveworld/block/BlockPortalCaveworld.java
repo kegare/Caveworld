@@ -10,12 +10,8 @@
 
 package com.kegare.caveworld.block;
 
-import com.kegare.caveworld.core.Caveworld;
-import com.kegare.caveworld.core.Config;
-import com.kegare.caveworld.inventory.InventoryCaveworldPortal;
-import com.kegare.caveworld.world.TeleporterCaveworld;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockPortal;
 import net.minecraft.block.material.Material;
@@ -39,9 +35,16 @@ import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldProviderSurface;
 import net.minecraft.world.WorldServer;
 
-import java.util.Random;
+import com.kegare.caveworld.core.Caveworld;
+import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.inventory.InventoryCaveworldPortal;
+import com.kegare.caveworld.world.TeleporterCaveworld;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockPortalCaveworld extends BlockPortal
 {
@@ -170,7 +173,7 @@ public class BlockPortalCaveworld extends BlockPortal
 	@Override
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX, float hitY, float hitZ)
 	{
-		if (!world.isRemote)
+		if (!world.isRemote && side >= 2)
 		{
 			world.playSoundAtEntity(player, "random.click", 0.8F, 1.5F);
 
@@ -254,20 +257,29 @@ public class BlockPortalCaveworld extends BlockPortal
 	@Override
 	public void updateTick(World world, int x, int y, int z, Random random)
 	{
-		if (!world.isRemote && world.provider.dimensionId == 0 && world.getGameRules().getGameRuleBooleanValue("doMobSpawning") && !world.isDaytime() && random.nextInt(300) < world.difficultySetting.getDifficultyId())
+		if (!world.isRemote && world.provider instanceof WorldProviderSurface)
 		{
-			while (!World.doesBlockHaveSolidTopSurface(world, x, y, z) && y > 0)
+			if (world.isDaytime() || !world.getGameRules().getGameRuleBooleanValue("doMobSpawning"))
 			{
-				--y;
+				return;
 			}
-
-			if (y > 0 && !world.getBlock(x, y + 1, z).isBlockNormalCube())
+			else if (random.nextInt(300) < world.difficultySetting.getDifficultyId())
 			{
-				Entity entity = ItemMonsterPlacer.spawnCreature(world, 65, x + 0.5D, y + 1.0D, z + 0.5D);
-
-				if (entity != null)
+				while (!World.doesBlockHaveSolidTopSurface(world, x, y, z) && y > 0)
 				{
-					entity.timeUntilPortal = entity.getPortalCooldown();
+					--y;
+				}
+
+				if (y > 0 && !world.isBlockNormalCubeDefault(x, y + 1, z, false))
+				{
+					Entity entity = ItemMonsterPlacer.spawnCreature(world, 65, x + 0.5D, y + 1.0D, z + 0.5D);
+
+					if (entity != null)
+					{
+						entity.getEntityData().setBoolean("Caveworld:CaveBat", true);
+
+						entity.timeUntilPortal = entity.getPortalCooldown();
+					}
 				}
 			}
 		}

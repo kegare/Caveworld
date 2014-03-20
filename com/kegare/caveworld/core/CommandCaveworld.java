@@ -10,10 +10,11 @@
 
 package com.kegare.caveworld.core;
 
-import com.google.common.collect.Lists;
-import com.kegare.caveworld.util.CaveUtils;
-import com.kegare.caveworld.util.Version;
-import cpw.mods.fml.common.Loader;
+import java.awt.Desktop;
+import java.net.URI;
+import java.util.List;
+import java.util.Locale;
+
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandNotFoundException;
 import net.minecraft.command.ICommand;
@@ -28,10 +29,11 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.WorldServer;
 
-import java.awt.*;
-import java.net.URI;
-import java.util.List;
-import java.util.Locale;
+import com.google.common.collect.Lists;
+import com.kegare.caveworld.util.CaveUtils;
+import com.kegare.caveworld.util.Version;
+
+import cpw.mods.fml.common.Loader;
 
 public class CommandCaveworld implements ICommand
 {
@@ -141,13 +143,15 @@ public class CommandCaveworld implements ICommand
 
 				if (value != 0)
 				{
+					CaveMiningPlayer data = CaveMiningPlayer.get(player);
+
 					if (flag)
 					{
-						CaveMiningManager.addMiningLevel(player, value);
+						data.addMiningLevel(value);
 					}
 					else
 					{
-						CaveMiningManager.addMiningCount(player, value);
+						data.addMiningCount(value);
 					}
 				}
 			}

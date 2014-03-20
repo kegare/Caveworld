@@ -10,15 +10,19 @@
 
 package com.kegare.caveworld.core;
 
-import com.kegare.caveworld.util.CaveLog;
-import com.kegare.caveworld.util.Version;
-import cpw.mods.fml.common.Loader;
+import java.io.File;
+
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
-import java.io.File;
+import org.apache.logging.log4j.Level;
+
+import com.kegare.caveworld.util.CaveLog;
+import com.kegare.caveworld.util.Version;
+
+import cpw.mods.fml.common.Loader;
 
 public class Config
 {
@@ -73,7 +77,7 @@ public class Config
 
 			file.renameTo(dest);
 
-			CaveLog.severe("A critical error occured reading the " + file.getName() + " file, defaults will be used - the invalid file is backed up at " + dest.getName(), e);
+			CaveLog.log(Level.ERROR, e, "A critical error occured reading the " + file.getName() + " file, defaults will be used - the invalid file is backed up at " + dest.getName());
 		}
 
 		return config;

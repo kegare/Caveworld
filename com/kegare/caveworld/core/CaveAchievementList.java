@@ -10,38 +10,43 @@
 
 package com.kegare.caveworld.core;
 
-import com.google.common.collect.Sets;
-import com.kegare.caveworld.block.CaveBlocks;
+import java.util.Set;
+
 import net.minecraft.block.Block;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.stats.Achievement;
+import net.minecraft.stats.AchievementList;
+import net.minecraftforge.common.AchievementPage;
 
-import java.util.Set;
+import com.google.common.collect.Sets;
+import com.kegare.caveworld.block.CaveBlocks;
 
 public class CaveAchievementList
 {
-	static final Set<Achievement> CAVE_ACHIEVEMENTS = Sets.newHashSet();
+	private static final Set<Achievement> CAVE_ACHIEVEMENTS = Sets.newHashSet();
 
 	public static final Achievement caveworld = new CaveAchievement("caveworld", 0, 0, CaveBlocks.caveworld_portal, null).initIndependentStat().registerStat();
 	public static final Achievement miner = new CaveAchievement("miner", 2, 1, Items.iron_pickaxe, caveworld).registerStat();
 
-	public static Achievement[] getAchievementArray()
+	static void register()
 	{
-		return CAVE_ACHIEVEMENTS.toArray(new Achievement[CAVE_ACHIEVEMENTS.size()]);
+		AchievementList.achievementList.removeAll(CAVE_ACHIEVEMENTS);
+
+		AchievementPage.registerAchievementPage(new AchievementPage("Caveworld", CAVE_ACHIEVEMENTS.toArray(new Achievement[CAVE_ACHIEVEMENTS.size()])));
 	}
 
-	static class CaveAchievement extends Achievement
+	private static class CaveAchievement extends Achievement
 	{
-		public CaveAchievement(String name, int column, int row, Item item, Achievement achievement)
-		{
-			super("achievement.caveworld." + name, "caveworld." + name, column, row, item, achievement);
-		}
-
 		public CaveAchievement(String name, int column, int row, Block block, Achievement achievement)
 		{
-			super("achievement.caveworld." + name, "caveworld." + name, column, row, block, achievement);
+			this(name, column, row, new ItemStack(block), achievement);
+		}
+
+		public CaveAchievement(String name, int column, int row, Item item, Achievement achievement)
+		{
+			this(name, column, row, new ItemStack(item), achievement);
 		}
 
 		public CaveAchievement(String name, int column, int row, ItemStack itemstack, Achievement achievement)

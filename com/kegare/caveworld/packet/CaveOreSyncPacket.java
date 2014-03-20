@@ -10,16 +10,21 @@
 
 package com.kegare.caveworld.packet;
 
-import com.google.common.base.Strings;
-import com.kegare.caveworld.core.CaveOreManager;
-import com.kegare.caveworld.core.CaveOreManager.CaveOre;
-import com.kegare.caveworld.util.CaveLog;
-import cpw.mods.fml.common.network.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayerMP;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
+
+import com.kegare.caveworld.core.CaveOreManager;
+import com.kegare.caveworld.core.CaveOreManager.CaveOre;
+import com.kegare.caveworld.util.CaveLog;
+
+import cpw.mods.fml.common.network.ByteBufUtils;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class CaveOreSyncPacket extends AbstractPacket
 {
@@ -36,7 +41,9 @@ public class CaveOreSyncPacket extends AbstractPacket
 			builder.append(ore).append(',');
 		}
 
-		this.data = builder.deleteCharAt(builder.lastIndexOf(",")).append(']').toString();
+		builder.deleteCharAt(builder.lastIndexOf(",")).append(']');
+
+		this.data = StringUtils.deleteWhitespace(builder.toString());
 	}
 
 	@Override
@@ -52,26 +59,25 @@ public class CaveOreSyncPacket extends AbstractPacket
 	}
 
 	@Override
+	@SideOnly(Side.CLIENT)
 	public void handleClientSide(EntityPlayerSP player)
 	{
-		if (!Strings.isNullOrEmpty(data))
-		{
-			CaveOreManager.clearCaveOres();
+		CaveOreManager.clearCaveOres();
 
-			try
+		try
+		{
+			if (CaveOreManager.loadCaveOresFromString(data))
 			{
-				if (CaveOreManager.loadCaveOresFromString(data))
-				{
-					CaveLog.info("Loaded %d cave ores from server", CaveOreManager.getCaveOres().size());
-				}
+				CaveLog.info("Loaded %d cave ores from server", CaveOreManager.getCaveOres().size());
 			}
-			catch (Exception e)
-			{
-				CaveLog.log(Level.WARN, e, "An error occurred trying to loading cave ores from server");
-			}
+		}
+		catch (Exception e)
+		{
+			CaveLog.log(Level.WARN, e, "An error occurred trying to loading cave ores from server");
 		}
 	}
 
 	@Override
+	@SideOnly(Side.SERVER)
 	public void handleServerSide(EntityPlayerMP player) {}
 }

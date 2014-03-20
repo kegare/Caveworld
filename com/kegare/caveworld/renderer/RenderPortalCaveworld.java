@@ -10,17 +10,20 @@
 
 package com.kegare.caveworld.renderer;
 
-import com.kegare.caveworld.block.CaveBlocks;
-import com.kegare.caveworld.core.Config;
-import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
+
 import org.lwjgl.opengl.GL11;
+
+import com.kegare.caveworld.block.CaveBlocks;
+import com.kegare.caveworld.core.Config;
+
+import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public class RenderPortalCaveworld implements ISimpleBlockRenderingHandler
@@ -67,7 +70,7 @@ public class RenderPortalCaveworld implements ISimpleBlockRenderingHandler
 	{
 		if (getRenderId() == modelId)
 		{
-			renderer.setOverrideBlockTexture(CaveBlocks.caveworld_portal.portalIcon);
+			renderer.setOverrideBlockTexture(renderer.getIconSafe(CaveBlocks.caveworld_portal.portalIcon));
 			renderer.renderStandardBlock(block, x, y, z);
 			renderer.clearOverrideBlockTexture();
 

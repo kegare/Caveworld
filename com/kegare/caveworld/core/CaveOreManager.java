@@ -10,31 +10,6 @@
 
 package com.kegare.caveworld.core;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
-import com.google.common.io.Files;
-import com.google.common.io.LineProcessor;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.kegare.caveworld.util.CaveLog;
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.MathHelper;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.BiomeGenBase;
-import net.minecraft.world.gen.feature.WorldGenerator;
-import net.minecraftforge.common.BiomeDictionary;
-import net.minecraftforge.common.BiomeDictionary.Type;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.commons.lang3.text.StrBuilder;
-import org.apache.logging.log4j.Level;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -46,6 +21,33 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.SortedSet;
+
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+import net.minecraft.init.Blocks;
+import net.minecraft.util.MathHelper;
+import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraft.world.gen.feature.WorldGenerator;
+import net.minecraftforge.common.BiomeDictionary;
+import net.minecraftforge.common.BiomeDictionary.Type;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.commons.lang3.text.StrBuilder;
+import org.apache.logging.log4j.Level;
+
+import com.google.common.base.Charsets;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+import com.google.common.io.Files;
+import com.google.common.io.LineProcessor;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.kegare.caveworld.util.CaveLog;
 
 public class CaveOreManager
 {
@@ -133,7 +135,7 @@ public class CaveOreManager
 
 			file.renameTo(dest);
 
-			CaveLog.severe("A critical error occured reading the " + file.getName() + " file, defaults will be used - the invalid file is backed up at " + dest.getName(), e);
+			CaveLog.log(Level.ERROR, e, "A critical error occured reading the " + file.getName() + " file, defaults will be used - the invalid file is backed up at " + dest.getName());
 		}
 		finally
 		{
@@ -582,19 +584,19 @@ public class CaveOreManager
 
 				for (int blockX = minX; blockX <= maxX; ++blockX)
 				{
-					double xScale = ((double)blockX + 0.5D - var8) / (var12 / 2.0D);
+					double xScale = (blockX + 0.5D - var8) / (var12 / 2.0D);
 
 					if (xScale * xScale < 1.0D)
 					{
 						for (int blockY = minY; blockY <= maxY; ++blockY)
 						{
-							double yScale = ((double)blockY + 0.5D - var9) / (var13 / 2.0D);
+							double yScale = (blockY + 0.5D - var9) / (var13 / 2.0D);
 
 							if (xScale * xScale + yScale * yScale < 1.0D)
 							{
 								for (int blockZ = minZ; blockZ <= maxZ; ++blockZ)
 								{
-									double zScale = ((double)blockZ + 0.5D - var10) / (var12 / 2.0D);
+									double zScale = (blockZ + 0.5D - var10) / (var12 / 2.0D);
 
 									if (xScale * xScale + yScale * yScale + zScale * zScale < 1.0D && world.getBlock(blockX, blockY, blockZ).isReplaceableOreGen(world, blockX, blockY, blockZ, genTargetBlock))
 									{

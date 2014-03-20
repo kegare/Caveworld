@@ -10,10 +10,11 @@
 
 package com.kegare.caveworld.world;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.kegare.caveworld.block.CaveBlocks;
-import com.kegare.caveworld.core.Config;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
@@ -24,10 +25,10 @@ import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.WorldServer;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.kegare.caveworld.block.CaveBlocks;
+import com.kegare.caveworld.core.Config;
 
 public class TeleporterCaveworld extends Teleporter
 {
@@ -437,7 +438,7 @@ public class TeleporterCaveworld extends Teleporter
 				var12 = var4 + (var8 - 1) * var14;
 				flag = var8 == 0 || var8 == 3 || var7 == -1 || var7 == 3;
 
-				if (var7 < 0 && worldObj.getBlock(var10, var9, var12) == Blocks.bedrock)
+				if (worldObj.getBlock(var10, var3 - 1, var12) == Blocks.bedrock)
 				{
 					++var9;
 				}

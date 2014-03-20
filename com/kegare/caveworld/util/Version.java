@@ -10,24 +10,28 @@
 
 package com.kegare.caveworld.util;
 
+import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Map;
+
+import net.minecraftforge.classloading.FMLForgePlugin;
+import net.minecraftforge.common.MinecraftForge;
+
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Level;
+
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
+
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.versioning.ArtifactVersion;
 import cpw.mods.fml.common.versioning.DefaultArtifactVersion;
-import net.minecraftforge.classloading.FMLForgePlugin;
-import net.minecraftforge.common.MinecraftForge;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.logging.log4j.Level;
-
-import java.io.File;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Map;
 
 public class Version
 {
@@ -61,11 +65,11 @@ public class Version
 				{
 					String name = FilenameUtils.getBaseName(file.getName());
 
-					if (name.endsWith("dev"))
+					if (StringUtils.endsWithIgnoreCase(name, "dev"))
 					{
 						DEV_DEBUG = true;
 					}
-					else if (name.endsWith("hardcore"))
+					else if (StringUtils.endsWithIgnoreCase(name, "hardcore"))
 					{
 						Config.hardcoreEnabled = true;
 					}

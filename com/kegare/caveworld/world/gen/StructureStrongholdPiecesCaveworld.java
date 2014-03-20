@@ -10,8 +10,13 @@
 
 package com.kegare.caveworld.world.gen;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import static net.minecraftforge.common.ChestGenHooks.*;
+
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Random;
+
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntityMobSpawner;
@@ -24,14 +29,8 @@ import net.minecraft.world.gen.structure.StructureComponent.BlockSelector;
 import net.minecraft.world.gen.structure.StructureStrongholdPieces.Stronghold.Door;
 import net.minecraftforge.common.ChestGenHooks;
 
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Random;
-
-import static net.minecraftforge.common.ChestGenHooks.STRONGHOLD_CORRIDOR;
-import static net.minecraftforge.common.ChestGenHooks.STRONGHOLD_CROSSING;
-import static net.minecraftforge.common.ChestGenHooks.STRONGHOLD_LIBRARY;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 public class StructureStrongholdPiecesCaveworld
 {
@@ -88,7 +87,6 @@ public class StructureStrongholdPiecesCaveworld
 		MapGenStructureIO.func_143031_a(Prison.class, "CW:SHPH");
 	}
 
-	@SuppressWarnings("unchecked")
 	public static void prepareStructurePieces()
 	{
 		structurePieces.clear();
@@ -239,7 +237,6 @@ public class StructureStrongholdPiecesCaveworld
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private static StructureComponent getNextValidComponent(Stairs2 stairs2, List list, Random random, int x, int y, int z, int mode, int type)
 	{
 		if (type > 50)

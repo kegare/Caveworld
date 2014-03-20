@@ -10,23 +10,44 @@
 
 package com.kegare.caveworld.block;
 
-import com.kegare.caveworld.item.ItemPortalCaveworld;
-import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.block.BlockDispenser;
 import net.minecraft.dispenser.BehaviorDefaultDispenseItem;
 import net.minecraft.dispenser.IBlockSource;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraft.world.World;
+import net.minecraftforge.common.ChestGenHooks;
+import net.minecraftforge.oredict.OreDictionary;
+
+import com.kegare.caveworld.item.ItemPortalCaveworld;
+import com.kegare.caveworld.item.ItemRope;
+
+import cpw.mods.fml.common.registry.GameRegistry;
 
 public class CaveBlocks
 {
 	public static final BlockPortalCaveworld caveworld_portal = new BlockPortalCaveworld("portalCaveworld");
+	public static final BlockRope rope = new BlockRope("rope");
 
-	public static void configure()
+	public static void register()
 	{
 		GameRegistry.registerBlock(caveworld_portal, ItemPortalCaveworld.class, "caveworld_portal");
+		GameRegistry.registerBlock(rope, ItemRope.class, "rope");
+
+		GameRegistry.addShapelessRecipe(new ItemStack(rope), Items.string, Items.string, Items.string, Items.leather);
+
+		Blocks.fire.setFireInfo(rope, 15, 100);
+
+		OreDictionary.registerOre("rope", new ItemStack(rope));
+
+		Item item = Item.getItemFromBlock(rope);
+		ChestGenHooks.addItem(ChestGenHooks.BONUS_CHEST, new WeightedRandomChestContent(item, 0, 2, 5, 10));
+		ChestGenHooks.addItem(ChestGenHooks.MINESHAFT_CORRIDOR, new WeightedRandomChestContent(item, 0, 3, 6, 10));
+		ChestGenHooks.addItem(ChestGenHooks.PYRAMID_JUNGLE_CHEST, new WeightedRandomChestContent(item, 0, 3, 6, 10));
 
 		BlockDispenser.dispenseBehaviorRegistry.putObject(Item.getItemFromBlock(caveworld_portal), new BehaviorDefaultDispenseItem()
 		{

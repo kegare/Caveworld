@@ -10,13 +10,14 @@
 
 package com.kegare.caveworld.inventory;
 
-import com.kegare.caveworld.world.WorldProviderCaveworld;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ChunkCoordinates;
+
+import com.kegare.caveworld.world.WorldProviderCaveworld;
 
 public class InventoryCaveworldPortal extends InventoryBasic
 {
@@ -40,7 +41,7 @@ public class InventoryCaveworldPortal extends InventoryBasic
 
 		if (!data.hasKey("PortalItems"))
 		{
-			data.setTag("PortalItems", new NBTTagList());
+			return this;
 		}
 
 		NBTTagList list = (NBTTagList)data.getTag("PortalItems");

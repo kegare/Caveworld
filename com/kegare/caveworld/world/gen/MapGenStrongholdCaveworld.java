@@ -10,16 +10,17 @@
 
 package com.kegare.caveworld.world.gen;
 
-import com.google.common.collect.Lists;
-import com.kegare.caveworld.world.gen.StructureStrongholdPiecesCaveworld.Stairs2;
+import java.util.List;
+import java.util.Random;
+
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.MapGenStronghold;
 import net.minecraft.world.gen.structure.StructureComponent;
 import net.minecraft.world.gen.structure.StructureStart;
 
-import java.util.List;
-import java.util.Random;
+import com.google.common.collect.Lists;
+import com.kegare.caveworld.world.gen.StructureStrongholdPiecesCaveworld.Stairs2;
 
 public class MapGenStrongholdCaveworld extends MapGenStronghold
 {
@@ -59,7 +60,7 @@ public class MapGenStrongholdCaveworld extends MapGenStronghold
 				int z = (int)Math.round(Math.sin(var1) * var3);
 
 				structureCoords[i] = new ChunkCoordIntPair(x, z);
-				var1 += (Math.PI * 2D) * var2 / structureSpread;
+				var1 += Math.PI * 2D * var2 / structureSpread;
 
 				if (i == structureSpread)
 				{
@@ -82,7 +83,6 @@ public class MapGenStrongholdCaveworld extends MapGenStronghold
 		return false;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	protected List getCoordList()
 	{
@@ -116,7 +116,6 @@ public class MapGenStrongholdCaveworld extends MapGenStronghold
 	{
 		public Start() {}
 
-		@SuppressWarnings("unchecked")
 		public Start(World world, Random random, int chunkX, int chunkZ)
 		{
 			super(chunkX, chunkZ);

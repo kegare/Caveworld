@@ -1,8 +1,15 @@
+/*
+ * Caveworld
+ *
+ * Copyright (c) 2014 kegare
+ * https://github.com/kegare
+ *
+ * This mod is distributed under the terms of the Minecraft Mod Public License 1.0, or MMPL.
+ * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
+ */
+
 package com.kegare.caveworld.packet;
 
-import com.google.common.base.Strings;
-import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.common.network.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.Minecraft;
@@ -11,49 +18,49 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ResourceLocation;
 
+import com.google.common.base.Strings;
+
+import cpw.mods.fml.client.FMLClientHandler;
+import cpw.mods.fml.common.network.ByteBufUtils;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
 public class PlayCaveSoundPacket extends AbstractPacket
 {
-	private String domain;
 	private String name;
 
 	public PlayCaveSoundPacket() {}
 
 	public PlayCaveSoundPacket(String name)
 	{
-		this("caveworld", name);
-	}
-
-	public PlayCaveSoundPacket(String domain, String name)
-	{
-		this.domain = domain;
 		this.name = name;
 	}
 
 	@Override
 	public void encodeInto(ChannelHandlerContext ctx, ByteBuf buffer)
 	{
-		ByteBufUtils.writeUTF8String(buffer, domain);
 		ByteBufUtils.writeUTF8String(buffer, name);
 	}
 
 	@Override
 	public void decodeInto(ChannelHandlerContext ctx, ByteBuf buffer)
 	{
-		domain = ByteBufUtils.readUTF8String(buffer);
 		name = ByteBufUtils.readUTF8String(buffer);
 	}
 
 	@Override
+	@SideOnly(Side.CLIENT)
 	public void handleClientSide(EntityPlayerSP player)
 	{
 		Minecraft mc = FMLClientHandler.instance().getClient();
 
-		if (mc != null && !Strings.isNullOrEmpty(name) && !Strings.isNullOrEmpty(domain))
+		if (mc != null && !Strings.isNullOrEmpty(name))
 		{
-			mc.getSoundHandler().playSound(PositionedSoundRecord.func_147673_a(new ResourceLocation(domain, name)));
+			mc.getSoundHandler().playSound(PositionedSoundRecord.func_147673_a(new ResourceLocation(name)));
 		}
 	}
 
 	@Override
+	@SideOnly(Side.SERVER)
 	public void handleServerSide(EntityPlayerMP player) {}
 }

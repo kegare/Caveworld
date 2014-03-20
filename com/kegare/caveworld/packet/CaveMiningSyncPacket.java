@@ -10,44 +10,53 @@
 
 package com.kegare.caveworld.packet;
 
-import com.kegare.caveworld.world.WorldProviderCaveworld;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayerMP;
 
-public class DataSyncPacket extends AbstractPacket
-{
-	private long dimensionSeed;
-	private int subsurfaceHeight;
+import com.kegare.caveworld.core.CaveMiningPlayer;
 
-	public DataSyncPacket()
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
+public class CaveMiningSyncPacket extends AbstractPacket
+{
+	private int count;
+	private int level;
+
+	public CaveMiningSyncPacket() {}
+
+	public CaveMiningSyncPacket(int count, int level)
 	{
-		dimensionSeed = WorldProviderCaveworld.dimensionSeed;
-		subsurfaceHeight = WorldProviderCaveworld.subsurfaceHeight;
+		this.count = count;
+		this.level = level;
 	}
 
 	@Override
 	public void encodeInto(ChannelHandlerContext ctx, ByteBuf buffer)
 	{
-		buffer.writeLong(dimensionSeed);
-		buffer.writeInt(subsurfaceHeight);
+		buffer.writeInt(count);
+		buffer.writeInt(level);
 	}
 
 	@Override
 	public void decodeInto(ChannelHandlerContext ctx, ByteBuf buffer)
 	{
-		dimensionSeed = buffer.readLong();
-		subsurfaceHeight = buffer.readInt();
+		count = buffer.readInt();
+		level = buffer.readInt();
 	}
 
 	@Override
+	@SideOnly(Side.CLIENT)
 	public void handleClientSide(EntityPlayerSP player)
 	{
-		WorldProviderCaveworld.dimensionSeed = dimensionSeed;
-		WorldProviderCaveworld.subsurfaceHeight = subsurfaceHeight;
+		CaveMiningPlayer data = CaveMiningPlayer.get(player);
+		data.setMiningCount(count);
+		data.setMiningLevel(level);
 	}
 
 	@Override
+	@SideOnly(Side.SERVER)
 	public void handleServerSide(EntityPlayerMP player) {}
 }

@@ -10,13 +10,15 @@
 
 package com.kegare.caveworld.proxy;
 
+import net.minecraft.client.particle.EntityFX;
+import net.minecraft.server.MinecraftServer;
+
 import com.kegare.caveworld.renderer.RenderPortalCaveworld;
+
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import net.minecraft.client.particle.EntityFX;
-import net.minecraft.server.MinecraftServer;
 
 @SideOnly(Side.CLIENT)
 public class ClientProxy extends CommonProxy

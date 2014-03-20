@@ -10,26 +10,30 @@
 
 package com.kegare.caveworld.world;
 
-import com.kegare.caveworld.core.CaveBiomeManager;
-import net.minecraft.world.ChunkCoordIntPair;
-import net.minecraft.world.ChunkPosition;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.BiomeGenBase;
-import net.minecraft.world.biome.WorldChunkManager;
-
-import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import net.minecraft.world.ChunkCoordIntPair;
+import net.minecraft.world.ChunkPosition;
+import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeCache;
+import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraft.world.biome.WorldChunkManager;
+
+import com.kegare.caveworld.core.CaveBiomeManager;
+
 public class WorldChunkManagerCaveworld extends WorldChunkManager
 {
 	private final World worldObj;
-	private final Random random = new SecureRandom();
+	private final Random random;
+	private final BiomeCache biomeCache;
 
 	public WorldChunkManagerCaveworld(World world)
 	{
 		this.worldObj = world;
+		this.random = new Random(world.getSeed());
+		this.biomeCache = new BiomeCache(this);
 	}
 
 	@Override
@@ -38,8 +42,7 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 		return CaveBiomeManager.getBiomeList();
 	}
 
-	@Override
-	public BiomeGenBase getBiomeGenAt(int x, int z)
+	private BiomeGenBase getCaveBiomeGenAt(int x, int z)
 	{
 		int chunkX = x >> 4;
 		int chunkZ = z >> 4;
@@ -47,7 +50,20 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 
 		random.setSeed(chunkSeed ^ worldObj.getSeed());
 
-		return CaveBiomeManager.getRandomBiome(random);
+		return CaveBiomeManager.getRandomCaveBiome(random);
+	}
+
+	@Override
+	public BiomeGenBase getBiomeGenAt(int x, int z)
+	{
+		BiomeGenBase biome = biomeCache.getBiomeGenAt(x, z);
+
+		if (biome == null)
+		{
+			biome = getCaveBiomeGenAt(x, z);
+		}
+
+		return biome == null ? BiomeGenBase.plains : biome;
 	}
 
 	@Override
@@ -71,7 +87,7 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 			biomes = new BiomeGenBase[width * length];
 		}
 
-		Arrays.fill(biomes, getBiomeGenAt(x, z));
+		Arrays.fill(biomes, getCaveBiomeGenAt(x, z));
 
 		return biomes;
 	}
@@ -97,6 +113,12 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 	@Override
 	public ChunkPosition findBiomePosition(int x, int y, int z, List list, Random random)
 	{
-		return list.contains(getBiomeGenAt(x, z)) ? new ChunkPosition(x - z + random.nextInt(z * 2 + 1), 0, y - z + random.nextInt(z * 2 + 1)) : null;
+		return new ChunkPosition(x - z + random.nextInt(z * 2 + 1), 0, y - z + random.nextInt(z * 2 + 1));
+	}
+
+	@Override
+	public void cleanupCache()
+	{
+		biomeCache.cleanupCache();
 	}
 }
