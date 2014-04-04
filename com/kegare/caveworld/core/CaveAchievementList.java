@@ -17,7 +17,6 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.stats.Achievement;
-import net.minecraft.stats.AchievementList;
 import net.minecraftforge.common.AchievementPage;
 
 import com.google.common.collect.Sets;
@@ -32,8 +31,6 @@ public class CaveAchievementList
 
 	static void register()
 	{
-		AchievementList.achievementList.removeAll(CAVE_ACHIEVEMENTS);
-
 		AchievementPage.registerAchievementPage(new AchievementPage("Caveworld", CAVE_ACHIEVEMENTS.toArray(new Achievement[CAVE_ACHIEVEMENTS.size()])));
 	}
 

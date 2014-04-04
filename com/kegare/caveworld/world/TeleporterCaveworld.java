@@ -414,14 +414,14 @@ public class TeleporterCaveworld extends Teleporter
 
 			for (var6 = -1; var6 <= 1; ++var6)
 			{
-				for (var8 = 1; var8 < 3; ++var8)
+				for (var7 = 1; var7 < 3; ++var7)
 				{
-					for (var7 = -1; var7 < 3; ++var7)
+					for (var8 = -1; var8 < 3; ++var8)
 					{
-						var10 = var2 + (var8 - 1) * var13 + var6 * var14;
-						var9 = var3 + var7;
-						var12 = var4 + (var8 - 1) * var14 - var6 * var13;
-						flag = var7 < 0;
+						var10 = var2 + (var7 - 1) * var13 + var6 * var14;
+						var9 = var3 + var8;
+						var12 = var4 + (var7 - 1) * var14 - var6 * var13;
+						flag = var8 < 0;
 
 						worldObj.setBlock(var10, var9, var12, flag ? Blocks.mossy_cobblestone : Blocks.air);
 					}
@@ -429,14 +429,14 @@ public class TeleporterCaveworld extends Teleporter
 			}
 		}
 
-		for (var8 = 0; var8 < 4; ++var8)
+		for (var6 = 0; var6 < 4; ++var6)
 		{
 			for (var7 = -1; var7 < 4; ++var7)
 			{
-				var10 = var2 + (var8 - 1) * var13;
+				var10 = var2 + (var6 - 1) * var13;
 				var9 = var3 + var7;
-				var12 = var4 + (var8 - 1) * var14;
-				flag = var8 == 0 || var8 == 3 || var7 == -1 || var7 == 3;
+				var12 = var4 + (var6 - 1) * var14;
+				flag = var6 == 0 || var6 == 3 || var7 == -1 || var7 == 3;
 
 				if (worldObj.getBlock(var10, var3 - 1, var12) == Blocks.bedrock)
 				{

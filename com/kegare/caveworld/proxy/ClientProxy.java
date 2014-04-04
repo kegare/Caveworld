@@ -10,7 +10,6 @@
 
 package com.kegare.caveworld.proxy;
 
-import net.minecraft.client.particle.EntityFX;
 import net.minecraft.server.MinecraftServer;
 
 import com.kegare.caveworld.renderer.RenderPortalCaveworld;
@@ -33,12 +32,6 @@ public class ClientProxy extends CommonProxy
 	public int getUniqueRenderType()
 	{
 		return RenderingRegistry.getNextAvailableRenderId();
-	}
-
-	@Override
-	public void addEffect(EntityFX entityFX)
-	{
-		FMLClientHandler.instance().getClient().effectRenderer.addEffect(entityFX);
 	}
 
 	@Override

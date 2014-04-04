@@ -30,7 +30,9 @@ import net.minecraftforge.common.DimensionManager;
 import org.apache.logging.log4j.Level;
 
 import com.google.common.base.Optional;
+import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.packet.PlayCaveSoundPacket;
 import com.kegare.caveworld.renderer.EmptyRenderer;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.world.gen.MapGenStrongholdCaveworld;
@@ -81,7 +83,12 @@ public class WorldProviderCaveworld extends WorldProvider
 
 		try
 		{
-			data = CompressedStreamTools.read(new File(getDimDir(), "caveworld.dat"));
+			File dir = getDimDir();
+
+			if (dir != null)
+			{
+				data = CompressedStreamTools.read(new File(dir, "caveworld.dat"));
+			}
 		}
 		catch (Exception e)
 		{
@@ -116,6 +123,8 @@ public class WorldProviderCaveworld extends WorldProvider
 		dimensionSeed = Optional.absent();
 		subsurfaceHeight = Optional.absent();
 	}
+
+	private int ambientTickCountdown = 0;
 
 	@Override
 	protected void registerWorldChunkManager()
@@ -234,7 +243,7 @@ public class WorldProviderCaveworld extends WorldProvider
 	@Override
 	public boolean shouldMapSpin(String entity, double posX, double posY, double posZ)
 	{
-		return false;
+		return posY < 0 || posY >= getActualHeight();
 	}
 
 	@Override
@@ -245,7 +254,7 @@ public class WorldProviderCaveworld extends WorldProvider
 			return dimensionId;
 		}
 
-		return super.getRespawnDimension(player);
+		return player.getEntityData().getInteger("Caveworld:LastDim");
 	}
 
 	@Override
@@ -276,10 +285,31 @@ public class WorldProviderCaveworld extends WorldProvider
 	}
 
 	@Override
-	public void calculateInitialWeather() {}
+	public void calculateInitialWeather()
+	{
+		if (!worldObj.isRemote)
+		{
+			ambientTickCountdown = worldObj.rand.nextInt(8000) + 20000;
+		}
+	}
 
 	@Override
-	public void updateWeather() {}
+	public void updateWeather()
+	{
+		if (!worldObj.isRemote)
+		{
+			if (ambientTickCountdown > 0)
+			{
+				--ambientTickCountdown;
+			}
+			else
+			{
+				Caveworld.packetPipeline.sendPacketToAllInDimension(new PlayCaveSoundPacket("caveworld:ambient.cave"), dimensionId);
+
+				ambientTickCountdown = worldObj.rand.nextInt(8000) + 20000;
+			}
+		}
+	}
 
 	@Override
 	public long getSeed()

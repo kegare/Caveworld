@@ -117,7 +117,7 @@ public class CaveMiningPlayer implements IExtendedEntityProperties
 		}
 	}
 
-	private int getNextAmount()
+	public int getNextAmount()
 	{
 		return 100 * miningLevel + 100 * (miningLevel + 1);
 	}

@@ -13,7 +13,9 @@ package com.kegare.caveworld.packet;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.ISound;
 import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ResourceLocation;
@@ -56,7 +58,18 @@ public class PlayCaveSoundPacket extends AbstractPacket
 
 		if (mc != null && !Strings.isNullOrEmpty(name))
 		{
-			mc.getSoundHandler().playSound(PositionedSoundRecord.func_147673_a(new ResourceLocation(name)));
+			SoundHandler handler = mc.getSoundHandler();
+			ISound sound = PositionedSoundRecord.func_147673_a(new ResourceLocation(name));
+
+			if (handler == null || sound == null)
+			{
+				return;
+			}
+
+			if (!handler.isSoundPlaying(sound))
+			{
+				handler.playSound(sound);
+			}
 		}
 	}
 

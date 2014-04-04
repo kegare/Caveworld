@@ -10,7 +10,6 @@
 
 package com.kegare.caveworld.handler;
 
-import java.security.SecureRandom;
 import java.util.Random;
 
 import net.minecraft.block.Block;
@@ -18,7 +17,6 @@ import net.minecraft.block.BlockBed;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.passive.EntityBat;
@@ -72,8 +70,6 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
-import cpw.mods.fml.common.gameevent.TickEvent.Phase;
-import cpw.mods.fml.common.gameevent.TickEvent.WorldTickEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -377,8 +373,8 @@ public class CaveEventHooks
 	@SubscribeEvent
 	public void onEntityJoinWorld(EntityJoinWorldEvent event)
 	{
-		World world = event.world;
 		Entity entity = event.entity;
+		World world = event.world;
 
 		if (!world.isRemote)
 		{
@@ -386,15 +382,13 @@ public class CaveEventHooks
 			{
 				CaveMiningPlayer.loadMiningData((EntityPlayer)entity);
 			}
-
-			if (entity.dimension == Config.dimensionCaveworld)
+			else if (entity.dimension == Config.dimensionCaveworld)
 			{
-				if (entity instanceof EntityLiving && entity.posY >= world.provider.getActualHeight() - 1)
+				if (entity.posY >= world.provider.getActualHeight() - 1)
 				{
 					event.setCanceled(true);
 				}
-
-				if (entity instanceof EntityBat)
+				else if (entity instanceof EntityBat)
 				{
 					entity.getEntityData().setBoolean("Caveworld:CaveBat", true);
 				}
@@ -436,21 +430,19 @@ public class CaveEventHooks
 	@SubscribeEvent
 	public void onLivingDrops(LivingDropsEvent event)
 	{
-		Random random = new SecureRandom();
-		DamageSource source = event.source;
-		Entity entity = source.getEntity();
 		EntityLivingBase living = event.entityLiving;
 		World world = living.worldObj;
-		double posX = living.posX;
-		double posY = living.posY;
-		double posZ = living.posZ;
-		int looting = Math.max(event.lootingLevel, 0);
+		DamageSource source = event.source;
+		Entity entity = source.getEntity();
 
-		if (!world.isRemote && living.dimension == Config.dimensionCaveworld && entity != null && entity instanceof EntityPlayerMP)
+		if (!world.isRemote && entity != null && entity instanceof EntityPlayer)
 		{
+			Random random = living.getRNG();
+			int looting = Math.max(event.lootingLevel, 0);
+
 			if (living instanceof EntityBat && living.getEntityData().getBoolean("Caveworld:CaveBat"))
 			{
-				EntityItem item = new EntityItem(world, posX, posY + 0.5D, posZ);
+				EntityItem item = new EntityItem(world, living.posX, living.posY + 0.5D, living.posZ);
 				item.delayBeforeCanPickup = 10;
 
 				if (random.nextInt(4) == Math.min(looting, 3))
@@ -464,6 +456,17 @@ public class CaveEventHooks
 
 				event.drops.add(item);
 			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onWorldLoad(WorldEvent.Load event)
+	{
+		World world = event.world;
+
+		if (!world.isRemote && world.provider.dimensionId == Config.dimensionCaveworld)
+		{
+			CaveBlocks.caveworld_portal.inventory.loadInventoryFromNBT();
 		}
 	}
 
@@ -486,22 +489,7 @@ public class CaveEventHooks
 
 		if (!world.isRemote && world.provider.dimensionId == Config.dimensionCaveworld)
 		{
-			CaveBlocks.caveworld_portal.getInventory().saveInventoryToNBT();
-		}
-	}
-
-	@SubscribeEvent
-	public void onWorldTick(WorldTickEvent event)
-	{
-		if (event.side.isServer() && event.phase == Phase.END)
-		{
-			World world = event.world;
-			int dim = world.provider.dimensionId;
-
-			if (dim == Config.dimensionCaveworld && world.getTotalWorldTime() % 20000L == 0L && world.rand.nextBoolean())
-			{
-				Caveworld.packetPipeline.sendPacketToAllInDimension(new PlayCaveSoundPacket("caveworld:ambient.cave"), dim);
-			}
+			CaveBlocks.caveworld_portal.inventory.saveInventoryToNBT();
 		}
 	}
 }

@@ -15,32 +15,32 @@ import java.util.Random;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockPortal;
 import net.minecraft.block.material.Material;
-import net.minecraft.client.particle.EntityFX;
-import net.minecraft.client.particle.EntityReddustFX;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.passive.EntityBat;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemMonsterPlacer;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.Direction;
 import net.minecraft.util.IIcon;
+import net.minecraft.util.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldProviderSurface;
 import net.minecraft.world.WorldServer;
 
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.inventory.InventoryCaveworldPortal;
+import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.world.TeleporterCaveworld;
 
 import cpw.mods.fml.relauncher.Side;
@@ -48,7 +48,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockPortalCaveworld extends BlockPortal
 {
-	private InventoryCaveworldPortal inventory;
+	public final InventoryCaveworldPortal inventory = new InventoryCaveworldPortal();
 
 	@SideOnly(Side.CLIENT)
 	public IIcon portalIcon;
@@ -64,16 +64,6 @@ public class BlockPortalCaveworld extends BlockPortal
 		this.setStepSound(soundTypeGlass);
 		this.disableStats();
 		this.setCreativeTab(CreativeTabs.tabDecorations);
-	}
-
-	public InventoryCaveworldPortal getInventory()
-	{
-		if (inventory == null)
-		{
-			inventory = new InventoryCaveworldPortal().loadInventoryFromNBT();
-		}
-
-		return inventory;
 	}
 
 	@Override
@@ -130,6 +120,13 @@ public class BlockPortalCaveworld extends BlockPortal
 	@Override
 	public boolean func_150000_e(World world, int x, int y, int z)
 	{
+		if (world.provider.dimensionId == 1)
+		{
+			world.newExplosion(null, x, y, z, 4.5F, true, true);
+
+			return false;
+		}
+
 		Size size1 = new Size(world, x, y, z, 1);
 		Size size2 = new Size(world, x, y, z, 2);
 
@@ -177,7 +174,7 @@ public class BlockPortalCaveworld extends BlockPortal
 		{
 			world.playSoundAtEntity(player, "random.click", 0.8F, 1.5F);
 
-			player.displayGUIChest(getInventory().setPortalPosition(x, y, z));
+			player.displayGUIChest(inventory.setPortalPosition(x, y, z));
 		}
 
 		return true;
@@ -186,17 +183,17 @@ public class BlockPortalCaveworld extends BlockPortal
 	@Override
 	public void onEntityCollidedWithBlock(World world, int x, int y, int z, Entity entity)
 	{
-		if (!world.isRemote && entity.isEntityAlive() && (entity.dimension == 0 || !Config.hardcoreEnabled && entity.dimension == Config.dimensionCaveworld))
+		if (!world.isRemote && entity.isEntityAlive() && (entity.dimension != Config.dimensionCaveworld || !Config.hardcoreEnabled))
 		{
-			MinecraftServer server = Caveworld.proxy.getServer();
-			int dimOld = entity.dimension;
-			int dimNew = dimOld == 0 ? Config.dimensionCaveworld : 0;
-			WorldServer worldOld = server.worldServerForDimension(dimOld);
-			WorldServer worldNew = server.worldServerForDimension(dimNew);
-			Teleporter teleporter = new TeleporterCaveworld(worldNew);
-
 			if (entity.timeUntilPortal <= 0)
 			{
+				MinecraftServer server = Caveworld.proxy.getServer();
+				int dimOld = entity.dimension;
+				int dimNew = dimOld == Config.dimensionCaveworld ? entity.getEntityData().getInteger("Caveworld:LastDim") : Config.dimensionCaveworld;
+				WorldServer worldOld = server.worldServerForDimension(dimOld);
+				WorldServer worldNew = server.worldServerForDimension(dimNew);
+				Teleporter teleporter = new TeleporterCaveworld(worldNew);
+
 				entity.worldObj.removeEntity(entity);
 				entity.isDead = false;
 
@@ -217,6 +214,8 @@ public class BlockPortalCaveworld extends BlockPortal
 						player.addPotionEffect(new PotionEffect(Potion.blindness.getId(), 20));
 
 						worldNew.playSoundAtEntity(player, "caveworld:caveworld_portal", 0.75F, 1.0F);
+
+						player.getEntityData().setInteger("Caveworld:LastDim", dimOld);
 					}
 
 					player.timeUntilPortal = player.getPortalCooldown();
@@ -239,6 +238,9 @@ public class BlockPortalCaveworld extends BlockPortal
 
 						worldNew.spawnEntityInWorld(target);
 						worldNew.playSoundAtEntity(target, "caveworld:caveworld_portal", 0.5F, 1.15F);
+
+						target.forceSpawn = false;
+						target.getEntityData().setInteger("Caveworld:LastDim", dimOld);
 					}
 
 					entity.setDead();
@@ -257,28 +259,27 @@ public class BlockPortalCaveworld extends BlockPortal
 	@Override
 	public void updateTick(World world, int x, int y, int z, Random random)
 	{
-		if (!world.isRemote && world.provider instanceof WorldProviderSurface)
+		if (!world.isRemote && world.provider.isSurfaceWorld())
 		{
 			if (world.isDaytime() || !world.getGameRules().getGameRuleBooleanValue("doMobSpawning"))
 			{
 				return;
 			}
-			else if (random.nextInt(300) < world.difficultySetting.getDifficultyId())
+			else if (!world.isBlockNormalCubeDefault(x, y + 1, z, false) && random.nextInt(300) < world.difficultySetting.getDifficultyId())
 			{
-				while (!World.doesBlockHaveSolidTopSurface(world, x, y, z) && y > 0)
-				{
-					--y;
-				}
+				EntityLiving entity = CaveUtils.createEntity(EntityBat.class, world);
 
-				if (y > 0 && !world.isBlockNormalCubeDefault(x, y + 1, z, false))
+				if (entity != null)
 				{
-					Entity entity = ItemMonsterPlacer.spawnCreature(world, 65, x + 0.5D, y + 1.0D, z + 0.5D);
+					entity.setLocationAndAngles(x + 0.5D, y + 0.75D, z + 0.5D, MathHelper.wrapAngleTo180_float(world.rand.nextFloat() * 360.0F), 0.0F);
+					entity.rotationYawHead = entity.renderYawOffset = entity.rotationYaw;
+					entity.timeUntilPortal = entity.getPortalCooldown();
+					entity.onSpawnWithEgg(null);
 
-					if (entity != null)
+					if (world.spawnEntityInWorld(entity))
 					{
+						entity.playLivingSound();
 						entity.getEntityData().setBoolean("Caveworld:CaveBat", true);
-
-						entity.timeUntilPortal = entity.getPortalCooldown();
 					}
 				}
 			}
@@ -299,9 +300,8 @@ public class BlockPortalCaveworld extends BlockPortal
 			double ptX = x + random.nextFloat();
 			double ptY = y + 0.5D;
 			double ptZ = z + random.nextFloat();
-			EntityFX entityFX = new EntityReddustFX(world, ptX, ptY, ptZ, 0.5F, 1.0F, 1.0F);
 
-			Caveworld.proxy.addEffect(entityFX);
+			world.spawnParticle("reddust", ptX, ptY, ptZ, 0.5D, 1.0D, 1.0D);
 		}
 	}
 

@@ -65,8 +65,8 @@ public class CaveBiomeManager
 		clearCaveBiomes();
 
 		addCaveBiome(new CaveBiome(BiomeGenBase.ocean, 30));
-		addCaveBiome(new CaveBiome(BiomeGenBase.plains, 150));
-		addCaveBiome(new CaveBiome(BiomeGenBase.desert, 90));
+		addCaveBiome(new CaveBiome(BiomeGenBase.plains, 120));
+		addCaveBiome(new CaveBiome(BiomeGenBase.desert, 100));
 		addCaveBiome(new CaveBiome(BiomeGenBase.desertHills, 10));
 		addCaveBiome(new CaveBiome(BiomeGenBase.forest, 100));
 		addCaveBiome(new CaveBiome(BiomeGenBase.forestHills, 15));

@@ -15,12 +15,16 @@ import java.util.regex.Pattern;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockOre;
 import net.minecraft.block.BlockRedstoneOre;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
 
+import com.google.common.base.Strings;
 import com.kegare.caveworld.core.CaveOreManager;
 
 public class CaveUtils
@@ -73,5 +77,27 @@ public class CaveUtils
 		}
 
 		return false;
+	}
+
+	public static <T extends Entity> T createEntity(Class<T> clazz, World world)
+	{
+		try
+		{
+			String name = String.valueOf(EntityList.classToStringMapping.get(clazz));
+			Entity entity = EntityList.createEntityByName(Strings.nullToEmpty(name), world);
+
+			if (entity == null || entity.getClass() != clazz)
+			{
+				return null;
+			}
+
+			return (T)entity;
+		}
+		catch (Exception e)
+		{
+			CaveLog.warning("Failed to create entity: %s", clazz.getSimpleName());
+
+			return null;
+		}
 	}
 }

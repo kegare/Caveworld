@@ -53,7 +53,7 @@ public class Version
 
 	private static void initialize()
 	{
-		CURRENT = Optional.of(Caveworld.metadata.version);
+		CURRENT = Optional.of(Strings.nullToEmpty(Caveworld.metadata.version));
 
 		try
 		{
