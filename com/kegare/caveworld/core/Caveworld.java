@@ -22,6 +22,7 @@ import com.kegare.caveworld.handler.CaveFuelHandler;
 import com.kegare.caveworld.packet.CaveBiomeSyncPacket;
 import com.kegare.caveworld.packet.CaveDimSyncPacket;
 import com.kegare.caveworld.packet.CaveMiningSyncPacket;
+import com.kegare.caveworld.packet.CaveNotifyPacket;
 import com.kegare.caveworld.packet.CaveOreSyncPacket;
 import com.kegare.caveworld.packet.ConfigSyncPacket;
 import com.kegare.caveworld.packet.PacketPipeline;
@@ -98,9 +99,9 @@ public class Caveworld
 		DimensionManager.registerProviderType(Config.dimensionCaveworld, WorldProviderCaveworld.class, true);
 		DimensionManager.registerDimension(Config.dimensionCaveworld, Config.dimensionCaveworld);
 
-		MinecraftForge.EVENT_BUS.register(CaveEventHooks.instance);
-
 		FMLCommonHandler.instance().bus().register(CaveEventHooks.instance);
+
+		MinecraftForge.EVENT_BUS.register(CaveEventHooks.instance);
 
 		packetPipeline.init("kegare.caveworld");
 		packetPipeline.registerPacket(ConfigSyncPacket.class);
@@ -108,6 +109,7 @@ public class Caveworld
 		packetPipeline.registerPacket(CaveBiomeSyncPacket.class);
 		packetPipeline.registerPacket(CaveOreSyncPacket.class);
 		packetPipeline.registerPacket(CaveMiningSyncPacket.class);
+		packetPipeline.registerPacket(CaveNotifyPacket.class);
 		packetPipeline.registerPacket(PlayCaveSoundPacket.class);
 	}
 

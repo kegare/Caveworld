@@ -61,8 +61,8 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	private final Random random;
 	private final boolean generateStructures;
 
-	private MapGenBase caveGenerator = new MapGenCavesCaveworld();
-	private MapGenBase ravineGenerator = new MapGenRavineCaveworld();
+	private final MapGenBase caveGenerator = new MapGenCavesCaveworld();
+	private final MapGenBase ravineGenerator = new MapGenRavineCaveworld();
 	private MapGenStronghold strongholdGenerator = new MapGenStrongholdCaveworld();
 	private MapGenMineshaft mineshaftGenerator = new MapGenMineshaft();
 
@@ -75,8 +75,6 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	private final WorldGenerator vinesGen = new WorldGenVines();
 
 	{
-		caveGenerator = TerrainGen.getModdedMapGen(caveGenerator, InitMapGenEvent.EventType.CAVE);
-		ravineGenerator = TerrainGen.getModdedMapGen(ravineGenerator, InitMapGenEvent.EventType.RAVINE);
 		strongholdGenerator = (MapGenStronghold)TerrainGen.getModdedMapGen(strongholdGenerator, InitMapGenEvent.EventType.STRONGHOLD);
 		mineshaftGenerator = (MapGenMineshaft)TerrainGen.getModdedMapGen(mineshaftGenerator, InitMapGenEvent.EventType.MINESHAFT);
 	}

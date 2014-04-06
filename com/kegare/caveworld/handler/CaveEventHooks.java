@@ -23,19 +23,14 @@ import net.minecraft.entity.passive.EntityBat;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayer.EnumStatus;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.event.ClickEvent;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.ChatStyle;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -58,11 +53,11 @@ import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.packet.CaveBiomeSyncPacket;
 import com.kegare.caveworld.packet.CaveDimSyncPacket;
+import com.kegare.caveworld.packet.CaveNotifyPacket;
 import com.kegare.caveworld.packet.CaveOreSyncPacket;
 import com.kegare.caveworld.packet.ConfigSyncPacket;
 import com.kegare.caveworld.packet.PlayCaveSoundPacket;
 import com.kegare.caveworld.util.CaveUtils;
-import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 
 import cpw.mods.fml.client.FMLClientHandler;
@@ -123,14 +118,7 @@ public class CaveEventHooks
 			Caveworld.packetPipeline.sendPacketToPlayer(new CaveDimSyncPacket(), player);
 			Caveworld.packetPipeline.sendPacketToPlayer(new CaveBiomeSyncPacket(), player);
 			Caveworld.packetPipeline.sendPacketToPlayer(new CaveOreSyncPacket(), player);
-
-			if (Version.DEV_DEBUG || Config.versionNotify && Version.isOutdated())
-			{
-				ChatStyle style = new ChatStyle();
-				style.setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, Caveworld.metadata.url));
-
-				player.addChatMessage(new ChatComponentText(StatCollector.translateToLocalFormatted("caveworld.version.message", EnumChatFormatting.AQUA + "Caveworld" + EnumChatFormatting.RESET) + " : " + EnumChatFormatting.YELLOW + Version.getLatest()).setChatStyle(style));
-			}
+			Caveworld.packetPipeline.sendPacketToPlayer(new CaveNotifyPacket(), player);
 		}
 	}
 
