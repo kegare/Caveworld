@@ -52,8 +52,12 @@ public class CaveMiningSyncPacket extends AbstractPacket
 	public void handleClientSide(EntityPlayerSP player)
 	{
 		CaveMiningPlayer data = CaveMiningPlayer.get(player);
-		data.setMiningCount(count);
-		data.setMiningLevel(level);
+
+		if (data != null)
+		{
+			data.setMiningCount(count);
+			data.setMiningLevel(level);
+		}
 	}
 
 	@Override

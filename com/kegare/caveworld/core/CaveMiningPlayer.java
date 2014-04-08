@@ -115,6 +115,11 @@ public class CaveMiningPlayer implements IExtendedEntityProperties
 		{
 			addMiningLevel(1);
 		}
+
+		if (miningCount > 0 && miningCount % 100 == 0)
+		{
+			player.addExperience(player.xpBarCap() / 2);
+		}
 	}
 
 	public int getNextAmount()

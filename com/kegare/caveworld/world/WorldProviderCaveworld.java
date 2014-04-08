@@ -48,6 +48,35 @@ public class WorldProviderCaveworld extends WorldProvider
 	public static Optional<Long> dimensionSeed = Optional.absent();
 	public static Optional<Integer> subsurfaceHeight = Optional.absent();
 
+	private static final String DIM_NAME;
+
+	static
+	{
+		String dim = null;
+		WorldProvider provider = null;
+
+		try
+		{
+			provider = WorldProviderCaveworld.class.newInstance();
+		}
+		catch (Exception e)
+		{
+			provider = null;
+		}
+
+		if (provider != null)
+		{
+			dim = provider.getSaveFolder();
+		}
+
+		if (dim == null || !dim.startsWith("DIM"))
+		{
+			dim = "DIM-Caveworld";
+		}
+
+		DIM_NAME = dim;
+	}
+
 	public static NBTTagCompound getDimData()
 	{
 		if (!dimData.isPresent())
@@ -67,7 +96,7 @@ public class WorldProviderCaveworld extends WorldProvider
 			return null;
 		}
 
-		File dir = new File(root, "DIM-Caveworld");
+		File dir = new File(root, DIM_NAME);
 
 		if (!dir.exists())
 		{

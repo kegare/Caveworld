@@ -120,30 +120,28 @@ public class BlockPortalCaveworld extends BlockPortal
 	@Override
 	public boolean func_150000_e(World world, int x, int y, int z)
 	{
-		if (world.provider.dimensionId == 1)
-		{
-			world.newExplosion(null, x, y, z, 4.5F, true, true);
-
-			return false;
-		}
-
 		Size size1 = new Size(world, x, y, z, 1);
 		Size size2 = new Size(world, x, y, z, 2);
 
 		if (size1.canCreatePortal() && size1.portalBlockCount == 0)
 		{
 			size1.setPortalBlocks();
-
-			return true;
 		}
 		else if (size2.canCreatePortal() && size2.portalBlockCount == 0)
 		{
 			size2.setPortalBlocks();
-
-			return true;
+		}
+		else
+		{
+			return false;
 		}
 
-		return false;
+		if (world.provider.dimensionId == 1)
+		{
+			world.newExplosion(null, x, y, z, 4.5F, true, true);
+		}
+
+		return true;
 	}
 
 	@Override
@@ -174,7 +172,7 @@ public class BlockPortalCaveworld extends BlockPortal
 		{
 			world.playSoundAtEntity(player, "random.click", 0.8F, 1.5F);
 
-			player.displayGUIChest(inventory.setPortalPosition(x, y, z));
+			player.displayGUIChest(inventory.setPortalPosition(player, x, y, z));
 		}
 
 		return true;

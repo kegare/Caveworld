@@ -10,6 +10,8 @@
 
 package com.kegare.caveworld.inventory;
 
+import java.util.Map;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.item.ItemStack;
@@ -17,20 +19,22 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ChunkCoordinates;
 
+import com.google.common.collect.Maps;
+import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 
 public class InventoryCaveworldPortal extends InventoryBasic
 {
-	private ChunkCoordinates portalCoord;
+	private final Map<String, ChunkCoordinates> portalCoord = Maps.newHashMap();
 
 	public InventoryCaveworldPortal()
 	{
 		super("inventory.portal.caveworld", false, 18);
 	}
 
-	public InventoryCaveworldPortal setPortalPosition(int x, int y, int z)
+	public InventoryCaveworldPortal setPortalPosition(EntityPlayer player, int x, int y, int z)
 	{
-		portalCoord = new ChunkCoordinates(x, y, z);
+		portalCoord.put(player.getCommandSenderName(), new ChunkCoordinates(x, y, z));
 
 		return this;
 	}
@@ -90,14 +94,22 @@ public class InventoryCaveworldPortal extends InventoryBasic
 	@Override
 	public boolean isUseableByPlayer(EntityPlayer player)
 	{
-		return portalCoord != null && player.getDistance(portalCoord.posX, portalCoord.posY, portalCoord.posZ) <= 6.0D;
-	}
+		ChunkCoordinates coord = portalCoord.get(player.getCommandSenderName());
 
-	@Override
-	public void closeInventory()
-	{
-		super.closeInventory();
+		if (coord == null)
+		{
+			return false;
+		}
 
-		portalCoord = null;
+		int x = coord.posX;
+		int y = coord.posY;
+		int z = coord.posZ;
+
+		if (player.worldObj.getBlock(x, y, z) != CaveBlocks.caveworld_portal)
+		{
+			return false;
+		}
+
+		return player.getDistance(x, y, z) <= 6.0D;
 	}
 }
