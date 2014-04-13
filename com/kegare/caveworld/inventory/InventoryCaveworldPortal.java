@@ -80,7 +80,7 @@ public class InventoryCaveworldPortal extends InventoryBasic
 			if (itemstack != null)
 			{
 				NBTTagCompound nbttag = new NBTTagCompound();
-				nbttag.setByte("Slot", (byte) slot);
+				nbttag.setByte("Slot", (byte)slot);
 				itemstack.writeToNBT(nbttag);
 				list.appendTag(nbttag);
 			}

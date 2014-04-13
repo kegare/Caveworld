@@ -17,6 +17,7 @@ import net.minecraft.block.BlockBed;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.passive.EntityBat;
@@ -30,7 +31,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.ChunkCoordinates;
-import net.minecraft.util.DamageSource;
+import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -194,7 +195,8 @@ public class CaveEventHooks
 
 			if (CaveUtils.isItemPickaxe(current) && CaveUtils.isOreBlock(block, metadata))
 			{
-				int level = CaveMiningPlayer.get(player).getMiningLevel();
+				CaveMiningPlayer data = CaveMiningPlayer.get(player);
+				int level = data.getMiningLevel();
 
 				if (level > 0)
 				{
@@ -364,21 +366,23 @@ public class CaveEventHooks
 		Entity entity = event.entity;
 		World world = event.world;
 
-		if (!world.isRemote)
+		if (entity instanceof EntityPlayerMP)
 		{
-			if (entity instanceof EntityPlayer)
+			CaveMiningPlayer.loadMiningData((EntityPlayerMP)entity);
+		}
+
+		if (entity.dimension == Config.dimensionCaveworld)
+		{
+			if (entity instanceof EntityBat)
 			{
-				CaveMiningPlayer.loadMiningData((EntityPlayer)entity);
+				entity.getEntityData().setBoolean("Caveworld:CaveBat", true);
 			}
-			else if (entity.dimension == Config.dimensionCaveworld)
+
+			if (entity instanceof EntityLiving)
 			{
 				if (entity.posY >= world.provider.getActualHeight() - 1)
 				{
 					event.setCanceled(true);
-				}
-				else if (entity instanceof EntityBat)
-				{
-					entity.getEntityData().setBoolean("Caveworld:CaveBat", true);
 				}
 			}
 		}
@@ -387,11 +391,13 @@ public class CaveEventHooks
 	@SubscribeEvent
 	public void onLivingUpdate(LivingUpdateEvent event)
 	{
-		if (event.entityLiving.dimension == Config.dimensionCaveworld && event.entityLiving.ticksExisted % 20 == 0)
+		EntityLivingBase living = event.entityLiving;
+
+		if (living.dimension == Config.dimensionCaveworld && living.ticksExisted % 20 == 0)
 		{
-			if (event.entityLiving instanceof EntityPlayerMP)
+			if (living instanceof EntityPlayerMP)
 			{
-				EntityPlayerMP player = (EntityPlayerMP)event.entityLiving;
+				EntityPlayerMP player = (EntityPlayerMP)living;
 
 				if (player.isPlayerSleeping() && player.getSleepTimer() >= 80)
 				{
@@ -406,12 +412,12 @@ public class CaveEventHooks
 	@SubscribeEvent
 	public void onLivingDeathEvent(LivingDeathEvent event)
 	{
-		EntityLivingBase entity = event.entityLiving;
-		World world = entity.worldObj;
-
-		if (!world.isRemote && entity instanceof EntityPlayer)
+		if (event.entityLiving instanceof EntityPlayerMP)
 		{
-			CaveMiningPlayer.saveMiningData((EntityPlayer)entity);
+			if (!Config.deathLoseMiningCount)
+			{
+				CaveMiningPlayer.saveMiningData((EntityPlayerMP)event.entityLiving);
+			}
 		}
 	}
 
@@ -419,27 +425,25 @@ public class CaveEventHooks
 	public void onLivingDrops(LivingDropsEvent event)
 	{
 		EntityLivingBase living = event.entityLiving;
-		World world = living.worldObj;
-		DamageSource source = event.source;
-		Entity entity = source.getEntity();
+		Entity entity = event.source.getEntity();
 
-		if (!world.isRemote && entity != null && entity instanceof EntityPlayer)
+		if (entity != null && entity instanceof EntityPlayerMP)
 		{
 			Random random = living.getRNG();
-			int looting = Math.max(event.lootingLevel, 0);
+			int looting = MathHelper.clamp_int(event.lootingLevel, 0, 3);
 
 			if (living instanceof EntityBat && living.getEntityData().getBoolean("Caveworld:CaveBat"))
 			{
-				EntityItem item = new EntityItem(world, living.posX, living.posY + 0.5D, living.posZ);
+				EntityItem item = new EntityItem(living.worldObj, living.posX, living.posY + 0.5D, living.posZ);
 				item.delayBeforeCanPickup = 10;
 
-				if (random.nextInt(4) == Math.min(looting, 3))
+				if (random.nextInt(4) <= looting)
 				{
-					item.setEntityItemStack(new ItemStack(Items.leather, 1));
+					item.setEntityItemStack(new ItemStack(Items.leather));
 				}
 				else
 				{
-					item.setEntityItemStack(new ItemStack(Items.coal, random.nextInt(3) + Math.min(looting, 3)));
+					item.setEntityItemStack(new ItemStack(Items.coal, random.nextInt(3) + looting));
 				}
 
 				event.drops.add(item);

@@ -23,6 +23,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 public class ConfigSyncPacket extends AbstractPacket
 {
 	private boolean hardcoreEnabled;
+	private boolean deathLoseMiningCount;
 	private int dimensionCaveworld;
 	private int subsurfaceHeight;
 	private boolean generateCaves;
@@ -36,6 +37,7 @@ public class ConfigSyncPacket extends AbstractPacket
 	public ConfigSyncPacket()
 	{
 		hardcoreEnabled = Config.hardcoreEnabled;
+		deathLoseMiningCount = Config.deathLoseMiningCount;
 		dimensionCaveworld = Config.dimensionCaveworld;
 		subsurfaceHeight = Config.subsurfaceHeight;
 		generateCaves = Config.generateCaves;
@@ -51,6 +53,7 @@ public class ConfigSyncPacket extends AbstractPacket
 	public void encodeInto(ChannelHandlerContext ctx, ByteBuf buffer)
 	{
 		buffer.writeBoolean(hardcoreEnabled);
+		buffer.writeBoolean(deathLoseMiningCount);
 		buffer.writeInt(dimensionCaveworld);
 		buffer.writeInt(subsurfaceHeight);
 		buffer.writeBoolean(generateCaves);
@@ -66,6 +69,7 @@ public class ConfigSyncPacket extends AbstractPacket
 	public void decodeInto(ChannelHandlerContext ctx, ByteBuf buffer)
 	{
 		hardcoreEnabled = buffer.readBoolean();
+		deathLoseMiningCount = buffer.readBoolean();
 		dimensionCaveworld = buffer.readInt();
 		subsurfaceHeight = buffer.readInt();
 		generateCaves = buffer.readBoolean();
@@ -82,6 +86,7 @@ public class ConfigSyncPacket extends AbstractPacket
 	public void handleClientSide(EntityPlayerSP player)
 	{
 		Config.hardcoreEnabled = hardcoreEnabled;
+		Config.deathLoseMiningCount = deathLoseMiningCount;
 		Config.dimensionCaveworld = dimensionCaveworld;
 		Config.subsurfaceHeight = subsurfaceHeight;
 		Config.generateCaves = generateCaves;

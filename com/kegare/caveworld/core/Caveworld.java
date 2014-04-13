@@ -61,7 +61,9 @@ public class Caveworld
 
 		Config.buildConfig();
 
+		CaveBlocks.initialize();
 		CaveBlocks.register();
+
 		CaveAchievementList.register();
 
 		registerExtraRecipes();

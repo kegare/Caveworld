@@ -54,9 +54,9 @@ public class ItemRope extends ItemBlock
 					{
 						int next = y - 5 * i;
 
-						if (world.getBlock(x, next, z) == field_150939_a && world.isAirBlock(x, next - 1, z) && next - 1 > 0)
+						if (world.getBlock(x, next, z) == field_150939_a && world.isAirBlock(x, --next, z) && next > 0)
 						{
-							if (placeBlockAt(itemstack, player, world, x, next - 1, z, side, hitX, hitY, hitZ, 1))
+							if (placeBlockAt(itemstack, player, world, x, next, z, side, hitX, hitY, hitZ, 1))
 							{
 								--itemstack.stackSize;
 							}

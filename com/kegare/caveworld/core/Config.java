@@ -29,9 +29,12 @@ public class Config
 	public static boolean hardcoreEnabled = false;
 
 	public static boolean versionNotify = true;
+	public static boolean deathLoseMiningCount = false;
 
 	public static boolean portalCraftRecipe = false;
 	public static boolean mossStoneCraftRecipe = true;
+
+	public static boolean rope = true;
 
 	public static int dimensionCaveworld = -75;
 	public static int subsurfaceHeight = 127;
@@ -99,6 +102,11 @@ public class Config
 			prop.comment += Configuration.NEW_LINE;
 			prop.comment += "Note: If multiplayer, does not have to match client-side and server-side.";
 			versionNotify = prop.getBoolean(versionNotify);
+			prop = config.get(category, "deathLoseMiningCount", deathLoseMiningCount);
+			prop.comment = "Whether or not to lose mining count on death. [true/false]";
+			prop.comment += Configuration.NEW_LINE;
+			prop.comment += "Note: If multiplayer, server-side only.";
+			deathLoseMiningCount = prop.getBoolean(deathLoseMiningCount);
 		}
 		finally
 		{
@@ -114,12 +122,29 @@ public class Config
 		try
 		{
 			prop = config.get(category, "portalCraftRecipe", Version.DEV_DEBUG);
-			prop.comment = "Whether or not to add crafting recipe of Caveworld Portal. [true/false]";
+			prop.comment = "Whether or not to add crafting recipe of Caveworld Portal Block. [true/false]";
 			portalCraftRecipe = prop.getBoolean(portalCraftRecipe);
-
 			prop = config.get(category, "mossStoneCraftRecipe", mossStoneCraftRecipe);
 			prop.comment = "Whether or not to add crafting recipe of Moss Stone. [true/false]";
 			mossStoneCraftRecipe = prop.getBoolean(mossStoneCraftRecipe);
+		}
+		finally
+		{
+			if (config.hasChanged())
+			{
+				config.save();
+			}
+		}
+
+		category = "blocks";
+		config = getConfig(category);
+		config.addCustomCategoryComment(category, "If multiplayer, values must match on client-side and server-side.");
+
+		try
+		{
+			prop = config.get(category, "Rope", rope);
+			prop.comment = "Whether or not to add Rope. [true/false]";
+			rope = prop.getBoolean(rope);
 		}
 		finally
 		{

@@ -108,7 +108,6 @@ public class Version
 
 		new Thread("Caveworld Version Check")
 		{
-			@SuppressWarnings("unchecked")
 			@Override
 			public void run()
 			{
