@@ -30,6 +30,7 @@ import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 
 import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.versioning.ArtifactVersion;
 import cpw.mods.fml.common.versioning.DefaultArtifactVersion;
 
@@ -57,7 +58,8 @@ public class Version
 
 		try
 		{
-			File file = Loader.instance().activeModContainer().getSource();
+			ModContainer mod = Loader.instance().getIndexedModList().get(Caveworld.metadata.modId);
+			File file = mod == null ? null : mod.getSource();
 
 			if (file != null && file.exists())
 			{

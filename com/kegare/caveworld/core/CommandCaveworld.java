@@ -64,7 +64,7 @@ public class CommandCaveworld implements ICommand
 	@Override
 	public void processCommand(ICommandSender sender, String[] args)
 	{
-		if (args.length == 0 || args[0].equalsIgnoreCase("version"))
+		if (args.length <= 0 || args[0].equalsIgnoreCase("version"))
 		{
 			ChatStyle style = new ChatStyle();
 			style.setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, Caveworld.metadata.url));

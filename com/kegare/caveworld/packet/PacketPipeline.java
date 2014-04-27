@@ -12,7 +12,6 @@ import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.INetHandler;
@@ -118,13 +117,13 @@ public class PacketPipeline extends MessageToMessageCodec<FMLProxyPacket, Abstra
 		{
 			case CLIENT:
 				player = getClientPlayer();
-				pkt.handleClientSide((EntityPlayerSP)player);
+				pkt.handleClientSide(player);
 
 				break;
 			case SERVER:
 				INetHandler netHandler = ctx.channel().attr(NetworkRegistry.NET_HANDLER).get();
 				player = ((NetHandlerPlayServer)netHandler).playerEntity;
-				pkt.handleServerSide((EntityPlayerMP)player);
+				pkt.handleServerSide(player);
 
 				break;
 			default:

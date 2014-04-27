@@ -16,8 +16,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.ISound;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.audio.SoundHandler;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 
 import com.google.common.base.Strings;
@@ -52,7 +51,7 @@ public class PlayCaveSoundPacket extends AbstractPacket
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void handleClientSide(EntityPlayerSP player)
+	public void handleClientSide(EntityPlayer player)
 	{
 		Minecraft mc = FMLClientHandler.instance().getClient();
 
@@ -74,6 +73,5 @@ public class PlayCaveSoundPacket extends AbstractPacket
 	}
 
 	@Override
-	@SideOnly(Side.SERVER)
-	public void handleServerSide(EntityPlayerMP player) {}
+	public void handleServerSide(EntityPlayer player) {}
 }

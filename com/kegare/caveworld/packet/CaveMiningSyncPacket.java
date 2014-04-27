@@ -12,8 +12,7 @@ package com.kegare.caveworld.packet;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.EntityPlayer;
 
 import com.kegare.caveworld.core.CaveMiningPlayer;
 
@@ -49,7 +48,7 @@ public class CaveMiningSyncPacket extends AbstractPacket
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void handleClientSide(EntityPlayerSP player)
+	public void handleClientSide(EntityPlayer player)
 	{
 		CaveMiningPlayer data = CaveMiningPlayer.get(player);
 
@@ -61,6 +60,5 @@ public class CaveMiningSyncPacket extends AbstractPacket
 	}
 
 	@Override
-	@SideOnly(Side.SERVER)
-	public void handleServerSide(EntityPlayerMP player) {}
+	public void handleServerSide(EntityPlayer player) {}
 }

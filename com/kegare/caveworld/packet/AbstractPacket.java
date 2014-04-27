@@ -2,8 +2,7 @@ package com.kegare.caveworld.packet;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.EntityPlayer;
 
 public abstract class AbstractPacket
 {
@@ -11,7 +10,7 @@ public abstract class AbstractPacket
 
 	public abstract void decodeInto(ChannelHandlerContext ctx, ByteBuf buffer);
 
-	public abstract void handleClientSide(EntityPlayerSP player);
+	public abstract void handleClientSide(EntityPlayer player);
 
-	public abstract void handleServerSide(EntityPlayerMP player);
+	public abstract void handleServerSide(EntityPlayer player);
 }

@@ -12,8 +12,7 @@ package com.kegare.caveworld.packet;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.EntityPlayer;
 
 import com.kegare.caveworld.core.Config;
 
@@ -83,7 +82,7 @@ public class ConfigSyncPacket extends AbstractPacket
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void handleClientSide(EntityPlayerSP player)
+	public void handleClientSide(EntityPlayer player)
 	{
 		Config.hardcoreEnabled = hardcoreEnabled;
 		Config.deathLoseMiningCount = deathLoseMiningCount;
@@ -99,6 +98,5 @@ public class ConfigSyncPacket extends AbstractPacket
 	}
 
 	@Override
-	@SideOnly(Side.SERVER)
-	public void handleServerSide(EntityPlayerMP player) {}
+	public void handleServerSide(EntityPlayer player) {}
 }

@@ -52,8 +52,8 @@ public class WorldProviderCaveworld extends WorldProvider
 
 	static
 	{
-		String dim = null;
 		WorldProvider provider = null;
+		String dim = null;
 
 		try
 		{

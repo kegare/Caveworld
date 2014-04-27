@@ -12,8 +12,7 @@ package com.kegare.caveworld.packet;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.EntityPlayer;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
@@ -60,7 +59,7 @@ public class CaveOreSyncPacket extends AbstractPacket
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void handleClientSide(EntityPlayerSP player)
+	public void handleClientSide(EntityPlayer player)
 	{
 		CaveOreManager.clearCaveOres();
 
@@ -78,6 +77,5 @@ public class CaveOreSyncPacket extends AbstractPacket
 	}
 
 	@Override
-	@SideOnly(Side.SERVER)
-	public void handleServerSide(EntityPlayerMP player) {}
+	public void handleServerSide(EntityPlayer player) {}
 }

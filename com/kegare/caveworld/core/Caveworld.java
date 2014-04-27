@@ -10,9 +10,7 @@
 
 package com.kegare.caveworld.core;
 
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
+import static com.kegare.caveworld.core.Caveworld.*;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 
@@ -27,6 +25,8 @@ import com.kegare.caveworld.packet.CaveOreSyncPacket;
 import com.kegare.caveworld.packet.ConfigSyncPacket;
 import com.kegare.caveworld.packet.PacketPipeline;
 import com.kegare.caveworld.packet.PlayCaveSoundPacket;
+import com.kegare.caveworld.plugin.CaveModPluginManager;
+import com.kegare.caveworld.plugin.thaumcraft.ThaumcraftPlugin;
 import com.kegare.caveworld.proxy.CommonProxy;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
@@ -43,15 +43,19 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
 
-@Mod(modid = "kegare.caveworld")
+@Mod(modid = MODID, acceptedMinecraftVersions = "[1.7,)")
 public class Caveworld
 {
+	public static final String
+	MODID = "kegare.caveworld",
+	PACKAGE_NAME = "com.kegare.caveworld";
+
 	public static final PacketPipeline packetPipeline = new PacketPipeline();
 
-	@Metadata("kegare.caveworld")
+	@Metadata(MODID)
 	public static ModMetadata metadata;
 
-	@SidedProxy(modId = "kegare.caveworld", clientSide = "com.kegare.caveworld.proxy.ClientProxy", serverSide = "com.kegare.caveworld.proxy.CommonProxy")
+	@SidedProxy(modId = MODID, clientSide = PACKAGE_NAME + ".proxy.ClientProxy", serverSide = PACKAGE_NAME + ".proxy.CommonProxy")
 	public static CommonProxy proxy;
 
 	@EventHandler
@@ -66,37 +70,14 @@ public class Caveworld
 
 		CaveAchievementList.register();
 
-		registerExtraRecipes();
-
 		GameRegistry.registerFuelHandler(new CaveFuelHandler());
-	}
-
-	private void registerExtraRecipes()
-	{
-		if (Config.portalCraftRecipe)
-		{
-			GameRegistry.addShapedRecipe(new ItemStack(CaveBlocks.caveworld_portal),
-				" E ", "EPE", " D ",
-				'E', Items.emerald,
-				'P', Items.ender_pearl,
-				'D', Items.diamond
-			);
-		}
-
-		if (Config.mossStoneCraftRecipe)
-		{
-			GameRegistry.addShapedRecipe(new ItemStack(Blocks.mossy_cobblestone),
-				" V ", "VCV", " V ",
-				'V', Blocks.vine,
-				'C', Blocks.cobblestone
-			);
-		}
 	}
 
 	@EventHandler
 	public void init(FMLInitializationEvent event)
 	{
 		proxy.registerRenderers();
+		proxy.registerRecipes();
 
 		DimensionManager.registerProviderType(Config.dimensionCaveworld, WorldProviderCaveworld.class, true);
 		DimensionManager.registerDimension(Config.dimensionCaveworld, Config.dimensionCaveworld);
@@ -105,7 +86,7 @@ public class Caveworld
 
 		MinecraftForge.EVENT_BUS.register(CaveEventHooks.instance);
 
-		packetPipeline.init("kegare.caveworld");
+		packetPipeline.init(MODID);
 		packetPipeline.registerPacket(ConfigSyncPacket.class);
 		packetPipeline.registerPacket(CaveDimSyncPacket.class);
 		packetPipeline.registerPacket(CaveBiomeSyncPacket.class);
@@ -113,6 +94,9 @@ public class Caveworld
 		packetPipeline.registerPacket(CaveMiningSyncPacket.class);
 		packetPipeline.registerPacket(CaveNotifyPacket.class);
 		packetPipeline.registerPacket(PlayCaveSoundPacket.class);
+
+		CaveModPluginManager.registerPlugin(ThaumcraftPlugin.class);
+		CaveModPluginManager.initPlugins();
 	}
 
 	@EventHandler

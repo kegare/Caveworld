@@ -129,10 +129,16 @@ public class CaveEventHooks
 		if (event.player instanceof EntityPlayerMP)
 		{
 			EntityPlayerMP player = (EntityPlayerMP)event.player;
+			int dim = player.dimension;
 
-			if (player.dimension == Config.dimensionCaveworld)
+			if (dim == Config.dimensionCaveworld && player.getBedLocation(dim) != null)
 			{
-				player.setSpawnChunk(null, true, player.dimension);
+				int level = CaveMiningPlayer.get(player).getMiningLevel();
+
+				if (level <= 0 || player.getRNG().nextInt(level) == 0)
+				{
+					player.setSpawnChunk(null, true, dim);
+				}
 			}
 		}
 	}
@@ -195,8 +201,7 @@ public class CaveEventHooks
 
 			if (CaveUtils.isItemPickaxe(current) && CaveUtils.isOreBlock(block, metadata))
 			{
-				CaveMiningPlayer data = CaveMiningPlayer.get(player);
-				int level = data.getMiningLevel();
+				int level = CaveMiningPlayer.get(player).getMiningLevel();
 
 				if (level > 0)
 				{
