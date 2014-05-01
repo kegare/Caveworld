@@ -23,10 +23,6 @@ public class CaveModPluginManager
 {
 	private static final Set<CaveModPlugin> CAVE_PLUGINS = Sets.newHashSet();
 
-	/**
-	 * Register a Caveworld mod-plugin
-	 * @param clazz The mod-plugin class to register
-	 */
 	public static boolean registerPlugin(Class<? extends CaveModPlugin> clazz)
 	{
 		CaveModPlugin entry = null;
@@ -56,10 +52,6 @@ public class CaveModPluginManager
 		return CAVE_PLUGINS.add(entry);
 	}
 
-	/**
-	 * Unregister a Caveworld mod-plugin
-	 * @param clazz The mod-plugin class to unregister
-	 */
 	public static void unregisterPlugin(Class<? extends CaveModPlugin> clazz)
 	{
 		for (Iterator<CaveModPlugin> plugins = CAVE_PLUGINS.iterator(); plugins.hasNext();)
@@ -71,10 +63,6 @@ public class CaveModPluginManager
 		}
 	}
 
-	/**
-	 * Unregister a Caveworld mod-plugin with specified ModId
-	 * @param modid The mod-plugin ModId to unregister
-	 */
 	public static void unregisterPlugin(String modid)
 	{
 		for (Iterator<CaveModPlugin> plugins = CAVE_PLUGINS.iterator(); plugins.hasNext();)

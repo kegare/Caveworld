@@ -29,7 +29,6 @@ import com.google.gson.Gson;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 
-import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.versioning.ArtifactVersion;
 import cpw.mods.fml.common.versioning.DefaultArtifactVersion;
@@ -55,10 +54,11 @@ public class Version
 	private static void initialize()
 	{
 		CURRENT = Optional.of(Strings.nullToEmpty(Caveworld.metadata.version));
+		LATEST = Optional.fromNullable(CURRENT.orNull());
 
 		try
 		{
-			ModContainer mod = Loader.instance().getIndexedModList().get(Caveworld.metadata.modId);
+			ModContainer mod = CaveUtils.getModContainer();
 			File file = mod == null ? null : mod.getSource();
 
 			if (file != null && file.exists())

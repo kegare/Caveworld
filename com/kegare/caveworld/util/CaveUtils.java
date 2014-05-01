@@ -26,6 +26,10 @@ import net.minecraftforge.common.ForgeHooks;
 
 import com.google.common.base.Strings;
 import com.kegare.caveworld.core.CaveOreManager;
+import com.kegare.caveworld.core.Caveworld;
+
+import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.ModContainer;
 
 public class CaveUtils
 {
@@ -34,6 +38,23 @@ public class CaveUtils
 	public static String stripControlCodes(String str)
 	{
 		return patternControlCode.matcher(str).replaceAll("");
+	}
+
+	public static ModContainer getModContainer()
+	{
+		ModContainer mod = Loader.instance().getIndexedModList().get(Caveworld.MODID);
+
+		if (mod == null)
+		{
+			mod = Loader.instance().activeModContainer();
+
+			if (mod == null || mod.getModId() != Caveworld.MODID)
+			{
+				return null;
+			}
+		}
+
+		return mod;
 	}
 
 	public static boolean isOreBlock(Block block, int metadata)

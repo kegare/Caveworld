@@ -26,7 +26,6 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.Direction;
@@ -194,6 +193,7 @@ public class BlockPortalCaveworld extends BlockPortal
 
 				entity.worldObj.removeEntity(entity);
 				entity.isDead = false;
+				entity.timeUntilPortal = entity.getPortalCooldown();
 
 				if (entity instanceof EntityPlayerMP)
 				{
@@ -201,22 +201,14 @@ public class BlockPortalCaveworld extends BlockPortal
 
 					if (!player.isSneaking() && !player.isPotionActive(Potion.confusion))
 					{
-						player.closeScreen();
-
 						worldOld.playSoundToNearExcept(player, "caveworld:caveworld_portal", 0.5F, 1.0F);
 
 						server.getConfigurationManager().transferPlayerToDimension(player, dimNew, teleporter);
-
-						player.addExperienceLevel(0);
-						player.addPotionEffect(new PotionEffect(Potion.confusion.getId(), 120));
-						player.addPotionEffect(new PotionEffect(Potion.blindness.getId(), 20));
 
 						worldNew.playSoundAtEntity(player, "caveworld:caveworld_portal", 0.75F, 1.0F);
 
 						player.getEntityData().setInteger("Caveworld:LastDim", dimOld);
 					}
-
-					player.timeUntilPortal = player.getPortalCooldown();
 				}
 				else
 				{
@@ -232,7 +224,6 @@ public class BlockPortalCaveworld extends BlockPortal
 
 						target.copyDataFrom(entity, true);
 						target.forceSpawn = true;
-						target.timeUntilPortal = target.getPortalCooldown();
 
 						worldNew.spawnEntityInWorld(target);
 						worldNew.playSoundAtEntity(target, "caveworld:caveworld_portal", 0.5F, 1.15F);

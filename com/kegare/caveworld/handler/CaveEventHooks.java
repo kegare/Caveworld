@@ -29,9 +29,11 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.MathHelper;
+import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -59,6 +61,7 @@ import com.kegare.caveworld.packet.CaveOreSyncPacket;
 import com.kegare.caveworld.packet.ConfigSyncPacket;
 import com.kegare.caveworld.packet.PlayCaveSoundPacket;
 import com.kegare.caveworld.util.CaveUtils;
+import com.kegare.caveworld.world.TeleporterCaveworld;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 
 import cpw.mods.fml.client.FMLClientHandler;
@@ -131,13 +134,26 @@ public class CaveEventHooks
 			EntityPlayerMP player = (EntityPlayerMP)event.player;
 			int dim = player.dimension;
 
-			if (dim == Config.dimensionCaveworld && player.getBedLocation(dim) != null)
+			if (dim == Config.dimensionCaveworld)
 			{
-				int level = CaveMiningPlayer.get(player).getMiningLevel();
+				ChunkCoordinates spawn = player.getBedLocation(dim);
 
-				if (level <= 0 || player.getRNG().nextInt(level) == 0)
+				if (spawn == null)
 				{
-					player.setSpawnChunk(null, true, dim);
+					MinecraftServer server = Caveworld.proxy.getServer();
+					WorldServer world = server.worldServerForDimension(0);
+					Teleporter teleporter = new TeleporterCaveworld(world, false, false);
+
+					server.getConfigurationManager().transferPlayerToDimension(player, 0, teleporter);
+				}
+				else if (!Config.hardcoreEnabled)
+				{
+					int level = CaveMiningPlayer.get(player).getMiningLevel();
+
+					if (level <= 0 || player.getRNG().nextInt(level) == 0)
+					{
+						player.setSpawnChunk(null, true, dim);
+					}
 				}
 			}
 		}

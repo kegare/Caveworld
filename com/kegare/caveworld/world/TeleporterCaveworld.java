@@ -17,7 +17,10 @@ import java.util.Set;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.Direction;
 import net.minecraft.util.MathHelper;
@@ -34,25 +37,59 @@ public class TeleporterCaveworld extends Teleporter
 {
 	private final WorldServer worldObj;
 	private final Random random;
+	private final boolean generatePortal;
+	private final boolean teleportEffect;
 
 	private final Map<Long, PortalPosition> coordCache = Maps.newHashMap();
 	private final Set<Long> coordKeys = Sets.newHashSet();
 
 	public TeleporterCaveworld(WorldServer worldServer)
 	{
+		this(worldServer, true, true);
+	}
+
+	public TeleporterCaveworld(WorldServer worldServer, boolean portal, boolean effect)
+	{
 		super(worldServer);
 		this.worldObj = worldServer;
 		this.worldObj.customTeleporters.add(this);
 		this.random = new Random(worldServer.getSeed());
+		this.generatePortal = portal;
+		this.teleportEffect = effect;
 	}
 
 	@Override
 	public void placeInPortal(Entity entity, double posX, double posY, double posZ, float rotationYaw)
 	{
-		if (!placeInExistingPortal(entity, posX, posY, posZ, rotationYaw))
+		if (generatePortal)
 		{
-			makePortal(entity);
-			placeInExistingPortal(entity, posX, posY, posZ, rotationYaw);
+			if (!placeInExistingPortal(entity, posX, posY, posZ, rotationYaw))
+			{
+				makePortal(entity);
+				placeInExistingPortal(entity, posX, posY, posZ, rotationYaw);
+			}
+		}
+		else if (!placeInExistingPortal(entity, posX, posY, posZ, rotationYaw))
+		{
+			ChunkCoordinates spawn = worldObj.provider.getRandomizedSpawnPoint();
+			int x = spawn.posX;
+			int z = spawn.posZ;
+			int y = worldObj.getTopSolidOrLiquidBlock(x, z);
+
+			entity.setLocationAndAngles(x, y, z, entity.rotationYaw, entity.rotationPitch);
+		}
+
+		if (entity instanceof EntityPlayerMP)
+		{
+			EntityPlayerMP player = (EntityPlayerMP)entity;
+
+			player.addExperienceLevel(0);
+
+			if (teleportEffect)
+			{
+				player.addPotionEffect(new PotionEffect(Potion.confusion.getId(), 120));
+				player.addPotionEffect(new PotionEffect(Potion.blindness.getId(), 20));
+			}
 		}
 	}
 
