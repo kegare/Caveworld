@@ -11,8 +11,8 @@
 package com.kegare.caveworld.packet;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
-import net.minecraft.entity.player.EntityPlayer;
+
+import java.util.Collection;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
@@ -22,20 +22,23 @@ import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome;
 import com.kegare.caveworld.util.CaveLog;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import cpw.mods.fml.common.network.simpleimpl.IMessage;
+import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
+import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 
-public class CaveBiomeSyncPacket extends AbstractPacket
+public class CaveBiomeSyncPacket implements IMessage, IMessageHandler<CaveBiomeSyncPacket, IMessage>
 {
 	private String data;
 
-	public CaveBiomeSyncPacket()
+	public CaveBiomeSyncPacket() {}
+
+	public CaveBiomeSyncPacket(Collection<CaveBiome> biomes)
 	{
 		StringBuilder builder = new StringBuilder(1024);
 
 		builder.append('{');
 
-		for (CaveBiome biome : CaveBiomeManager.getCaveBiomes())
+		for (CaveBiome biome : biomes)
 		{
 			if (biome.itemWeight <= 0)
 			{
@@ -51,26 +54,25 @@ public class CaveBiomeSyncPacket extends AbstractPacket
 	}
 
 	@Override
-	public void encodeInto(ChannelHandlerContext ctx, ByteBuf buffer)
-	{
-		ByteBufUtils.writeUTF8String(buffer, data);
-	}
-
-	@Override
-	public void decodeInto(ChannelHandlerContext ctx, ByteBuf buffer)
+	public void fromBytes(ByteBuf buffer)
 	{
 		data = ByteBufUtils.readUTF8String(buffer);
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
-	public void handleClientSide(EntityPlayer player)
+	public void toBytes(ByteBuf buffer)
+	{
+		ByteBufUtils.writeUTF8String(buffer, data);
+	}
+
+	@Override
+	public IMessage onMessage(CaveBiomeSyncPacket message, MessageContext ctx)
 	{
 		CaveBiomeManager.clearCaveBiomes();
 
 		try
 		{
-			if (CaveBiomeManager.loadCaveBiomesFromString(data))
+			if (CaveBiomeManager.loadCaveBiomesFromString(message.data))
 			{
 				CaveLog.info("Loaded %d cave biomes from server", CaveBiomeManager.getActiveBiomeCount());
 			}
@@ -79,8 +81,7 @@ public class CaveBiomeSyncPacket extends AbstractPacket
 		{
 			CaveLog.log(Level.WARN, e, "An error occurred trying to loading cave biomes from server");
 		}
-	}
 
-	@Override
-	public void handleServerSide(EntityPlayer player) {}
+		return null;
+	}
 }

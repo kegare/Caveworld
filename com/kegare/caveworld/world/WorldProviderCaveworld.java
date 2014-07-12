@@ -30,8 +30,8 @@ import net.minecraftforge.common.DimensionManager;
 import org.apache.logging.log4j.Level;
 
 import com.google.common.base.Optional;
-import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.packet.CavePacketHandler;
 import com.kegare.caveworld.packet.PlayCaveSoundPacket;
 import com.kegare.caveworld.renderer.EmptyRenderer;
 import com.kegare.caveworld.util.CaveLog;
@@ -189,7 +189,7 @@ public class WorldProviderCaveworld extends WorldProvider
 	@SideOnly(Side.CLIENT)
 	public Vec3 getFogColor(float angle, float ticks)
 	{
-		return worldObj.getWorldVec3Pool().getVecFromPool(0.01D, 0.01D, 0.01D);
+		return Vec3.createVectorHelper(0.01D, 0.01D, 0.01D);
 	}
 
 	@Override
@@ -296,14 +296,14 @@ public class WorldProviderCaveworld extends WorldProvider
 	@SideOnly(Side.CLIENT)
 	public Vec3 getSkyColor(Entity entity, float ticks)
 	{
-		return worldObj.getWorldVec3Pool().getVecFromPool(0.01D, 0.01D, 0.01D);
+		return Vec3.createVectorHelper(0.01D, 0.01D, 0.01D);
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public Vec3 drawClouds(float ticks)
 	{
-		return worldObj.getWorldVec3Pool().getVecFromPool(0.01D, 0.01D, 0.01D);
+		return Vec3.createVectorHelper(0.01D, 0.01D, 0.01D);
 	}
 
 	@Override
@@ -333,7 +333,7 @@ public class WorldProviderCaveworld extends WorldProvider
 			}
 			else
 			{
-				Caveworld.packetPipeline.sendPacketToAllInDimension(new PlayCaveSoundPacket("caveworld:ambient.cave"), dimensionId);
+				CavePacketHandler.INSTANCE.sendToDimension(new PlayCaveSoundPacket("caveworld:ambient.cave"), dimensionId);
 
 				ambientTickCountdown = worldObj.rand.nextInt(8000) + 20000;
 			}

@@ -11,16 +11,15 @@
 package com.kegare.caveworld.packet;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
-import net.minecraft.entity.player.EntityPlayer;
 
 import com.google.common.base.Optional;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import cpw.mods.fml.common.network.simpleimpl.IMessage;
+import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
+import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 
-public class CaveDimSyncPacket extends AbstractPacket
+public class CaveDimSyncPacket implements IMessage, IMessageHandler<CaveDimSyncPacket, IMessage>
 {
 	private long dimensionSeed;
 	private int subsurfaceHeight;
@@ -32,27 +31,25 @@ public class CaveDimSyncPacket extends AbstractPacket
 	}
 
 	@Override
-	public void encodeInto(ChannelHandlerContext ctx, ByteBuf buffer)
-	{
-		buffer.writeLong(dimensionSeed);
-		buffer.writeInt(subsurfaceHeight);
-	}
-
-	@Override
-	public void decodeInto(ChannelHandlerContext ctx, ByteBuf buffer)
+	public void fromBytes(ByteBuf buffer)
 	{
 		dimensionSeed = buffer.readLong();
 		subsurfaceHeight = buffer.readInt();
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
-	public void handleClientSide(EntityPlayer player)
+	public void toBytes(ByteBuf buffer)
 	{
-		WorldProviderCaveworld.dimensionSeed = Optional.of(dimensionSeed);
-		WorldProviderCaveworld.subsurfaceHeight = Optional.of(subsurfaceHeight);
+		buffer.writeLong(dimensionSeed);
+		buffer.writeInt(subsurfaceHeight);
 	}
 
 	@Override
-	public void handleServerSide(EntityPlayer player) {}
+	public IMessage onMessage(CaveDimSyncPacket message, MessageContext ctx)
+	{
+		WorldProviderCaveworld.dimensionSeed = Optional.of(message.dimensionSeed);
+		WorldProviderCaveworld.subsurfaceHeight = Optional.of(message.subsurfaceHeight);
+
+		return null;
+	}
 }

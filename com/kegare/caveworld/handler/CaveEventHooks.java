@@ -51,13 +51,16 @@ import net.minecraftforge.event.world.WorldEvent;
 
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.core.CaveAchievementList;
+import com.kegare.caveworld.core.CaveBiomeManager;
 import com.kegare.caveworld.core.CaveMiningPlayer;
+import com.kegare.caveworld.core.CaveOreManager;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.packet.CaveBiomeSyncPacket;
 import com.kegare.caveworld.packet.CaveDimSyncPacket;
 import com.kegare.caveworld.packet.CaveNotifyPacket;
 import com.kegare.caveworld.packet.CaveOreSyncPacket;
+import com.kegare.caveworld.packet.CavePacketHandler;
 import com.kegare.caveworld.packet.ConfigSyncPacket;
 import com.kegare.caveworld.packet.PlayCaveSoundPacket;
 import com.kegare.caveworld.util.CaveUtils;
@@ -118,11 +121,11 @@ public class CaveEventHooks
 		{
 			EntityPlayerMP player = (EntityPlayerMP)event.player;
 
-			Caveworld.packetPipeline.sendPacketToPlayer(new ConfigSyncPacket(), player);
-			Caveworld.packetPipeline.sendPacketToPlayer(new CaveDimSyncPacket(), player);
-			Caveworld.packetPipeline.sendPacketToPlayer(new CaveBiomeSyncPacket(), player);
-			Caveworld.packetPipeline.sendPacketToPlayer(new CaveOreSyncPacket(), player);
-			Caveworld.packetPipeline.sendPacketToPlayer(new CaveNotifyPacket(), player);
+			CavePacketHandler.INSTANCE.sendTo(new ConfigSyncPacket(), player);
+			CavePacketHandler.INSTANCE.sendTo(new CaveDimSyncPacket(), player);
+			CavePacketHandler.INSTANCE.sendTo(new CaveBiomeSyncPacket(CaveBiomeManager.getCaveBiomes()), player);
+			CavePacketHandler.INSTANCE.sendTo(new CaveOreSyncPacket(CaveOreManager.getCaveOres()), player);
+			CavePacketHandler.INSTANCE.sendTo(new CaveNotifyPacket(), player);
 		}
 	}
 
@@ -173,7 +176,7 @@ public class CaveEventHooks
 
 				if (!player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.caveworld) || data.getLong("Caveworld:LastTeleportTime") + 18000L < world.getTotalWorldTime())
 				{
-					Caveworld.packetPipeline.sendPacketToPlayer(new PlayCaveSoundPacket("caveworld:ambient.cave"), player);
+					CavePacketHandler.INSTANCE.sendTo(new PlayCaveSoundPacket("caveworld:ambient.cave"), player);
 				}
 
 				data.setLong("Caveworld:LastTeleportTime", world.getTotalWorldTime());

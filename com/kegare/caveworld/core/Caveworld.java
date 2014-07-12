@@ -17,14 +17,7 @@ import net.minecraftforge.common.MinecraftForge;
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.handler.CaveEventHooks;
 import com.kegare.caveworld.handler.CaveFuelHandler;
-import com.kegare.caveworld.packet.CaveBiomeSyncPacket;
-import com.kegare.caveworld.packet.CaveDimSyncPacket;
-import com.kegare.caveworld.packet.CaveMiningSyncPacket;
-import com.kegare.caveworld.packet.CaveNotifyPacket;
-import com.kegare.caveworld.packet.CaveOreSyncPacket;
-import com.kegare.caveworld.packet.ConfigSyncPacket;
-import com.kegare.caveworld.packet.PacketPipeline;
-import com.kegare.caveworld.packet.PlayCaveSoundPacket;
+import com.kegare.caveworld.packet.CavePacketHandler;
 import com.kegare.caveworld.plugin.CaveModPluginManager;
 import com.kegare.caveworld.plugin.thaumcraft.ThaumcraftPlugin;
 import com.kegare.caveworld.proxy.CommonProxy;
@@ -43,14 +36,12 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
 
-@Mod(modid = MODID, acceptedMinecraftVersions = "[1.7,)")
+@Mod(modid = MODID, acceptedMinecraftVersions = "[1.7.10,)")
 public class Caveworld
 {
 	public static final String
 	MODID = "kegare.caveworld",
 	PACKAGE_NAME = "com.kegare.caveworld";
-
-	public static final PacketPipeline packetPipeline = new PacketPipeline();
 
 	@Metadata(MODID)
 	public static ModMetadata metadata;
@@ -70,6 +61,8 @@ public class Caveworld
 
 		CaveAchievementList.register();
 
+		CavePacketHandler.register();
+
 		GameRegistry.registerFuelHandler(new CaveFuelHandler());
 	}
 
@@ -86,15 +79,6 @@ public class Caveworld
 
 		MinecraftForge.EVENT_BUS.register(CaveEventHooks.instance);
 
-		packetPipeline.init(MODID);
-		packetPipeline.registerPacket(ConfigSyncPacket.class);
-		packetPipeline.registerPacket(CaveDimSyncPacket.class);
-		packetPipeline.registerPacket(CaveBiomeSyncPacket.class);
-		packetPipeline.registerPacket(CaveOreSyncPacket.class);
-		packetPipeline.registerPacket(CaveMiningSyncPacket.class);
-		packetPipeline.registerPacket(CaveNotifyPacket.class);
-		packetPipeline.registerPacket(PlayCaveSoundPacket.class);
-
 		CaveModPluginManager.registerPlugin(ThaumcraftPlugin.class);
 		CaveModPluginManager.initPlugins();
 	}
@@ -104,8 +88,6 @@ public class Caveworld
 	{
 		CaveBiomeManager.loadCaveBiomes();
 		CaveOreManager.loadCaveOres();
-
-		packetPipeline.postInit();
 	}
 
 	@EventHandler

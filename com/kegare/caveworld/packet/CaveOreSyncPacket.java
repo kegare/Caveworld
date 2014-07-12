@@ -11,8 +11,8 @@
 package com.kegare.caveworld.packet;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
-import net.minecraft.entity.player.EntityPlayer;
+
+import java.util.Collection;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
@@ -22,20 +22,23 @@ import com.kegare.caveworld.core.CaveOreManager.CaveOre;
 import com.kegare.caveworld.util.CaveLog;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import cpw.mods.fml.common.network.simpleimpl.IMessage;
+import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
+import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 
-public class CaveOreSyncPacket extends AbstractPacket
+public class CaveOreSyncPacket implements IMessage, IMessageHandler<CaveOreSyncPacket, IMessage>
 {
 	private String data;
 
-	public CaveOreSyncPacket()
+	public CaveOreSyncPacket() {}
+
+	public CaveOreSyncPacket(Collection<CaveOre> ores)
 	{
 		StringBuilder builder = new StringBuilder(1024);
 
 		builder.append('[');
 
-		for (CaveOre ore : CaveOreManager.getCaveOres())
+		for (CaveOre ore : ores)
 		{
 			builder.append(ore).append(',');
 		}
@@ -46,26 +49,25 @@ public class CaveOreSyncPacket extends AbstractPacket
 	}
 
 	@Override
-	public void encodeInto(ChannelHandlerContext ctx, ByteBuf buffer)
-	{
-		ByteBufUtils.writeUTF8String(buffer, data);
-	}
-
-	@Override
-	public void decodeInto(ChannelHandlerContext ctx, ByteBuf buffer)
+	public void fromBytes(ByteBuf buffer)
 	{
 		data = ByteBufUtils.readUTF8String(buffer);
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
-	public void handleClientSide(EntityPlayer player)
+	public void toBytes(ByteBuf buffer)
+	{
+		ByteBufUtils.writeUTF8String(buffer, data);
+	}
+
+	@Override
+	public IMessage onMessage(CaveOreSyncPacket message, MessageContext ctx)
 	{
 		CaveOreManager.clearCaveOres();
 
 		try
 		{
-			if (CaveOreManager.loadCaveOresFromString(data))
+			if (CaveOreManager.loadCaveOresFromString(message.data))
 			{
 				CaveLog.info("Loaded %d cave ores from server", CaveOreManager.getCaveOres().size());
 			}
@@ -74,8 +76,7 @@ public class CaveOreSyncPacket extends AbstractPacket
 		{
 			CaveLog.log(Level.WARN, e, "An error occurred trying to loading cave ores from server");
 		}
-	}
 
-	@Override
-	public void handleServerSide(EntityPlayer player) {}
+		return null;
+	}
 }

@@ -11,15 +11,14 @@
 package com.kegare.caveworld.packet;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
-import net.minecraft.entity.player.EntityPlayer;
 
 import com.kegare.caveworld.core.Config;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import cpw.mods.fml.common.network.simpleimpl.IMessage;
+import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
+import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 
-public class ConfigSyncPacket extends AbstractPacket
+public class ConfigSyncPacket implements IMessage, IMessageHandler<ConfigSyncPacket, IMessage>
 {
 	private boolean hardcoreEnabled;
 	private boolean deathLoseMiningCount;
@@ -49,23 +48,7 @@ public class ConfigSyncPacket extends AbstractPacket
 	}
 
 	@Override
-	public void encodeInto(ChannelHandlerContext ctx, ByteBuf buffer)
-	{
-		buffer.writeBoolean(hardcoreEnabled);
-		buffer.writeBoolean(deathLoseMiningCount);
-		buffer.writeInt(dimensionCaveworld);
-		buffer.writeInt(subsurfaceHeight);
-		buffer.writeBoolean(generateCaves);
-		buffer.writeBoolean(generateRavine);
-		buffer.writeBoolean(generateMineshaft);
-		buffer.writeBoolean(generateStronghold);
-		buffer.writeBoolean(generateLakes);
-		buffer.writeBoolean(generateDungeons);
-		buffer.writeBoolean(decorateVines);
-	}
-
-	@Override
-	public void decodeInto(ChannelHandlerContext ctx, ByteBuf buffer)
+	public void fromBytes(ByteBuf buffer)
 	{
 		hardcoreEnabled = buffer.readBoolean();
 		deathLoseMiningCount = buffer.readBoolean();
@@ -81,22 +64,36 @@ public class ConfigSyncPacket extends AbstractPacket
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
-	public void handleClientSide(EntityPlayer player)
+	public void toBytes(ByteBuf buffer)
 	{
-		Config.hardcoreEnabled = hardcoreEnabled;
-		Config.deathLoseMiningCount = deathLoseMiningCount;
-		Config.dimensionCaveworld = dimensionCaveworld;
-		Config.subsurfaceHeight = subsurfaceHeight;
-		Config.generateCaves = generateCaves;
-		Config.generateRavine = generateRavine;
-		Config.generateMineshaft = generateMineshaft;
-		Config.generateStronghold = generateStronghold;
-		Config.generateLakes = generateLakes;
-		Config.generateDungeons = generateDungeons;
-		Config.decorateVines = decorateVines;
+		buffer.writeBoolean(hardcoreEnabled);
+		buffer.writeBoolean(deathLoseMiningCount);
+		buffer.writeInt(dimensionCaveworld);
+		buffer.writeInt(subsurfaceHeight);
+		buffer.writeBoolean(generateCaves);
+		buffer.writeBoolean(generateRavine);
+		buffer.writeBoolean(generateMineshaft);
+		buffer.writeBoolean(generateStronghold);
+		buffer.writeBoolean(generateLakes);
+		buffer.writeBoolean(generateDungeons);
+		buffer.writeBoolean(decorateVines);
 	}
 
 	@Override
-	public void handleServerSide(EntityPlayer player) {}
+	public IMessage onMessage(ConfigSyncPacket message, MessageContext ctx)
+	{
+		Config.hardcoreEnabled = message.hardcoreEnabled;
+		Config.deathLoseMiningCount = message.deathLoseMiningCount;
+		Config.dimensionCaveworld = message.dimensionCaveworld;
+		Config.subsurfaceHeight = message.subsurfaceHeight;
+		Config.generateCaves = message.generateCaves;
+		Config.generateRavine = message.generateRavine;
+		Config.generateMineshaft = message.generateMineshaft;
+		Config.generateStronghold = message.generateStronghold;
+		Config.generateLakes = message.generateLakes;
+		Config.generateDungeons = message.generateDungeons;
+		Config.decorateVines = message.decorateVines;
+
+		return null;
+	}
 }

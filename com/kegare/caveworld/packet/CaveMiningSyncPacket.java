@@ -11,15 +11,16 @@
 package com.kegare.caveworld.packet;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.entity.player.EntityPlayer;
 
 import com.kegare.caveworld.core.CaveMiningPlayer;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import cpw.mods.fml.client.FMLClientHandler;
+import cpw.mods.fml.common.network.simpleimpl.IMessage;
+import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
+import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 
-public class CaveMiningSyncPacket extends AbstractPacket
+public class CaveMiningSyncPacket implements IMessage, IMessageHandler<CaveMiningSyncPacket, IMessage>
 {
 	private int count;
 	private int level;
@@ -33,32 +34,41 @@ public class CaveMiningSyncPacket extends AbstractPacket
 	}
 
 	@Override
-	public void encodeInto(ChannelHandlerContext ctx, ByteBuf buffer)
-	{
-		buffer.writeInt(count);
-		buffer.writeInt(level);
-	}
-
-	@Override
-	public void decodeInto(ChannelHandlerContext ctx, ByteBuf buffer)
+	public void fromBytes(ByteBuf buffer)
 	{
 		count = buffer.readInt();
 		level = buffer.readInt();
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
-	public void handleClientSide(EntityPlayer player)
+	public void toBytes(ByteBuf buffer)
 	{
+		buffer.writeInt(count);
+		buffer.writeInt(level);
+	}
+
+	@Override
+	public IMessage onMessage(CaveMiningSyncPacket message, MessageContext ctx)
+	{
+		EntityPlayer player = null;
+
+		if (ctx.side.isClient())
+		{
+			player = FMLClientHandler.instance().getClientPlayerEntity();
+		}
+		else
+		{
+			player = ctx.getServerHandler().playerEntity;
+		}
+
 		CaveMiningPlayer data = CaveMiningPlayer.get(player);
 
 		if (data != null)
 		{
-			data.setMiningCount(count);
-			data.setMiningLevel(level);
+			data.setMiningCount(message.count);
+			data.setMiningLevel(message.level);
 		}
-	}
 
-	@Override
-	public void handleServerSide(EntityPlayer player) {}
+		return null;
+	}
 }

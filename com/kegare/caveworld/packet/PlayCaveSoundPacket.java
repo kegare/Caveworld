@@ -11,22 +11,21 @@
 package com.kegare.caveworld.packet;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.ISound;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.audio.SoundHandler;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 
 import com.google.common.base.Strings;
 
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.network.ByteBufUtils;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import cpw.mods.fml.common.network.simpleimpl.IMessage;
+import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
+import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 
-public class PlayCaveSoundPacket extends AbstractPacket
+public class PlayCaveSoundPacket implements IMessage, IMessageHandler<PlayCaveSoundPacket, IMessage>
 {
 	private String name;
 
@@ -38,31 +37,30 @@ public class PlayCaveSoundPacket extends AbstractPacket
 	}
 
 	@Override
-	public void encodeInto(ChannelHandlerContext ctx, ByteBuf buffer)
-	{
-		ByteBufUtils.writeUTF8String(buffer, name);
-	}
-
-	@Override
-	public void decodeInto(ChannelHandlerContext ctx, ByteBuf buffer)
+	public void fromBytes(ByteBuf buffer)
 	{
 		name = ByteBufUtils.readUTF8String(buffer);
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
-	public void handleClientSide(EntityPlayer player)
+	public void toBytes(ByteBuf buffer)
+	{
+		ByteBufUtils.writeUTF8String(buffer, name);
+	}
+
+	@Override
+	public IMessage onMessage(PlayCaveSoundPacket message, MessageContext ctx)
 	{
 		Minecraft mc = FMLClientHandler.instance().getClient();
 
-		if (mc != null && !Strings.isNullOrEmpty(name))
+		if (mc != null && !Strings.isNullOrEmpty(message.name))
 		{
 			SoundHandler handler = mc.getSoundHandler();
-			ISound sound = PositionedSoundRecord.func_147673_a(new ResourceLocation(name));
+			ISound sound = PositionedSoundRecord.func_147673_a(new ResourceLocation(message.name));
 
 			if (handler == null || sound == null)
 			{
-				return;
+				return null;
 			}
 
 			if (!handler.isSoundPlaying(sound))
@@ -70,8 +68,7 @@ public class PlayCaveSoundPacket extends AbstractPacket
 				handler.playSound(sound);
 			}
 		}
-	}
 
-	@Override
-	public void handleServerSide(EntityPlayer player) {}
+		return null;
+	}
 }

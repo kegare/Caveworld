@@ -11,7 +11,6 @@
 package com.kegare.caveworld.packet;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.event.ClickEvent;
@@ -24,21 +23,26 @@ import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.util.Version.Status;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import cpw.mods.fml.client.FMLClientHandler;
+import cpw.mods.fml.common.network.simpleimpl.IMessage;
+import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
+import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 
-public class CaveNotifyPacket extends AbstractPacket
+public class CaveNotifyPacket implements IMessage, IMessageHandler<CaveNotifyPacket, IMessage>
 {
-	@Override
-	public void encodeInto(ChannelHandlerContext ctx, ByteBuf buffer) {}
+	public CaveNotifyPacket() {}
 
 	@Override
-	public void decodeInto(ChannelHandlerContext ctx, ByteBuf buffer) {}
+	public void fromBytes(ByteBuf buffer) {}
 
 	@Override
-	@SideOnly(Side.CLIENT)
-	public void handleClientSide(EntityPlayer player)
+	public void toBytes(ByteBuf buffer) {}
+
+	@Override
+	public IMessage onMessage(CaveNotifyPacket message, MessageContext ctx)
 	{
+		EntityPlayer player = FMLClientHandler.instance().getClientPlayerEntity();
+
 		if (Version.getStatus() == Status.PENDING || Version.getStatus() == Status.FAILED)
 		{
 			Version.versionCheck();
@@ -50,8 +54,7 @@ public class CaveNotifyPacket extends AbstractPacket
 
 			player.addChatMessage(new ChatComponentText(I18n.format("caveworld.version.message", EnumChatFormatting.AQUA + "Caveworld" + EnumChatFormatting.RESET) + " : " + EnumChatFormatting.YELLOW + Version.getLatest()).setChatStyle(style));
 		}
-	}
 
-	@Override
-	public void handleServerSide(EntityPlayer player) {}
+		return null;
+	}
 }
