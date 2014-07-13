@@ -8,7 +8,7 @@
  * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
  */
 
-package com.kegare.caveworld.packet;
+package com.kegare.caveworld.network;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
@@ -16,22 +16,21 @@ import net.minecraft.client.audio.ISound;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.util.ResourceLocation;
-
-import com.google.common.base.Strings;
-
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
-public class PlayCaveSoundPacket implements IMessage, IMessageHandler<PlayCaveSoundPacket, IMessage>
+public class CaveSoundMessage implements IMessage, IMessageHandler<CaveSoundMessage, IMessage>
 {
 	private String name;
 
-	public PlayCaveSoundPacket() {}
+	public CaveSoundMessage() {}
 
-	public PlayCaveSoundPacket(String name)
+	public CaveSoundMessage(String name)
 	{
 		this.name = name;
 	}
@@ -49,19 +48,15 @@ public class PlayCaveSoundPacket implements IMessage, IMessageHandler<PlayCaveSo
 	}
 
 	@Override
-	public IMessage onMessage(PlayCaveSoundPacket message, MessageContext ctx)
+	@SideOnly(Side.CLIENT)
+	public IMessage onMessage(CaveSoundMessage message, MessageContext ctx)
 	{
 		Minecraft mc = FMLClientHandler.instance().getClient();
 
-		if (mc != null && !Strings.isNullOrEmpty(message.name))
+		if (mc != null)
 		{
 			SoundHandler handler = mc.getSoundHandler();
 			ISound sound = PositionedSoundRecord.func_147673_a(new ResourceLocation(message.name));
-
-			if (handler == null || sound == null)
-			{
-				return null;
-			}
 
 			if (!handler.isSoundPlaying(sound))
 			{

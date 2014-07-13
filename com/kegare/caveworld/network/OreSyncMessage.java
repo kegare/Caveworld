@@ -8,7 +8,7 @@
  * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
  */
 
-package com.kegare.caveworld.packet;
+package com.kegare.caveworld.network;
 
 import io.netty.buffer.ByteBuf;
 
@@ -17,8 +17,8 @@ import java.util.Collection;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 
-import com.kegare.caveworld.core.CaveBiomeManager;
-import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome;
+import com.kegare.caveworld.core.CaveOreManager;
+import com.kegare.caveworld.core.CaveOreManager.CaveOre;
 import com.kegare.caveworld.util.CaveLog;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
@@ -26,29 +26,24 @@ import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 
-public class CaveBiomeSyncPacket implements IMessage, IMessageHandler<CaveBiomeSyncPacket, IMessage>
+public class OreSyncMessage implements IMessage, IMessageHandler<OreSyncMessage, IMessage>
 {
 	private String data;
 
-	public CaveBiomeSyncPacket() {}
+	public OreSyncMessage() {}
 
-	public CaveBiomeSyncPacket(Collection<CaveBiome> biomes)
+	public OreSyncMessage(Collection<CaveOre> ores)
 	{
 		StringBuilder builder = new StringBuilder(1024);
 
-		builder.append('{');
+		builder.append('[');
 
-		for (CaveBiome biome : biomes)
+		for (CaveOre ore : ores)
 		{
-			if (biome.itemWeight <= 0)
-			{
-				continue;
-			}
-
-			builder.append(biome).append(',');
+			builder.append(ore).append(',');
 		}
 
-		builder.deleteCharAt(builder.lastIndexOf(",")).append('}');
+		builder.deleteCharAt(builder.lastIndexOf(",")).append(']');
 
 		this.data = StringUtils.deleteWhitespace(builder.toString());
 	}
@@ -66,20 +61,20 @@ public class CaveBiomeSyncPacket implements IMessage, IMessageHandler<CaveBiomeS
 	}
 
 	@Override
-	public IMessage onMessage(CaveBiomeSyncPacket message, MessageContext ctx)
+	public IMessage onMessage(OreSyncMessage message, MessageContext ctx)
 	{
-		CaveBiomeManager.clearCaveBiomes();
+		CaveOreManager.clearCaveOres();
 
 		try
 		{
-			if (CaveBiomeManager.loadCaveBiomesFromString(message.data))
+			if (CaveOreManager.loadCaveOresFromString(message.data))
 			{
-				CaveLog.info("Loaded %d cave biomes from server", CaveBiomeManager.getActiveBiomeCount());
+				CaveLog.info("Loaded %d cave ores from server", CaveOreManager.getCaveOres().size());
 			}
 		}
 		catch (Exception e)
 		{
-			CaveLog.log(Level.WARN, e, "An error occurred trying to loading cave biomes from server");
+			CaveLog.log(Level.WARN, e, "An error occurred trying to loading cave ores from server");
 		}
 
 		return null;

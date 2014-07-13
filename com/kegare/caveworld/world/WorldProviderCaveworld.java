@@ -30,9 +30,9 @@ import net.minecraftforge.common.DimensionManager;
 import org.apache.logging.log4j.Level;
 
 import com.google.common.base.Optional;
+import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
-import com.kegare.caveworld.packet.CavePacketHandler;
-import com.kegare.caveworld.packet.PlayCaveSoundPacket;
+import com.kegare.caveworld.network.CaveSoundMessage;
 import com.kegare.caveworld.renderer.EmptyRenderer;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.world.gen.MapGenStrongholdCaveworld;
@@ -333,7 +333,7 @@ public class WorldProviderCaveworld extends WorldProvider
 			}
 			else
 			{
-				CavePacketHandler.INSTANCE.sendToDimension(new PlayCaveSoundPacket("caveworld:ambient.cave"), dimensionId);
+				Caveworld.network.sendToDimension(new CaveSoundMessage("caveworld:ambient.cave"), dimensionId);
 
 				ambientTickCountdown = worldObj.rand.nextInt(8000) + 20000;
 			}

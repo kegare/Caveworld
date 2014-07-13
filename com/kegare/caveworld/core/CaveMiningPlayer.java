@@ -20,8 +20,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.IExtendedEntityProperties;
 
 import com.google.common.collect.Maps;
-import com.kegare.caveworld.packet.CaveMiningSyncPacket;
-import com.kegare.caveworld.packet.CavePacketHandler;
+import com.kegare.caveworld.network.MiningSyncMessage;
 
 public class CaveMiningPlayer implements IExtendedEntityProperties
 {
@@ -46,7 +45,17 @@ public class CaveMiningPlayer implements IExtendedEntityProperties
 
 	public static CaveMiningPlayer get(EntityPlayer player)
 	{
-		return player == null ? null : (CaveMiningPlayer)player.getExtendedProperties(CAVE_MINING);
+		if (player == null)
+		{
+			return null;
+		}
+
+		if (player.getExtendedProperties(CAVE_MINING) == null)
+		{
+			register(player);
+		}
+
+		return (CaveMiningPlayer)player.getExtendedProperties(CAVE_MINING);
 	}
 
 	public static void saveMiningData(EntityPlayer player)
@@ -151,7 +160,7 @@ public class CaveMiningPlayer implements IExtendedEntityProperties
 	{
 		if (player instanceof EntityPlayerMP)
 		{
-			CavePacketHandler.INSTANCE.sendTo(new CaveMiningSyncPacket(miningCount, miningLevel), (EntityPlayerMP)player);
+			Caveworld.network.sendTo(new MiningSyncMessage(miningCount, miningLevel), (EntityPlayerMP)player);
 		}
 	}
 }

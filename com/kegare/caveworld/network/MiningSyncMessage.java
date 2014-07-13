@@ -8,10 +8,9 @@
  * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
  */
 
-package com.kegare.caveworld.packet;
+package com.kegare.caveworld.network;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.player.EntityPlayer;
 
 import com.kegare.caveworld.core.CaveMiningPlayer;
 
@@ -19,15 +18,17 @@ import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
-public class CaveMiningSyncPacket implements IMessage, IMessageHandler<CaveMiningSyncPacket, IMessage>
+public class MiningSyncMessage implements IMessage, IMessageHandler<MiningSyncMessage, IMessage>
 {
 	private int count;
 	private int level;
 
-	public CaveMiningSyncPacket() {}
+	public MiningSyncMessage() {}
 
-	public CaveMiningSyncPacket(int count, int level)
+	public MiningSyncMessage(int count, int level)
 	{
 		this.count = count;
 		this.level = level;
@@ -48,20 +49,10 @@ public class CaveMiningSyncPacket implements IMessage, IMessageHandler<CaveMinin
 	}
 
 	@Override
-	public IMessage onMessage(CaveMiningSyncPacket message, MessageContext ctx)
+	@SideOnly(Side.CLIENT)
+	public IMessage onMessage(MiningSyncMessage message, MessageContext ctx)
 	{
-		EntityPlayer player = null;
-
-		if (ctx.side.isClient())
-		{
-			player = FMLClientHandler.instance().getClientPlayerEntity();
-		}
-		else
-		{
-			player = ctx.getServerHandler().playerEntity;
-		}
-
-		CaveMiningPlayer data = CaveMiningPlayer.get(player);
+		CaveMiningPlayer data = CaveMiningPlayer.get(FMLClientHandler.instance().getClientPlayerEntity());
 
 		if (data != null)
 		{

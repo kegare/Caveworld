@@ -17,7 +17,13 @@ import net.minecraftforge.common.MinecraftForge;
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.handler.CaveEventHooks;
 import com.kegare.caveworld.handler.CaveFuelHandler;
-import com.kegare.caveworld.packet.CavePacketHandler;
+import com.kegare.caveworld.network.BiomeSyncMessage;
+import com.kegare.caveworld.network.CaveSoundMessage;
+import com.kegare.caveworld.network.ConfigSyncMessage;
+import com.kegare.caveworld.network.DimSyncMessage;
+import com.kegare.caveworld.network.MiningSyncMessage;
+import com.kegare.caveworld.network.OreSyncMessage;
+import com.kegare.caveworld.network.VersionNotifyMessage;
 import com.kegare.caveworld.plugin.CaveModPluginManager;
 import com.kegare.caveworld.plugin.thaumcraft.ThaumcraftPlugin;
 import com.kegare.caveworld.proxy.CommonProxy;
@@ -34,7 +40,9 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import cpw.mods.fml.common.registry.GameRegistry;
+import cpw.mods.fml.relauncher.Side;
 
 @Mod(modid = MODID, acceptedMinecraftVersions = "[1.7.10,)")
 public class Caveworld
@@ -49,6 +57,8 @@ public class Caveworld
 	@SidedProxy(modId = MODID, clientSide = PACKAGE_NAME + ".proxy.ClientProxy", serverSide = PACKAGE_NAME + ".proxy.CommonProxy")
 	public static CommonProxy proxy;
 
+	public static final SimpleNetworkWrapper network = new SimpleNetworkWrapper(MODID);
+
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event)
 	{
@@ -61,9 +71,15 @@ public class Caveworld
 
 		CaveAchievementList.register();
 
-		CavePacketHandler.register();
-
 		GameRegistry.registerFuelHandler(new CaveFuelHandler());
+
+		network.registerMessage(ConfigSyncMessage.class, ConfigSyncMessage.class, 0, Side.CLIENT);
+		network.registerMessage(VersionNotifyMessage.class, VersionNotifyMessage.class, 1, Side.CLIENT);
+		network.registerMessage(DimSyncMessage.class, DimSyncMessage.class, 2, Side.CLIENT);
+		network.registerMessage(BiomeSyncMessage.class, BiomeSyncMessage.class, 3, Side.CLIENT);
+		network.registerMessage(OreSyncMessage.class, OreSyncMessage.class, 4, Side.CLIENT);
+		network.registerMessage(MiningSyncMessage.class, MiningSyncMessage.class, 5, Side.CLIENT);
+		network.registerMessage(CaveSoundMessage.class, CaveSoundMessage.class, 6, Side.CLIENT);
 	}
 
 	@EventHandler

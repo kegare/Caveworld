@@ -8,7 +8,7 @@
  * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
  */
 
-package com.kegare.caveworld.packet;
+package com.kegare.caveworld.network;
 
 import io.netty.buffer.ByteBuf;
 
@@ -19,12 +19,12 @@ import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 
-public class CaveDimSyncPacket implements IMessage, IMessageHandler<CaveDimSyncPacket, IMessage>
+public class DimSyncMessage implements IMessage, IMessageHandler<DimSyncMessage, IMessage>
 {
 	private long dimensionSeed;
 	private int subsurfaceHeight;
 
-	public CaveDimSyncPacket()
+	public DimSyncMessage()
 	{
 		dimensionSeed = WorldProviderCaveworld.dimensionSeed.or(0L);
 		subsurfaceHeight = WorldProviderCaveworld.subsurfaceHeight.or(127);
@@ -45,7 +45,7 @@ public class CaveDimSyncPacket implements IMessage, IMessageHandler<CaveDimSyncP
 	}
 
 	@Override
-	public IMessage onMessage(CaveDimSyncPacket message, MessageContext ctx)
+	public IMessage onMessage(DimSyncMessage message, MessageContext ctx)
 	{
 		WorldProviderCaveworld.dimensionSeed = Optional.of(message.dimensionSeed);
 		WorldProviderCaveworld.subsurfaceHeight = Optional.of(message.subsurfaceHeight);
