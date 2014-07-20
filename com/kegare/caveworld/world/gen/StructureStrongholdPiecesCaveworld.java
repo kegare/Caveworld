@@ -178,63 +178,59 @@ public class StructureStrongholdPiecesCaveworld
 		{
 			return null;
 		}
-		else
+
+		if (strongholdComponentType != null)
 		{
-			if (strongholdComponentType != null)
-			{
-				Stronghold stronghold = getStrongholdComponentFromWeightedPiece(strongholdComponentType, list, random, x, y, z, mode, type);
-				strongholdComponentType = null;
+			Stronghold stronghold = getStrongholdComponentFromWeightedPiece(strongholdComponentType, list, random, x, y, z, mode, type);
+			strongholdComponentType = null;
 
-				if (stronghold != null)
-				{
-					return stronghold;
-				}
+			if (stronghold != null)
+			{
+				return stronghold;
 			}
+		}
 
-			for (int i = 0; i < 5; ++i)
+		for (int i = 0; i < 5; ++i)
+		{
+			int weight = random.nextInt(totalWeight);
+
+			for (PieceWeight pieceWeight : structurePieces)
 			{
-				int weight = random.nextInt(totalWeight);
+				weight -= pieceWeight.pieceWeight;
 
-				for (PieceWeight pieceWeight : structurePieces)
+				if (weight < 0)
 				{
-					weight -= pieceWeight.pieceWeight;
-
-					if (weight < 0)
+					if (!pieceWeight.canSpawnMoreStructuresOfType(type) || pieceWeight == stairs2.strongholdPieceWeight)
 					{
-						if (!pieceWeight.canSpawnMoreStructuresOfType(type) || pieceWeight == stairs2.strongholdPieceWeight)
+						break;
+					}
+
+					Stronghold stronghold1 = getStrongholdComponentFromWeightedPiece(pieceWeight.pieceClass, list, random, x, y, z, mode, type);
+
+					if (stronghold1 != null)
+					{
+						++pieceWeight.instancesSpawned;
+						stairs2.strongholdPieceWeight = pieceWeight;
+
+						if (!pieceWeight.canSpawnMoreStructures())
 						{
-							break;
+							structurePieces.remove(pieceWeight);
 						}
 
-						Stronghold stronghold1 = getStrongholdComponentFromWeightedPiece(pieceWeight.pieceClass, list, random, x, y, z, mode, type);
-
-						if (stronghold1 != null)
-						{
-							++pieceWeight.instancesSpawned;
-							stairs2.strongholdPieceWeight = pieceWeight;
-
-							if (!pieceWeight.canSpawnMoreStructures())
-							{
-								structurePieces.remove(pieceWeight);
-							}
-
-							return stronghold1;
-						}
+						return stronghold1;
 					}
 				}
 			}
-
-			StructureBoundingBox structureBoundingBox = Corridor.func_74992_a(list, random, x, y, z, mode);
-
-			if (structureBoundingBox != null && structureBoundingBox.minY > 1)
-			{
-				return new Corridor(type, random, structureBoundingBox, mode);
-			}
-			else
-			{
-				return null;
-			}
 		}
+
+		StructureBoundingBox structureBoundingBox = Corridor.func_74992_a(list, random, x, y, z, mode);
+
+		if (structureBoundingBox != null && structureBoundingBox.minY > 1)
+		{
+			return new Corridor(type, random, structureBoundingBox, mode);
+		}
+
+		return null;
 	}
 
 	private static StructureComponent getNextValidComponent(Stairs2 stairs2, List list, Random random, int x, int y, int z, int mode, int type)
@@ -334,31 +330,29 @@ public class StructureStrongholdPiecesCaveworld
 			{
 				return false;
 			}
-			else
-			{
-				fillWithRandomizedBlocks(world, structureBoundingBox, 0, 0, 0, 4, 10, 4, true, random, strongholdStones);
-				placeDoor(world, random, structureBoundingBox, door, 1, 7, 0);
-				placeDoor(world, random, structureBoundingBox, Door.OPENING, 1, 1, 4);
-				placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 2, 6, 1, structureBoundingBox);
-				placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 1, 5, 1, structureBoundingBox);
-				placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 1, 6, 1, structureBoundingBox);
-				placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 1, 5, 2, structureBoundingBox);
-				placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 1, 4, 3, structureBoundingBox);
-				placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 1, 5, 3, structureBoundingBox);
-				placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 2, 4, 3, structureBoundingBox);
-				placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 3, 3, 3, structureBoundingBox);
-				placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 3, 4, 3, structureBoundingBox);
-				placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 3, 3, 2, structureBoundingBox);
-				placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 3, 2, 1, structureBoundingBox);
-				placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 3, 3, 1, structureBoundingBox);
-				placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 2, 2, 1, structureBoundingBox);
-				placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 1, 1, 1, structureBoundingBox);
-				placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 1, 2, 1, structureBoundingBox);
-				placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 1, 1, 2, structureBoundingBox);
-				placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 1, 1, 3, structureBoundingBox);
 
-				return true;
-			}
+			fillWithRandomizedBlocks(world, structureBoundingBox, 0, 0, 0, 4, 10, 4, true, random, strongholdStones);
+			placeDoor(world, random, structureBoundingBox, door, 1, 7, 0);
+			placeDoor(world, random, structureBoundingBox, Door.OPENING, 1, 1, 4);
+			placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 2, 6, 1, structureBoundingBox);
+			placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 1, 5, 1, structureBoundingBox);
+			placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 1, 6, 1, structureBoundingBox);
+			placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 1, 5, 2, structureBoundingBox);
+			placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 1, 4, 3, structureBoundingBox);
+			placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 1, 5, 3, structureBoundingBox);
+			placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 2, 4, 3, structureBoundingBox);
+			placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 3, 3, 3, structureBoundingBox);
+			placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 3, 4, 3, structureBoundingBox);
+			placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 3, 3, 2, structureBoundingBox);
+			placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 3, 2, 1, structureBoundingBox);
+			placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 3, 3, 1, structureBoundingBox);
+			placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 2, 2, 1, structureBoundingBox);
+			placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 1, 1, 1, structureBoundingBox);
+			placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 1, 2, 1, structureBoundingBox);
+			placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 1, 1, 2, structureBoundingBox);
+			placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 1, 1, 3, structureBoundingBox);
+
+			return true;
 		}
 	}
 
@@ -425,28 +419,26 @@ public class StructureStrongholdPiecesCaveworld
 			{
 				return false;
 			}
-			else
+
+			fillWithRandomizedBlocks(world, structureBoundingBox, 0, 0, 0, 4, 4, 6, true, random, strongholdStones);
+			placeDoor(world, random, structureBoundingBox, door, 1, 1, 0);
+			placeDoor(world, random, structureBoundingBox, Door.OPENING, 1, 1, 6);
+			func_151552_a(world, structureBoundingBox, random, 0.1F, 1, 2, 1, Blocks.torch, 0);
+			func_151552_a(world, structureBoundingBox, random, 0.1F, 3, 2, 1, Blocks.torch, 0);
+			func_151552_a(world, structureBoundingBox, random, 0.1F, 1, 2, 5, Blocks.torch, 0);
+			func_151552_a(world, structureBoundingBox, random, 0.1F, 3, 2, 5, Blocks.torch, 0);
+
+			if (expandsX)
 			{
-				fillWithRandomizedBlocks(world, structureBoundingBox, 0, 0, 0, 4, 4, 6, true, random, strongholdStones);
-				placeDoor(world, random, structureBoundingBox, door, 1, 1, 0);
-				placeDoor(world, random, structureBoundingBox, Door.OPENING, 1, 1, 6);
-				func_151552_a(world, structureBoundingBox, random, 0.1F, 1, 2, 1, Blocks.torch, 0);
-				func_151552_a(world, structureBoundingBox, random, 0.1F, 3, 2, 1, Blocks.torch, 0);
-				func_151552_a(world, structureBoundingBox, random, 0.1F, 1, 2, 5, Blocks.torch, 0);
-				func_151552_a(world, structureBoundingBox, random, 0.1F, 3, 2, 5, Blocks.torch, 0);
-
-				if (expandsX)
-				{
-					fillWithBlocks(world, structureBoundingBox, 0, 1, 2, 0, 3, 4, Blocks.air, Blocks.air, false);
-				}
-
-				if (expandsZ)
-				{
-					fillWithBlocks(world, structureBoundingBox, 4, 1, 2, 4, 3, 4, Blocks.air, Blocks.air, false);
-				}
-
-				return true;
+				fillWithBlocks(world, structureBoundingBox, 0, 1, 2, 0, 3, 4, Blocks.air, Blocks.air, false);
 			}
+
+			if (expandsZ)
+			{
+				fillWithBlocks(world, structureBoundingBox, 4, 1, 2, 4, 3, 4, Blocks.air, Blocks.air, false);
+			}
+
+			return true;
 		}
 	}
 
@@ -503,114 +495,112 @@ public class StructureStrongholdPiecesCaveworld
 			{
 				return false;
 			}
-			else
+
+			byte var1 = 11;
+
+			if (!isLargeRoom)
 			{
-				byte var1 = 11;
-
-				if (!isLargeRoom)
-				{
-					var1 = 6;
-				}
-
-				fillWithRandomizedBlocks(world, structureBoundingBox, 0, 0, 0, 13, var1 - 1, 14, true, random, strongholdStones);
-				placeDoor(world, random, structureBoundingBox, door, 4, 1, 0);
-				randomlyFillWithBlocks(world, structureBoundingBox, random, 0.07F, 2, 1, 1, 11, 4, 13, Blocks.web, Blocks.web, false);
-
-				int i;
-
-				for (i = 1; i <= 13; ++i)
-				{
-					if ((i - 1) % 4 == 0)
-					{
-						fillWithBlocks(world, structureBoundingBox, 1, 1, i, 1, 4, i, Blocks.planks, Blocks.planks, false);
-						fillWithBlocks(world, structureBoundingBox, 12, 1, i, 12, 4, i, Blocks.planks, Blocks.planks, false);
-						placeBlockAtCurrentPosition(world, Blocks.torch, 0, 2, 3, i, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.torch, 0, 11, 3, i, structureBoundingBox);
-
-						if (isLargeRoom)
-						{
-							fillWithBlocks(world, structureBoundingBox, 1, 6, i, 1, 9, i, Blocks.planks, Blocks.planks, false);
-							fillWithBlocks(world, structureBoundingBox, 12, 6, i, 12, 9, i, Blocks.planks, Blocks.planks, false);
-						}
-					}
-					else
-					{
-						fillWithBlocks(world, structureBoundingBox, 1, 1, i, 1, 4, i, Blocks.bookshelf, Blocks.bookshelf, false);
-						fillWithBlocks(world, structureBoundingBox, 12, 1, i, 12, 4, i, Blocks.bookshelf, Blocks.bookshelf, false);
-
-						if (isLargeRoom)
-						{
-							fillWithBlocks(world, structureBoundingBox, 1, 6, i, 1, 9, i, Blocks.bookshelf, Blocks.bookshelf, false);
-							fillWithBlocks(world, structureBoundingBox, 12, 6, i, 12, 9, i, Blocks.bookshelf, Blocks.bookshelf, false);
-						}
-					}
-				}
-
-				for (i = 3; i < 12; i += 2)
-				{
-					fillWithBlocks(world, structureBoundingBox, 3, 1, i, 4, 3, i, Blocks.bookshelf, Blocks.bookshelf, false);
-					fillWithBlocks(world, structureBoundingBox, 6, 1, i, 7, 3, i, Blocks.bookshelf, Blocks.bookshelf, false);
-					fillWithBlocks(world, structureBoundingBox, 9, 1, i, 10, 3, i, Blocks.bookshelf, Blocks.bookshelf, false);
-				}
-
-				if (isLargeRoom)
-				{
-					fillWithBlocks(world, structureBoundingBox, 1, 5, 1, 3, 5, 13, Blocks.planks, Blocks.planks, false);
-					fillWithBlocks(world, structureBoundingBox, 10, 5, 1, 12, 5, 13, Blocks.planks, Blocks.planks, false);
-					fillWithBlocks(world, structureBoundingBox, 4, 5, 1, 9, 5, 2, Blocks.planks, Blocks.planks, false);
-					fillWithBlocks(world, structureBoundingBox, 4, 5, 12, 9, 5, 13, Blocks.planks, Blocks.planks, false);
-					placeBlockAtCurrentPosition(world, Blocks.planks, 0, 9, 5, 11, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.planks, 0, 8, 5, 11, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.planks, 0, 9, 5, 10, structureBoundingBox);
-					fillWithBlocks(world, structureBoundingBox, 3, 6, 2, 3, 6, 12, Blocks.fence, Blocks.fence, false);
-					fillWithBlocks(world, structureBoundingBox, 10, 6, 2, 10, 6, 10, Blocks.fence, Blocks.fence, false);
-					fillWithBlocks(world, structureBoundingBox, 4, 6, 2, 9, 6, 2, Blocks.fence, Blocks.fence, false);
-					fillWithBlocks(world, structureBoundingBox, 4, 6, 12, 8, 6, 12, Blocks.fence, Blocks.fence, false);
-					placeBlockAtCurrentPosition(world, Blocks.fence, 0, 9, 6, 11, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.fence, 0, 8, 6, 11, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.fence, 0, 9, 6, 10, structureBoundingBox);
-					i = getMetadataWithOffset(Blocks.ladder, 3);
-					placeBlockAtCurrentPosition(world, Blocks.ladder, i, 10, 1, 13, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.ladder, i, 10, 2, 13, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.ladder, i, 10, 3, 13, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.ladder, i, 10, 4, 13, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.ladder, i, 10, 5, 13, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.ladder, i, 10, 6, 13, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.ladder, i, 10, 7, 13, structureBoundingBox);
-					byte var2 = 7;
-					byte var3 = 7;
-					placeBlockAtCurrentPosition(world, Blocks.fence, 0, var2 - 1, 9, var3, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.fence, 0, var2, 9, var3, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.fence, 0, var2 - 1, 8, var3, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.fence, 0, var2, 8, var3, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.fence, 0, var2 - 1, 7, var3, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.fence, 0, var2, 7, var3, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.fence, 0, var2 - 2, 7, var3, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.fence, 0, var2 + 1, 7, var3, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.fence, 0, var2 - 1, 7, var3 - 1, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.fence, 0, var2 - 1, 7, var3 + 1, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.fence, 0, var2, 7, var3 - 1, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.fence, 0, var2, 7, var3 + 1, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.torch, 0, var2 - 2, 8, var3, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.torch, 0, var2 + 1, 8, var3, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.torch, 0, var2 - 1, 8, var3 - 1, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.torch, 0, var2 - 1, 8, var3 + 1, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.torch, 0, var2, 8, var3 - 1, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.torch, 0, var2, 8, var3 + 1, structureBoundingBox);
-				}
-
-				ChestGenHooks info = ChestGenHooks.getInfo(STRONGHOLD_LIBRARY);
-
-				generateStructureChestContents(world, structureBoundingBox, random, 3, 3, 5, info.getItems(random), info.getCount(random));
-
-				if (isLargeRoom)
-				{
-					placeBlockAtCurrentPosition(world, Blocks.air, 0, 12, 9, 1, structureBoundingBox);
-					generateStructureChestContents(world, structureBoundingBox, random, 12, 8, 1, info.getItems(random), info.getCount(random));
-				}
-
-				return true;
+				var1 = 6;
 			}
+
+			fillWithRandomizedBlocks(world, structureBoundingBox, 0, 0, 0, 13, var1 - 1, 14, true, random, strongholdStones);
+			placeDoor(world, random, structureBoundingBox, door, 4, 1, 0);
+			randomlyFillWithBlocks(world, structureBoundingBox, random, 0.07F, 2, 1, 1, 11, 4, 13, Blocks.web, Blocks.web, false);
+
+			int i;
+
+			for (i = 1; i <= 13; ++i)
+			{
+				if ((i - 1) % 4 == 0)
+				{
+					fillWithBlocks(world, structureBoundingBox, 1, 1, i, 1, 4, i, Blocks.planks, Blocks.planks, false);
+					fillWithBlocks(world, structureBoundingBox, 12, 1, i, 12, 4, i, Blocks.planks, Blocks.planks, false);
+					placeBlockAtCurrentPosition(world, Blocks.torch, 0, 2, 3, i, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.torch, 0, 11, 3, i, structureBoundingBox);
+
+					if (isLargeRoom)
+					{
+						fillWithBlocks(world, structureBoundingBox, 1, 6, i, 1, 9, i, Blocks.planks, Blocks.planks, false);
+						fillWithBlocks(world, structureBoundingBox, 12, 6, i, 12, 9, i, Blocks.planks, Blocks.planks, false);
+					}
+				}
+				else
+				{
+					fillWithBlocks(world, structureBoundingBox, 1, 1, i, 1, 4, i, Blocks.bookshelf, Blocks.bookshelf, false);
+					fillWithBlocks(world, structureBoundingBox, 12, 1, i, 12, 4, i, Blocks.bookshelf, Blocks.bookshelf, false);
+
+					if (isLargeRoom)
+					{
+						fillWithBlocks(world, structureBoundingBox, 1, 6, i, 1, 9, i, Blocks.bookshelf, Blocks.bookshelf, false);
+						fillWithBlocks(world, structureBoundingBox, 12, 6, i, 12, 9, i, Blocks.bookshelf, Blocks.bookshelf, false);
+					}
+				}
+			}
+
+			for (i = 3; i < 12; i += 2)
+			{
+				fillWithBlocks(world, structureBoundingBox, 3, 1, i, 4, 3, i, Blocks.bookshelf, Blocks.bookshelf, false);
+				fillWithBlocks(world, structureBoundingBox, 6, 1, i, 7, 3, i, Blocks.bookshelf, Blocks.bookshelf, false);
+				fillWithBlocks(world, structureBoundingBox, 9, 1, i, 10, 3, i, Blocks.bookshelf, Blocks.bookshelf, false);
+			}
+
+			if (isLargeRoom)
+			{
+				fillWithBlocks(world, structureBoundingBox, 1, 5, 1, 3, 5, 13, Blocks.planks, Blocks.planks, false);
+				fillWithBlocks(world, structureBoundingBox, 10, 5, 1, 12, 5, 13, Blocks.planks, Blocks.planks, false);
+				fillWithBlocks(world, structureBoundingBox, 4, 5, 1, 9, 5, 2, Blocks.planks, Blocks.planks, false);
+				fillWithBlocks(world, structureBoundingBox, 4, 5, 12, 9, 5, 13, Blocks.planks, Blocks.planks, false);
+				placeBlockAtCurrentPosition(world, Blocks.planks, 0, 9, 5, 11, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.planks, 0, 8, 5, 11, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.planks, 0, 9, 5, 10, structureBoundingBox);
+				fillWithBlocks(world, structureBoundingBox, 3, 6, 2, 3, 6, 12, Blocks.fence, Blocks.fence, false);
+				fillWithBlocks(world, structureBoundingBox, 10, 6, 2, 10, 6, 10, Blocks.fence, Blocks.fence, false);
+				fillWithBlocks(world, structureBoundingBox, 4, 6, 2, 9, 6, 2, Blocks.fence, Blocks.fence, false);
+				fillWithBlocks(world, structureBoundingBox, 4, 6, 12, 8, 6, 12, Blocks.fence, Blocks.fence, false);
+				placeBlockAtCurrentPosition(world, Blocks.fence, 0, 9, 6, 11, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.fence, 0, 8, 6, 11, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.fence, 0, 9, 6, 10, structureBoundingBox);
+				i = getMetadataWithOffset(Blocks.ladder, 3);
+				placeBlockAtCurrentPosition(world, Blocks.ladder, i, 10, 1, 13, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.ladder, i, 10, 2, 13, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.ladder, i, 10, 3, 13, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.ladder, i, 10, 4, 13, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.ladder, i, 10, 5, 13, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.ladder, i, 10, 6, 13, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.ladder, i, 10, 7, 13, structureBoundingBox);
+				byte var2 = 7;
+				byte var3 = 7;
+				placeBlockAtCurrentPosition(world, Blocks.fence, 0, var2 - 1, 9, var3, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.fence, 0, var2, 9, var3, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.fence, 0, var2 - 1, 8, var3, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.fence, 0, var2, 8, var3, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.fence, 0, var2 - 1, 7, var3, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.fence, 0, var2, 7, var3, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.fence, 0, var2 - 2, 7, var3, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.fence, 0, var2 + 1, 7, var3, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.fence, 0, var2 - 1, 7, var3 - 1, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.fence, 0, var2 - 1, 7, var3 + 1, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.fence, 0, var2, 7, var3 - 1, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.fence, 0, var2, 7, var3 + 1, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.torch, 0, var2 - 2, 8, var3, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.torch, 0, var2 + 1, 8, var3, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.torch, 0, var2 - 1, 8, var3 - 1, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.torch, 0, var2 - 1, 8, var3 + 1, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.torch, 0, var2, 8, var3 - 1, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.torch, 0, var2, 8, var3 + 1, structureBoundingBox);
+			}
+
+			ChestGenHooks info = ChestGenHooks.getInfo(STRONGHOLD_LIBRARY);
+
+			generateStructureChestContents(world, structureBoundingBox, random, 3, 3, 5, info.getItems(random), info.getCount(random));
+
+			if (isLargeRoom)
+			{
+				placeBlockAtCurrentPosition(world, Blocks.air, 0, 12, 9, 1, structureBoundingBox);
+				generateStructureChestContents(world, structureBoundingBox, random, 12, 8, 1, info.getItems(random), info.getCount(random));
+			}
+
+			return true;
 		}
 	}
 
@@ -770,39 +760,37 @@ public class StructureStrongholdPiecesCaveworld
 			{
 				return false;
 			}
-			else
+
+			fillWithRandomizedBlocks(world, structureBoundingBox, 0, 0, 0, 4, 4, 6, true, random, strongholdStones);
+			placeDoor(world, random, structureBoundingBox, door, 1, 1, 0);
+			placeDoor(world, random, structureBoundingBox, Door.OPENING, 1, 1, 6);
+			fillWithBlocks(world, structureBoundingBox, 3, 1, 2, 3, 1, 4, Blocks.stonebrick, Blocks.stonebrick, false);
+			placeBlockAtCurrentPosition(world, Blocks.stone_slab, 5, 3, 1, 1, structureBoundingBox);
+			placeBlockAtCurrentPosition(world, Blocks.stone_slab, 5, 3, 1, 5, structureBoundingBox);
+			placeBlockAtCurrentPosition(world, Blocks.stone_slab, 5, 3, 2, 2, structureBoundingBox);
+			placeBlockAtCurrentPosition(world, Blocks.stone_slab, 5, 3, 2, 4, structureBoundingBox);
+
+			int i;
+
+			for (i = 2; i <= 4; ++i)
 			{
-				fillWithRandomizedBlocks(world, structureBoundingBox, 0, 0, 0, 4, 4, 6, true, random, strongholdStones);
-				placeDoor(world, random, structureBoundingBox, door, 1, 1, 0);
-				placeDoor(world, random, structureBoundingBox, Door.OPENING, 1, 1, 6);
-				fillWithBlocks(world, structureBoundingBox, 3, 1, 2, 3, 1, 4, Blocks.stonebrick, Blocks.stonebrick, false);
-				placeBlockAtCurrentPosition(world, Blocks.stone_slab, 5, 3, 1, 1, structureBoundingBox);
-				placeBlockAtCurrentPosition(world, Blocks.stone_slab, 5, 3, 1, 5, structureBoundingBox);
-				placeBlockAtCurrentPosition(world, Blocks.stone_slab, 5, 3, 2, 2, structureBoundingBox);
-				placeBlockAtCurrentPosition(world, Blocks.stone_slab, 5, 3, 2, 4, structureBoundingBox);
-
-				int i;
-
-				for (i = 2; i <= 4; ++i)
-				{
-					placeBlockAtCurrentPosition(world, Blocks.stone_slab, 5, 2, 1, i, structureBoundingBox);
-				}
-
-				if (!hasMadeChest)
-				{
-					i = getYWithOffset(2);
-					int x = getXWithOffset(3, 3);
-					int z = getZWithOffset(3, 3);
-
-					if (structureBoundingBox.isVecInside(x, i, z))
-					{
-						hasMadeChest = true;
-						generateStructureChestContents(world, structureBoundingBox, random, 3, 2, 3, ChestGenHooks.getItems(STRONGHOLD_CORRIDOR, random), ChestGenHooks.getCount(STRONGHOLD_CORRIDOR, random));
-					}
-				}
-
-				return true;
+				placeBlockAtCurrentPosition(world, Blocks.stone_slab, 5, 2, 1, i, structureBoundingBox);
 			}
+
+			if (!hasMadeChest)
+			{
+				i = getYWithOffset(2);
+				int x = getXWithOffset(3, 3);
+				int z = getZWithOffset(3, 3);
+
+				if (structureBoundingBox.isVecInside(x, i, z))
+				{
+					hasMadeChest = true;
+					generateStructureChestContents(world, structureBoundingBox, random, 3, 2, 3, ChestGenHooks.getItems(STRONGHOLD_CORRIDOR, random), ChestGenHooks.getCount(STRONGHOLD_CORRIDOR, random));
+				}
+			}
+
+			return true;
 		}
 	}
 
@@ -857,107 +845,105 @@ public class StructureStrongholdPiecesCaveworld
 			{
 				return false;
 			}
-			else
+
+			fillWithRandomizedBlocks(world, structureBoundingBox, 0, 0, 0, 10, 6, 10, true, random, strongholdStones);
+			placeDoor(world, random, structureBoundingBox, door, 4, 1, 0);
+			fillWithBlocks(world, structureBoundingBox, 4, 1, 10, 6, 3, 10, Blocks.air, Blocks.air, false);
+			fillWithBlocks(world, structureBoundingBox, 0, 1, 4, 0, 3, 6, Blocks.air, Blocks.air, false);
+			fillWithBlocks(world, structureBoundingBox, 10, 1, 4, 10, 3, 6, Blocks.air, Blocks.air, false);
+
+			int i;
+
+			switch (roomType)
 			{
-				fillWithRandomizedBlocks(world, structureBoundingBox, 0, 0, 0, 10, 6, 10, true, random, strongholdStones);
-				placeDoor(world, random, structureBoundingBox, door, 4, 1, 0);
-				fillWithBlocks(world, structureBoundingBox, 4, 1, 10, 6, 3, 10, Blocks.air, Blocks.air, false);
-				fillWithBlocks(world, structureBoundingBox, 0, 1, 4, 0, 3, 6, Blocks.air, Blocks.air, false);
-				fillWithBlocks(world, structureBoundingBox, 10, 1, 4, 10, 3, 6, Blocks.air, Blocks.air, false);
+				case 0:
+					placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 5, 1, 5, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 5, 2, 5, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 5, 3, 5, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.torch, 0, 4, 3, 5, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.torch, 0, 6, 3, 5, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.torch, 0, 5, 3, 4, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.torch, 0, 5, 3, 6, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 4, 1, 4, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 4, 1, 5, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 4, 1, 6, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 6, 1, 4, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 6, 1, 5, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 6, 1, 6, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 5, 1, 4, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 5, 1, 6, structureBoundingBox);
 
-				int i;
+					break;
+				case 1:
+					for (i = 0; i < 5; ++i)
+					{
+						placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 3, 1, 3 + i, structureBoundingBox);
+						placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 7, 1, 3 + i, structureBoundingBox);
+						placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 3 + i, 1, 3, structureBoundingBox);
+						placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 3 + i, 1, 7, structureBoundingBox);
+					}
 
-				switch (roomType)
-				{
-					case 0:
-						placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 5, 1, 5, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 5, 2, 5, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 5, 3, 5, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.torch, 0, 4, 3, 5, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.torch, 0, 6, 3, 5, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.torch, 0, 5, 3, 4, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.torch, 0, 5, 3, 6, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 4, 1, 4, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 4, 1, 5, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 4, 1, 6, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 6, 1, 4, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 6, 1, 5, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 6, 1, 6, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 5, 1, 4, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.stone_slab, 0, 5, 1, 6, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 5, 1, 5, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 5, 2, 5, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 5, 3, 5, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.flowing_water, 0, 5, 4, 5, structureBoundingBox);
 
-						break;
-					case 1:
-						for (i = 0; i < 5; ++i)
+					break;
+				case 2:
+					for (i = 1; i <= 9; ++i)
+					{
+						placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 1, 3, i, structureBoundingBox);
+						placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 9, 3, i, structureBoundingBox);
+					}
+
+					for (i = 1; i <= 9; ++i)
+					{
+						placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, i, 3, 1, structureBoundingBox);
+						placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, i, 3, 9, structureBoundingBox);
+					}
+
+					placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 5, 1, 4, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 5, 1, 6, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 5, 3, 4, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 5, 3, 6, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 4, 1, 5, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 6, 1, 5, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 4, 3, 5, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 6, 3, 5, structureBoundingBox);
+
+					for (i = 1; i <= 3; ++i)
+					{
+						placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 4, i, 4, structureBoundingBox);
+						placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 6, i, 4, structureBoundingBox);
+						placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 4, i, 6, structureBoundingBox);
+						placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 6, i, 6, structureBoundingBox);
+					}
+
+					placeBlockAtCurrentPosition(world, Blocks.torch, 0, 5, 3, 5, structureBoundingBox);
+
+					for (i = 2; i <= 8; ++i)
+					{
+						placeBlockAtCurrentPosition(world, Blocks.planks, 0, 2, 3, i, structureBoundingBox);
+						placeBlockAtCurrentPosition(world, Blocks.planks, 0, 3, 3, i, structureBoundingBox);
+
+						if (i <= 3 || i >= 7)
 						{
-							placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 3, 1, 3 + i, structureBoundingBox);
-							placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 7, 1, 3 + i, structureBoundingBox);
-							placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 3 + i, 1, 3, structureBoundingBox);
-							placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 3 + i, 1, 7, structureBoundingBox);
+							placeBlockAtCurrentPosition(world, Blocks.planks, 0, 4, 3, i, structureBoundingBox);
+							placeBlockAtCurrentPosition(world, Blocks.planks, 0, 5, 3, i, structureBoundingBox);
+							placeBlockAtCurrentPosition(world, Blocks.planks, 0, 6, 3, i, structureBoundingBox);
 						}
 
-						placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 5, 1, 5, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 5, 2, 5, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 5, 3, 5, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.flowing_water, 0, 5, 4, 5, structureBoundingBox);
+						placeBlockAtCurrentPosition(world, Blocks.planks, 0, 7, 3, i, structureBoundingBox);
+						placeBlockAtCurrentPosition(world, Blocks.planks, 0, 8, 3, i, structureBoundingBox);
+					}
 
-						break;
-					case 2:
-						for (i = 1; i <= 9; ++i)
-						{
-							placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 1, 3, i, structureBoundingBox);
-							placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 9, 3, i, structureBoundingBox);
-						}
-
-						for (i = 1; i <= 9; ++i)
-						{
-							placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, i, 3, 1, structureBoundingBox);
-							placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, i, 3, 9, structureBoundingBox);
-						}
-
-						placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 5, 1, 4, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 5, 1, 6, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 5, 3, 4, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 5, 3, 6, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 4, 1, 5, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 6, 1, 5, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 4, 3, 5, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 6, 3, 5, structureBoundingBox);
-
-						for (i = 1; i <= 3; ++i)
-						{
-							placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 4, i, 4, structureBoundingBox);
-							placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 6, i, 4, structureBoundingBox);
-							placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 4, i, 6, structureBoundingBox);
-							placeBlockAtCurrentPosition(world, Blocks.cobblestone, 0, 6, i, 6, structureBoundingBox);
-						}
-
-						placeBlockAtCurrentPosition(world, Blocks.torch, 0, 5, 3, 5, structureBoundingBox);
-
-						for (i = 2; i <= 8; ++i)
-						{
-							placeBlockAtCurrentPosition(world, Blocks.planks, 0, 2, 3, i, structureBoundingBox);
-							placeBlockAtCurrentPosition(world, Blocks.planks, 0, 3, 3, i, structureBoundingBox);
-
-							if (i <= 3 || i >= 7)
-							{
-								placeBlockAtCurrentPosition(world, Blocks.planks, 0, 4, 3, i, structureBoundingBox);
-								placeBlockAtCurrentPosition(world, Blocks.planks, 0, 5, 3, i, structureBoundingBox);
-								placeBlockAtCurrentPosition(world, Blocks.planks, 0, 6, 3, i, structureBoundingBox);
-							}
-
-							placeBlockAtCurrentPosition(world, Blocks.planks, 0, 7, 3, i, structureBoundingBox);
-							placeBlockAtCurrentPosition(world, Blocks.planks, 0, 8, 3, i, structureBoundingBox);
-						}
-
-						placeBlockAtCurrentPosition(world, Blocks.ladder, getMetadataWithOffset(Blocks.ladder, 4), 9, 1, 3, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.ladder, getMetadataWithOffset(Blocks.ladder, 4), 9, 2, 3, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.ladder, getMetadataWithOffset(Blocks.ladder, 4), 9, 3, 3, structureBoundingBox);
-						generateStructureChestContents(world, structureBoundingBox, random, 3, 4, 8, ChestGenHooks.getItems(STRONGHOLD_CROSSING, random), ChestGenHooks.getCount(STRONGHOLD_CROSSING, random));
-				}
-
-				return true;
+					placeBlockAtCurrentPosition(world, Blocks.ladder, getMetadataWithOffset(Blocks.ladder, 4), 9, 1, 3, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.ladder, getMetadataWithOffset(Blocks.ladder, 4), 9, 2, 3, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.ladder, getMetadataWithOffset(Blocks.ladder, 4), 9, 3, 3, structureBoundingBox);
+					generateStructureChestContents(world, structureBoundingBox, random, 3, 4, 8, ChestGenHooks.getItems(STRONGHOLD_CROSSING, random), ChestGenHooks.getCount(STRONGHOLD_CROSSING, random));
 			}
+
+			return true;
 		}
 	}
 
@@ -993,30 +979,28 @@ public class StructureStrongholdPiecesCaveworld
 			{
 				return false;
 			}
-			else
+
+			fillWithRandomizedBlocks(world, structureBoundingBox, 0, 0, 0, 4, 10, 7, true, random, strongholdStones);
+			placeDoor(world, random, structureBoundingBox, door, 1, 7, 0);
+			placeDoor(world, random, structureBoundingBox, Door.OPENING, 1, 1, 7);
+
+			int i = getMetadataWithOffset(Blocks.stone_stairs, 2);
+
+			for (int j = 0; j < 6; ++j)
 			{
-				fillWithRandomizedBlocks(world, structureBoundingBox, 0, 0, 0, 4, 10, 7, true, random, strongholdStones);
-				placeDoor(world, random, structureBoundingBox, door, 1, 7, 0);
-				placeDoor(world, random, structureBoundingBox, Door.OPENING, 1, 1, 7);
+				placeBlockAtCurrentPosition(world, Blocks.stone_stairs, i, 1, 6 - j, 1 + j, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.stone_stairs, i, 2, 6 - j, 1 + j, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.stone_stairs, i, 3, 6 - j, 1 + j, structureBoundingBox);
 
-				int i = getMetadataWithOffset(Blocks.stone_stairs, 2);
-
-				for (int j = 0; j < 6; ++j)
+				if (j < 5)
 				{
-					placeBlockAtCurrentPosition(world, Blocks.stone_stairs, i, 1, 6 - j, 1 + j, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.stone_stairs, i, 2, 6 - j, 1 + j, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.stone_stairs, i, 3, 6 - j, 1 + j, structureBoundingBox);
-
-					if (j < 5)
-					{
-						placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 1, 5 - j, 1 + j, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 2, 5 - j, 1 + j, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 3, 5 - j, 1 + j, structureBoundingBox);
-					}
+					placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 1, 5 - j, 1 + j, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 2, 5 - j, 1 + j, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 3, 5 - j, 1 + j, structureBoundingBox);
 				}
-
-				return true;
 			}
+
+			return true;
 		}
 	}
 
@@ -1072,26 +1056,24 @@ public class StructureStrongholdPiecesCaveworld
 			{
 				return false;
 			}
-			else
-			{
-				fillWithRandomizedBlocks(world, structureBoundingBox, 0, 0, 0, 8, 4, 10, true, random, strongholdStones);
-				placeDoor(world, random, structureBoundingBox, door, 1, 1, 0);
-				fillWithBlocks(world, structureBoundingBox, 1, 1, 10, 3, 3, 10, Blocks.air, Blocks.air, false);
-				fillWithRandomizedBlocks(world, structureBoundingBox, 4, 1, 1, 4, 3, 1, false, random, strongholdStones);
-				fillWithRandomizedBlocks(world, structureBoundingBox, 4, 1, 3, 4, 3, 3, false, random, strongholdStones);
-				fillWithRandomizedBlocks(world, structureBoundingBox, 4, 1, 7, 4, 3, 7, false, random, strongholdStones);
-				fillWithRandomizedBlocks(world, structureBoundingBox, 4, 1, 9, 4, 3, 9, false, random, strongholdStones);
-				fillWithBlocks(world, structureBoundingBox, 4, 1, 4, 4, 3, 6, Blocks.iron_bars, Blocks.iron_bars, false);
-				fillWithBlocks(world, structureBoundingBox, 5, 1, 5, 7, 3, 5, Blocks.iron_bars, Blocks.iron_bars, false);
-				placeBlockAtCurrentPosition(world, Blocks.iron_bars, 0, 4, 3, 2, structureBoundingBox);
-				placeBlockAtCurrentPosition(world, Blocks.iron_bars, 0, 4, 3, 8, structureBoundingBox);
-				placeBlockAtCurrentPosition(world, Blocks.iron_door, getMetadataWithOffset(Blocks.iron_door, 3), 4, 1, 2, structureBoundingBox);
-				placeBlockAtCurrentPosition(world, Blocks.iron_door, getMetadataWithOffset(Blocks.iron_door, 3) + 8, 4, 2, 2, structureBoundingBox);
-				placeBlockAtCurrentPosition(world, Blocks.iron_door, getMetadataWithOffset(Blocks.iron_door, 3), 4, 1, 8, structureBoundingBox);
-				placeBlockAtCurrentPosition(world, Blocks.iron_door, getMetadataWithOffset(Blocks.iron_door, 3) + 8, 4, 2, 8, structureBoundingBox);
 
-				return true;
-			}
+			fillWithRandomizedBlocks(world, structureBoundingBox, 0, 0, 0, 8, 4, 10, true, random, strongholdStones);
+			placeDoor(world, random, structureBoundingBox, door, 1, 1, 0);
+			fillWithBlocks(world, structureBoundingBox, 1, 1, 10, 3, 3, 10, Blocks.air, Blocks.air, false);
+			fillWithRandomizedBlocks(world, structureBoundingBox, 4, 1, 1, 4, 3, 1, false, random, strongholdStones);
+			fillWithRandomizedBlocks(world, structureBoundingBox, 4, 1, 3, 4, 3, 3, false, random, strongholdStones);
+			fillWithRandomizedBlocks(world, structureBoundingBox, 4, 1, 7, 4, 3, 7, false, random, strongholdStones);
+			fillWithRandomizedBlocks(world, structureBoundingBox, 4, 1, 9, 4, 3, 9, false, random, strongholdStones);
+			fillWithBlocks(world, structureBoundingBox, 4, 1, 4, 4, 3, 6, Blocks.iron_bars, Blocks.iron_bars, false);
+			fillWithBlocks(world, structureBoundingBox, 5, 1, 5, 7, 3, 5, Blocks.iron_bars, Blocks.iron_bars, false);
+			placeBlockAtCurrentPosition(world, Blocks.iron_bars, 0, 4, 3, 2, structureBoundingBox);
+			placeBlockAtCurrentPosition(world, Blocks.iron_bars, 0, 4, 3, 8, structureBoundingBox);
+			placeBlockAtCurrentPosition(world, Blocks.iron_door, getMetadataWithOffset(Blocks.iron_door, 3), 4, 1, 2, structureBoundingBox);
+			placeBlockAtCurrentPosition(world, Blocks.iron_door, getMetadataWithOffset(Blocks.iron_door, 3) + 8, 4, 2, 2, structureBoundingBox);
+			placeBlockAtCurrentPosition(world, Blocks.iron_door, getMetadataWithOffset(Blocks.iron_door, 3), 4, 1, 8, structureBoundingBox);
+			placeBlockAtCurrentPosition(world, Blocks.iron_door, getMetadataWithOffset(Blocks.iron_door, 3) + 8, 4, 2, 8, structureBoundingBox);
+
+			return true;
 		}
 	}
 
@@ -1134,22 +1116,20 @@ public class StructureStrongholdPiecesCaveworld
 			{
 				return false;
 			}
+
+			fillWithRandomizedBlocks(world, structureBoundingBox, 0, 0, 0, 4, 4, 4, true, random, strongholdStones);
+			placeDoor(world, random, structureBoundingBox, door, 1, 1, 0);
+
+			if (coordBaseMode != 2 && coordBaseMode != 3)
+			{
+				fillWithBlocks(world, structureBoundingBox, 4, 1, 1, 4, 3, 3, Blocks.air, Blocks.air, false);
+			}
 			else
 			{
-				fillWithRandomizedBlocks(world, structureBoundingBox, 0, 0, 0, 4, 4, 4, true, random, strongholdStones);
-				placeDoor(world, random, structureBoundingBox, door, 1, 1, 0);
-
-				if (coordBaseMode != 2 && coordBaseMode != 3)
-				{
-					fillWithBlocks(world, structureBoundingBox, 4, 1, 1, 4, 3, 3, Blocks.air, Blocks.air, false);
-				}
-				else
-				{
-					fillWithBlocks(world, structureBoundingBox, 0, 1, 1, 0, 3, 3, Blocks.air, Blocks.air, false);
-				}
-
-				return true;
+				fillWithBlocks(world, structureBoundingBox, 0, 1, 1, 0, 3, 3, Blocks.air, Blocks.air, false);
 			}
+
+			return true;
 		}
 	}
 
@@ -1175,22 +1155,20 @@ public class StructureStrongholdPiecesCaveworld
 			{
 				return false;
 			}
+
+			fillWithRandomizedBlocks(world, structureBoundingBox, 0, 0, 0, 4, 4, 4, true, random, strongholdStones);
+			placeDoor(world, random, structureBoundingBox, door, 1, 1, 0);
+
+			if (coordBaseMode != 2 && coordBaseMode != 3)
+			{
+				fillWithBlocks(world, structureBoundingBox, 0, 1, 1, 0, 3, 3, Blocks.air, Blocks.air, false);
+			}
 			else
 			{
-				fillWithRandomizedBlocks(world, structureBoundingBox, 0, 0, 0, 4, 4, 4, true, random, strongholdStones);
-				placeDoor(world, random, structureBoundingBox, door, 1, 1, 0);
-
-				if (coordBaseMode != 2 && coordBaseMode != 3)
-				{
-					fillWithBlocks(world, structureBoundingBox, 0, 1, 1, 0, 3, 3, Blocks.air, Blocks.air, false);
-				}
-				else
-				{
-					fillWithBlocks(world, structureBoundingBox, 4, 1, 1, 4, 3, 3, Blocks.air, Blocks.air, false);
-				}
-
-				return true;
+				fillWithBlocks(world, structureBoundingBox, 4, 1, 1, 4, 3, 3, Blocks.air, Blocks.air, false);
 			}
+
+			return true;
 		}
 	}
 
@@ -1473,49 +1451,47 @@ public class StructureStrongholdPiecesCaveworld
 			{
 				return false;
 			}
-			else
+
+			fillWithRandomizedBlocks(world, structureBoundingBox, 0, 0, 0, 9, 8, 10, true, random, strongholdStones);
+			placeDoor(world, random, structureBoundingBox, door, 4, 3, 0);
+
+			if (field_74996_b)
 			{
-				fillWithRandomizedBlocks(world, structureBoundingBox, 0, 0, 0, 9, 8, 10, true, random, strongholdStones);
-				placeDoor(world, random, structureBoundingBox, door, 4, 3, 0);
-
-				if (field_74996_b)
-				{
-					fillWithBlocks(world, structureBoundingBox, 0, 3, 1, 0, 5, 3, Blocks.air, Blocks.air, false);
-				}
-
-				if (field_74995_d)
-				{
-					fillWithBlocks(world, structureBoundingBox, 9, 3, 1, 9, 5, 3, Blocks.air, Blocks.air, false);
-				}
-
-				if (field_74997_c)
-				{
-					fillWithBlocks(world, structureBoundingBox, 0, 5, 7, 0, 7, 9, Blocks.air, Blocks.air, false);
-				}
-
-				if (field_74999_h)
-				{
-					fillWithBlocks(world, structureBoundingBox, 9, 5, 7, 9, 7, 9, Blocks.air, Blocks.air, false);
-				}
-
-				fillWithBlocks(world, structureBoundingBox, 5, 1, 10, 7, 3, 10, Blocks.air, Blocks.air, false);
-				fillWithRandomizedBlocks(world, structureBoundingBox, 1, 2, 1, 8, 2, 6, false, random, strongholdStones);
-				fillWithRandomizedBlocks(world, structureBoundingBox, 4, 1, 5, 4, 4, 9, false, random, strongholdStones);
-				fillWithRandomizedBlocks(world, structureBoundingBox, 8, 1, 5, 8, 4, 9, false, random, strongholdStones);
-				fillWithRandomizedBlocks(world, structureBoundingBox, 1, 4, 7, 3, 4, 9, false, random, strongholdStones);
-				fillWithRandomizedBlocks(world, structureBoundingBox, 1, 3, 5, 3, 3, 6, false, random, strongholdStones);
-				fillWithBlocks(world, structureBoundingBox, 1, 3, 4, 3, 3, 4, Blocks.stone_slab, Blocks.stone_slab, false);
-				fillWithBlocks(world, structureBoundingBox, 1, 4, 6, 3, 4, 6, Blocks.stone_slab, Blocks.stone_slab, false);
-				fillWithRandomizedBlocks(world, structureBoundingBox, 5, 1, 7, 7, 1, 8, false, random, strongholdStones);
-				fillWithBlocks(world, structureBoundingBox, 5, 1, 9, 7, 1, 9, Blocks.stone_slab, Blocks.stone_slab, false);
-				fillWithBlocks(world, structureBoundingBox, 5, 2, 7, 7, 2, 7, Blocks.stone_slab, Blocks.stone_slab, false);
-				fillWithBlocks(world, structureBoundingBox, 4, 5, 7, 4, 5, 9, Blocks.stone_slab, Blocks.stone_slab, false);
-				fillWithBlocks(world, structureBoundingBox, 8, 5, 7, 8, 5, 9, Blocks.stone_slab, Blocks.stone_slab, false);
-				fillWithBlocks(world, structureBoundingBox, 5, 5, 7, 7, 5, 9, Blocks.double_stone_slab, Blocks.double_stone_slab, false);
-				placeBlockAtCurrentPosition(world, Blocks.torch, 0, 6, 5, 6, structureBoundingBox);
-
-				return true;
+				fillWithBlocks(world, structureBoundingBox, 0, 3, 1, 0, 5, 3, Blocks.air, Blocks.air, false);
 			}
+
+			if (field_74995_d)
+			{
+				fillWithBlocks(world, structureBoundingBox, 9, 3, 1, 9, 5, 3, Blocks.air, Blocks.air, false);
+			}
+
+			if (field_74997_c)
+			{
+				fillWithBlocks(world, structureBoundingBox, 0, 5, 7, 0, 7, 9, Blocks.air, Blocks.air, false);
+			}
+
+			if (field_74999_h)
+			{
+				fillWithBlocks(world, structureBoundingBox, 9, 5, 7, 9, 7, 9, Blocks.air, Blocks.air, false);
+			}
+
+			fillWithBlocks(world, structureBoundingBox, 5, 1, 10, 7, 3, 10, Blocks.air, Blocks.air, false);
+			fillWithRandomizedBlocks(world, structureBoundingBox, 1, 2, 1, 8, 2, 6, false, random, strongholdStones);
+			fillWithRandomizedBlocks(world, structureBoundingBox, 4, 1, 5, 4, 4, 9, false, random, strongholdStones);
+			fillWithRandomizedBlocks(world, structureBoundingBox, 8, 1, 5, 8, 4, 9, false, random, strongholdStones);
+			fillWithRandomizedBlocks(world, structureBoundingBox, 1, 4, 7, 3, 4, 9, false, random, strongholdStones);
+			fillWithRandomizedBlocks(world, structureBoundingBox, 1, 3, 5, 3, 3, 6, false, random, strongholdStones);
+			fillWithBlocks(world, structureBoundingBox, 1, 3, 4, 3, 3, 4, Blocks.stone_slab, Blocks.stone_slab, false);
+			fillWithBlocks(world, structureBoundingBox, 1, 4, 6, 3, 4, 6, Blocks.stone_slab, Blocks.stone_slab, false);
+			fillWithRandomizedBlocks(world, structureBoundingBox, 5, 1, 7, 7, 1, 8, false, random, strongholdStones);
+			fillWithBlocks(world, structureBoundingBox, 5, 1, 9, 7, 1, 9, Blocks.stone_slab, Blocks.stone_slab, false);
+			fillWithBlocks(world, structureBoundingBox, 5, 2, 7, 7, 2, 7, Blocks.stone_slab, Blocks.stone_slab, false);
+			fillWithBlocks(world, structureBoundingBox, 4, 5, 7, 4, 5, 9, Blocks.stone_slab, Blocks.stone_slab, false);
+			fillWithBlocks(world, structureBoundingBox, 8, 5, 7, 8, 5, 9, Blocks.stone_slab, Blocks.stone_slab, false);
+			fillWithBlocks(world, structureBoundingBox, 5, 5, 7, 7, 5, 9, Blocks.double_stone_slab, Blocks.double_stone_slab, false);
+			placeBlockAtCurrentPosition(world, Blocks.torch, 0, 6, 5, 6, structureBoundingBox);
+
+			return true;
 		}
 	}
 
@@ -1556,23 +1532,21 @@ public class StructureStrongholdPiecesCaveworld
 			{
 				return null;
 			}
-			else
-			{
-				if (structureComponent.getBoundingBox().minY == structureBoundingBox.minY)
-				{
-					for (int i = 3; i >= 1; --i)
-					{
-						structureBoundingBox = StructureBoundingBox.getComponentToAddBoundingBox(x, y, z, -1, -1, 0, 5, 5, i - 1, mode);
 
-						if (!structureComponent.getBoundingBox().intersectsWith(structureBoundingBox))
-						{
-							return StructureBoundingBox.getComponentToAddBoundingBox(x, y, z, -1, -1, 0, 5, 5, i, mode);
-						}
+			if (structureComponent.getBoundingBox().minY == structureBoundingBox.minY)
+			{
+				for (int i = 3; i >= 1; --i)
+				{
+					structureBoundingBox = StructureBoundingBox.getComponentToAddBoundingBox(x, y, z, -1, -1, 0, 5, 5, i - 1, mode);
+
+					if (!structureComponent.getBoundingBox().intersectsWith(structureBoundingBox))
+					{
+						return StructureBoundingBox.getComponentToAddBoundingBox(x, y, z, -1, -1, 0, 5, 5, i, mode);
 					}
 				}
-
-				return null;
 			}
+
+			return null;
 		}
 
 		@Override
@@ -1582,34 +1556,32 @@ public class StructureStrongholdPiecesCaveworld
 			{
 				return false;
 			}
-			else
+
+			for (int i = 0; i < field_74993_a; ++i)
 			{
-				for (int i = 0; i < field_74993_a; ++i)
+				placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 0, 0, i, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 1, 0, i, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 2, 0, i, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 3, 0, i, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 4, 0, i, structureBoundingBox);
+
+				for (int j = 1; j <= 3; ++j)
 				{
-					placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 0, 0, i, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 1, 0, i, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 2, 0, i, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 3, 0, i, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 4, 0, i, structureBoundingBox);
-
-					for (int j = 1; j <= 3; ++j)
-					{
-						placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 0, j, i, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.air, 0, 1, j, i, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.air, 0, 2, j, i, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.air, 0, 3, j, i, structureBoundingBox);
-						placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 4, j, i, structureBoundingBox);
-					}
-
-					placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 0, 4, i, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 1, 4, i, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 2, 4, i, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 3, 4, i, structureBoundingBox);
-					placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 4, 4, i, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 0, j, i, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.air, 0, 1, j, i, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.air, 0, 2, j, i, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.air, 0, 3, j, i, structureBoundingBox);
+					placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 4, j, i, structureBoundingBox);
 				}
 
-				return true;
+				placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 0, 4, i, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 1, 4, i, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 2, 4, i, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 3, 4, i, structureBoundingBox);
+				placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 4, 4, i, structureBoundingBox);
 			}
+
+			return true;
 		}
 	}
 

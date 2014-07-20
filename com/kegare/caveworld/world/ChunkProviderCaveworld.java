@@ -46,11 +46,11 @@ import net.minecraftforge.event.terraingen.PopulateChunkEvent;
 import net.minecraftforge.event.terraingen.PopulateChunkEvent.Populate.EventType;
 import net.minecraftforge.event.terraingen.TerrainGen;
 
+import com.kegare.caveworld.config.Config;
 import com.kegare.caveworld.core.CaveBiomeManager;
-import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome.BlockEntry;
 import com.kegare.caveworld.core.CaveOreManager;
 import com.kegare.caveworld.core.CaveOreManager.CaveOre;
-import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.util.BlockEntry;
 import com.kegare.caveworld.world.gen.MapGenCavesCaveworld;
 import com.kegare.caveworld.world.gen.MapGenRavineCaveworld;
 import com.kegare.caveworld.world.gen.MapGenStrongholdCaveworld;
@@ -96,8 +96,8 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		Block[] blocks = new Block[256 * MathHelper.clamp_int(worldHeight, 128, 256)];
 		byte[] metadata = new byte[blocks.length];
 		BlockEntry entry = CaveBiomeManager.getBiomeTerrainBlock(biome);
-		Block block = entry.block;
-		int meta = entry.blockMetadata;
+		Block block = entry.getBlock();
+		int meta = entry.getMetadata();
 
 		Arrays.fill(blocks, block);
 		Arrays.fill(metadata, (byte)meta);
@@ -201,7 +201,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		{
 			if (Config.generateLakes)
 			{
-				if (!BiomeDictionary.isBiomeOfType(biome, Type.DESERT) && random.nextInt(4) == 0 && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.LAKE))
+				if (!BiomeDictionary.isBiomeOfType(biome, Type.SANDY) && random.nextInt(4) == 0 && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.LAKE))
 				{
 					x = worldX + random.nextInt(16) + 8;
 					y = random.nextInt(worldHeight - 16);
@@ -237,7 +237,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 		for (CaveOre ore : CaveOreManager.getCaveOres())
 		{
-			generateOre(ore.getGenRarity(), ore, worldX, worldZ, ore.getGenMinHeight(), ore.getGenMaxHeight());
+			generateOre(ore.getGenWeight(), ore, worldX, worldZ, ore.getGenMinHeight(), ore.getGenMaxHeight());
 		}
 
 		MinecraftForge.ORE_GEN_BUS.post(new OreGenEvent.Post(worldObj, random, worldX, worldZ));

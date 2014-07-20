@@ -10,10 +10,8 @@
 
 package com.kegare.caveworld.core;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Comparator;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -23,28 +21,14 @@ import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.WeightedRandom;
 import net.minecraft.world.biome.BiomeGenBase;
-import net.minecraftforge.common.BiomeDictionary;
-import net.minecraftforge.common.BiomeDictionary.Type;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.commons.lang3.text.StrBuilder;
-import org.apache.logging.log4j.Level;
-
-import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.common.io.Files;
-import com.google.common.io.LineProcessor;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome.BlockEntry;
-import com.kegare.caveworld.util.CaveLog;
+import com.kegare.caveworld.util.BlockEntry;
 
 public class CaveBiomeManager
 {
@@ -59,267 +43,6 @@ public class CaveBiomeManager
 
 	private static final Map<Integer, Integer> genWeightMap = Maps.newHashMap();
 	private static final Map<Integer, BlockEntry> terrainBlockMap = Maps.newHashMap();
-
-	private static void initCaveBiomes()
-	{
-		clearCaveBiomes();
-
-		addCaveBiome(new CaveBiome(BiomeGenBase.ocean, 30));
-		addCaveBiome(new CaveBiome(BiomeGenBase.plains, 120));
-		addCaveBiome(new CaveBiome(BiomeGenBase.desert, 100));
-		addCaveBiome(new CaveBiome(BiomeGenBase.desertHills, 10));
-		addCaveBiome(new CaveBiome(BiomeGenBase.forest, 100));
-		addCaveBiome(new CaveBiome(BiomeGenBase.forestHills, 15));
-		addCaveBiome(new CaveBiome(BiomeGenBase.taiga, 100));
-		addCaveBiome(new CaveBiome(BiomeGenBase.taigaHills, 15));
-		addCaveBiome(new CaveBiome(BiomeGenBase.jungle, 90));
-		addCaveBiome(new CaveBiome(BiomeGenBase.jungleHills, 10));
-		addCaveBiome(new CaveBiome(BiomeGenBase.swampland, 50));
-		addCaveBiome(new CaveBiome(BiomeGenBase.extremeHills, 30));
-		addCaveBiome(new CaveBiome(BiomeGenBase.extremeHillsEdge, 10));
-		addCaveBiome(new CaveBiome(BiomeGenBase.icePlains, 20));
-		addCaveBiome(new CaveBiome(BiomeGenBase.iceMountains, 20));
-		addCaveBiome(new CaveBiome(BiomeGenBase.beach, 3));
-		addCaveBiome(new CaveBiome(BiomeGenBase.river, 3));
-		addCaveBiome(new CaveBiome(BiomeGenBase.mushroomIsland, 2));
-		addCaveBiome(new CaveBiome(BiomeGenBase.mushroomIslandShore, 1));
-		addCaveBiome(new CaveBiome(BiomeGenBase.savanna, 30));
-		addCaveBiome(new CaveBiome(BiomeGenBase.mesa, 3));
-		addCaveBiome(new CaveBiome(BiomeGenBase.hell, 0, new BlockEntry(Blocks.netherrack, 0)));
-		addCaveBiome(new CaveBiome(BiomeGenBase.sky, 0, new BlockEntry(Blocks.end_stone, 0)));
-	}
-
-	static boolean loadCaveBiomes()
-	{
-		File file = Config.getConfigFile("biomes");
-
-		try
-		{
-			if (file.exists() && file.canRead())
-			{
-				String data = Files.readLines(file, Charsets.US_ASCII, new LineProcessor<String>()
-				{
-					private final StringBuilder builder = new StringBuilder();
-
-					@Override
-					public boolean processLine(String line) throws IOException
-					{
-						if (!Strings.isNullOrEmpty(line))
-						{
-							line = StringUtils.deleteWhitespace(line);
-
-							if (!line.startsWith("#"))
-							{
-								builder.append(line);
-							}
-						}
-
-						return true;
-					}
-
-					@Override
-					public String getResult()
-					{
-						return builder.toString();
-					}
-				});
-
-				if (!Strings.isNullOrEmpty(data) && loadCaveBiomesFromString(data))
-				{
-					return true;
-				}
-			}
-
-			return !CAVE_BIOMES.isEmpty();
-		}
-		catch (Exception e)
-		{
-			File dest = new File(file.getParentFile(), file.getName() + ".bak");
-
-			if (dest.exists())
-			{
-				dest.delete();
-			}
-
-			file.renameTo(dest);
-
-			CaveLog.log(Level.ERROR, e, "A critical error occured reading the " + file.getName() + " file, defaults will be used - the invalid file is backed up at " + dest.getName());
-		}
-		finally
-		{
-			if (CAVE_BIOMES.isEmpty())
-			{
-				initCaveBiomes();
-			}
-
-			for (BiomeGenBase biome : BiomeGenBase.getBiomeGenArray())
-			{
-				if (biome != null)
-				{
-					addCaveBiome(new CaveBiome(biome, 0));
-				}
-			}
-
-			CaveLog.info("Loaded %d cave biomes", getActiveBiomeCount());
-
-			saveCaveBiomes();
-		}
-
-		return false;
-	}
-
-	public static boolean loadCaveBiomesFromString(String data)
-	{
-		Map<String, Map<String, Object>> json = new Gson().fromJson(data, new TypeToken<Map<String, Map<String, Object>>>(){}.getType());
-
-		for (String key : json.keySet())
-		{
-			Map<String, Object> entry = json.get(key);
-			int weight = entry.containsKey("genWeight") ? ((Number)entry.get("genWeight")).intValue() : 1;
-			Block block = entry.containsKey("terrainBlock") ? Block.getBlockFromName((String)entry.get("terrainBlock")) : Blocks.stone;
-			int metadata = entry.containsKey("terrainBlockMetadata") ? ((Number)entry.get("terrainBlockMetadata")).intValue() : 0;
-
-			if (block == null || block.getMaterial().isLiquid() || !block.getMaterial().isSolid() || block.getMaterial().isReplaceable())
-			{
-				block = Blocks.stone;
-			}
-
-			if (key.matches("^[0-9]{1,3}$"))
-			{
-				int id = NumberUtils.toInt(key, -1);
-
-				if (id < 0 || id >= BiomeGenBase.getBiomeGenArray().length)
-				{
-					continue;
-				}
-
-				BiomeGenBase biome = BiomeGenBase.getBiomeGenArray()[id];
-
-				if (biome != null)
-				{
-					addCaveBiome(new CaveBiome(biome, weight, new BlockEntry(block, metadata)));
-				}
-			}
-			else
-			{
-				Type type;
-
-				try
-				{
-					type = Type.valueOf(key);
-				}
-				catch (Exception e)
-				{
-					type = null;
-				}
-
-				if (type == null)
-				{
-					for (BiomeGenBase biome : BiomeGenBase.getBiomeGenArray())
-					{
-						if (biome != null && biome.biomeName.equals(key))
-						{
-							addCaveBiome(new CaveBiome(biome, weight, new BlockEntry(block, metadata)));
-						}
-					}
-				}
-				else
-				{
-					for (BiomeGenBase biome : BiomeDictionary.getBiomesForType(type))
-					{
-						addCaveBiome(new CaveBiome(biome, weight, new BlockEntry(block, metadata)));
-					}
-				}
-			}
-		}
-
-		return !CAVE_BIOMES.isEmpty();
-	}
-
-	static boolean saveCaveBiomes()
-	{
-		try
-		{
-			File file = Config.getConfigFile("biomes");
-			String dest = null;
-
-			if (file.exists() && file.canRead())
-			{
-				dest = FileUtils.readFileToString(file);
-			}
-
-			StrBuilder builder = new StrBuilder(dest == null ? 2048 : dest.length());
-
-			builder.appendln("# Configuration file - Caveworld biomes");
-			builder.appendNewLine();
-			builder.appendln('{');
-
-			for (Iterator<CaveBiome> biomes = CAVE_BIOMES.iterator(); biomes.hasNext();)
-			{
-				CaveBiome caveBiome = biomes.next();
-				BiomeGenBase biome = caveBiome.biome;
-
-				builder.append("  # ").append(biome.biomeName);
-
-				if (BiomeDictionary.isBiomeRegistered(biome))
-				{
-					Set<String> types = Sets.newHashSet();
-
-					for (Type type : BiomeDictionary.getTypesForBiome(biome))
-					{
-						types.add(type.name());
-					}
-
-					builder.append(" [").append(Joiner.on(", ").skipNulls().join(types)).append(']');
-				}
-
-				builder.appendNewLine();
-				builder.append("  \"").append(biome.biomeID).appendln("\": {");
-				builder.append("    \"genWeight\": ").append(caveBiome.itemWeight);
-
-				BlockEntry entry = caveBiome.terrainBlock;
-
-				if (entry.block != Blocks.stone)
-				{
-					builder.appendln(',');
-					builder.append("    \"terrainBlock\": \"").append(Block.blockRegistry.getNameForObject(entry.block)).append("\"");
-				}
-
-				if (entry.blockMetadata != 0)
-				{
-					builder.appendln(',');
-					builder.append("    \"terrainBlockMetadata\": ").append(entry.blockMetadata);
-				}
-
-				builder.appendNewLine();
-				builder.append("  }");
-
-				if (biomes.hasNext())
-				{
-					builder.append(',');
-				}
-
-				builder.appendNewLine();
-			}
-
-			String data = builder.append('}').toString();
-
-			if (dest != null && data.equals(dest))
-			{
-				return false;
-			}
-
-			FileUtils.writeStringToFile(file, data);
-
-			return true;
-		}
-		catch (Exception e)
-		{
-			CaveLog.log(Level.ERROR, e, "An error occurred trying to saving cave biomes");
-		}
-
-		return false;
-	}
 
 	public static boolean addCaveBiome(CaveBiome biome)
 	{
@@ -370,16 +93,14 @@ public class CaveBiomeManager
 		{
 			return genWeightMap.get(biome.biomeID);
 		}
-		else
-		{
-			for (CaveBiome caveBiome : CAVE_BIOMES)
-			{
-				if (caveBiome.biome.biomeID == biome.biomeID)
-				{
-					genWeightMap.put(biome.biomeID, caveBiome.itemWeight);
 
-					return caveBiome.itemWeight;
-				}
+		for (CaveBiome caveBiome : CAVE_BIOMES)
+		{
+			if (caveBiome.biome.biomeID == biome.biomeID)
+			{
+				genWeightMap.put(biome.biomeID, caveBiome.itemWeight);
+
+				return caveBiome.itemWeight;
 			}
 		}
 
@@ -392,24 +113,22 @@ public class CaveBiomeManager
 		{
 			return terrainBlockMap.get(biome.biomeID);
 		}
-		else
+
+		for (CaveBiome caveBiome : CAVE_BIOMES)
 		{
-			for (CaveBiome caveBiome : CAVE_BIOMES)
+			if (caveBiome.biome.biomeID == biome.biomeID)
 			{
-				if (caveBiome.biome.biomeID == biome.biomeID)
+				BlockEntry entry = caveBiome.terrainBlock;
+				Block block = entry.getBlock();
+
+				if (block == null || block.getMaterial().isLiquid() || !block.getMaterial().isSolid() || block.getMaterial().isReplaceable())
 				{
-					BlockEntry entry = caveBiome.terrainBlock;
-					Block block = entry.block;
-
-					if (block == null || block.getMaterial().isLiquid() || !block.getMaterial().isSolid() || block.getMaterial().isReplaceable())
-					{
-						entry = new BlockEntry(Blocks.stone, 0);
-					}
-
-					terrainBlockMap.put(biome.biomeID, entry);
-
-					return entry;
+					entry = new BlockEntry(Blocks.stone, 0);
 				}
+
+				terrainBlockMap.put(biome.biomeID, entry);
+
+				return entry;
 			}
 		}
 
@@ -470,25 +189,13 @@ public class CaveBiomeManager
 		@Override
 		public String toString()
 		{
-			return "\"" + biome.biomeID + "\":{\"genWeight\":" + itemWeight + ",\"terrainBlock\":\"" + Block.blockRegistry.getNameForObject(terrainBlock.block) + "\",\"terrainBlockMetadata\":" + terrainBlock.blockMetadata + "}";
-		}
+			List<String> list = Lists.newArrayList();
+			list.add(Integer.toString(biome.biomeID));
+			list.add(Integer.toString(itemWeight));
+			list.add(Block.blockRegistry.getNameForObject(terrainBlock.getBlock()));
+			list.add(Integer.toString(terrainBlock.getMetadata()));
 
-		@Override
-		public boolean equals(Object target)
-		{
-			return target instanceof CaveBiome && biome.biomeID == ((CaveBiome)target).biome.biomeID;
-		}
-
-		public static class BlockEntry
-		{
-			public final Block block;
-			public final int blockMetadata;
-
-			public BlockEntry(Block block, int metadata)
-			{
-				this.block = block;
-				this.blockMetadata = metadata;
-			}
+			return Joiner.on(',').join(list);
 		}
 	}
 }

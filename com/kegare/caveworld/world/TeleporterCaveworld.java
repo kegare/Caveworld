@@ -31,7 +31,7 @@ import net.minecraft.world.WorldServer;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.block.CaveBlocks;
-import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.config.Config;
 
 public class TeleporterCaveworld extends Teleporter
 {

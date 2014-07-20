@@ -50,12 +50,12 @@ import net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent;
 import net.minecraftforge.event.world.WorldEvent;
 
 import com.kegare.caveworld.block.CaveBlocks;
+import com.kegare.caveworld.config.Config;
 import com.kegare.caveworld.core.CaveAchievementList;
 import com.kegare.caveworld.core.CaveBiomeManager;
 import com.kegare.caveworld.core.CaveMiningPlayer;
 import com.kegare.caveworld.core.CaveOreManager;
 import com.kegare.caveworld.core.Caveworld;
-import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.network.BiomeSyncMessage;
 import com.kegare.caveworld.network.CaveSoundMessage;
 import com.kegare.caveworld.network.ConfigSyncMessage;

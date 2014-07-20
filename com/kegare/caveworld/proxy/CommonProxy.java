@@ -21,7 +21,7 @@ import net.minecraftforge.oredict.ShapelessOreRecipe;
 import org.apache.logging.log4j.Level;
 
 import com.kegare.caveworld.block.CaveBlocks;
-import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.config.Config;
 import com.kegare.caveworld.util.CaveLog;
 
 import cpw.mods.fml.common.FMLCommonHandler;

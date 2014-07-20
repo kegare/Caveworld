@@ -15,6 +15,7 @@ import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 
 import com.kegare.caveworld.block.CaveBlocks;
+import com.kegare.caveworld.config.Config;
 import com.kegare.caveworld.handler.CaveEventHooks;
 import com.kegare.caveworld.handler.CaveFuelHandler;
 import com.kegare.caveworld.network.BiomeSyncMessage;
@@ -44,7 +45,12 @@ import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.Side;
 
-@Mod(modid = MODID, acceptedMinecraftVersions = "[1.7.10,)")
+@Mod
+(
+	modid = MODID,
+	acceptedMinecraftVersions = "[1.7.10,)",
+	guiFactory = PACKAGE_NAME + ".config.CaveGuiFactory"
+)
 public class Caveworld
 {
 	public static final String
@@ -64,7 +70,7 @@ public class Caveworld
 	{
 		Version.versionCheck();
 
-		Config.buildConfig();
+		Config.syncConfig();
 
 		CaveBlocks.initialize();
 		CaveBlocks.register();
@@ -102,8 +108,7 @@ public class Caveworld
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent event)
 	{
-		CaveBiomeManager.loadCaveBiomes();
-		CaveOreManager.loadCaveOres();
+		Config.syncPostConfig();
 	}
 
 	@EventHandler

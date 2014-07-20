@@ -30,8 +30,8 @@ import net.minecraftforge.common.DimensionManager;
 import org.apache.logging.log4j.Level;
 
 import com.google.common.base.Optional;
+import com.kegare.caveworld.config.Config;
 import com.kegare.caveworld.core.Caveworld;
-import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.network.CaveSoundMessage;
 import com.kegare.caveworld.renderer.EmptyRenderer;
 import com.kegare.caveworld.util.CaveLog;

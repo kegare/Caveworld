@@ -29,7 +29,7 @@ public class CaveAchievementList
 	public static final Achievement caveworld = new CaveAchievement("caveworld", 0, 0, CaveBlocks.caveworld_portal, null).initIndependentStat().registerStat();
 	public static final Achievement miner = new CaveAchievement("miner", 2, 1, Items.iron_pickaxe, caveworld).registerStat();
 
-	static void register()
+	public static void register()
 	{
 		AchievementPage.registerAchievementPage(new AchievementPage("Caveworld", CAVE_ACHIEVEMENTS.toArray(new Achievement[CAVE_ACHIEVEMENTS.size()])));
 	}

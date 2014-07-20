@@ -12,9 +12,14 @@ package com.kegare.caveworld.network;
 
 import io.netty.buffer.ByteBuf;
 
+import java.util.List;
+
 import org.apache.logging.log4j.Level;
 
-import com.kegare.caveworld.core.Config;
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
+import com.kegare.caveworld.config.Config;
 import com.kegare.caveworld.util.CaveLog;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
@@ -28,21 +33,21 @@ public class ConfigSyncMessage implements IMessage, IMessageHandler<ConfigSyncMe
 
 	public ConfigSyncMessage()
 	{
-		StringBuilder builder = new StringBuilder();
+		List<String> dat = Lists.newArrayList();
 
-		builder.append(Config.hardcoreEnabled).append(';');
-		builder.append(Config.deathLoseMiningCount).append(';');
-		builder.append(Config.dimensionCaveworld).append(';');
-		builder.append(Config.subsurfaceHeight).append(';');
-		builder.append(Config.generateCaves).append(';');
-		builder.append(Config.generateRavine).append(';');
-		builder.append(Config.generateMineshaft).append(';');
-		builder.append(Config.generateStronghold).append(';');
-		builder.append(Config.generateLakes).append(';');
-		builder.append(Config.generateDungeons).append(';');
-		builder.append(Config.decorateVines);
+		dat.add(Boolean.toString(Config.hardcoreEnabled));
+		dat.add(Boolean.toString(Config.deathLoseMiningCount));
+		dat.add(Integer.toString(Config.dimensionCaveworld));
+		dat.add(Integer.toString(Config.subsurfaceHeight));
+		dat.add(Boolean.toString(Config.generateCaves));
+		dat.add(Boolean.toString(Config.generateRavine));
+		dat.add(Boolean.toString(Config.generateMineshaft));
+		dat.add(Boolean.toString(Config.generateStronghold));
+		dat.add(Boolean.toString(Config.generateLakes));
+		dat.add(Boolean.toString(Config.generateDungeons));
+		dat.add(Boolean.toString(Config.decorateVines));
 
-		this.data = builder.toString();
+		this.data = Joiner.on(',').join(dat);
 	}
 
 	@Override
@@ -60,22 +65,22 @@ public class ConfigSyncMessage implements IMessage, IMessageHandler<ConfigSyncMe
 	@Override
 	public IMessage onMessage(ConfigSyncMessage message, MessageContext ctx)
 	{
-		String[] buffer = message.data.split(";");
+		List<String> dat = Splitter.on(',').splitToList(message.data);
 		byte i = 0;
 
 		try
 		{
-			Config.hardcoreEnabled = Boolean.valueOf(buffer[i++]);
-			Config.deathLoseMiningCount = Boolean.valueOf(buffer[i++]);
-			Config.dimensionCaveworld = Integer.valueOf(buffer[i++]);
-			Config.subsurfaceHeight = Integer.valueOf(buffer[i++]);
-			Config.generateCaves = Boolean.valueOf(buffer[i++]);
-			Config.generateRavine = Boolean.valueOf(buffer[i++]);
-			Config.generateMineshaft = Boolean.valueOf(buffer[i++]);
-			Config.generateStronghold = Boolean.valueOf(buffer[i++]);
-			Config.generateLakes = Boolean.valueOf(buffer[i++]);
-			Config.generateDungeons = Boolean.valueOf(buffer[i++]);
-			Config.decorateVines = Boolean.valueOf(buffer[i++]);
+			Config.hardcoreEnabled = Boolean.valueOf(dat.get(i++));
+			Config.deathLoseMiningCount = Boolean.valueOf(dat.get(i++));
+			Config.dimensionCaveworld = Integer.valueOf(dat.get(i++));
+			Config.subsurfaceHeight = Integer.valueOf(dat.get(i++));
+			Config.generateCaves = Boolean.valueOf(dat.get(i++));
+			Config.generateRavine = Boolean.valueOf(dat.get(i++));
+			Config.generateMineshaft = Boolean.valueOf(dat.get(i++));
+			Config.generateStronghold = Boolean.valueOf(dat.get(i++));
+			Config.generateLakes = Boolean.valueOf(dat.get(i++));
+			Config.generateDungeons = Boolean.valueOf(dat.get(i++));
+			Config.decorateVines = Boolean.valueOf(dat.get(i++));
 		}
 		catch (Exception e)
 		{

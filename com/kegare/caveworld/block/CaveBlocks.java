@@ -11,18 +11,16 @@
 package com.kegare.caveworld.block;
 
 import net.minecraft.block.BlockDispenser;
-import net.minecraft.dispenser.BehaviorDefaultDispenseItem;
-import net.minecraft.dispenser.IBlockSource;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.WeightedRandomChestContent;
-import net.minecraft.world.World;
 import net.minecraftforge.common.ChestGenHooks;
 import net.minecraftforge.oredict.OreDictionary;
 
-import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.block.BlockPortalCaveworld.DispencePortal;
+import com.kegare.caveworld.block.BlockRope.DispenceRope;
+import com.kegare.caveworld.config.Config;
 import com.kegare.caveworld.item.ItemPortalCaveworld;
 import com.kegare.caveworld.item.ItemRope;
 
@@ -49,33 +47,7 @@ public class CaveBlocks
 
 		OreDictionary.registerOre("portalCaveworld", caveworld_portal);
 
-		BlockDispenser.dispenseBehaviorRegistry.putObject(Item.getItemFromBlock(caveworld_portal), new BehaviorDefaultDispenseItem()
-		{
-			@Override
-			public ItemStack dispenseStack(IBlockSource blockSource, ItemStack itemstack)
-			{
-				EnumFacing facing = BlockDispenser.func_149937_b(blockSource.getBlockMetadata());
-				World world = blockSource.getWorld();
-				int x = blockSource.getXInt() + facing.getFrontOffsetX();
-				int y = blockSource.getYInt() + facing.getFrontOffsetY();
-				int z = blockSource.getZInt() + facing.getFrontOffsetZ();
-
-				if (caveworld_portal.func_150000_e(world, x, y, z))
-				{
-					--itemstack.stackSize;
-				}
-
-				return itemstack;
-			}
-
-			@Override
-			public void playDispenseSound(IBlockSource blockSource)
-			{
-				super.playDispenseSound(blockSource);
-
-				blockSource.getWorld().playSoundEffect(blockSource.getXInt(), blockSource.getYInt(), blockSource.getZInt(), caveworld_portal.stepSound.func_150496_b(), 1.0F, 2.0F);
-			}
-		});
+		BlockDispenser.dispenseBehaviorRegistry.putObject(Item.getItemFromBlock(caveworld_portal), new DispencePortal());
 
 		if (rope != null)
 		{
@@ -90,47 +62,7 @@ public class CaveBlocks
 			ChestGenHooks.addItem(ChestGenHooks.MINESHAFT_CORRIDOR, new WeightedRandomChestContent(item, 0, 3, 6, 10));
 			ChestGenHooks.addItem(ChestGenHooks.PYRAMID_JUNGLE_CHEST, new WeightedRandomChestContent(item, 0, 3, 6, 10));
 
-			BlockDispenser.dispenseBehaviorRegistry.putObject(Item.getItemFromBlock(rope), new BehaviorDefaultDispenseItem()
-			{
-				@Override
-				public ItemStack dispenseStack(IBlockSource blockSource, ItemStack itemstack)
-				{
-					EnumFacing facing = BlockDispenser.func_149937_b(blockSource.getBlockMetadata());
-					World world = blockSource.getWorld();
-					int x = blockSource.getXInt() + facing.getFrontOffsetX();
-					int y = blockSource.getYInt() + facing.getFrontOffsetY();
-					int z = blockSource.getZInt() + facing.getFrontOffsetZ();
-
-					if (world.isAirBlock(x, y, z) && world.setBlock(x, y, z, rope, 1, 3))
-					{
-						--itemstack.stackSize;
-
-						for (int i = 1; itemstack.stackSize > 0 && i < itemstack.stackSize + 1; ++i)
-						{
-							int next = y - 5 * i;
-
-							if (world.getBlock(x, next, z) == rope && world.isAirBlock(x, --next, z) && next > 0)
-							{
-								if (world.setBlock(x, next, z, rope, 1, 3))
-								{
-									--itemstack.stackSize;
-								}
-								else break;
-							}
-						}
-					}
-
-					return itemstack;
-				}
-
-				@Override
-				public void playDispenseSound(IBlockSource blockSource)
-				{
-					super.playDispenseSound(blockSource);
-
-					blockSource.getWorld().playSoundEffect(blockSource.getXInt(), blockSource.getYInt(), blockSource.getZInt(), rope.stepSound.func_150496_b(), 1.0F, 2.0F);
-				}
-			});
+			BlockDispenser.dispenseBehaviorRegistry.putObject(Item.getItemFromBlock(rope), new DispenceRope());
 		}
 	}
 }

@@ -26,8 +26,8 @@ import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
+import com.kegare.caveworld.config.Config;
 import com.kegare.caveworld.core.Caveworld;
-import com.kegare.caveworld.core.Config;
 
 import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.versioning.ArtifactVersion;

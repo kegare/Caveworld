@@ -19,7 +19,7 @@ import net.minecraft.world.IBlockAccess;
 import org.lwjgl.opengl.GL11;
 
 import com.kegare.caveworld.block.CaveBlocks;
-import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.config.Config;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import cpw.mods.fml.relauncher.Side;

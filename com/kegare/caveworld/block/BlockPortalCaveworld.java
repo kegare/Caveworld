@@ -13,10 +13,13 @@ package com.kegare.caveworld.block;
 import java.util.Random;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockDispenser;
 import net.minecraft.block.BlockPortal;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.dispenser.BehaviorDefaultDispenseItem;
+import net.minecraft.dispenser.IBlockSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
@@ -25,10 +28,12 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.Direction;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.IBlockAccess;
@@ -36,8 +41,8 @@ import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
+import com.kegare.caveworld.config.Config;
 import com.kegare.caveworld.core.Caveworld;
-import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.inventory.InventoryCaveworldPortal;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.world.TeleporterCaveworld;
@@ -434,14 +439,12 @@ public class BlockPortalCaveworld extends BlockPortal
 			{
 				return portalHeight;
 			}
-			else
-			{
-				portalCoord = null;
-				portalWidth = 0;
-				portalHeight = 0;
 
-				return 0;
-			}
+			portalCoord = null;
+			portalWidth = 0;
+			portalHeight = 0;
+
+			return 0;
 		}
 
 		protected boolean isReplaceablePortal(Block block)
@@ -503,6 +506,34 @@ public class BlockPortalCaveworld extends BlockPortal
 					worldObj.setBlock(x, portalCoord.posY + j, z, CaveBlocks.caveworld_portal, portalMetadata, 2);
 				}
 			}
+		}
+	}
+
+	public static class DispencePortal extends BehaviorDefaultDispenseItem
+	{
+		@Override
+		public ItemStack dispenseStack(IBlockSource blockSource, ItemStack itemstack)
+		{
+			EnumFacing facing = BlockDispenser.func_149937_b(blockSource.getBlockMetadata());
+			World world = blockSource.getWorld();
+			int x = blockSource.getXInt() + facing.getFrontOffsetX();
+			int y = blockSource.getYInt() + facing.getFrontOffsetY();
+			int z = blockSource.getZInt() + facing.getFrontOffsetZ();
+
+			if (CaveBlocks.caveworld_portal.func_150000_e(world, x, y, z))
+			{
+				--itemstack.stackSize;
+			}
+
+			return itemstack;
+		}
+
+		@Override
+		public void playDispenseSound(IBlockSource blockSource)
+		{
+			super.playDispenseSound(blockSource);
+
+			blockSource.getWorld().playSoundEffect(blockSource.getXInt(), blockSource.getYInt(), blockSource.getZInt(), CaveBlocks.caveworld_portal.stepSound.func_150496_b(), 1.0F, 2.0F);
 		}
 	}
 }

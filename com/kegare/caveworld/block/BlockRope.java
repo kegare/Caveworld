@@ -14,15 +14,19 @@ import java.util.List;
 import java.util.Random;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockDispenser;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.material.MaterialLogic;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.dispenser.BehaviorDefaultDispenseItem;
+import net.minecraft.dispenser.IBlockSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
@@ -161,5 +165,47 @@ public class BlockRope extends Block
 	public boolean isLadder(IBlockAccess world, int x, int y, int z, EntityLivingBase entity)
 	{
 		return true;
+	}
+
+	public static class DispenceRope extends BehaviorDefaultDispenseItem
+	{
+		@Override
+		public ItemStack dispenseStack(IBlockSource blockSource, ItemStack itemstack)
+		{
+			EnumFacing facing = BlockDispenser.func_149937_b(blockSource.getBlockMetadata());
+			World world = blockSource.getWorld();
+			int x = blockSource.getXInt() + facing.getFrontOffsetX();
+			int y = blockSource.getYInt() + facing.getFrontOffsetY();
+			int z = blockSource.getZInt() + facing.getFrontOffsetZ();
+
+			if (world.isAirBlock(x, y, z) && world.setBlock(x, y, z, CaveBlocks.rope, 1, 3))
+			{
+				--itemstack.stackSize;
+
+				for (int i = 1; itemstack.stackSize > 0 && i < itemstack.stackSize + 1; ++i)
+				{
+					int next = y - 5 * i;
+
+					if (world.getBlock(x, next, z) == CaveBlocks.rope && world.isAirBlock(x, --next, z) && next > 0)
+					{
+						if (world.setBlock(x, next, z, CaveBlocks.rope, 1, 3))
+						{
+							--itemstack.stackSize;
+						}
+						else break;
+					}
+				}
+			}
+
+			return itemstack;
+		}
+
+		@Override
+		public void playDispenseSound(IBlockSource blockSource)
+		{
+			super.playDispenseSound(blockSource);
+
+			blockSource.getWorld().playSoundEffect(blockSource.getXInt(), blockSource.getYInt(), blockSource.getZInt(), CaveBlocks.rope.stepSound.func_150496_b(), 1.0F, 2.0F);
+		}
 	}
 }

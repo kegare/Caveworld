@@ -13,12 +13,20 @@ package com.kegare.caveworld.network;
 import io.netty.buffer.ByteBuf;
 
 import java.util.Collection;
+import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
+import net.minecraft.init.Blocks;
+import net.minecraft.world.biome.BiomeGenBase;
+
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.Level;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 import com.kegare.caveworld.core.CaveBiomeManager;
 import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome;
+import com.kegare.caveworld.util.BlockEntry;
 import com.kegare.caveworld.util.CaveLog;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
@@ -34,9 +42,7 @@ public class BiomeSyncMessage implements IMessage, IMessageHandler<BiomeSyncMess
 
 	public BiomeSyncMessage(Collection<CaveBiome> biomes)
 	{
-		StringBuilder builder = new StringBuilder(1024);
-
-		builder.append('{');
+		List<String> dat = Lists.newArrayList();
 
 		for (CaveBiome biome : biomes)
 		{
@@ -45,12 +51,10 @@ public class BiomeSyncMessage implements IMessage, IMessageHandler<BiomeSyncMess
 				continue;
 			}
 
-			builder.append(biome).append(',');
+			dat.add(biome.toString());
 		}
 
-		builder.deleteCharAt(builder.lastIndexOf(",")).append('}');
-
-		this.data = StringUtils.deleteWhitespace(builder.toString());
+		this.data = Joiner.on('&').join(dat);
 	}
 
 	@Override
@@ -72,10 +76,27 @@ public class BiomeSyncMessage implements IMessage, IMessageHandler<BiomeSyncMess
 
 		try
 		{
-			if (CaveBiomeManager.loadCaveBiomesFromString(message.data))
+			List<String> list;
+			BiomeGenBase biome;
+			int weight;
+			int metadata;
+
+			for (String entry : Splitter.on('&').splitToList(message.data))
 			{
-				CaveLog.info("Loaded %d cave biomes from server", CaveBiomeManager.getActiveBiomeCount());
+				list = Splitter.on(',').splitToList(entry);
+				biome = BiomeGenBase.getBiome(NumberUtils.toInt(list.get(0), BiomeGenBase.plains.biomeID));
+				weight = NumberUtils.toInt(list.get(1));
+				metadata = NumberUtils.toInt(list.get(3));
+
+				if (biome == null)
+				{
+					continue;
+				}
+
+				CaveBiomeManager.addCaveBiome(new CaveBiome(biome, weight, new BlockEntry(list.get(2), metadata, Blocks.stone)));
 			}
+
+			CaveLog.info("Loaded %d cave biomes from server", CaveBiomeManager.getActiveBiomeCount());
 		}
 		catch (Exception e)
 		{

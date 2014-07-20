@@ -18,8 +18,8 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
 
+import com.kegare.caveworld.config.Config;
 import com.kegare.caveworld.core.Caveworld;
-import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.util.Version.Status;
 
