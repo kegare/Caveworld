@@ -268,7 +268,7 @@ public class TeleporterCaveworld extends Teleporter
 
 			entity.setLocationAndAngles(var2, var3, var4, entity.rotationYaw, entity.rotationPitch);
 
-			if (Config.hardcoreEnabled && entity.dimension == Config.dimensionCaveworld && entity instanceof EntityPlayer)
+			if (Config.hardcore && entity.dimension == Config.dimensionCaveworld && entity instanceof EntityPlayer)
 			{
 				blockX = MathHelper.floor_double(var2);
 				blockY = MathHelper.floor_double(var3);

@@ -278,7 +278,7 @@ public class WorldProviderCaveworld extends WorldProvider
 	@Override
 	public int getRespawnDimension(EntityPlayerMP player)
 	{
-		if (Config.hardcoreEnabled || player.getBedLocation(dimensionId) != null)
+		if (Config.hardcore || player.getBedLocation(dimensionId) != null)
 		{
 			return dimensionId;
 		}

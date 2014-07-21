@@ -26,7 +26,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
-import com.kegare.caveworld.config.Config;
 import com.kegare.caveworld.core.Caveworld;
 
 import cpw.mods.fml.common.ModContainer;
@@ -71,10 +70,6 @@ public class Version
 					{
 						DEV_DEBUG = true;
 					}
-					else if (StringUtils.endsWithIgnoreCase(name, "hardcore"))
-					{
-						Config.hardcoreEnabled = true;
-					}
 				}
 				else if (file.isDirectory())
 				{
@@ -97,10 +92,6 @@ public class Version
 		if (DEV_DEBUG)
 		{
 			Caveworld.metadata.version += "-dev";
-		}
-		else if (Config.hardcoreEnabled)
-		{
-			Caveworld.metadata.version += "-hardcore";
 		}
 	}
 

@@ -30,7 +30,6 @@ import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.WorldServer;
 
 import com.google.common.collect.Lists;
-import com.kegare.caveworld.config.Config;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Version;
 
@@ -76,10 +75,6 @@ public class CommandCaveworld implements ICommand
 			if (Version.DEV_DEBUG)
 			{
 				builder.append(EnumChatFormatting.RED).append(" dev").append(EnumChatFormatting.RESET);
-			}
-			else if (Config.hardcoreEnabled)
-			{
-				builder.append(EnumChatFormatting.RED).append(" hardcore").append(EnumChatFormatting.RESET);
 			}
 
 			builder.append(" for ").append(Loader.instance().getMCVersionString());

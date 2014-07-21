@@ -185,7 +185,7 @@ public class BlockPortalCaveworld extends BlockPortal
 	@Override
 	public void onEntityCollidedWithBlock(World world, int x, int y, int z, Entity entity)
 	{
-		if (!world.isRemote && entity.isEntityAlive() && (entity.dimension != Config.dimensionCaveworld || !Config.hardcoreEnabled))
+		if (!world.isRemote && entity.isEntityAlive() && (entity.dimension != Config.dimensionCaveworld || !Config.hardcore))
 		{
 			if (entity.timeUntilPortal <= 0)
 			{

@@ -32,6 +32,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.ChunkCoordinates;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
@@ -148,7 +149,7 @@ public class CaveEventHooks
 
 					server.getConfigurationManager().transferPlayerToDimension(player, 0, teleporter);
 				}
-				else if (!Config.hardcoreEnabled)
+				else if (!Config.hardcore)
 				{
 					int level = CaveMiningPlayer.get(player).getMiningLevel();
 
@@ -181,6 +182,20 @@ public class CaveEventHooks
 				data.setLong("Caveworld:LastTeleportTime", world.getTotalWorldTime());
 
 				player.triggerAchievement(CaveAchievementList.caveworld);
+			}
+			else if (Config.hardcore && event.fromDim == Config.dimensionCaveworld)
+			{
+				MinecraftServer server = world.func_73046_m();
+				WorldServer worldNew = server.worldServerForDimension(event.fromDim);
+				Teleporter teleporter = new TeleporterCaveworld(worldNew);
+
+				player.worldObj.removeEntity(player);
+				player.isDead = false;
+				player.timeUntilPortal = player.getPortalCooldown();
+
+				server.getConfigurationManager().transferPlayerToDimension(player, event.fromDim, teleporter);
+
+				player.attackEntityFrom(DamageSource.outOfWorld, 999.0F);
 			}
 		}
 	}
