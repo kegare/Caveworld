@@ -48,8 +48,8 @@ import net.minecraftforge.event.terraingen.TerrainGen;
 
 import com.kegare.caveworld.config.Config;
 import com.kegare.caveworld.core.CaveBiomeManager;
-import com.kegare.caveworld.core.CaveOreManager;
-import com.kegare.caveworld.core.CaveOreManager.CaveOre;
+import com.kegare.caveworld.core.CaveVeinManager;
+import com.kegare.caveworld.core.CaveVeinManager.CaveVein;
 import com.kegare.caveworld.util.BlockEntry;
 import com.kegare.caveworld.world.gen.MapGenCavesCaveworld;
 import com.kegare.caveworld.world.gen.MapGenRavineCaveworld;
@@ -235,7 +235,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 		MinecraftForge.ORE_GEN_BUS.post(new OreGenEvent.Pre(worldObj, random, worldX, worldZ));
 
-		for (CaveOre ore : CaveOreManager.getCaveOres())
+		for (CaveVein ore : CaveVeinManager.getCaveVeins())
 		{
 			generateOre(ore.getGenWeight(), ore, worldX, worldZ, ore.getGenMinHeight(), ore.getGenMaxHeight());
 		}

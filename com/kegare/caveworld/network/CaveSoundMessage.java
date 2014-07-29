@@ -26,25 +26,29 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public class CaveSoundMessage implements IMessage, IMessageHandler<CaveSoundMessage, IMessage>
 {
-	private String name;
+	private ResourceLocation resource;
 
 	public CaveSoundMessage() {}
 
-	public CaveSoundMessage(String name)
+	public CaveSoundMessage(ResourceLocation resource)
 	{
-		this.name = name;
+		this.resource = resource;
 	}
 
 	@Override
 	public void fromBytes(ByteBuf buffer)
 	{
-		name = ByteBufUtils.readUTF8String(buffer);
+		String domain = ByteBufUtils.readUTF8String(buffer);
+		String path = ByteBufUtils.readUTF8String(buffer);
+
+		resource = new ResourceLocation(domain, path);
 	}
 
 	@Override
 	public void toBytes(ByteBuf buffer)
 	{
-		ByteBufUtils.writeUTF8String(buffer, name);
+		ByteBufUtils.writeUTF8String(buffer, resource.getResourceDomain());
+		ByteBufUtils.writeUTF8String(buffer, resource.getResourcePath());
 	}
 
 	@Override
@@ -56,7 +60,7 @@ public class CaveSoundMessage implements IMessage, IMessageHandler<CaveSoundMess
 		if (mc != null)
 		{
 			SoundHandler handler = mc.getSoundHandler();
-			ISound sound = PositionedSoundRecord.func_147673_a(new ResourceLocation(message.name));
+			ISound sound = PositionedSoundRecord.func_147673_a(message.resource);
 
 			if (!handler.isSoundPlaying(sound))
 			{

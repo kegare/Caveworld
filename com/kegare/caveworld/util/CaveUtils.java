@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockOre;
 import net.minecraft.block.BlockRedstoneOre;
+import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.init.Blocks;
@@ -25,7 +26,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
 
 import com.google.common.base.Strings;
-import com.kegare.caveworld.core.CaveOreManager;
+import com.kegare.caveworld.core.CaveVeinManager;
+import com.kegare.caveworld.core.CaveVeinManager.CaveVein;
 import com.kegare.caveworld.core.Caveworld;
 
 import cpw.mods.fml.common.Loader;
@@ -33,7 +35,7 @@ import cpw.mods.fml.common.ModContainer;
 
 public class CaveUtils
 {
-	private static final Pattern patternControlCode = Pattern.compile("(?i)\\u00A7[0-9A-FK-OR]");
+	public static final Pattern patternControlCode = Pattern.compile("(?i)\\u00A7[0-9A-FK-OR]");
 
 	public static String stripControlCodes(String str)
 	{
@@ -65,9 +67,13 @@ public class CaveUtils
 			{
 				return true;
 			}
-			else if (CaveOreManager.containsOre(block, metadata))
+
+			for (CaveVein vein : CaveVeinManager.getCaveVeins())
 			{
-				return true;
+				if (vein.getBlock().getBlock() == block && vein.getBlock().getMetadata() == metadata)
+				{
+					return vein.getBlock().getBlock().getMaterial() == Material.rock;
+				}
 			}
 		}
 

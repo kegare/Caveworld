@@ -24,8 +24,8 @@ import org.apache.logging.log4j.Level;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import com.kegare.caveworld.core.CaveOreManager;
-import com.kegare.caveworld.core.CaveOreManager.CaveOre;
+import com.kegare.caveworld.core.CaveVeinManager;
+import com.kegare.caveworld.core.CaveVeinManager.CaveVein;
 import com.kegare.caveworld.util.BlockEntry;
 import com.kegare.caveworld.util.CaveLog;
 
@@ -34,19 +34,19 @@ import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 
-public class OreSyncMessage implements IMessage, IMessageHandler<OreSyncMessage, IMessage>
+public class VeinsSyncMessage implements IMessage, IMessageHandler<VeinsSyncMessage, IMessage>
 {
 	private String data;
 
-	public OreSyncMessage() {}
+	public VeinsSyncMessage() {}
 
-	public OreSyncMessage(Collection<CaveOre> ores)
+	public VeinsSyncMessage(Collection<CaveVein> veins)
 	{
 		List<String> dat = Lists.newArrayList();
 
-		for (CaveOre ore : ores)
+		for (CaveVein vein : veins)
 		{
-			dat.add(ore.toString());
+			dat.add(vein.toString());
 		}
 
 		this.data = Joiner.on('&').join(dat);
@@ -65,9 +65,9 @@ public class OreSyncMessage implements IMessage, IMessageHandler<OreSyncMessage,
 	}
 
 	@Override
-	public IMessage onMessage(OreSyncMessage message, MessageContext ctx)
+	public IMessage onMessage(VeinsSyncMessage message, MessageContext ctx)
 	{
-		CaveOreManager.clearCaveOres();
+		CaveVeinManager.clearCaveVeins();
 
 		try
 		{
@@ -99,14 +99,14 @@ public class OreSyncMessage implements IMessage, IMessageHandler<OreSyncMessage,
 					}
 				}
 
-				CaveOreManager.addCaveOre(new CaveOre(new BlockEntry(list.get(0), metadata, Blocks.stone), count, weight, min, max, new BlockEntry(list.get(6), target, Blocks.stone), biomes));
+				CaveVeinManager.addCaveVein(new CaveVein(new BlockEntry(list.get(0), metadata, Blocks.stone), count, weight, min, max, new BlockEntry(list.get(6), target, Blocks.stone), biomes));
 			}
 
-			CaveLog.info("Loaded %d cave ores from server", CaveOreManager.getCaveOres().size());
+			CaveLog.info("Loaded %d cave veins from server", CaveVeinManager.getCaveVeins().size());
 		}
 		catch (Exception e)
 		{
-			CaveLog.log(Level.WARN, e, "An error occurred trying to loading cave ores from server");
+			CaveLog.log(Level.WARN, e, "An error occurred trying to loading cave veins from server");
 		}
 
 		return null;

@@ -10,41 +10,39 @@
 
 package com.kegare.caveworld.plugin;
 
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.ModContainer;
+import java.lang.reflect.Method;
+import java.util.Set;
 
-public abstract class CaveModPlugin
+import com.google.common.collect.Sets;
+import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
+import com.kegare.caveworld.plugin.thaumcraft.ThaumcraftPlugin;
+
+public class CaveModPlugin
 {
-	public final String pluginModId;
+	public static final Set<Class> modPlugins = Sets.newHashSet();
 
-	public CaveModPlugin(String modid)
+	public static void registerPlugins()
 	{
-		this.pluginModId = modid;
+		modPlugins.add(MCEconomyPlugin.class);
+		modPlugins.add(ThaumcraftPlugin.class);
 	}
 
-	protected ModContainer getPluginModContainer()
+	public static void invokePlugins()
 	{
-		return Loader.instance().getIndexedModList().get(pluginModId);
+		Method method;
+
+		for (Class clazz : modPlugins)
+		{
+			try
+			{
+				method = clazz.getDeclaredMethod("invoke");
+				method.setAccessible(true);
+				method.invoke(clazz.newInstance());
+			}
+			catch (Exception e)
+			{
+				continue;
+			}
+		}
 	}
-
-	public String getPluginModName()
-	{
-		ModContainer mod = getPluginModContainer();
-
-		return mod == null ? pluginModId : mod.getName();
-	}
-
-	public String getPluginModVersion()
-	{
-		ModContainer mod = getPluginModContainer();
-
-		return mod == null ? "unknown" : mod.getVersion();
-	}
-
-	public boolean isPluginEnabled()
-	{
-		return Loader.isModLoaded(pluginModId);
-	}
-
-	protected abstract void init();
 }

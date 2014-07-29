@@ -40,10 +40,12 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import shift.mceconomy2.api.MCEconomyAPI;
 
 import com.kegare.caveworld.config.Config;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.inventory.InventoryCaveworldPortal;
+import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.world.TeleporterCaveworld;
 
@@ -175,6 +177,16 @@ public class BlockPortalCaveworld extends BlockPortal
 		if (!world.isRemote && side >= 2)
 		{
 			world.playSoundAtEntity(player, "random.click", 0.8F, 1.5F);
+
+			if (MCEconomyPlugin.enabled() && MCEconomyPlugin.SHOP >= 0 && player.dimension == Config.dimensionCaveworld)
+			{
+				if (CaveUtils.isItemPickaxe(player.getCurrentEquippedItem()))
+				{
+					MCEconomyAPI.openShopGui(MCEconomyPlugin.SHOP, player, world, x, y, z);
+
+					return true;
+				}
+			}
 
 			player.displayGUIChest(inventory.setPortalPosition(player, x, y, z));
 		}

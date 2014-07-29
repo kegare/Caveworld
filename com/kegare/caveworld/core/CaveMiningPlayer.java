@@ -18,9 +18,11 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.common.IExtendedEntityProperties;
+import shift.mceconomy2.api.MCEconomyAPI;
 
 import com.google.common.collect.Maps;
 import com.kegare.caveworld.network.MiningSyncMessage;
+import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 
 public class CaveMiningPlayer implements IExtendedEntityProperties
 {
@@ -65,13 +67,13 @@ public class CaveMiningPlayer implements IExtendedEntityProperties
 
 		data.saveNBTData(compound);
 
-		extendedData.put(player.getCommandSenderName(), compound);
+		extendedData.put(player.getUniqueID().toString(), compound);
 	}
 
 	public static void loadMiningData(EntityPlayer player)
 	{
 		CaveMiningPlayer data = get(player);
-		NBTTagCompound compound = extendedData.remove(player.getCommandSenderName());
+		NBTTagCompound compound = extendedData.remove(player.getUniqueID().toString());
 
 		data.loadNBTData(compound);
 		data.syncMiningData();
@@ -129,6 +131,11 @@ public class CaveMiningPlayer implements IExtendedEntityProperties
 		if (miningCount > 0 && miningCount % 100 == 0)
 		{
 			player.addExperience(player.xpBarCap() / 2);
+
+			if (MCEconomyPlugin.enabled())
+			{
+				MCEconomyAPI.addPlayerMP(player, 10 + miningCount / 100 - 1, false);
+			}
 		}
 	}
 

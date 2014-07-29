@@ -34,13 +34,13 @@ import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 
-public class BiomeSyncMessage implements IMessage, IMessageHandler<BiomeSyncMessage, IMessage>
+public class BiomesSyncMessage implements IMessage, IMessageHandler<BiomesSyncMessage, IMessage>
 {
 	private String data;
 
-	public BiomeSyncMessage() {}
+	public BiomesSyncMessage() {}
 
-	public BiomeSyncMessage(Collection<CaveBiome> biomes)
+	public BiomesSyncMessage(Collection<CaveBiome> biomes)
 	{
 		List<String> dat = Lists.newArrayList();
 
@@ -70,7 +70,7 @@ public class BiomeSyncMessage implements IMessage, IMessageHandler<BiomeSyncMess
 	}
 
 	@Override
-	public IMessage onMessage(BiomeSyncMessage message, MessageContext ctx)
+	public IMessage onMessage(BiomesSyncMessage message, MessageContext ctx)
 	{
 		CaveBiomeManager.clearCaveBiomes();
 

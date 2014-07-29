@@ -11,6 +11,7 @@
 package com.kegare.caveworld.core;
 
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -21,6 +22,7 @@ import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.WeightedRandom;
 import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraftforge.common.config.ConfigCategory;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
@@ -28,6 +30,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.kegare.caveworld.config.Config;
 import com.kegare.caveworld.util.BlockEntry;
 
 public class CaveBiomeManager
@@ -46,11 +49,11 @@ public class CaveBiomeManager
 
 	public static boolean addCaveBiome(CaveBiome biome)
 	{
-		for (CaveBiome caveBiome : CAVE_BIOMES)
+		for (CaveBiome entry : CAVE_BIOMES)
 		{
-			if (caveBiome.biome.biomeID == biome.biome.biomeID)
+			if (entry.biome.biomeID == biome.biome.biomeID)
 			{
-				caveBiome.itemWeight += biome.itemWeight;
+				entry.itemWeight += biome.itemWeight;
 
 				return false;
 			}
@@ -61,11 +64,13 @@ public class CaveBiomeManager
 
 	public static boolean removeCaveBiome(BiomeGenBase biome)
 	{
-		for (CaveBiome caveBiome : CAVE_BIOMES)
+		for (Iterator<CaveBiome> biomes = CAVE_BIOMES.iterator(); biomes.hasNext();)
 		{
-			if (caveBiome.biome.biomeID == biome.biomeID)
+			if (biomes.next().biome.biomeID == biome.biomeID)
 			{
-				return CAVE_BIOMES.remove(caveBiome);
+				biomes.remove();
+
+				return true;
 			}
 		}
 
@@ -76,9 +81,9 @@ public class CaveBiomeManager
 	{
 		int count = 0;
 
-		for (CaveBiome caveBiome : CAVE_BIOMES)
+		for (CaveBiome entry : CAVE_BIOMES)
 		{
-			if (caveBiome.itemWeight > 0)
+			if (entry.itemWeight > 0)
 			{
 				++count;
 			}
@@ -94,13 +99,13 @@ public class CaveBiomeManager
 			return genWeightMap.get(biome.biomeID);
 		}
 
-		for (CaveBiome caveBiome : CAVE_BIOMES)
+		for (CaveBiome entry : CAVE_BIOMES)
 		{
-			if (caveBiome.biome.biomeID == biome.biomeID)
+			if (entry.biome.biomeID == biome.biomeID)
 			{
-				genWeightMap.put(biome.biomeID, caveBiome.itemWeight);
+				genWeightMap.put(biome.biomeID, entry.itemWeight);
 
-				return caveBiome.itemWeight;
+				return entry.itemWeight;
 			}
 		}
 
@@ -114,21 +119,21 @@ public class CaveBiomeManager
 			return terrainBlockMap.get(biome.biomeID);
 		}
 
-		for (CaveBiome caveBiome : CAVE_BIOMES)
+		for (CaveBiome entry : CAVE_BIOMES)
 		{
-			if (caveBiome.biome.biomeID == biome.biomeID)
+			if (entry.biome.biomeID == biome.biomeID)
 			{
-				BlockEntry entry = caveBiome.terrainBlock;
-				Block block = entry.getBlock();
+				BlockEntry terrainBlock = entry.terrainBlock;
+				Block block = terrainBlock.getBlock();
 
 				if (block == null || block.getMaterial().isLiquid() || !block.getMaterial().isSolid() || block.getMaterial().isReplaceable())
 				{
-					entry = new BlockEntry(Blocks.stone, 0);
+					terrainBlock = new BlockEntry(Blocks.stone, 0);
 				}
 
-				terrainBlockMap.put(biome.biomeID, entry);
+				terrainBlockMap.put(biome.biomeID, terrainBlock);
 
-				return entry;
+				return terrainBlock;
 			}
 		}
 
@@ -161,12 +166,34 @@ public class CaveBiomeManager
 	{
 		Set<BiomeGenBase> biomes = Sets.newHashSet();
 
-		for (CaveBiome caveBiome : CAVE_BIOMES)
+		for (CaveBiome entry : CAVE_BIOMES)
 		{
-			biomes.add(caveBiome.biome);
+			biomes.add(entry.biome);
 		}
 
 		return new ImmutableList.Builder<BiomeGenBase>().addAll(biomes).build();
+	}
+
+	public static List<ConfigCategory> getBiomeCategories()
+	{
+		List<ConfigCategory> list = Lists.newArrayList();
+		SortedSet<String> entries = Sets.newTreeSet(new Comparator<String>()
+		{
+			@Override
+			public int compare(String o1, String o2)
+			{
+				return Integer.valueOf(o1).compareTo(Integer.valueOf(o2));
+			}
+		});
+
+		entries.addAll(Config.biomesCfg.getCategoryNames());
+
+		for (String name : entries)
+		{
+			list.add(Config.biomesCfg.getCategory(name));
+		}
+
+		return list;
 	}
 
 	public static class CaveBiome extends WeightedRandom.Item

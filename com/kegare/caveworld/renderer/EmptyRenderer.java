@@ -19,6 +19,8 @@ import cpw.mods.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class EmptyRenderer extends IRenderHandler
 {
+	public static final EmptyRenderer instance = new EmptyRenderer();
+
 	@Override
 	public void render(float ticks, WorldClient world, Minecraft mc) {}
 }

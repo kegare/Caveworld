@@ -31,7 +31,7 @@ public class CaveBlocks
 	public static BlockPortalCaveworld caveworld_portal;
 	public static BlockRope rope;
 
-	public static void initialize()
+	public static void initializeBlocks()
 	{
 		caveworld_portal = new BlockPortalCaveworld("portalCaveworld");
 
@@ -41,7 +41,7 @@ public class CaveBlocks
 		}
 	}
 
-	public static void register()
+	public static void registerBlocks()
 	{
 		GameRegistry.registerBlock(caveworld_portal, ItemPortalCaveworld.class, "caveworld_portal");
 

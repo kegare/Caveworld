@@ -23,34 +23,34 @@ import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
 import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Level;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.kegare.caveworld.config.CaveGuiFactory.CaveConfigGui.VeinsEntry.VeinConfigEntry;
-import com.kegare.caveworld.config.impl.NumberSliderEntry;
+import com.kegare.caveworld.config.entry.VeinsEntry.VeinConfigEntry;
 import com.kegare.caveworld.core.CaveBiomeManager;
 import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome;
-import com.kegare.caveworld.core.CaveOreManager;
-import com.kegare.caveworld.core.CaveOreManager.CaveOre;
+import com.kegare.caveworld.core.CaveVeinManager;
+import com.kegare.caveworld.core.CaveVeinManager.CaveVein;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.util.BlockEntry;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.Version;
 
-import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.client.config.GuiConfigEntries.NumberSliderEntry;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class Config
 {
-	private static final Side side = FMLCommonHandler.instance().getSide();
-
 	public static Configuration generalCfg;
 	public static Configuration blocksCfg;
 	public static Configuration dimensionCfg;
@@ -119,7 +119,51 @@ public class Config
 		return config;
 	}
 
-	public static final String LANG_KEY = "caveworld.configgui.";
+	public static String getConfigName(Configuration config)
+	{
+		String name = FilenameUtils.getBaseName(config.toString());
+
+		if (name != null && name.startsWith("caveworld-"))
+		{
+			return name.substring(name.lastIndexOf('-') + 1);
+		}
+
+		return null;
+	}
+
+	public static enum ConfigEntryClass
+	{
+		NUMBER_SLIDER,
+		VEIN_CONFIG;
+
+		private Class entryClass;
+
+		protected void set(Class clazz)
+		{
+			entryClass = clazz;
+		}
+
+		public Class get()
+		{
+			return entryClass;
+		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	private static void registerConfigEntryClass()
+	{
+		ConfigEntryClass.NUMBER_SLIDER.set(NumberSliderEntry.class);
+		ConfigEntryClass.VEIN_CONFIG.set(VeinConfigEntry.class);
+	}
+
+	static
+	{
+		try
+		{
+			registerConfigEntryClass();
+		}
+		catch (NoSuchMethodError e) {}
+	}
 
 	public static void syncConfig()
 	{
@@ -146,7 +190,7 @@ public class Config
 		}
 
 		prop = generalCfg.get(category, "versionNotify", true);
-		prop.setLanguageKey(LANG_KEY + category + '.' + prop.getName());
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		prop.comment += Configuration.NEW_LINE;
@@ -154,7 +198,7 @@ public class Config
 		propOrder.add(prop.getName());
 		versionNotify = prop.getBoolean(versionNotify);
 		prop = generalCfg.get(category, "deathLoseMiningCount", false);
-		prop.setLanguageKey(LANG_KEY + category + '.' + prop.getName());
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		prop.comment += Configuration.NEW_LINE;
@@ -166,13 +210,13 @@ public class Config
 
 		category = "recipes";
 		prop = generalCfg.get(category, "portalCraftRecipe", Version.DEV_DEBUG);
-		prop.setLanguageKey(LANG_KEY + category + '.' + prop.getName()).setRequiresMcRestart(true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		portalCraftRecipe = prop.getBoolean(portalCraftRecipe);
 		prop = generalCfg.get(category, "mossStoneCraftRecipe", true);
-		prop.setLanguageKey(LANG_KEY + category + '.' + prop.getName()).setRequiresMcRestart(true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
@@ -183,7 +227,7 @@ public class Config
 
 		category = "options";
 		prop = generalCfg.get(category, "hardcore", false);
-		prop.setLanguageKey(LANG_KEY + category + '.' + prop.getName());
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		prop.comment += Configuration.NEW_LINE;
@@ -213,7 +257,7 @@ public class Config
 		blocksCfg.addCustomCategoryComment(category, "If multiplayer, values must match on client-side and server-side.");
 
 		prop = blocksCfg.get(category, "Rope", true);
-		prop.setLanguageKey(LANG_KEY + category + '.' + prop.getName()).setRequiresMcRestart(true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
@@ -242,7 +286,7 @@ public class Config
 		dimensionCfg.addCustomCategoryComment(category, "If multiplayer, server-side only.");
 
 		prop = dimensionCfg.get(category, "dimensionCaveworld", -5);
-		prop.setLanguageKey(LANG_KEY + category + '.' + prop.getName()).setRequiresMcRestart(true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
@@ -256,49 +300,49 @@ public class Config
 		}
 
 		prop = dimensionCfg.get(category, "subsurfaceHeight", 127);
-		prop.setMinValue(63).setMaxValue(255).setLanguageKey(LANG_KEY + category + '.' + prop.getName());
+		prop.setMinValue(63).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		subsurfaceHeight = prop.getInt(subsurfaceHeight);
 		prop = dimensionCfg.get(category, "generateCaves", true);
-		prop.setLanguageKey(LANG_KEY + category + '.' + prop.getName());
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		generateCaves = prop.getBoolean(generateCaves);
 		prop = dimensionCfg.get(category, "generateRavine", true);
-		prop.setLanguageKey(LANG_KEY + category + '.' + prop.getName());
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		generateRavine = prop.getBoolean(generateRavine);
 		prop = dimensionCfg.get(category, "generateMineshaft", true);
-		prop.setLanguageKey(LANG_KEY + category + '.' + prop.getName());
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		generateMineshaft = prop.getBoolean(generateMineshaft);
 		prop = dimensionCfg.get(category, "generateStronghold", true);
-		prop.setLanguageKey(LANG_KEY + category + '.' + prop.getName());
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		generateStronghold = prop.getBoolean(generateStronghold);
 		prop = dimensionCfg.get(category, "generateLakes", true);
-		prop.setLanguageKey(LANG_KEY + category + '.' + prop.getName());
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		generateLakes = prop.getBoolean(generateLakes);
 		prop = dimensionCfg.get(category, "generateDungeons", true);
-		prop.setLanguageKey(LANG_KEY + category + '.' + prop.getName());
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		generateDungeons = prop.getBoolean(generateDungeons);
 		prop = dimensionCfg.get(category, "decorateVines", true);
-		prop.setLanguageKey(LANG_KEY + category + '.' + prop.getName());
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
@@ -317,7 +361,6 @@ public class Config
 		String category = "biomes";
 		Property prop;
 		List<String> propOrder = Lists.newArrayList();
-		Class clazz;
 
 		if (biomesCfg == null)
 		{
@@ -362,20 +405,19 @@ public class Config
 			propOrder.clear();
 			name = String.valueOf(biome.biomeID);
 			prop = biomesCfg.get(name, "genWeight", biomesDefaultMap.containsKey(biome.biomeID) ? biomesDefaultMap.get(biome.biomeID) : 0);
-			clazz = side.isClient() ? NumberSliderEntry.class : null;
-			prop.setMinValue(0).setMaxValue(100).setLanguageKey(LANG_KEY + category + '.' + prop.getName()).setConfigEntryClass(clazz);
+			prop.setMinValue(0).setMaxValue(100).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(ConfigEntryClass.NUMBER_SLIDER.get());
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 			prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 			propOrder.add(prop.getName());
 			weight = MathHelper.clamp_int(prop.getInt(), Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue()));
 			prop = biomesCfg.get(name, "terrainBlock", Block.blockRegistry.getNameForObject(Blocks.stone));
-			prop.setLanguageKey(LANG_KEY + category + '.' + prop.getName());
+			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 			prop.comment += " [default: " + prop.getDefault() + "]";
 			propOrder.add(prop.getName());
 			block = prop.getString();
 			prop = biomesCfg.get(name, "terrainBlockMetadata", 0);
-			prop.setMinValue(0).setMaxValue(15).setLanguageKey(LANG_KEY + category + '.' + prop.getName());
+			prop.setMinValue(0).setMaxValue(15).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 			prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 			propOrder.add(prop.getName());
@@ -413,132 +455,54 @@ public class Config
 
 	public static void syncVeinsCfg()
 	{
-		String category = "veins";
-		Property prop;
-		List<String> propOrder = Lists.newArrayList();
-		Class clazz;
-
 		if (veinsCfg == null)
 		{
-			veinsCfg = loadConfig(category);
+			veinsCfg = loadConfig("veins");
 		}
 
-		CaveOreManager.clearCaveOres();
-
-		String block;
-		int blockMetadata;
-		int count;
-		int weight;
-		int min;
-		int max;
-		String target;
-		int targetMetadata;
-		int[] biomes;
+		CaveVeinManager.clearCaveVeins();
 
 		if (veinsCfg.getCategoryNames().isEmpty())
 		{
-			Map<String, CaveOre> ores = Maps.newHashMap();
+			Map<String, CaveVein> veins = Maps.newHashMap();
 
-			ores.put("Coal Ore Vein", new CaveOre(new BlockEntry(Blocks.coal_ore, 0), 16, 20, 0, 255));
-			ores.put("Iron Ore Vein", new CaveOre(new BlockEntry(Blocks.iron_ore, 0), 10, 28, 0, 255));
-			ores.put("Gold Ore Vein", new CaveOre(new BlockEntry(Blocks.gold_ore, 0), 8, 2, 0, 127));
-			ores.put("Redstone Ore Vein", new CaveOre(new BlockEntry(Blocks.redstone_ore, 0), 7, 8, 0, 40));
-			ores.put("Lapis Ore Vein", new CaveOre(new BlockEntry(Blocks.lapis_ore, 0), 5, 1, 0, 40));
-			ores.put("Diamond Ore Vein", new CaveOre(new BlockEntry(Blocks.diamond_ore, 0), 8, 1, 0, 20));
-			ores.put("Emerald Ore Vein", new CaveOre(new BlockEntry(Blocks.emerald_ore, 0), 5, 3, 50, 255, null, Type.MOUNTAIN, Type.HILLS));
-			ores.put("Quartz Ore Vein", new CaveOre(new BlockEntry(Blocks.quartz_ore, 0), 10, 16, 0, 255, new BlockEntry(Blocks.netherrack, 0), Type.NETHER));
-			ores.put("Dirt Vein", new CaveOre(new BlockEntry(Blocks.dirt, 0), 24, 18, 0, 255));
-			ores.put("Gravel Vein", new CaveOre(new BlockEntry(Blocks.gravel, 0), 20, 6, 0, 255));
-			ores.put("Sand Vein, 0", new CaveOre(new BlockEntry(Blocks.sand, 0), 20, 8, 0, 255, null, Type.SANDY));
-			ores.put("Sand Vein, 1", new CaveOre(new BlockEntry(Blocks.sand, 0), 20, 8, 0, 20, new BlockEntry(Blocks.gravel, 0), Type.SANDY));
-			ores.put("Soul Sand Vein", new CaveOre(new BlockEntry(Blocks.soul_sand, 0), 20, 10, 0, 255, new BlockEntry(Blocks.netherrack, 0), Type.NETHER));
-			ores.put("Hardened Clay Vein, 0", new CaveOre(new BlockEntry(Blocks.hardened_clay, 1), 24, 20, 0, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
-			ores.put("Hardened Clay Vein, 1", new CaveOre(new BlockEntry(Blocks.hardened_clay, 12), 24, 14, 0, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
+			veins.put("Coal Ore Vein", new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 16, 20, 0, 255));
+			veins.put("Iron Ore Vein", new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 10, 28, 0, 255));
+			veins.put("Gold Ore Vein", new CaveVein(new BlockEntry(Blocks.gold_ore, 0), 8, 2, 0, 127));
+			veins.put("Redstone Ore Vein", new CaveVein(new BlockEntry(Blocks.redstone_ore, 0), 7, 8, 0, 40));
+			veins.put("Lapis Ore Vein", new CaveVein(new BlockEntry(Blocks.lapis_ore, 0), 5, 1, 0, 40));
+			veins.put("Diamond Ore Vein", new CaveVein(new BlockEntry(Blocks.diamond_ore, 0), 8, 1, 0, 20));
+			veins.put("Emerald Ore Vein", new CaveVein(new BlockEntry(Blocks.emerald_ore, 0), 5, 3, 50, 255, null, Type.MOUNTAIN, Type.HILLS));
+			veins.put("Quartz Ore Vein", new CaveVein(new BlockEntry(Blocks.quartz_ore, 0), 10, 16, 0, 255, new BlockEntry(Blocks.netherrack, 0), Type.NETHER));
+			veins.put("Dirt Vein", new CaveVein(new BlockEntry(Blocks.dirt, 0), 24, 18, 0, 255));
+			veins.put("Gravel Vein", new CaveVein(new BlockEntry(Blocks.gravel, 0), 20, 6, 0, 255));
+			veins.put("Sand Vein, 0", new CaveVein(new BlockEntry(Blocks.sand, 0), 20, 8, 0, 255, null, Type.SANDY));
+			veins.put("Sand Vein, 1", new CaveVein(new BlockEntry(Blocks.sand, 0), 20, 8, 0, 20, new BlockEntry(Blocks.gravel, 0), Type.SANDY));
+			veins.put("Soul Sand Vein", new CaveVein(new BlockEntry(Blocks.soul_sand, 0), 20, 10, 0, 255, new BlockEntry(Blocks.netherrack, 0), Type.NETHER));
+			veins.put("Hardened Clay Vein, 0", new CaveVein(new BlockEntry(Blocks.hardened_clay, 1), 24, 20, 0, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
+			veins.put("Hardened Clay Vein, 1", new CaveVein(new BlockEntry(Blocks.hardened_clay, 12), 24, 14, 0, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
 
-			String name;
-			CaveOre ore;
-
-			for (Map.Entry<String, CaveOre> entry : ores.entrySet())
+			for (Map.Entry<String, CaveVein> entry : veins.entrySet())
 			{
-				name = entry.getKey();
-				ore = entry.getValue();
-				block = Block.blockRegistry.getNameForObject(ore.getBlock().getBlock());
-				blockMetadata = ore.getBlock().getMetadata();
-				count = ore.getGenBlockCount();
-				weight = ore.getGenWeight();
-				min = ore.getGenMinHeight();
-				max = ore.getGenMaxHeight();
-				target = Block.blockRegistry.getNameForObject(ore.getGenTargetBlock().getBlock());
-				targetMetadata = ore.getGenTargetBlock().getMetadata();
-				biomes = ore.getGenBiomes();
-
-				addVeinEntry(name, block, blockMetadata, count, weight, min, max, target, targetMetadata, biomes);
-
-				CaveOreManager.addCaveOre(ore);
+				CaveVeinManager.addCaveVeinWithConfig(entry.getKey(), entry.getValue());
 			}
 		}
 		else
 		{
+			ConfigCategory category;
+
 			for (String name : veinsCfg.getCategoryNames())
 			{
-				propOrder.clear();
-				prop = veinsCfg.get(name, "block", Block.blockRegistry.getNameForObject(Blocks.stone));
-				prop.setLanguageKey(LANG_KEY + category + '.' + prop.getName());
-				prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-				propOrder.add(prop.getName());
-				block = prop.getString();
-				prop = veinsCfg.get(name, "blockMetadata", 0);
-				prop.setMinValue(0).setMaxValue(15).setLanguageKey(LANG_KEY + category + '.' + prop.getName());
-				prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-				prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
-				propOrder.add(prop.getName());
-				blockMetadata = MathHelper.clamp_int(prop.getInt(), Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue()));
-				prop = veinsCfg.get(name, "genBlockCount", 1);
-				prop.setMinValue(1).setMaxValue(100).setLanguageKey(LANG_KEY + category + '.' + prop.getName());
-				prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-				prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
-				propOrder.add(prop.getName());
-				count = MathHelper.clamp_int(prop.getInt(), Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue()));
-				prop = veinsCfg.get(name, "genWeight", 1);
-				clazz = side.isClient() ? VeinConfigEntry.class : null;
-				prop.setMinValue(1).setMaxValue(100).setLanguageKey(LANG_KEY + category + '.' + prop.getName()).setConfigEntryClass(clazz);
-				prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-				prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
-				propOrder.add(prop.getName());
-				weight = MathHelper.clamp_int(prop.getInt(), Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue()));
-				prop = veinsCfg.get(name, "genMinHeight", 0);
-				prop.setMinValue(0).setMaxValue(254).setLanguageKey(LANG_KEY + category + '.' + prop.getName());
-				prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-				prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
-				propOrder.add(prop.getName());
-				min = MathHelper.clamp_int(prop.getInt(), Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue()));
-				prop = veinsCfg.get(name, "genMaxHeight", 255);
-				prop.setMinValue(1).setMaxValue(255).setLanguageKey(LANG_KEY + category + '.' + prop.getName());
-				prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-				prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
-				propOrder.add(prop.getName());
-				max = MathHelper.clamp_int(prop.getInt(), Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue()));
-				prop = veinsCfg.get(name, "genTargetBlock", Block.blockRegistry.getNameForObject(Blocks.stone));
-				prop.setLanguageKey(LANG_KEY + category + '.' + prop.getName());
-				prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-				prop.comment += " [default: " + prop.getDefault() + "]";
-				propOrder.add(prop.getName());
-				target = prop.getString();
-				prop = veinsCfg.get(name, "genTargetBlockMetadata", 0);
-				prop.setMinValue(0).setMaxValue(15).setLanguageKey(LANG_KEY + category + '.' + prop.getName());
-				prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-				prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
-				propOrder.add(prop.getName());
-				targetMetadata = MathHelper.clamp_int(prop.getInt(), Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue()));
-				prop = veinsCfg.get(name, "genBiomes", new int[] {});
-				prop.setLanguageKey(LANG_KEY + category + '.' + prop.getName());
-				prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-				propOrder.add(prop.getName());
-				biomes = prop.getIntList();
+				category = veinsCfg.getCategory(name);
 
-				veinsCfg.setCategoryPropertyOrder(name, propOrder);
-
-				CaveOreManager.addCaveOre(new CaveOre(new BlockEntry(block, blockMetadata, Blocks.stone), count, weight, min, max, new BlockEntry(target, targetMetadata, Blocks.stone), biomes));
+				if (category.get("genWeight").getInt() <= 0)
+				{
+					veinsCfg.removeCategory(category);
+				}
+				else
+				{
+					CaveVeinManager.addCaveVeinFromConfig(name);
+				}
 			}
 		}
 
@@ -546,78 +510,5 @@ public class Config
 		{
 			veinsCfg.save();
 		}
-	}
-
-	public static void addVeinEntry(String name, String block, int blockMetadata, int count, int weight, int min, int max, String target, int targetMetadata, int[] biomes)
-	{
-		String category = "veins";
-		List<String> propOrder = Lists.newArrayList();
-		Property prop;
-		Class clazz;
-
-		prop = veinsCfg.get(name, "block", Block.blockRegistry.getNameForObject(Blocks.stone));
-		prop.setLanguageKey(LANG_KEY + category + '.' + prop.getName());
-		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-		prop.set(block);
-		propOrder.add(prop.getName());
-		block = prop.getString();
-		prop = veinsCfg.get(name, "blockMetadata", 0);
-		prop.setMinValue(0).setMaxValue(15).setLanguageKey(LANG_KEY + category + '.' + prop.getName());
-		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
-		prop.set(blockMetadata);
-		propOrder.add(prop.getName());
-		blockMetadata = MathHelper.clamp_int(prop.getInt(), Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue()));
-		prop = veinsCfg.get(name, "genBlockCount", 1);
-		prop.setMinValue(1).setMaxValue(100).setLanguageKey(LANG_KEY + category + '.' + prop.getName());
-		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
-		prop.set(count);
-		propOrder.add(prop.getName());
-		count = MathHelper.clamp_int(prop.getInt(), Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue()));
-		prop = veinsCfg.get(name, "genWeight", 1);
-		clazz = side.isClient() ? VeinConfigEntry.class : null;
-		prop.setMinValue(1).setMaxValue(100).setLanguageKey(LANG_KEY + category + '.' + prop.getName()).setConfigEntryClass(clazz);
-		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
-		prop.set(weight);
-		propOrder.add(prop.getName());
-		weight = MathHelper.clamp_int(prop.getInt(), Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue()));
-		prop = veinsCfg.get(name, "genMinHeight", 0);
-		prop.setMinValue(0).setMaxValue(254).setLanguageKey(LANG_KEY + category + '.' + prop.getName());
-		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
-		prop.set(min);
-		propOrder.add(prop.getName());
-		min = MathHelper.clamp_int(prop.getInt(), Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue()));
-		prop = veinsCfg.get(name, "genMaxHeight", 255);
-		prop.setMinValue(1).setMaxValue(255).setLanguageKey(LANG_KEY + category + '.' + prop.getName());
-		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
-		prop.set(max);
-		propOrder.add(prop.getName());
-		max = MathHelper.clamp_int(prop.getInt(), Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue()));
-		prop = veinsCfg.get(name, "genTargetBlock", Block.blockRegistry.getNameForObject(Blocks.stone));
-		prop.setLanguageKey(LANG_KEY + category + '.' + prop.getName());
-		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-		prop.comment += " [default: " + prop.getDefault() + "]";
-		prop.set(target);
-		propOrder.add(prop.getName());
-		target = prop.getString();
-		prop = veinsCfg.get(name, "genTargetBlockMetadata", 0);
-		prop.setMinValue(0).setMaxValue(15).setLanguageKey(LANG_KEY + category + '.' + prop.getName());
-		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
-		prop.set(targetMetadata);
-		propOrder.add(prop.getName());
-		targetMetadata = MathHelper.clamp_int(prop.getInt(), Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue()));
-		prop = veinsCfg.get(name, "genBiomes", new int[] {});
-		prop.setLanguageKey(LANG_KEY + category + '.' + prop.getName());
-		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-		prop.set(biomes);
-		propOrder.add(prop.getName());
-		biomes = prop.getIntList();
-
-		Config.veinsCfg.setCategoryPropertyOrder(name, propOrder);
 	}
 }

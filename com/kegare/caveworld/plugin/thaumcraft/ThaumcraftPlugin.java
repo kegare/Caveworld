@@ -17,17 +17,21 @@ import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectList;
 
 import com.kegare.caveworld.block.CaveBlocks;
-import com.kegare.caveworld.plugin.CaveModPlugin;
 
-public class ThaumcraftPlugin extends CaveModPlugin
+import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.Optional.Method;
+
+public final class ThaumcraftPlugin
 {
-	public ThaumcraftPlugin()
+	public static final String MODID = "Thaumcraft";
+
+	public static boolean enabled()
 	{
-		super("Thaumcraft");
+		return Loader.isModLoaded(MODID);
 	}
 
-	@Override
-	protected void init()
+	@Method(modid = MODID)
+	protected void invoke()
 	{
 		ThaumcraftApi.registerObjectTag(new ItemStack(CaveBlocks.caveworld_portal), new AspectList().add(Aspect.TRAVEL, 4).add(Aspect.MINE, 4));
 

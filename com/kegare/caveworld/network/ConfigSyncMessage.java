@@ -36,6 +36,7 @@ public class ConfigSyncMessage implements IMessage, IMessageHandler<ConfigSyncMe
 		List<String> dat = Lists.newArrayList();
 
 		dat.add(Boolean.toString(Config.deathLoseMiningCount));
+		dat.add(Boolean.toString(Config.hardcore));
 		dat.add(Integer.toString(Config.dimensionCaveworld));
 		dat.add(Integer.toString(Config.subsurfaceHeight));
 		dat.add(Boolean.toString(Config.generateCaves));
@@ -45,7 +46,6 @@ public class ConfigSyncMessage implements IMessage, IMessageHandler<ConfigSyncMe
 		dat.add(Boolean.toString(Config.generateLakes));
 		dat.add(Boolean.toString(Config.generateDungeons));
 		dat.add(Boolean.toString(Config.decorateVines));
-		dat.add(Boolean.toString(Config.hardcore));
 
 		this.data = Joiner.on(',').join(dat);
 	}
@@ -71,6 +71,7 @@ public class ConfigSyncMessage implements IMessage, IMessageHandler<ConfigSyncMe
 		try
 		{
 			Config.deathLoseMiningCount = Boolean.valueOf(dat.get(i++));
+			Config.hardcore = Boolean.valueOf(dat.get(i++));
 			Config.dimensionCaveworld = Integer.valueOf(dat.get(i++));
 			Config.subsurfaceHeight = Integer.valueOf(dat.get(i++));
 			Config.generateCaves = Boolean.valueOf(dat.get(i++));
@@ -80,7 +81,6 @@ public class ConfigSyncMessage implements IMessage, IMessageHandler<ConfigSyncMe
 			Config.generateLakes = Boolean.valueOf(dat.get(i++));
 			Config.generateDungeons = Boolean.valueOf(dat.get(i++));
 			Config.decorateVines = Boolean.valueOf(dat.get(i++));
-			Config.hardcore = Boolean.valueOf(dat.get(i++));
 		}
 		catch (Exception e)
 		{

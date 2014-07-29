@@ -18,15 +18,13 @@ import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.config.Config;
 import com.kegare.caveworld.handler.CaveEventHooks;
 import com.kegare.caveworld.handler.CaveFuelHandler;
-import com.kegare.caveworld.network.BiomeSyncMessage;
+import com.kegare.caveworld.network.BiomesSyncMessage;
 import com.kegare.caveworld.network.CaveSoundMessage;
 import com.kegare.caveworld.network.ConfigSyncMessage;
 import com.kegare.caveworld.network.DimSyncMessage;
 import com.kegare.caveworld.network.MiningSyncMessage;
-import com.kegare.caveworld.network.OreSyncMessage;
-import com.kegare.caveworld.network.VersionNotifyMessage;
-import com.kegare.caveworld.plugin.CaveModPluginManager;
-import com.kegare.caveworld.plugin.thaumcraft.ThaumcraftPlugin;
+import com.kegare.caveworld.network.VeinsSyncMessage;
+import com.kegare.caveworld.plugin.CaveModPlugin;
 import com.kegare.caveworld.proxy.CommonProxy;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
@@ -49,18 +47,19 @@ import cpw.mods.fml.relauncher.Side;
 (
 	modid = MODID,
 	acceptedMinecraftVersions = "[1.7.10,)",
-	guiFactory = PACKAGE_NAME + ".config.CaveGuiFactory"
+	guiFactory = MOD_PACKAGE + ".config.CaveGuiFactory"
 )
 public class Caveworld
 {
 	public static final String
 	MODID = "kegare.caveworld",
-	PACKAGE_NAME = "com.kegare.caveworld";
+	MOD_PACKAGE = "com.kegare.caveworld",
+	CONFIG_LANG = "caveworld.configgui.";
 
 	@Metadata(MODID)
 	public static ModMetadata metadata;
 
-	@SidedProxy(modId = MODID, clientSide = PACKAGE_NAME + ".proxy.ClientProxy", serverSide = PACKAGE_NAME + ".proxy.CommonProxy")
+	@SidedProxy(modId = MODID, clientSide = MOD_PACKAGE + ".proxy.ClientProxy", serverSide = MOD_PACKAGE + ".proxy.CommonProxy")
 	public static CommonProxy proxy;
 
 	public static final SimpleNetworkWrapper network = new SimpleNetworkWrapper(MODID);
@@ -72,25 +71,19 @@ public class Caveworld
 
 		Config.syncConfig();
 
-		CaveBlocks.initialize();
-		CaveBlocks.register();
+		CaveBlocks.initializeBlocks();
+		CaveBlocks.registerBlocks();
 
-		CaveAchievementList.register();
+		CaveAchievementList.registerAchievements();
 
 		GameRegistry.registerFuelHandler(new CaveFuelHandler());
-
-		network.registerMessage(ConfigSyncMessage.class, ConfigSyncMessage.class, 0, Side.CLIENT);
-		network.registerMessage(VersionNotifyMessage.class, VersionNotifyMessage.class, 1, Side.CLIENT);
-		network.registerMessage(DimSyncMessage.class, DimSyncMessage.class, 2, Side.CLIENT);
-		network.registerMessage(BiomeSyncMessage.class, BiomeSyncMessage.class, 3, Side.CLIENT);
-		network.registerMessage(OreSyncMessage.class, OreSyncMessage.class, 4, Side.CLIENT);
-		network.registerMessage(MiningSyncMessage.class, MiningSyncMessage.class, 5, Side.CLIENT);
-		network.registerMessage(CaveSoundMessage.class, CaveSoundMessage.class, 6, Side.CLIENT);
 	}
 
 	@EventHandler
 	public void init(FMLInitializationEvent event)
 	{
+		registerMessages();
+
 		proxy.registerRenderers();
 		proxy.registerRecipes();
 
@@ -100,15 +93,27 @@ public class Caveworld
 		FMLCommonHandler.instance().bus().register(CaveEventHooks.instance);
 
 		MinecraftForge.EVENT_BUS.register(CaveEventHooks.instance);
+	}
 
-		CaveModPluginManager.registerPlugin(ThaumcraftPlugin.class);
-		CaveModPluginManager.initPlugins();
+	private void registerMessages()
+	{
+		byte id = 0;
+
+		network.registerMessage(DimSyncMessage.class, DimSyncMessage.class, id++, Side.CLIENT);
+		network.registerMessage(ConfigSyncMessage.class, ConfigSyncMessage.class, id++, Side.CLIENT);
+		network.registerMessage(BiomesSyncMessage.class, BiomesSyncMessage.class, id++, Side.CLIENT);
+		network.registerMessage(VeinsSyncMessage.class, VeinsSyncMessage.class, id++, Side.CLIENT);
+		network.registerMessage(MiningSyncMessage.class, MiningSyncMessage.class, id++, Side.CLIENT);
+		network.registerMessage(CaveSoundMessage.class, CaveSoundMessage.class, id++, Side.CLIENT);
 	}
 
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent event)
 	{
 		Config.syncPostConfig();
+
+		CaveModPlugin.registerPlugins();
+		CaveModPlugin.invokePlugins();
 	}
 
 	@EventHandler

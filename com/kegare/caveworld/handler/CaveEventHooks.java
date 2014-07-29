@@ -20,24 +20,32 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.EntityBat;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayer.EnumStatus;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.event.ClickEvent;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.play.server.S02PacketChat;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.ChatStyle;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.entity.EntityEvent.EntityConstructing;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -49,35 +57,69 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent;
 import net.minecraftforge.event.world.WorldEvent;
+import shift.mceconomy2.api.MCEconomyAPI;
 
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.config.Config;
 import com.kegare.caveworld.core.CaveAchievementList;
 import com.kegare.caveworld.core.CaveBiomeManager;
 import com.kegare.caveworld.core.CaveMiningPlayer;
-import com.kegare.caveworld.core.CaveOreManager;
+import com.kegare.caveworld.core.CaveVeinManager;
 import com.kegare.caveworld.core.Caveworld;
-import com.kegare.caveworld.network.BiomeSyncMessage;
+import com.kegare.caveworld.network.BiomesSyncMessage;
 import com.kegare.caveworld.network.CaveSoundMessage;
 import com.kegare.caveworld.network.ConfigSyncMessage;
 import com.kegare.caveworld.network.DimSyncMessage;
-import com.kegare.caveworld.network.OreSyncMessage;
-import com.kegare.caveworld.network.VersionNotifyMessage;
+import com.kegare.caveworld.network.VeinsSyncMessage;
+import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.util.CaveUtils;
+import com.kegare.caveworld.util.Version;
+import com.kegare.caveworld.util.Version.Status;
 import com.kegare.caveworld.world.TeleporterCaveworld;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 
 import cpw.mods.fml.client.FMLClientHandler;
+import cpw.mods.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
-import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
+import cpw.mods.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
+import cpw.mods.fml.common.network.FMLNetworkEvent.ServerConnectionFromClientEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 public class CaveEventHooks
 {
 	public static final CaveEventHooks instance = new CaveEventHooks();
+
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
+	public void onConfigChanged(OnConfigChangedEvent event)
+	{
+		if (Caveworld.MODID.equals(event.modID) && !event.isWorldRunning)
+		{
+			if (Configuration.CATEGORY_GENERAL.equals(event.configID))
+			{
+				Config.syncGeneralCfg();
+			}
+			else if ("blocks".equals(event.configID))
+			{
+				Config.syncBlocksCfg();
+			}
+			else if ("dimension".equals(event.configID))
+			{
+				Config.syncDimensionCfg();
+			}
+			else if ("biomes".equals(event.configID))
+			{
+				Config.syncBiomesCfg();
+			}
+			else if ("veins".equals(event.configID))
+			{
+				Config.syncVeinsCfg();
+			}
+		}
+	}
 
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
@@ -114,19 +156,31 @@ public class CaveEventHooks
 		}
 	}
 
+	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
-	public void onPlayerLoggedIn(PlayerLoggedInEvent event)
+	public void onClientConnected(ClientConnectedToServerEvent event)
 	{
-		if (event.player instanceof EntityPlayerMP)
+		if (Version.getStatus() == Status.PENDING || Version.getStatus() == Status.FAILED)
 		{
-			EntityPlayerMP player = (EntityPlayerMP)event.player;
-
-			Caveworld.network.sendTo(new ConfigSyncMessage(), player);
-			Caveworld.network.sendTo(new VersionNotifyMessage(), player);
-			Caveworld.network.sendTo(new DimSyncMessage(), player);
-			Caveworld.network.sendTo(new BiomeSyncMessage(CaveBiomeManager.getCaveBiomes()), player);
-			Caveworld.network.sendTo(new OreSyncMessage(CaveOreManager.getCaveOres()), player);
+			Version.versionCheck();
 		}
+		else if (Version.DEV_DEBUG || Config.versionNotify && Version.isOutdated())
+		{
+			ChatStyle style = new ChatStyle();
+			style.setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, Caveworld.metadata.url));
+
+			event.handler.handleChat(new S02PacketChat(new ChatComponentText(I18n.format("caveworld.version.message",
+					EnumChatFormatting.AQUA + "Caveworld" + EnumChatFormatting.RESET) + " : " + EnumChatFormatting.YELLOW + Version.getLatest()).setChatStyle(style)));
+		}
+	}
+
+	@SubscribeEvent
+	public void onServerConnected(ServerConnectionFromClientEvent event)
+	{
+		event.manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new DimSyncMessage()));
+		event.manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new ConfigSyncMessage()));
+		event.manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new BiomesSyncMessage(CaveBiomeManager.getCaveBiomes())));
+		event.manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new VeinsSyncMessage(CaveVeinManager.getCaveVeins())));
 	}
 
 	@SubscribeEvent
@@ -176,7 +230,7 @@ public class CaveEventHooks
 
 				if (!player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.caveworld) || data.getLong("Caveworld:LastTeleportTime") + 18000L < world.getTotalWorldTime())
 				{
-					Caveworld.network.sendTo(new CaveSoundMessage("caveworld:ambient.cave"), player);
+					Caveworld.network.sendTo(new CaveSoundMessage(new ResourceLocation("caveworld", "ambient.cave")), player);
 				}
 
 				data.setLong("Caveworld:LastTeleportTime", world.getTotalWorldTime());
@@ -467,8 +521,17 @@ public class CaveEventHooks
 
 		if (entity != null && entity instanceof EntityPlayerMP)
 		{
+			EntityPlayerMP player = (EntityPlayerMP)entity;
 			Random random = living.getRNG();
 			int looting = MathHelper.clamp_int(event.lootingLevel, 0, 3);
+
+			if (MCEconomyPlugin.enabled() && living.dimension == Config.dimensionCaveworld && living instanceof IMob)
+			{
+				if (!MCEconomyAPI.ShopManager.hasEntityPurchase(living))
+				{
+					MCEconomyAPI.addPlayerMP(player, random.nextInt(3) + Math.max(looting, 1), false);
+				}
+			}
 
 			if (living instanceof EntityBat && living.getEntityData().getBoolean("Caveworld:CaveBat"))
 			{

@@ -18,6 +18,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.WorldType;
@@ -30,6 +31,7 @@ import net.minecraftforge.common.DimensionManager;
 import org.apache.logging.log4j.Level;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 import com.kegare.caveworld.config.Config;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.network.CaveSoundMessage;
@@ -48,35 +50,6 @@ public class WorldProviderCaveworld extends WorldProvider
 	public static Optional<Long> dimensionSeed = Optional.absent();
 	public static Optional<Integer> subsurfaceHeight = Optional.absent();
 
-	private static final String DIM_NAME;
-
-	static
-	{
-		WorldProvider provider = null;
-		String dim = null;
-
-		try
-		{
-			provider = WorldProviderCaveworld.class.newInstance();
-		}
-		catch (Exception e)
-		{
-			provider = null;
-		}
-
-		if (provider != null)
-		{
-			dim = provider.getSaveFolder();
-		}
-
-		if (dim == null || !dim.startsWith("DIM"))
-		{
-			dim = "DIM-Caveworld";
-		}
-
-		DIM_NAME = dim;
-	}
-
 	public static NBTTagCompound getDimData()
 	{
 		if (!dimData.isPresent())
@@ -90,13 +63,23 @@ public class WorldProviderCaveworld extends WorldProvider
 	public static File getDimDir()
 	{
 		File root = DimensionManager.getCurrentSaveRootDirectory();
+		String name;
 
-		if (root == null || !root.exists() || root.isFile())
+		try
+		{
+			name = WorldProviderCaveworld.class.newInstance().getDimensionName();
+		}
+		catch (Exception e)
+		{
+			name = null;
+		}
+
+		if (root == null || !root.exists() || root.isFile() || Strings.isNullOrEmpty(name))
 		{
 			return null;
 		}
 
-		File dir = new File(root, DIM_NAME);
+		File dir = new File(root, name);
 
 		if (!dir.exists())
 		{
@@ -112,12 +95,7 @@ public class WorldProviderCaveworld extends WorldProvider
 
 		try
 		{
-			File dir = getDimDir();
-
-			if (dir != null)
-			{
-				data = CompressedStreamTools.read(new File(dir, "caveworld.dat"));
-			}
+			data = CompressedStreamTools.read(new File(getDimDir(), "caveworld.dat"));
 		}
 		catch (Exception e)
 		{
@@ -234,19 +212,19 @@ public class WorldProviderCaveworld extends WorldProvider
 	@Override
 	public String getSaveFolder()
 	{
-		return "DIM-Caveworld";
+		return "DIM-" + getDimensionName();
 	}
 
 	@Override
 	public String getWelcomeMessage()
 	{
-		return "Entering the Caveworld";
+		return "Entering the " + getDimensionName();
 	}
 
 	@Override
 	public String getDepartMessage()
 	{
-		return "Leaving the Caveworld";
+		return "Leaving the " + getDimensionName();
 	}
 
 	@Override
@@ -259,14 +237,14 @@ public class WorldProviderCaveworld extends WorldProvider
 	@SideOnly(Side.CLIENT)
 	public IRenderHandler getSkyRenderer()
 	{
-		return new EmptyRenderer();
+		return EmptyRenderer.instance;
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public IRenderHandler getCloudRenderer()
 	{
-		return new EmptyRenderer();
+		return EmptyRenderer.instance;
 	}
 
 	@Override
@@ -333,7 +311,7 @@ public class WorldProviderCaveworld extends WorldProvider
 			}
 			else
 			{
-				Caveworld.network.sendToDimension(new CaveSoundMessage("caveworld:ambient.cave"), dimensionId);
+				Caveworld.network.sendToDimension(new CaveSoundMessage(new ResourceLocation("caveworld", "ambient.cave")), dimensionId);
 
 				ambientTickCountdown = worldObj.rand.nextInt(8000) + 20000;
 			}
