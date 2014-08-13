@@ -11,11 +11,16 @@
 package com.kegare.caveworld.core;
 
 import static com.kegare.caveworld.core.Caveworld.*;
+
+import java.lang.reflect.Field;
+
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 
+import org.apache.logging.log4j.Level;
+
+import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
-import com.kegare.caveworld.config.Config;
 import com.kegare.caveworld.handler.CaveEventHooks;
 import com.kegare.caveworld.handler.CaveFuelHandler;
 import com.kegare.caveworld.network.BiomesSyncMessage;
@@ -25,7 +30,7 @@ import com.kegare.caveworld.network.DimSyncMessage;
 import com.kegare.caveworld.network.MiningSyncMessage;
 import com.kegare.caveworld.network.VeinsSyncMessage;
 import com.kegare.caveworld.plugin.CaveModPlugin;
-import com.kegare.caveworld.proxy.CommonProxy;
+import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 
@@ -35,6 +40,7 @@ import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Metadata;
 import cpw.mods.fml.common.ModMetadata;
 import cpw.mods.fml.common.SidedProxy;
+import cpw.mods.fml.common.event.FMLConstructionEvent;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
@@ -47,7 +53,7 @@ import cpw.mods.fml.relauncher.Side;
 (
 	modid = MODID,
 	acceptedMinecraftVersions = "[1.7.10,)",
-	guiFactory = MOD_PACKAGE + ".config.CaveGuiFactory"
+	guiFactory = MOD_PACKAGE + ".client.config.CaveGuiFactory"
 )
 public class Caveworld
 {
@@ -59,21 +65,51 @@ public class Caveworld
 	@Metadata(MODID)
 	public static ModMetadata metadata;
 
-	@SidedProxy(modId = MODID, clientSide = MOD_PACKAGE + ".proxy.ClientProxy", serverSide = MOD_PACKAGE + ".proxy.CommonProxy")
+	@SidedProxy(modId = MODID, clientSide = MOD_PACKAGE + ".client.ClientProxy", serverSide = MOD_PACKAGE + ".core.CommonProxy")
 	public static CommonProxy proxy;
 
 	public static final SimpleNetworkWrapper network = new SimpleNetworkWrapper(MODID);
 
 	@EventHandler
+	public void construct(FMLConstructionEvent event)
+	{
+		try
+		{
+			for (Field field : CaveworldAPI.class.getDeclaredFields())
+			{
+				switch (field.getName())
+				{
+					case "biomeManager":
+						field.setAccessible(true);
+						field.set(null, new CaveBiomeManager());
+						break;
+					case "veinManager":
+						field.setAccessible(true);
+						field.set(null, new CaveVeinManager());
+						break;
+					case "miningManager":
+						field.setAccessible(true);
+						field.set(null, new CaveMiningManager());
+						break;
+				}
+			}
+		}
+		catch (Exception e)
+		{
+			CaveLog.log(Level.ERROR, e, "An error occurred trying to initialize api instance");
+		}
+
+		CaveModPlugin.initializePlugins(event.getASMHarvestedData());
+
+		Version.versionCheck();
+	}
+
+	@EventHandler
 	public void preInit(FMLPreInitializationEvent event)
 	{
-		Version.versionCheck();
-
 		Config.syncConfig();
 
-		CaveBlocks.initializeBlocks();
 		CaveBlocks.registerBlocks();
-
 		CaveAchievementList.registerAchievements();
 
 		GameRegistry.registerFuelHandler(new CaveFuelHandler());
@@ -99,8 +135,8 @@ public class Caveworld
 	{
 		byte id = 0;
 
-		network.registerMessage(DimSyncMessage.class, DimSyncMessage.class, id++, Side.CLIENT);
 		network.registerMessage(ConfigSyncMessage.class, ConfigSyncMessage.class, id++, Side.CLIENT);
+		network.registerMessage(DimSyncMessage.class, DimSyncMessage.class, id++, Side.CLIENT);
 		network.registerMessage(BiomesSyncMessage.class, BiomesSyncMessage.class, id++, Side.CLIENT);
 		network.registerMessage(VeinsSyncMessage.class, VeinsSyncMessage.class, id++, Side.CLIENT);
 		network.registerMessage(MiningSyncMessage.class, MiningSyncMessage.class, id++, Side.CLIENT);
@@ -112,7 +148,6 @@ public class Caveworld
 	{
 		Config.syncPostConfig();
 
-		CaveModPlugin.registerPlugins();
 		CaveModPlugin.invokePlugins();
 	}
 

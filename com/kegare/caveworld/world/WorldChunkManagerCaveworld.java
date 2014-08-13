@@ -21,7 +21,7 @@ import net.minecraft.world.biome.BiomeCache;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.biome.WorldChunkManager;
 
-import com.kegare.caveworld.core.CaveBiomeManager;
+import com.kegare.caveworld.api.CaveworldAPI;
 
 public class WorldChunkManagerCaveworld extends WorldChunkManager
 {
@@ -39,7 +39,7 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 	@Override
 	public List getBiomesToSpawnIn()
 	{
-		return CaveBiomeManager.getBiomeList();
+		return CaveworldAPI.getBiomeList();
 	}
 
 	private BiomeGenBase getCaveBiomeGenAt(int x, int z)
@@ -50,7 +50,7 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 
 		random.setSeed(chunkSeed ^ worldObj.getSeed());
 
-		return CaveBiomeManager.getRandomCaveBiome(random);
+		return CaveworldAPI.getRandomBiome(random);
 	}
 
 	@Override

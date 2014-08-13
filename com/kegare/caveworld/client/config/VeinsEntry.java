@@ -1,4 +1,14 @@
-package com.kegare.caveworld.config.entry;
+/*
+ * Caveworld
+ *
+ * Copyright (c) 2014 kegare
+ * https://github.com/kegare
+ *
+ * This mod is distributed under the terms of the Minecraft Mod Public License 1.0, or MMPL.
+ * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
+ */
+
+package com.kegare.caveworld.client.config;
 
 import java.util.Iterator;
 import java.util.List;
@@ -16,16 +26,16 @@ import org.apache.commons.lang3.ArrayUtils;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.kegare.caveworld.config.Config;
-import com.kegare.caveworld.core.CaveVeinManager;
+import com.kegare.caveworld.api.BlockEntry;
+import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.core.CaveVeinManager.CaveVein;
 import com.kegare.caveworld.core.Caveworld;
-import com.kegare.caveworld.util.BlockEntry;
+import com.kegare.caveworld.core.Config;
 
 import cpw.mods.fml.client.config.DummyConfigElement.DummyCategoryElement;
 import cpw.mods.fml.client.config.GuiConfig;
 import cpw.mods.fml.client.config.GuiConfigEntries;
-import cpw.mods.fml.client.config.GuiConfigEntries.NumberSliderEntry;
+import cpw.mods.fml.client.config.GuiConfigEntries.StringEntry;
 import cpw.mods.fml.client.config.IConfigElement;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -57,19 +67,6 @@ public class VeinsEntry extends CaveCategoryEntry
 		}
 
 		return list;
-	}
-
-	@Override
-	public boolean isChanged()
-	{
-		if (childScreen instanceof GuiConfig)
-		{
-			GuiConfig child = (GuiConfig)childScreen;
-
-			return child.entryList.listEntries.size() != child.initEntries.size() || child.entryList.hasChangedEntry(true);
-		}
-
-		return false;
 	}
 
 	public static class VeinElement extends ConfigElement
@@ -139,11 +136,11 @@ public class VeinsEntry extends CaveCategoryEntry
 		{
 			List<IConfigElement> list = Lists.newArrayList();
 
-			list.add(new ConfigElement<String>(new Property("veinName", "New Vein", Property.Type.STRING, Caveworld.CONFIG_LANG + "veins.veinName")));
+			list.add(new ConfigElement<String>(new Property("veinName", "New Vein", Property.Type.STRING, Caveworld.CONFIG_LANG + "veins.veinName").setConfigEntryClass(VeinConfigEntry.class)));
 			list.add(new ConfigElement<String>(new Property("block", Block.blockRegistry.getNameForObject(Blocks.stone), Property.Type.STRING, Caveworld.CONFIG_LANG + "veins.block")));
 			list.add(new ConfigElement<Integer>(new Property("blockMetadata", "0", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.blockMetadata").setMinValue(0).setMaxValue(15)));
 			list.add(new ConfigElement<Integer>(new Property("genBlockCount", "1", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genBlockCount").setMinValue(1).setMaxValue(100)));
-			list.add(new ConfigElement<Integer>(new Property("genWeight", "1", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genWeight").setMinValue(0).setMaxValue(100).setConfigEntryClass(VeinConfigEntry.class)));
+			list.add(new ConfigElement<Integer>(new Property("genWeight", "1", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genWeight").setMinValue(0).setMaxValue(100)));
 			list.add(new ConfigElement<Integer>(new Property("genMinHeight", "0", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genMinHeight").setMinValue(0).setMaxValue(254)));
 			list.add(new ConfigElement<Integer>(new Property("genMaxHeight", "255", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genMaxHeight").setMinValue(1).setMaxValue(255)));
 			list.add(new ConfigElement<String>(new Property("genTargetBlock", Block.blockRegistry.getNameForObject(Blocks.stone), Property.Type.STRING, Caveworld.CONFIG_LANG + "veins.genTargetBlock")));
@@ -160,15 +157,9 @@ public class VeinsEntry extends CaveCategoryEntry
 					configElement.requiresWorldRestart() || owningScreen.allRequireWorldRestart, configElement.requiresMcRestart() || owningScreen.allRequireMcRestart,
 					GuiConfig.getAbridgedConfigPath(getConfig().toString()));
 		}
-
-		@Override
-		public boolean isChanged()
-		{
-			return true;
-		}
 	}
 
-	public static class VeinConfigEntry extends NumberSliderEntry
+	public static class VeinConfigEntry extends StringEntry
 	{
 		public VeinConfigEntry(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement configElement)
 		{
@@ -193,53 +184,48 @@ public class VeinsEntry extends CaveCategoryEntry
 
 			for (IConfigElement element : owningScreen.configElements)
 			{
-				if ("veinName".equals(element.getName()))
+				switch (element.getName())
 				{
-					name = element.get().toString();
-				}
-				else if ("block".equals(element.getName()))
-				{
-					block = element.get().toString();
-				}
-				else if ("blockMetadata".equals(element.getName()))
-				{
-					blockMetadata = Integer.valueOf(element.get().toString());
-				}
-				else if ("genBlockCount".equals(element.getName()))
-				{
-					count = Integer.valueOf(element.get().toString());
-				}
-				else if ("genWeight".equals(element.getName()))
-				{
-					weight = Integer.valueOf(element.get().toString());
-				}
-				else if ("genMinHeight".equals(element.getName()))
-				{
-					min = Integer.valueOf(element.get().toString());
-				}
-				else if ("genMaxHeight".equals(element.getName()))
-				{
-					max = Integer.valueOf(element.get().toString());
-				}
-				else if ("genTargetBlock".equals(element.getName()))
-				{
-					target = element.get().toString();
+					case "veinName":
+						name = element.get().toString();
+						break;
+					case "block":
+						block = element.get().toString();
+						break;
+					case "blockMetadata":
+						blockMetadata = Integer.valueOf(element.get().toString());
+						break;
+					case "genBlockCount":
+						count = Integer.valueOf(element.get().toString());
+						break;
+					case "genWeight":
+						weight = Integer.valueOf(element.get().toString());
+						break;
+					case "genMinHeight":
+						min = Integer.valueOf(element.get().toString());
+						break;
+					case "genMaxHeight":
+						max = Integer.valueOf(element.get().toString());
+						break;
+					case "genTargetBlock":
+						target = element.get().toString();
 
-					if (Strings.isNullOrEmpty(target))
-					{
-						target = element.getDefault().toString();
-					}
-				}
-				else if ("genTargetBlockMetadata".equals(element.getName()))
-				{
-					targetMetadata = Integer.valueOf(element.get().toString());
-				}
-				else if ("genBiomes".equals(element.getName()) && element.isList())
-				{
-					for (Object obj : element.getList())
-					{
-						biomes = ArrayUtils.add(new int[] {}, Integer.valueOf(obj.toString()));
-					}
+						if (Strings.isNullOrEmpty(target))
+						{
+							target = element.getDefault().toString();
+						}
+
+						break;
+					case "genTargetBlockMetadata":
+						targetMetadata = Integer.valueOf(element.get().toString());
+						break;
+					case "genBiomes":
+						for (Object obj : element.getList())
+						{
+							biomes = ArrayUtils.add(new int[] {}, Integer.valueOf(obj.toString()));
+						}
+
+						break;
 				}
 			}
 
@@ -248,7 +234,7 @@ public class VeinsEntry extends CaveCategoryEntry
 				min = 0;
 			}
 
-			CaveVein vein = new CaveVein(new BlockEntry(block, blockMetadata, Blocks.stone), count, weight, min, max, new BlockEntry(target, targetMetadata, Blocks.stone), biomes);
+			CaveVein vein = new CaveVein(new BlockEntry(block, blockMetadata), count, weight, min, max, new BlockEntry(target, targetMetadata), biomes);
 
 			if (!Strings.isNullOrEmpty(owningScreen.configID) && owningScreen.configID.endsWith(".add"))
 			{
@@ -257,7 +243,7 @@ public class VeinsEntry extends CaveCategoryEntry
 					return;
 				}
 
-				if (CaveVeinManager.addCaveVeinWithConfig(name, vein) && owningScreen.parentScreen instanceof GuiConfig)
+				if (CaveworldAPI.addCaveVeinWithConfig(name, vein) && owningScreen.parentScreen instanceof GuiConfig)
 				{
 					GuiConfig parent = (GuiConfig)owningScreen.parentScreen;
 					boolean found = false;
@@ -285,9 +271,9 @@ public class VeinsEntry extends CaveCategoryEntry
 
 				if (Strings.isNullOrEmpty(name) || Strings.isNullOrEmpty(block) || weight <= 0)
 				{
-					if (CaveVeinManager.removeCaveVeinFromConfig(name))
+					if (CaveworldAPI.removeCaveVeinFromConfig(name))
 					{
-						CaveVeinManager.removeCaveVein(vein);
+						CaveworldAPI.removeCaveVein(vein);
 
 						if (owningScreen.parentScreen instanceof GuiConfig)
 						{

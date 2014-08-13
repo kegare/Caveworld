@@ -26,8 +26,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
 
 import com.google.common.base.Strings;
-import com.kegare.caveworld.core.CaveVeinManager;
-import com.kegare.caveworld.core.CaveVeinManager.CaveVein;
+import com.kegare.caveworld.api.CaveworldAPI;
+import com.kegare.caveworld.api.ICaveVein;
 import com.kegare.caveworld.core.Caveworld;
 
 import cpw.mods.fml.common.Loader;
@@ -68,7 +68,7 @@ public class CaveUtils
 				return true;
 			}
 
-			for (CaveVein vein : CaveVeinManager.getCaveVeins())
+			for (ICaveVein vein : CaveworldAPI.getCaveVeins())
 			{
 				if (vein.getBlock().getBlock() == block && vein.getBlock().getMetadata() == metadata)
 				{

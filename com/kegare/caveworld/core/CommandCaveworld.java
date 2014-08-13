@@ -30,6 +30,7 @@ import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.WorldServer;
 
 import com.google.common.collect.Lists;
+import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Version;
 
@@ -139,15 +140,13 @@ public class CommandCaveworld implements ICommand
 
 				if (value != 0)
 				{
-					CaveMiningPlayer data = CaveMiningPlayer.get(player);
-
 					if (flag)
 					{
-						data.addMiningLevel(value);
+						CaveworldAPI.addMiningLevel(player, value);
 					}
 					else
 					{
-						data.addMiningCount(value);
+						CaveworldAPI.addMiningCount(player, value);
 					}
 				}
 			}

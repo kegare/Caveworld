@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
 
+import net.minecraft.util.MathHelper;
 import net.minecraftforge.classloading.FMLForgePlugin;
 import net.minecraftforge.common.MinecraftForge;
 
@@ -24,6 +25,7 @@ import org.apache.logging.log4j.Level;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
 import com.kegare.caveworld.core.Caveworld;
@@ -32,14 +34,16 @@ import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.versioning.ArtifactVersion;
 import cpw.mods.fml.common.versioning.DefaultArtifactVersion;
 
-public class Version
+public class Version implements Runnable
 {
+	private static final Version instance = new Version();
+
 	private static Optional<String> CURRENT = Optional.absent();
 	private static Optional<String> LATEST = Optional.absent();
 
 	public static boolean DEV_DEBUG = false;
 
-	private static Status status = Status.PENDING;
+	private static Optional<Status> status = Optional.fromNullable(Status.PENDING);
 
 	public static enum Status
 	{
@@ -55,38 +59,28 @@ public class Version
 		CURRENT = Optional.of(Strings.nullToEmpty(Caveworld.metadata.version));
 		LATEST = Optional.fromNullable(CURRENT.orNull());
 
-		try
+		ModContainer mod = CaveUtils.getModContainer();
+		File file = mod == null ? null : mod.getSource();
+
+		if (file != null && file.exists())
 		{
-			ModContainer mod = CaveUtils.getModContainer();
-			File file = mod == null ? null : mod.getSource();
-
-			if (file != null && file.exists())
+			if (file.isFile())
 			{
-				if (file.isFile())
-				{
-					String name = FilenameUtils.getBaseName(file.getName());
+				String name = FilenameUtils.getBaseName(file.getName());
 
-					if (StringUtils.endsWithIgnoreCase(name, "dev"))
-					{
-						DEV_DEBUG = true;
-					}
-				}
-				else if (file.isDirectory())
+				if (StringUtils.endsWithIgnoreCase(name, "dev"))
 				{
 					DEV_DEBUG = true;
 				}
 			}
-		}
-		catch (Exception e)
-		{
-			DEV_DEBUG = false;
-		}
-		finally
-		{
-			if (!FMLForgePlugin.RUNTIME_DEOBF)
+			else if (file.isDirectory())
 			{
 				DEV_DEBUG = true;
 			}
+		}
+		else if (!FMLForgePlugin.RUNTIME_DEOBF)
+		{
+			DEV_DEBUG = true;
 		}
 
 		if (DEV_DEBUG)
@@ -97,72 +91,15 @@ public class Version
 
 	public static void versionCheck()
 	{
-		initialize();
-
-		new Thread("Caveworld Version Check")
+		if (!CURRENT.isPresent() || !LATEST.isPresent())
 		{
-			@Override
-			public void run()
-			{
-				try
-				{
-					URL url = new URL(Caveworld.metadata.updateUrl);
-					InputStream con = url.openStream();
-					String data = new String(ByteStreams.toByteArray(con));
-					con.close();
+			initialize();
+		}
 
-					Map<String, Object> json = new Gson().fromJson(data, Map.class);
+		Thread thread = new Thread(instance);
 
-					if (json.containsKey("homepage"))
-					{
-						Caveworld.metadata.url = (String)json.get("homepage");
-					}
-
-					Map<String, String> versions = (Map<String, String>)json.get("versions");
-
-					String version = versions.get(MinecraftForge.MC_VERSION);
-					ArtifactVersion current = new DefaultArtifactVersion(CURRENT.or("1.0.0"));
-
-					if (!Strings.isNullOrEmpty(version))
-					{
-						ArtifactVersion latest = new DefaultArtifactVersion(version);
-						int diff = latest.compareTo(current);
-
-						if (diff == 0)
-						{
-							status = Status.UP_TO_DATE;
-						}
-						else if (diff < 0)
-						{
-							status = Status.AHEAD;
-						}
-						else
-						{
-							status = Status.OUTDATED;
-						}
-
-						LATEST = Optional.of(version);
-					}
-					else
-					{
-						version = versions.get("latest");
-
-						if (!Strings.isNullOrEmpty(version))
-						{
-							LATEST = Optional.of(version);
-						}
-
-						status = Status.FAILED;
-					}
-				}
-				catch (Exception e)
-				{
-					CaveLog.log(Level.WARN, e, "An error occurred trying to version check");
-
-					status = Status.FAILED;
-				}
-			}
-		}.start();
+		thread.setName("Caveworld Version Checker");
+		thread.start();
 	}
 
 	public static String getCurrent()
@@ -177,11 +114,78 @@ public class Version
 
 	public static Status getStatus()
 	{
-		return status == null ? Status.FAILED : status;
+		return status.orNull();
 	}
 
 	public static boolean isOutdated()
 	{
-		return status == Status.OUTDATED;
+		return getStatus() == Status.OUTDATED;
+	}
+
+	@Override
+	public void run()
+	{
+		try (InputStream input = new URL(Caveworld.metadata.updateUrl).openStream())
+		{
+			Map<String, Object> data = new Gson().fromJson(new String(ByteStreams.toByteArray(input)), Map.class);
+
+			if (data.containsKey("homepage"))
+			{
+				Caveworld.metadata.url = (String)data.get("homepage");
+			}
+
+			Map<String, String> versions = Maps.newHashMap();
+
+			if (data.containsKey("versions"))
+			{
+				versions = (Map<String, String>)data.get("versions");
+			}
+
+			String version = versions.get(MinecraftForge.MC_VERSION);
+			ArtifactVersion current = new DefaultArtifactVersion(CURRENT.or("1.0.0"));
+
+			if (!Strings.isNullOrEmpty(version))
+			{
+				ArtifactVersion latest = new DefaultArtifactVersion(version);
+
+				LATEST = Optional.of(version);
+
+				switch (MathHelper.clamp_int(latest.compareTo(current), -1, 1))
+				{
+					case 0:
+						status = Optional.of(Status.UP_TO_DATE);
+						break;
+					case -1:
+						status = Optional.of(Status.AHEAD);
+						break;
+					case 1:
+						status = Optional.of(Status.OUTDATED);
+						break;
+					default:
+						status = Optional.of(Status.FAILED);
+				}
+			}
+			else
+			{
+				version = versions.get("latest");
+
+				if (!Strings.isNullOrEmpty(version))
+				{
+					LATEST = Optional.of(version);
+				}
+
+				status = Optional.of(Status.FAILED);
+			}
+		}
+		catch (Exception e)
+		{
+			CaveLog.log(Level.WARN, e, "An error occurred trying to version check");
+
+			status = Optional.of(Status.FAILED);
+		}
+		finally
+		{
+			CaveLog.fine("Version status checked: %s", getStatus().name());
+		}
 	}
 }

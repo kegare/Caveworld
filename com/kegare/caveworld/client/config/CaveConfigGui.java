@@ -8,7 +8,7 @@
  * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
  */
 
-package com.kegare.caveworld.config;
+package com.kegare.caveworld.client.config;
 
 import java.util.List;
 
@@ -17,12 +17,9 @@ import net.minecraft.client.resources.I18n;
 import net.minecraftforge.common.config.Configuration;
 
 import com.google.common.collect.Lists;
-import com.kegare.caveworld.config.entry.BiomesEntry;
-import com.kegare.caveworld.config.entry.BlocksEntry;
-import com.kegare.caveworld.config.entry.DimensionEntry;
-import com.kegare.caveworld.config.entry.GeneralEntry;
-import com.kegare.caveworld.config.entry.VeinsEntry;
 import com.kegare.caveworld.core.Caveworld;
+import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
+import com.kegare.caveworld.plugin.mceconomy.ShopEntry;
 
 import cpw.mods.fml.client.config.DummyConfigElement.DummyCategoryElement;
 import cpw.mods.fml.client.config.GuiConfig;
@@ -41,11 +38,17 @@ public class CaveConfigGui extends GuiConfig
 	private static List<IConfigElement> getConfigElements()
 	{
 		List<IConfigElement> list = Lists.newArrayList();
+
 		list.add(new CaveCategoryElement(Configuration.CATEGORY_GENERAL, GeneralEntry.class));
 		list.add(new CaveCategoryElement("blocks", BlocksEntry.class));
 		list.add(new CaveCategoryElement("dimension", DimensionEntry.class));
 		list.add(new CaveCategoryElement("biomes", BiomesEntry.class));
 		list.add(new CaveCategoryElement("veins", VeinsEntry.class));
+
+		if (MCEconomyPlugin.enabled())
+		{
+			list.add(new CaveCategoryElement("shop", ShopEntry.class));
+		}
 
 		return list;
 	}

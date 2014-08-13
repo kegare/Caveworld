@@ -8,7 +8,7 @@
  * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
  */
 
-package com.kegare.caveworld.config.entry;
+package com.kegare.caveworld.client.config;
 
 import java.util.List;
 import java.util.Set;
@@ -25,8 +25,8 @@ import org.apache.commons.lang3.math.NumberUtils;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.kegare.caveworld.config.Config;
 import com.kegare.caveworld.core.CaveBiomeManager;
+import com.kegare.caveworld.core.Config;
 
 import cpw.mods.fml.client.config.GuiConfig;
 import cpw.mods.fml.client.config.GuiConfigEntries;

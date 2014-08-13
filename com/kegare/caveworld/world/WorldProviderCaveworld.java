@@ -11,13 +11,13 @@
 package com.kegare.caveworld.world;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.security.SecureRandom;
 
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.WorldProvider;
@@ -30,10 +30,8 @@ import net.minecraftforge.common.DimensionManager;
 
 import org.apache.logging.log4j.Level;
 
-import com.google.common.base.Optional;
-import com.google.common.base.Strings;
-import com.kegare.caveworld.config.Config;
 import com.kegare.caveworld.core.Caveworld;
+import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.network.CaveSoundMessage;
 import com.kegare.caveworld.renderer.EmptyRenderer;
 import com.kegare.caveworld.util.CaveLog;
@@ -45,78 +43,88 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public class WorldProviderCaveworld extends WorldProvider
 {
-	private static Optional<NBTTagCompound> dimData = Optional.absent();
+	private static NBTTagCompound dimData;
 
-	public static Optional<Long> dimensionSeed = Optional.absent();
-	public static Optional<Integer> subsurfaceHeight = Optional.absent();
+	private static long dimensionSeed;
+	private static int subsurfaceHeight;
 
 	public static NBTTagCompound getDimData()
 	{
-		if (!dimData.isPresent())
+		if (dimData == null)
 		{
-			dimData = Optional.of(readDimData());
+			dimData = readDimData();
 		}
 
-		return dimData.or(new NBTTagCompound());
+		return dimData;
 	}
 
 	public static File getDimDir()
 	{
-		File root = DimensionManager.getCurrentSaveRootDirectory();
-		String name;
+		WorldProvider provider = null;
 
 		try
 		{
-			name = WorldProviderCaveworld.class.newInstance().getDimensionName();
+			provider = WorldProviderCaveworld.class.newInstance();
 		}
 		catch (Exception e)
 		{
-			name = null;
+			provider = null;
+		}
+		finally
+		{
+			if (provider == null)
+			{
+				return null;
+			}
 		}
 
-		if (root == null || !root.exists() || root.isFile() || Strings.isNullOrEmpty(name))
+		File root = DimensionManager.getCurrentSaveRootDirectory();
+
+		if (root == null || !root.exists() || root.isFile())
 		{
 			return null;
 		}
 
-		File dir = new File(root, name);
+		File dir = new File(root, provider.getSaveFolder());
 
 		if (!dir.exists())
 		{
 			dir.mkdirs();
 		}
 
-		return dir;
+		return dir.isDirectory() ? dir : null;
 	}
 
 	private static NBTTagCompound readDimData()
 	{
-		NBTTagCompound data = null;
+		NBTTagCompound data;
+		File file = new File(getDimDir(), "caveworld.dat");
 
-		try
+		if (file == null || !file.exists())
 		{
-			data = CompressedStreamTools.read(new File(getDimDir(), "caveworld.dat"));
+			data = null;
+		}
+		else try (FileInputStream input = new FileInputStream(file))
+		{
+			data = CompressedStreamTools.readCompressed(input);
 		}
 		catch (Exception e)
 		{
 			CaveLog.log(Level.ERROR, e, "An error occurred trying to reading Caveworld dimension data");
-		}
-		finally
-		{
-			if (data == null)
-			{
-				data = new NBTTagCompound();
-			}
+
+			data = null;
 		}
 
-		return data;
+		return data == null ? new NBTTagCompound() : data;
 	}
 
-	public static void writeDimData()
+	private static void writeDimData()
 	{
-		try
+		File file = new File(getDimDir(), "caveworld.dat");
+
+		try (FileOutputStream output = new FileOutputStream(file))
 		{
-			CompressedStreamTools.write(getDimData(), new File(getDimDir(), "caveworld.dat"));
+			CompressedStreamTools.writeCompressed(getDimData(), output);
 		}
 		catch (Exception e)
 		{
@@ -124,11 +132,30 @@ public class WorldProviderCaveworld extends WorldProvider
 		}
 	}
 
-	public static void clearDimData()
+	public static void loadDimData(NBTTagCompound data)
 	{
-		dimData = Optional.absent();
-		dimensionSeed = Optional.absent();
-		subsurfaceHeight = Optional.absent();
+		if (!data.hasKey("Seed"))
+		{
+			data.setLong("Seed", new SecureRandom().nextLong());
+		}
+
+		if (!data.hasKey("SubsurfaceHeight"))
+		{
+			data.setInteger("SubsurfaceHeight", Config.subsurfaceHeight);
+		}
+
+		dimensionSeed = data.getLong("Seed");
+		subsurfaceHeight = data.getInteger("SubsurfaceHeight");
+	}
+
+	public static void saveDimData()
+	{
+		if (dimData != null)
+		{
+			writeDimData();
+
+			dimData = null;
+		}
 	}
 
 	private int ambientTickCountdown = 0;
@@ -172,20 +199,6 @@ public class WorldProviderCaveworld extends WorldProvider
 
 	@Override
 	public boolean canRespawnHere()
-	{
-		return false;
-	}
-
-	@Override
-	@SideOnly(Side.CLIENT)
-	public float getCloudHeight()
-	{
-		return getActualHeight();
-	}
-
-	@Override
-	@SideOnly(Side.CLIENT)
-	public boolean isSkyColored()
 	{
 		return false;
 	}
@@ -271,27 +284,6 @@ public class WorldProviderCaveworld extends WorldProvider
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
-	public Vec3 getSkyColor(Entity entity, float ticks)
-	{
-		return Vec3.createVectorHelper(0.01D, 0.01D, 0.01D);
-	}
-
-	@Override
-	@SideOnly(Side.CLIENT)
-	public Vec3 drawClouds(float ticks)
-	{
-		return Vec3.createVectorHelper(0.01D, 0.01D, 0.01D);
-	}
-
-	@Override
-	@SideOnly(Side.CLIENT)
-	public float getStarBrightness(float ticks)
-	{
-		return 0.0F;
-	}
-
-	@Override
 	public void calculateInitialWeather()
 	{
 		if (!worldObj.isRemote)
@@ -321,37 +313,23 @@ public class WorldProviderCaveworld extends WorldProvider
 	@Override
 	public long getSeed()
 	{
-		if (!worldObj.isRemote && !dimensionSeed.isPresent())
+		if (!worldObj.isRemote && dimData == null)
 		{
-			NBTTagCompound data = getDimData();
-
-			if (!data.hasKey("DimSeed"))
-			{
-				data.setLong("DimSeed", new SecureRandom().nextLong());
-			}
-
-			dimensionSeed = Optional.of(data.getLong("DimSeed"));
+			loadDimData(getDimData());
 		}
 
-		return dimensionSeed.or(Long.reverseBytes(super.getSeed()));
+		return dimensionSeed;
 	}
 
 	@Override
 	public int getActualHeight()
 	{
-		if (!worldObj.isRemote && !subsurfaceHeight.isPresent())
+		if (!worldObj.isRemote && dimData == null)
 		{
-			NBTTagCompound data = getDimData();
-
-			if (!data.hasKey("SubsurfaceHeight"))
-			{
-				data.setInteger("SubsurfaceHeight", Config.subsurfaceHeight);
-			}
-
-			subsurfaceHeight = Optional.of(MathHelper.clamp_int(data.getInteger("SubsurfaceHeight"), 63, 255));
+			loadDimData(getDimData());
 		}
 
-		return subsurfaceHeight.or(127) + 1;
+		return subsurfaceHeight + 1;
 	}
 
 	@Override

@@ -42,8 +42,8 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import shift.mceconomy2.api.MCEconomyAPI;
 
-import com.kegare.caveworld.config.Config;
 import com.kegare.caveworld.core.Caveworld;
+import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.inventory.InventoryCaveworldPortal;
 import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.util.CaveUtils;
@@ -54,8 +54,6 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public class BlockPortalCaveworld extends BlockPortal
 {
-	public final InventoryCaveworldPortal inventory = new InventoryCaveworldPortal();
-
 	@SideOnly(Side.CLIENT)
 	public IIcon portalIcon;
 
@@ -188,7 +186,7 @@ public class BlockPortalCaveworld extends BlockPortal
 				}
 			}
 
-			player.displayGUIChest(inventory.setPortalPosition(player, x, y, z));
+			InventoryCaveworldPortal.instance().displayInventory(player, x, y, z);
 		}
 
 		return true;

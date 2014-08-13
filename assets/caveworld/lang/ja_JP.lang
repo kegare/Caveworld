@@ -84,3 +84,17 @@ achievement.caveworld.miner=炭鉱夫
 achievement.caveworld.miner.desc=たくさんの鉱石を掘る
 
 caveworld.shop.title=Caveworld ショップ
+caveworld.configgui.shop=ショップの製品のカスタマイズ
+caveworld.configgui.shop.tooltip=caveworld-shop.cfg に含まれる設定を変更できます。
+caveworld.configgui.shop.add=+ 新しい製品の追加
+caveworld.configgui.shop.add.tooltip=Caveworld ショップに新しい製品を追加します。
+caveworld.configgui.shop.productName=製品名
+caveworld.configgui.shop.productName.tooltip=製品名を指定します。
+caveworld.configgui.shop.item=製品アイテム
+caveworld.configgui.shop.item.tooltip=この製品のアイテム名（もしくはブロック名）を指定します。
+caveworld.configgui.shop.itemDamage=製品アイテムダメージ
+caveworld.configgui.shop.itemDamage.tooltip=製品アイテムのダメージ（もしくはブロックのメタデータ）を指定します。
+caveworld.configgui.shop.stackSize=製品アイテムスタックサイズ
+caveworld.configgui.shop.stackSize.tooltip=製品アイテムのスタックサイズを指定します。
+caveworld.configgui.shop.productCost=製品価格
+caveworld.configgui.shop.productCost.tooltip=この製品の価格を指定します。

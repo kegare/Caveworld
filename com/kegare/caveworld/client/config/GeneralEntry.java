@@ -8,11 +8,11 @@
  * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
  */
 
-package com.kegare.caveworld.config.entry;
+package com.kegare.caveworld.client.config;
 
 import net.minecraftforge.common.config.Configuration;
 
-import com.kegare.caveworld.config.Config;
+import com.kegare.caveworld.core.Config;
 
 import cpw.mods.fml.client.config.GuiConfig;
 import cpw.mods.fml.client.config.GuiConfigEntries;
@@ -21,9 +21,9 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class BlocksEntry extends CaveCategoryEntry
+public class GeneralEntry extends CaveCategoryEntry
 {
-	public BlocksEntry(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement prop)
+	public GeneralEntry(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement prop)
 	{
 		super(owningScreen, owningEntryList, prop);
 	}
@@ -31,6 +31,6 @@ public class BlocksEntry extends CaveCategoryEntry
 	@Override
 	protected Configuration getConfig()
 	{
-		return Config.blocksCfg;
+		return Config.generalCfg;
 	}
 }

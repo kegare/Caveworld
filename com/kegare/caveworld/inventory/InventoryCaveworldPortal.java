@@ -25,27 +25,40 @@ import com.kegare.caveworld.world.WorldProviderCaveworld;
 
 public class InventoryCaveworldPortal extends InventoryBasic
 {
+	private static InventoryCaveworldPortal instance;
+
 	private final Map<String, ChunkCoordinates> portalCoord = Maps.newHashMap();
 
-	public InventoryCaveworldPortal()
+	private InventoryCaveworldPortal()
 	{
 		super("inventory.portal.caveworld", false, 18);
 	}
 
-	public InventoryCaveworldPortal setPortalPosition(EntityPlayer player, int x, int y, int z)
+	public static InventoryCaveworldPortal instance()
 	{
-		portalCoord.put(player.getCommandSenderName(), new ChunkCoordinates(x, y, z));
+		if (instance == null)
+		{
+			instance = new InventoryCaveworldPortal();
+		}
 
-		return this;
+		return instance;
 	}
 
-	public InventoryCaveworldPortal loadInventoryFromNBT()
+	public void displayInventory(EntityPlayer player, int x, int y, int z)
+	{
+		portalCoord.put(player.getUniqueID().toString(), new ChunkCoordinates(x, y, z));
+
+		player.displayGUIChest(this);
+	}
+
+	@Override
+	public void openInventory()
 	{
 		NBTTagCompound data = WorldProviderCaveworld.getDimData();
 
 		if (!data.hasKey("PortalItems"))
 		{
-			return this;
+			return;
 		}
 
 		NBTTagList list = (NBTTagList)data.getTag("PortalItems");
@@ -66,10 +79,10 @@ public class InventoryCaveworldPortal extends InventoryBasic
 			}
 		}
 
-		return this;
+		data.removeTag("PortalItems");
 	}
 
-	public InventoryCaveworldPortal saveInventoryToNBT()
+	public void saveInventory()
 	{
 		NBTTagList list = new NBTTagList();
 
@@ -87,14 +100,12 @@ public class InventoryCaveworldPortal extends InventoryBasic
 		}
 
 		WorldProviderCaveworld.getDimData().setTag("PortalItems", list);
-
-		return this;
 	}
 
 	@Override
 	public boolean isUseableByPlayer(EntityPlayer player)
 	{
-		ChunkCoordinates coord = portalCoord.get(player.getCommandSenderName());
+		ChunkCoordinates coord = portalCoord.get(player.getUniqueID().toString());
 
 		if (coord == null)
 		{

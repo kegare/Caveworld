@@ -46,11 +46,10 @@ import net.minecraftforge.event.terraingen.PopulateChunkEvent;
 import net.minecraftforge.event.terraingen.PopulateChunkEvent.Populate.EventType;
 import net.minecraftforge.event.terraingen.TerrainGen;
 
-import com.kegare.caveworld.config.Config;
-import com.kegare.caveworld.core.CaveBiomeManager;
-import com.kegare.caveworld.core.CaveVeinManager;
-import com.kegare.caveworld.core.CaveVeinManager.CaveVein;
-import com.kegare.caveworld.util.BlockEntry;
+import com.kegare.caveworld.api.BlockEntry;
+import com.kegare.caveworld.api.CaveworldAPI;
+import com.kegare.caveworld.api.ICaveVein;
+import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.world.gen.MapGenCavesCaveworld;
 import com.kegare.caveworld.world.gen.MapGenRavineCaveworld;
 import com.kegare.caveworld.world.gen.MapGenStrongholdCaveworld;
@@ -95,7 +94,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		BiomeGenBase biome = worldObj.getWorldChunkManager().getBiomeGenAt(chunkX << 4, chunkZ << 4);
 		Block[] blocks = new Block[256 * MathHelper.clamp_int(worldHeight, 128, 256)];
 		byte[] metadata = new byte[blocks.length];
-		BlockEntry entry = CaveBiomeManager.getBiomeTerrainBlock(biome);
+		BlockEntry entry = CaveworldAPI.getBiomeTerrainBlock(biome);
 		Block block = entry.getBlock();
 		int meta = entry.getMetadata();
 
@@ -235,9 +234,9 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 		MinecraftForge.ORE_GEN_BUS.post(new OreGenEvent.Pre(worldObj, random, worldX, worldZ));
 
-		for (CaveVein ore : CaveVeinManager.getCaveVeins())
+		for (ICaveVein vein : CaveworldAPI.getCaveVeins())
 		{
-			generateOre(ore.getGenWeight(), ore, worldX, worldZ, ore.getGenMinHeight(), ore.getGenMaxHeight());
+			generateVein(vein, worldX, worldZ);
 		}
 
 		MinecraftForge.ORE_GEN_BUS.post(new OreGenEvent.Post(worldObj, random, worldX, worldZ));
@@ -339,21 +338,105 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		BlockFalling.fallInstantly = false;
 	}
 
-	private void generateOre(int rarity, WorldGenerator worldGenerator, int worldX, int worldZ, int minY, int maxY)
+	private void generateVein(ICaveVein vein, int worldX, int worldZ)
 	{
 		int worldHeight = worldObj.getActualHeight();
+		BlockEntry block = vein.getBlock();
+		int count = vein.getGenBlockCount();
+		int weight = vein.getGenWeight();
+		int min = vein.getGenMinHeight();
+		int max = vein.getGenMaxHeight();
+		BlockEntry target = vein.getGenTargetBlock();
+		int[] biomes = vein.getGenBiomes();
 
-		if (rarity > 0 && minY < worldHeight && minY < maxY)
+		if (weight > 0 && min < worldHeight && min < max)
 		{
-			int x, y, z;
-
-			for (int i = 0; i < rarity; ++i)
+			for (int i = 0; i < weight; ++i)
 			{
-				x = worldX + random.nextInt(16);
-				y = random.nextInt(Math.min(maxY, worldHeight - 1) - minY) + minY;
-				z = worldZ + random.nextInt(16);
+				int x = worldX + random.nextInt(16);
+				int y = random.nextInt(Math.min(max, worldHeight - 1) - min) + min;
+				int z = worldZ + random.nextInt(16);
+				float var1 = random.nextFloat() * (float)Math.PI;
+				double var2 = x + 8 + MathHelper.sin(var1) * count / 8.0F;
+				double var3 = x + 8 - MathHelper.sin(var1) * count / 8.0F;
+				double var4 = z + 8 + MathHelper.cos(var1) * count / 8.0F;
+				double var5 = z + 8 - MathHelper.cos(var1) * count / 8.0F;
+				double var6 = y + random.nextInt(3) - 2;
+				double var7 = y + random.nextInt(3) - 2;
 
-				worldGenerator.generate(worldObj, random, x, y, z);
+				for (int j = 0; j <= count; ++j)
+				{
+					double var8 = var2 + (var3 - var2) * j / count;
+					double var9 = var6 + (var7 - var6) * j / count;
+					double var10 = var4 + (var5 - var4) * j / count;
+					double var11 = random.nextDouble() * count / 16.0D;
+					double var12 = (MathHelper.sin(j * (float)Math.PI / count) + 1.0F) * var11 + 1.0D;
+					double var13 = (MathHelper.sin(j * (float)Math.PI / count) + 1.0F) * var11 + 1.0D;
+					int minX = MathHelper.floor_double(var8 - var12 / 2.0D);
+					int maxX = MathHelper.floor_double(var8 + var12 / 2.0D);
+					int minY = MathHelper.floor_double(var9 - var13 / 2.0D);
+					int maxY = MathHelper.floor_double(var9 + var13 / 2.0D);
+					int minZ = MathHelper.floor_double(var10 - var12 / 2.0D);
+					int maxZ = MathHelper.floor_double(var10 + var12 / 2.0D);
+
+					for (int blockX = minX; blockX <= maxX; ++blockX)
+					{
+						double xScale = (blockX + 0.5D - var8) / (var12 / 2.0D);
+
+						if (xScale * xScale < 1.0D)
+						{
+							for (int blockY = minY; blockY <= maxY; ++blockY)
+							{
+								double yScale = (blockY + 0.5D - var9) / (var13 / 2.0D);
+
+								if (xScale * xScale + yScale * yScale < 1.0D)
+								{
+									for (int blockZ = minZ; blockZ <= maxZ; ++blockZ)
+									{
+										double zScale = (blockZ + 0.5D - var10) / (var12 / 2.0D);
+
+										if (xScale * xScale + yScale * yScale + zScale * zScale < 1.0D)
+										{
+											if (target == null && !worldObj.getBlock(blockX, blockY, blockZ).isReplaceableOreGen(worldObj, blockX, blockY, blockZ, Blocks.stone))
+											{
+												continue;
+											}
+											else if (!worldObj.getBlock(blockX, blockY, blockZ).isReplaceableOreGen(worldObj, blockX, blockY, blockZ, target.getBlock()) || worldObj.getBlockMetadata(blockX, blockY, blockZ) != target.getMetadata())
+											{
+												continue;
+											}
+
+											BiomeGenBase biome = worldObj.getBiomeGenForCoords(blockX, blockZ);
+											boolean flag = false;
+
+											if (biomes.length <= 0)
+											{
+												flag = true;
+											}
+											else
+											{
+												for (int id : biomes)
+												{
+													if (id == biome.biomeID)
+													{
+														flag = true;
+
+														break;
+													}
+												}
+											}
+
+											if (flag)
+											{
+												worldObj.setBlock(blockX, blockY, blockZ, block.getBlock(), block.getMetadata(), 2);
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 	}

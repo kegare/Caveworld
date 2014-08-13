@@ -24,49 +24,51 @@ import net.minecraft.util.WeightedRandom;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.config.ConfigCategory;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.kegare.caveworld.config.Config;
-import com.kegare.caveworld.util.BlockEntry;
+import com.kegare.caveworld.api.BlockEntry;
+import com.kegare.caveworld.api.ICaveBiome;
+import com.kegare.caveworld.api.ICaveBiomeManager;
 
-public class CaveBiomeManager
+public class CaveBiomeManager implements ICaveBiomeManager
 {
-	private static final SortedSet<CaveBiome> CAVE_BIOMES = Sets.newTreeSet(new Comparator<CaveBiome>()
+	private final SortedSet<CaveBiome> CAVE_BIOMES = Sets.newTreeSet(new Comparator<CaveBiome>()
 	{
 		@Override
 		public int compare(CaveBiome o1, CaveBiome o2)
 		{
-			return Integer.valueOf(o1.biome.biomeID).compareTo(o2.biome.biomeID);
+			return Integer.valueOf(o1.getBiome().biomeID).compareTo(o2.getBiome().biomeID);
 		}
 	});
 
-	private static final Map<Integer, Integer> genWeightMap = Maps.newHashMap();
-	private static final Map<Integer, BlockEntry> terrainBlockMap = Maps.newHashMap();
+	private final Map<Integer, Integer> genWeightMap = Maps.newHashMap();
+	private final Map<Integer, BlockEntry> terrainBlockMap = Maps.newHashMap();
 
-	public static boolean addCaveBiome(CaveBiome biome)
+	@Override
+	public boolean addCaveBiome(ICaveBiome biome)
 	{
-		for (CaveBiome entry : CAVE_BIOMES)
+		for (ICaveBiome entry : CAVE_BIOMES)
 		{
-			if (entry.biome.biomeID == biome.biome.biomeID)
+			if (entry.getBiome().biomeID == biome.getBiome().biomeID)
 			{
-				entry.itemWeight += biome.itemWeight;
+				entry.setGenWeight(entry.getGenWeight() + biome.getGenWeight());
 
 				return false;
 			}
 		}
 
-		return CAVE_BIOMES.add(biome);
+		return CAVE_BIOMES.add((CaveBiome)biome);
 	}
 
-	public static boolean removeCaveBiome(BiomeGenBase biome)
+	@Override
+	public boolean removeCaveBiome(BiomeGenBase biome)
 	{
 		for (Iterator<CaveBiome> biomes = CAVE_BIOMES.iterator(); biomes.hasNext();)
 		{
-			if (biomes.next().biome.biomeID == biome.biomeID)
+			if (biomes.next().getBiome().biomeID == biome.biomeID)
 			{
 				biomes.remove();
 
@@ -77,13 +79,14 @@ public class CaveBiomeManager
 		return false;
 	}
 
-	public static int getActiveBiomeCount()
+	@Override
+	public int getActiveBiomeCount()
 	{
 		int count = 0;
 
-		for (CaveBiome entry : CAVE_BIOMES)
+		for (ICaveBiome entry : CAVE_BIOMES)
 		{
-			if (entry.itemWeight > 0)
+			if (entry.getGenWeight() > 0)
 			{
 				++count;
 			}
@@ -92,38 +95,40 @@ public class CaveBiomeManager
 		return count;
 	}
 
-	public static int getBiomeGenWeight(BiomeGenBase biome)
+	@Override
+	public int getBiomeGenWeight(BiomeGenBase biome)
 	{
 		if (genWeightMap.containsKey(biome.biomeID))
 		{
 			return genWeightMap.get(biome.biomeID);
 		}
 
-		for (CaveBiome entry : CAVE_BIOMES)
+		for (ICaveBiome entry : CAVE_BIOMES)
 		{
-			if (entry.biome.biomeID == biome.biomeID)
+			if (entry.getBiome().biomeID == biome.biomeID)
 			{
-				genWeightMap.put(biome.biomeID, entry.itemWeight);
+				genWeightMap.put(biome.biomeID, entry.getGenWeight());
 
-				return entry.itemWeight;
+				return entry.getGenWeight();
 			}
 		}
 
 		return 0;
 	}
 
-	public static BlockEntry getBiomeTerrainBlock(BiomeGenBase biome)
+	@Override
+	public BlockEntry getBiomeTerrainBlock(BiomeGenBase biome)
 	{
 		if (terrainBlockMap.containsKey(biome.biomeID))
 		{
 			return terrainBlockMap.get(biome.biomeID);
 		}
 
-		for (CaveBiome entry : CAVE_BIOMES)
+		for (ICaveBiome entry : CAVE_BIOMES)
 		{
-			if (entry.biome.biomeID == biome.biomeID)
+			if (entry.getBiome().biomeID == biome.biomeID)
 			{
-				BlockEntry terrainBlock = entry.terrainBlock;
+				BlockEntry terrainBlock = entry.getTerrainBlock();
 				Block block = terrainBlock.getBlock();
 
 				if (block == null || block.getMaterial().isLiquid() || !block.getMaterial().isSolid() || block.getMaterial().isReplaceable())
@@ -140,11 +145,12 @@ public class CaveBiomeManager
 		return new BlockEntry(Blocks.stone, 0);
 	}
 
-	public static BiomeGenBase getRandomCaveBiome(Random random)
+	@Override
+	public BiomeGenBase getRandomBiome(Random random)
 	{
 		try
 		{
-			return ((CaveBiome)WeightedRandom.getRandomItem(random, CAVE_BIOMES)).biome;
+			return ((CaveBiome)WeightedRandom.getRandomItem(random, CAVE_BIOMES)).getBiome();
 		}
 		catch (Exception e)
 		{
@@ -152,26 +158,29 @@ public class CaveBiomeManager
 		}
 	}
 
-	public static void clearCaveBiomes()
+	@Override
+	public ImmutableSet<ICaveBiome> getCaveBiomes()
 	{
-		CAVE_BIOMES.clear();
+		return new ImmutableSet.Builder<ICaveBiome>().addAll(CAVE_BIOMES).build();
 	}
 
-	public static ImmutableSet<CaveBiome> getCaveBiomes()
-	{
-		return new ImmutableSet.Builder<CaveBiome>().addAll(CAVE_BIOMES).build();
-	}
-
-	public static ImmutableList<BiomeGenBase> getBiomeList()
+	@Override
+	public ImmutableList<BiomeGenBase> getBiomeList()
 	{
 		Set<BiomeGenBase> biomes = Sets.newHashSet();
 
-		for (CaveBiome entry : CAVE_BIOMES)
+		for (ICaveBiome entry : CAVE_BIOMES)
 		{
-			biomes.add(entry.biome);
+			biomes.add(entry.getBiome());
 		}
 
 		return new ImmutableList.Builder<BiomeGenBase>().addAll(biomes).build();
+	}
+
+	@Override
+	public void clearCaveBiomes()
+	{
+		CAVE_BIOMES.clear();
 	}
 
 	public static List<ConfigCategory> getBiomeCategories()
@@ -196,33 +205,45 @@ public class CaveBiomeManager
 		return list;
 	}
 
-	public static class CaveBiome extends WeightedRandom.Item
+	public static class CaveBiome extends WeightedRandom.Item implements ICaveBiome
 	{
-		public final BiomeGenBase biome;
-		public final BlockEntry terrainBlock;
+		private BiomeGenBase biome;
+		private BlockEntry terrainBlock;
 
 		public CaveBiome(BiomeGenBase biome, int weight)
 		{
 			this(biome, weight, new BlockEntry(Blocks.stone, 0));
 		}
 
-		public CaveBiome(BiomeGenBase biome, int weight, BlockEntry block)
+		public CaveBiome(BiomeGenBase biome, int weight, BlockEntry terrain)
 		{
 			super(weight);
 			this.biome = biome;
-			this.terrainBlock = block;
+			this.terrainBlock = terrain;
 		}
 
 		@Override
-		public String toString()
+		public BiomeGenBase getBiome()
 		{
-			List<String> list = Lists.newArrayList();
-			list.add(Integer.toString(biome.biomeID));
-			list.add(Integer.toString(itemWeight));
-			list.add(Block.blockRegistry.getNameForObject(terrainBlock.getBlock()));
-			list.add(Integer.toString(terrainBlock.getMetadata()));
+			return biome == null ? BiomeGenBase.plains : biome;
+		}
 
-			return Joiner.on(',').join(list);
+		@Override
+		public int getGenWeight()
+		{
+			return itemWeight;
+		}
+
+		@Override
+		public BlockEntry getTerrainBlock()
+		{
+			return terrainBlock == null ? new BlockEntry(Blocks.stone, 0) : terrainBlock;
+		}
+
+		@Override
+		public void setGenWeight(int weight)
+		{
+			itemWeight = weight;
 		}
 	}
 }

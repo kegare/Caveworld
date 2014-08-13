@@ -15,7 +15,7 @@ import io.netty.buffer.ByteBuf;
 import java.util.Collection;
 import java.util.List;
 
-import net.minecraft.init.Blocks;
+import net.minecraft.block.Block;
 import net.minecraft.world.biome.BiomeGenBase;
 
 import org.apache.commons.lang3.math.NumberUtils;
@@ -24,9 +24,10 @@ import org.apache.logging.log4j.Level;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import com.kegare.caveworld.core.CaveBiomeManager;
+import com.kegare.caveworld.api.BlockEntry;
+import com.kegare.caveworld.api.CaveworldAPI;
+import com.kegare.caveworld.api.ICaveBiome;
 import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome;
-import com.kegare.caveworld.util.BlockEntry;
 import com.kegare.caveworld.util.CaveLog;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
@@ -40,18 +41,25 @@ public class BiomesSyncMessage implements IMessage, IMessageHandler<BiomesSyncMe
 
 	public BiomesSyncMessage() {}
 
-	public BiomesSyncMessage(Collection<CaveBiome> biomes)
+	public BiomesSyncMessage(Collection<ICaveBiome> biomes)
 	{
 		List<String> dat = Lists.newArrayList();
+		List<String> list = Lists.newArrayList();
 
-		for (CaveBiome biome : biomes)
+		for (ICaveBiome biome : biomes)
 		{
-			if (biome.itemWeight <= 0)
+			if (biome.getGenWeight() <= 0)
 			{
 				continue;
 			}
 
-			dat.add(biome.toString());
+			list.clear();
+			list.add(Integer.toString(biome.getBiome().biomeID));
+			list.add(Integer.toString(biome.getGenWeight()));
+			list.add(Block.blockRegistry.getNameForObject(biome.getTerrainBlock().getBlock()));
+			list.add(Integer.toString(biome.getTerrainBlock().getMetadata()));
+
+			dat.add(Joiner.on(',').join(list));
 		}
 
 		this.data = Joiner.on('&').join(dat);
@@ -72,7 +80,7 @@ public class BiomesSyncMessage implements IMessage, IMessageHandler<BiomesSyncMe
 	@Override
 	public IMessage onMessage(BiomesSyncMessage message, MessageContext ctx)
 	{
-		CaveBiomeManager.clearCaveBiomes();
+		CaveworldAPI.clearCaveBiomes();
 
 		try
 		{
@@ -93,10 +101,10 @@ public class BiomesSyncMessage implements IMessage, IMessageHandler<BiomesSyncMe
 					continue;
 				}
 
-				CaveBiomeManager.addCaveBiome(new CaveBiome(biome, weight, new BlockEntry(list.get(2), metadata, Blocks.stone)));
+				CaveworldAPI.addCaveBiome(new CaveBiome(biome, weight, new BlockEntry(list.get(2), metadata)));
 			}
 
-			CaveLog.info("Loaded %d cave biomes from server", CaveBiomeManager.getActiveBiomeCount());
+			CaveLog.info("Loaded %d cave biomes from server", CaveworldAPI.getActiveBiomeCount());
 		}
 		catch (Exception e)
 		{

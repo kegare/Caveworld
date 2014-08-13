@@ -35,6 +35,11 @@ public class PortalShop
 		}
 	};
 
+	public static boolean addProduct(IProductItem product)
+	{
+		return productList.getProductList().add(product);
+	}
+
 	public static boolean addProductWithConfig(String name, IProductItem product)
 	{
 		ItemStack itemstack = product.getProductItem();
@@ -42,6 +47,10 @@ public class PortalShop
 		if (itemstack == null)
 		{
 			return false;
+		}
+		else if (Strings.isNullOrEmpty(name))
+		{
+			return addProduct(product);
 		}
 
 		String item = Item.itemRegistry.getNameForObject(itemstack.getItem());
@@ -59,26 +68,26 @@ public class PortalShop
 		List<String> propOrder = Lists.newArrayList();
 
 		prop = MCEconomyPlugin.shopCfg.get(name, "item", "");
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
-		prop.comment = "Specify the item name (or block name) of this product.";
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(MCEconomyPlugin.PRODUCT_ENTRY.orNull());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		if (!Strings.isNullOrEmpty(item) && !item.equals(prop.getString())) prop.set(item);
 		propOrder.add(prop.getName());
 		item = prop.getString();
 		prop = MCEconomyPlugin.shopCfg.get(name, "itemDamage", 0);
 		prop.setMinValue(0).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
-		prop.comment = "Specify the item damage (or block metadata) of this product.";
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		if (damage >= 0 && damage != prop.getInt()) prop.set(damage);
 		propOrder.add(prop.getName());
 		damage = prop.getInt();
 		prop = MCEconomyPlugin.shopCfg.get(name, "stackSize", 1);
-		prop.setMinValue(0).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
-		prop.comment = "Specify the stack size of this product.";
+		prop.setMinValue(0).setMaxValue(64).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		if (stack >= 0 && stack != prop.getInt()) prop.set(stack);
 		propOrder.add(prop.getName());
 		stack = prop.getInt();
 		prop = MCEconomyPlugin.shopCfg.get(name, "productCost", 10);
-		prop.setMinValue(0).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
-		prop.comment = "Specify the product cost of this product.";
+		prop.setMinValue(0).setMaxValue(MCEconomyPlugin.Player_MP_MAX).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		if (cost >= 0 && cost != prop.getInt()) prop.set(cost);
 		propOrder.add(prop.getName());
 		cost = prop.getInt();
@@ -87,7 +96,7 @@ public class PortalShop
 
 		if (Item.itemRegistry.containsKey(item))
 		{
-			return productList.getProductList().add(new CaveProduct(item, stack, damage, cost));
+			return addProduct(new CaveProduct(item, stack, damage, cost));
 		}
 
 		return false;

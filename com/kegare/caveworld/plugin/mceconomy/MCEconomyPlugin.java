@@ -10,7 +10,9 @@
 
 package com.kegare.caveworld.plugin.mceconomy;
 
-import java.util.List;
+import java.io.File;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -18,23 +20,29 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 import shift.mceconomy2.api.MCEconomyAPI;
-import shift.mceconomy2.api.shop.IProductItem;
-import shift.mceconomy2.api.shop.ProductItem;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.kegare.caveworld.block.CaveBlocks;
-import com.kegare.caveworld.config.Config;
+import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.plugin.CaveModPlugin.ModPlugin;
+import com.kegare.caveworld.plugin.mceconomy.PortalShop.CaveProduct;
 
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Optional.Method;
 
+@ModPlugin(modid = MCEconomyPlugin.MODID)
 public final class MCEconomyPlugin
 {
 	public static final String MODID = "mceconomy2";
 
 	public static Configuration shopCfg;
 	public static int SHOP = -1;
+
+	public static int Player_MP_MAX = 1000000;
+
+	public static Optional<Class> PRODUCT_ENTRY = Optional.absent();
 
 	public static boolean enabled()
 	{
@@ -49,36 +57,34 @@ public final class MCEconomyPlugin
 			shopCfg = Config.loadConfig("shop");
 		}
 
-		List<IProductItem> products = Lists.newArrayList();
+		Map<String, CaveProduct> products = Maps.newHashMap();
 
 		if (shopCfg.getCategoryNames().isEmpty())
 		{
-			if (Config.hardcore)
+			products.put("Bread", new CaveProduct(new ItemStack(Items.bread, 6), 30));
+			products.put("Oak Sapling", new CaveProduct(new ItemStack(Blocks.sapling, 1, 0), 15));
+			products.put("Spruce Sapling", new CaveProduct(new ItemStack(Blocks.sapling, 1, 1), 15));
+			products.put("Birch Sapling", new CaveProduct(new ItemStack(Blocks.sapling, 1, 2), 15));
+			products.put("Jungle Sapling", new CaveProduct(new ItemStack(Blocks.sapling, 1, 3), 15));
+			products.put("Acacia Sapling", new CaveProduct(new ItemStack(Blocks.sapling, 1, 4), 18));
+			products.put("Dark Oak Sapling", new CaveProduct(new ItemStack(Blocks.sapling, 1, 5), 18));
+			products.put("Seeds", new CaveProduct(new ItemStack(Items.wheat_seeds, 10), 10));
+			products.put("Bed", new CaveProduct(new ItemStack(Items.bed), 100));
+			products.put("Torch", new CaveProduct(new ItemStack(Blocks.torch, 64), 50));
+			products.put("Iron Sword", new CaveProduct(new ItemStack(Items.iron_sword), 100));
+			products.put("Iron Pickaxe", new CaveProduct(new ItemStack(Items.iron_pickaxe), 150));
+			products.put("Iron Axe", new CaveProduct(new ItemStack(Items.iron_axe), 150));
+			products.put("Iron Shovel", new CaveProduct(new ItemStack(Items.iron_shovel), 50));
+			products.put("Iron Hoe", new CaveProduct(new ItemStack(Items.iron_hoe), 100));
+
+			if (Config.rope)
 			{
-				products.add(new ProductItem(new ItemStack(Items.bread, 6), 30));
-				products.add(new ProductItem(new ItemStack(Blocks.sapling, 1, 0), 15));
-				products.add(new ProductItem(new ItemStack(Blocks.sapling, 1, 1), 15));
-				products.add(new ProductItem(new ItemStack(Blocks.sapling, 1, 2), 15));
-				products.add(new ProductItem(new ItemStack(Blocks.sapling, 1, 3), 15));
-				products.add(new ProductItem(new ItemStack(Items.wheat_seeds, 10), 10));
-				products.add(new ProductItem(new ItemStack(Items.bed), 100));
+				products.put("Rope", new CaveProduct(new ItemStack(CaveBlocks.rope, 5), 10));
 			}
 
-			products.add(new ProductItem(new ItemStack(Blocks.torch, 64), 50));
-			products.add(new ProductItem(new ItemStack(Items.iron_sword), 100));
-			products.add(new ProductItem(new ItemStack(Items.iron_pickaxe), 150));
-			products.add(new ProductItem(new ItemStack(Items.iron_axe), 150));
-			products.add(new ProductItem(new ItemStack(Items.iron_shovel), 50));
-			products.add(new ProductItem(new ItemStack(Items.iron_hoe), 100));
-
-			if (CaveBlocks.rope != null)
+			for (Entry<String, CaveProduct> entry : products.entrySet())
 			{
-				products.add(new ProductItem(new ItemStack(CaveBlocks.rope, 5), 10));
-			}
-
-			for (IProductItem product : products)
-			{
-				PortalShop.addProductWithConfig(Integer.toString(PortalShop.productList.getItemProductSize()), product);
+				PortalShop.addProductWithConfig(entry.getKey(), entry.getValue());
 			}
 		}
 		else
@@ -107,13 +113,33 @@ public final class MCEconomyPlugin
 	}
 
 	@Method(modid = MODID)
-	protected void invoke()
+	private void invoke()
 	{
+		File file = new File(Loader.instance().getConfigDir(), "mceconomy2.cfg");
+
+		if (file.isFile() && file.exists())
+		{
+			Configuration config = new Configuration(file);
+			ConfigCategory category;
+
+			for (String name : config.getCategoryNames())
+			{
+				category = config.getCategory(name);
+
+				if (category.containsKey("Player_MP_MAX"))
+				{
+					Player_MP_MAX = category.get("Player_MP_MAX").getInt(Player_MP_MAX);
+
+					break;
+				}
+			}
+		}
+
 		syncShopCfg();
 
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.caveworld_portal), 2000);
 
-		if (CaveBlocks.rope != null)
+		if (Config.rope)
 		{
 			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.rope), 2);
 		}

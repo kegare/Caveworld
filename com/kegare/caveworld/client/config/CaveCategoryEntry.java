@@ -1,4 +1,14 @@
-package com.kegare.caveworld.config.entry;
+/*
+ * Caveworld
+ *
+ * Copyright (c) 2014 kegare
+ * https://github.com/kegare
+ *
+ * This mod is distributed under the terms of the Minecraft Mod Public License 1.0, or MMPL.
+ * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
+ */
+
+package com.kegare.caveworld.client.config;
 
 import java.util.List;
 
@@ -7,7 +17,7 @@ import net.minecraftforge.common.config.ConfigElement;
 import net.minecraftforge.common.config.Configuration;
 
 import com.google.common.collect.Lists;
-import com.kegare.caveworld.config.Config;
+import com.kegare.caveworld.core.Config;
 
 import cpw.mods.fml.client.config.GuiConfig;
 import cpw.mods.fml.client.config.GuiConfigEntries;

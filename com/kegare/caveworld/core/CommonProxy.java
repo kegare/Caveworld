@@ -8,7 +8,7 @@
  * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
  */
 
-package com.kegare.caveworld.proxy;
+package com.kegare.caveworld.core;
 
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -21,7 +21,6 @@ import net.minecraftforge.oredict.ShapelessOreRecipe;
 import org.apache.logging.log4j.Level;
 
 import com.kegare.caveworld.block.CaveBlocks;
-import com.kegare.caveworld.config.Config;
 import com.kegare.caveworld.util.CaveLog;
 
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -37,7 +36,7 @@ public class CommonProxy
 
 	public void registerRecipes()
 	{
-		if (CaveBlocks.rope != null)
+		if (Config.rope)
 		{
 			addShapelessRecipe(new ItemStack(CaveBlocks.rope), Items.string, Items.string, Items.string, Items.leather);
 		}

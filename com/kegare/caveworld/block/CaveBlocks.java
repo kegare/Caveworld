@@ -20,7 +20,7 @@ import net.minecraftforge.oredict.OreDictionary;
 
 import com.kegare.caveworld.block.BlockPortalCaveworld.DispencePortal;
 import com.kegare.caveworld.block.BlockRope.DispenceRope;
-import com.kegare.caveworld.config.Config;
+import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.item.ItemPortalCaveworld;
 import com.kegare.caveworld.item.ItemRope;
 
@@ -28,18 +28,8 @@ import cpw.mods.fml.common.registry.GameRegistry;
 
 public class CaveBlocks
 {
-	public static BlockPortalCaveworld caveworld_portal;
-	public static BlockRope rope;
-
-	public static void initializeBlocks()
-	{
-		caveworld_portal = new BlockPortalCaveworld("portalCaveworld");
-
-		if (Config.rope)
-		{
-			rope = new BlockRope("rope");
-		}
-	}
+	public static final BlockPortalCaveworld caveworld_portal = new BlockPortalCaveworld("portalCaveworld");
+	public static final BlockRope rope = new BlockRope("rope");
 
 	public static void registerBlocks()
 	{
@@ -49,7 +39,7 @@ public class CaveBlocks
 
 		BlockDispenser.dispenseBehaviorRegistry.putObject(Item.getItemFromBlock(caveworld_portal), new DispencePortal());
 
-		if (rope != null)
+		if (Config.rope)
 		{
 			GameRegistry.registerBlock(rope, ItemRope.class, "rope");
 

@@ -19,7 +19,7 @@ import org.apache.logging.log4j.Level;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import com.kegare.caveworld.config.Config;
+import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.util.CaveLog;
 
 import cpw.mods.fml.common.network.ByteBufUtils;

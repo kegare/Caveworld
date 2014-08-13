@@ -11,44 +11,42 @@
 package com.kegare.caveworld.network;
 
 import io.netty.buffer.ByteBuf;
+import net.minecraft.nbt.NBTTagCompound;
 
-import com.google.common.base.Optional;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 
+import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 
 public class DimSyncMessage implements IMessage, IMessageHandler<DimSyncMessage, IMessage>
 {
-	private long dimensionSeed;
-	private int subsurfaceHeight;
+	private NBTTagCompound data;
 
-	public DimSyncMessage()
+	public DimSyncMessage() {}
+
+	public DimSyncMessage(NBTTagCompound compound)
 	{
-		dimensionSeed = WorldProviderCaveworld.dimensionSeed.or(0L);
-		subsurfaceHeight = WorldProviderCaveworld.subsurfaceHeight.or(127);
+		this.data = compound;
 	}
 
 	@Override
 	public void fromBytes(ByteBuf buffer)
 	{
-		dimensionSeed = buffer.readLong();
-		subsurfaceHeight = buffer.readInt();
+		data = ByteBufUtils.readTag(buffer);
 	}
 
 	@Override
 	public void toBytes(ByteBuf buffer)
 	{
-		buffer.writeLong(dimensionSeed);
-		buffer.writeInt(subsurfaceHeight);
+		ByteBufUtils.writeTag(buffer, data);
 	}
 
 	@Override
 	public IMessage onMessage(DimSyncMessage message, MessageContext ctx)
 	{
-		WorldProviderCaveworld.dimensionSeed = Optional.of(message.dimensionSeed);
-		WorldProviderCaveworld.subsurfaceHeight = Optional.of(message.subsurfaceHeight);
+		WorldProviderCaveworld.loadDimData(message.data);
 
 		return null;
 	}

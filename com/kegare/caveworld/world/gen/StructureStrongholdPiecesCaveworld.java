@@ -1585,9 +1585,9 @@ public class StructureStrongholdPiecesCaveworld
 		}
 	}
 
-	static final class SwitchDoor
+	private static final class SwitchDoor
 	{
-		static final int[] doorEnum = new int[Door.values().length];
+		private static final int[] doorEnum = new int[Door.values().length];
 
 		static
 		{

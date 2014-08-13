@@ -14,8 +14,9 @@ import io.netty.buffer.ByteBuf;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
-import net.minecraft.init.Blocks;
+import net.minecraft.block.Block;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -24,9 +25,11 @@ import org.apache.logging.log4j.Level;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import com.kegare.caveworld.core.CaveVeinManager;
+import com.google.common.collect.Sets;
+import com.kegare.caveworld.api.BlockEntry;
+import com.kegare.caveworld.api.CaveworldAPI;
+import com.kegare.caveworld.api.ICaveVein;
 import com.kegare.caveworld.core.CaveVeinManager.CaveVein;
-import com.kegare.caveworld.util.BlockEntry;
 import com.kegare.caveworld.util.CaveLog;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
@@ -40,13 +43,37 @@ public class VeinsSyncMessage implements IMessage, IMessageHandler<VeinsSyncMess
 
 	public VeinsSyncMessage() {}
 
-	public VeinsSyncMessage(Collection<CaveVein> veins)
+	public VeinsSyncMessage(Collection<ICaveVein> veins)
 	{
 		List<String> dat = Lists.newArrayList();
+		List<String> list = Lists.newArrayList();
+		Set<String> biomes = Sets.newHashSet();
 
-		for (CaveVein vein : veins)
+		for (ICaveVein vein : veins)
 		{
-			dat.add(vein.toString());
+			list.clear();
+			list.add(Block.blockRegistry.getNameForObject(vein.getBlock().getBlock()));
+			list.add(Integer.toString(vein.getBlock().getMetadata()));
+			list.add(Integer.toString(vein.getGenBlockCount()));
+			list.add(Integer.toString(vein.getGenWeight()));
+			list.add(Integer.toString(vein.getGenMinHeight()));
+			list.add(Integer.toString(vein.getGenMaxHeight()));
+			list.add(Block.blockRegistry.getNameForObject(vein.getGenTargetBlock().getBlock()));
+			list.add(Integer.toString(vein.getGenTargetBlock().getMetadata()));
+
+			if (vein.getGenBiomes().length > 0)
+			{
+				biomes.clear();
+
+				for (int id : vein.getGenBiomes())
+				{
+					biomes.add(Integer.toString(id));
+				}
+
+				list.add(Joiner.on('.').join(biomes));
+			}
+
+			dat.add(Joiner.on(',').join(list));
 		}
 
 		this.data = Joiner.on('&').join(dat);
@@ -67,7 +94,7 @@ public class VeinsSyncMessage implements IMessage, IMessageHandler<VeinsSyncMess
 	@Override
 	public IMessage onMessage(VeinsSyncMessage message, MessageContext ctx)
 	{
-		CaveVeinManager.clearCaveVeins();
+		CaveworldAPI.clearCaveVeins();
 
 		try
 		{
@@ -99,10 +126,10 @@ public class VeinsSyncMessage implements IMessage, IMessageHandler<VeinsSyncMess
 					}
 				}
 
-				CaveVeinManager.addCaveVein(new CaveVein(new BlockEntry(list.get(0), metadata, Blocks.stone), count, weight, min, max, new BlockEntry(list.get(6), target, Blocks.stone), biomes));
+				CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(list.get(0), metadata), count, weight, min, max, new BlockEntry(list.get(6), target), biomes));
 			}
 
-			CaveLog.info("Loaded %d cave veins from server", CaveVeinManager.getCaveVeins().size());
+			CaveLog.info("Loaded %d cave veins from server", CaveworldAPI.getCaveVeins().size());
 		}
 		catch (Exception e)
 		{

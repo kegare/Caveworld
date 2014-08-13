@@ -8,10 +8,11 @@
  * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
  */
 
-package com.kegare.caveworld.proxy;
+package com.kegare.caveworld.client;
 
 import net.minecraft.server.MinecraftServer;
 
+import com.kegare.caveworld.core.CommonProxy;
 import com.kegare.caveworld.renderer.RenderPortalCaveworld;
 
 import cpw.mods.fml.client.FMLClientHandler;

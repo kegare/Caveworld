@@ -31,6 +31,7 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.S02PacketChat;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
@@ -59,13 +60,12 @@ import net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import shift.mceconomy2.api.MCEconomyAPI;
 
+import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
-import com.kegare.caveworld.config.Config;
 import com.kegare.caveworld.core.CaveAchievementList;
-import com.kegare.caveworld.core.CaveBiomeManager;
-import com.kegare.caveworld.core.CaveMiningPlayer;
-import com.kegare.caveworld.core.CaveVeinManager;
 import com.kegare.caveworld.core.Caveworld;
+import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.inventory.InventoryCaveworldPortal;
 import com.kegare.caveworld.network.BiomesSyncMessage;
 import com.kegare.caveworld.network.CaveSoundMessage;
 import com.kegare.caveworld.network.ConfigSyncMessage;
@@ -118,29 +118,33 @@ public class CaveEventHooks
 			{
 				Config.syncVeinsCfg();
 			}
+			else if (MCEconomyPlugin.enabled() && "shop".equals(event.configID))
+			{
+				MCEconomyPlugin.syncShopCfg();
+			}
 		}
 	}
 
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
-	public void onRenderGameOverlay(RenderGameOverlayEvent.Text event)
+	public void onRenderGameTextOverlay(RenderGameOverlayEvent.Text event)
 	{
 		Minecraft mc = FMLClientHandler.instance().getClient();
+		EntityPlayer player = mc == null ? null : mc.thePlayer;
 
-		if (mc.thePlayer != null && mc.thePlayer.dimension == Config.dimensionCaveworld)
+		if (player != null && player.dimension == Config.dimensionCaveworld)
 		{
 			if (mc.gameSettings.showDebugInfo)
 			{
 				event.left.add("dim: Caveworld");
 			}
-			else if ((mc.gameSettings.advancedItemTooltips || mc.thePlayer.isSneaking()) && CaveUtils.isItemPickaxe(mc.thePlayer.getHeldItem()))
+			else if ((mc.gameSettings.advancedItemTooltips || player.isSneaking()) && CaveUtils.isItemPickaxe(player.getHeldItem()))
 			{
-				CaveMiningPlayer data = CaveMiningPlayer.get(mc.thePlayer);
-				int count = data.getMiningCount();
+				int count = CaveworldAPI.getMiningCount(player);
 
 				if (count > 0)
 				{
-					int level = data.getMiningLevel();
+					int level = CaveworldAPI.getMiningLevel(player);
 					StringBuilder builder = new StringBuilder();
 
 					builder.append(I18n.format("caveworld.mining.count")).append(": ").append(count);
@@ -177,10 +181,12 @@ public class CaveEventHooks
 	@SubscribeEvent
 	public void onServerConnected(ServerConnectionFromClientEvent event)
 	{
-		event.manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new DimSyncMessage()));
-		event.manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new ConfigSyncMessage()));
-		event.manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new BiomesSyncMessage(CaveBiomeManager.getCaveBiomes())));
-		event.manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new VeinsSyncMessage(CaveVeinManager.getCaveVeins())));
+		NetworkManager manager = event.manager;
+
+		manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new ConfigSyncMessage()));
+		manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new DimSyncMessage(WorldProviderCaveworld.getDimData())));
+		manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new BiomesSyncMessage(CaveworldAPI.getCaveBiomes())));
+		manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new VeinsSyncMessage(CaveworldAPI.getCaveVeins())));
 	}
 
 	@SubscribeEvent
@@ -205,7 +211,7 @@ public class CaveEventHooks
 				}
 				else if (!Config.hardcore)
 				{
-					int level = CaveMiningPlayer.get(player).getMiningLevel();
+					int level = CaveworldAPI.getMiningLevel(player);
 
 					if (level <= 0 || player.getRNG().nextInt(level) == 0)
 					{
@@ -269,7 +275,7 @@ public class CaveEventHooks
 
 				if (CaveUtils.isItemPickaxe(current) && CaveUtils.isOreBlock(block, metadata))
 				{
-					CaveMiningPlayer.get(player).addMiningCount(1);
+					CaveworldAPI.addMiningCount(player, 1);
 				}
 			}
 		}
@@ -288,7 +294,7 @@ public class CaveEventHooks
 
 			if (CaveUtils.isItemPickaxe(current) && CaveUtils.isOreBlock(block, metadata))
 			{
-				int level = CaveMiningPlayer.get(player).getMiningLevel();
+				int level = CaveworldAPI.getMiningLevel(player);
 
 				if (level > 0)
 				{
@@ -443,12 +449,7 @@ public class CaveEventHooks
 	{
 		if (event.entity instanceof EntityPlayer)
 		{
-			EntityPlayer player = (EntityPlayer)event.entity;
-
-			if (CaveMiningPlayer.get(player) == null)
-			{
-				CaveMiningPlayer.register(player);
-			}
+			CaveworldAPI.getMiningCount((EntityPlayer)event.entity);
 		}
 	}
 
@@ -460,7 +461,7 @@ public class CaveEventHooks
 
 		if (entity instanceof EntityPlayerMP)
 		{
-			CaveMiningPlayer.loadMiningData((EntityPlayerMP)entity);
+			CaveworldAPI.loadMiningData((EntityPlayerMP)entity, null);
 		}
 
 		if (entity.dimension == Config.dimensionCaveworld)
@@ -508,7 +509,7 @@ public class CaveEventHooks
 		{
 			if (!Config.deathLoseMiningCount)
 			{
-				CaveMiningPlayer.saveMiningData((EntityPlayerMP)event.entityLiving);
+				CaveworldAPI.saveMiningData((EntityPlayerMP)event.entityLiving, null);
 			}
 		}
 	}
@@ -553,25 +554,13 @@ public class CaveEventHooks
 	}
 
 	@SubscribeEvent
-	public void onWorldLoad(WorldEvent.Load event)
-	{
-		World world = event.world;
-
-		if (!world.isRemote && world.provider.dimensionId == Config.dimensionCaveworld)
-		{
-			CaveBlocks.caveworld_portal.inventory.loadInventoryFromNBT();
-		}
-	}
-
-	@SubscribeEvent
 	public void onWorldUnload(WorldEvent.Unload event)
 	{
 		World world = event.world;
 
 		if (!world.isRemote && world.provider.dimensionId == Config.dimensionCaveworld)
 		{
-			WorldProviderCaveworld.writeDimData();
-			WorldProviderCaveworld.clearDimData();
+			WorldProviderCaveworld.saveDimData();
 		}
 	}
 
@@ -582,7 +571,7 @@ public class CaveEventHooks
 
 		if (!world.isRemote && world.provider.dimensionId == Config.dimensionCaveworld)
 		{
-			CaveBlocks.caveworld_portal.inventory.saveInventoryToNBT();
+			InventoryCaveworldPortal.instance().saveInventory();
 		}
 	}
 }

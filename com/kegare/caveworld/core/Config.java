@@ -8,7 +8,7 @@
  * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
  */
 
-package com.kegare.caveworld.config;
+package com.kegare.caveworld.core;
 
 import java.io.File;
 import java.util.List;
@@ -31,20 +31,20 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Level;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.kegare.caveworld.config.entry.VeinsEntry.VeinConfigEntry;
-import com.kegare.caveworld.core.CaveBiomeManager;
+import com.kegare.caveworld.api.BlockEntry;
+import com.kegare.caveworld.api.CaveworldAPI;
+import com.kegare.caveworld.client.config.VeinsEntry.VeinConfigEntry;
 import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome;
-import com.kegare.caveworld.core.CaveVeinManager;
 import com.kegare.caveworld.core.CaveVeinManager.CaveVein;
-import com.kegare.caveworld.core.Caveworld;
-import com.kegare.caveworld.util.BlockEntry;
+import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
+import com.kegare.caveworld.plugin.mceconomy.ShopEntry.ShopProductEntry;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.Version;
 
-import cpw.mods.fml.client.config.GuiConfigEntries.NumberSliderEntry;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -131,36 +131,24 @@ public class Config
 		return null;
 	}
 
-	public static enum ConfigEntryClass
-	{
-		NUMBER_SLIDER,
-		VEIN_CONFIG;
-
-		private Class entryClass;
-
-		protected void set(Class clazz)
-		{
-			entryClass = clazz;
-		}
-
-		public Class get()
-		{
-			return entryClass;
-		}
-	}
+	public static Optional<Class> VEIN_ENTRY = Optional.absent();
 
 	@SideOnly(Side.CLIENT)
-	private static void registerConfigEntryClass()
+	private static void initializeConfigEntryClasses()
 	{
-		ConfigEntryClass.NUMBER_SLIDER.set(NumberSliderEntry.class);
-		ConfigEntryClass.VEIN_CONFIG.set(VeinConfigEntry.class);
+		VEIN_ENTRY = Optional.of((Class)VeinConfigEntry.class);
+
+		if (MCEconomyPlugin.enabled())
+		{
+			MCEconomyPlugin.PRODUCT_ENTRY = Optional.of((Class)ShopProductEntry.class);
+		}
 	}
 
 	static
 	{
 		try
 		{
-			registerConfigEntryClass();
+			initializeConfigEntryClasses();
 		}
 		catch (NoSuchMethodError e) {}
 	}
@@ -367,7 +355,7 @@ public class Config
 			biomesCfg = loadConfig(category);
 		}
 
-		CaveBiomeManager.clearCaveBiomes();
+		CaveworldAPI.clearCaveBiomes();
 
 		if (biomesDefaultMap.isEmpty())
 		{
@@ -405,7 +393,7 @@ public class Config
 			propOrder.clear();
 			name = String.valueOf(biome.biomeID);
 			prop = biomesCfg.get(name, "genWeight", biomesDefaultMap.containsKey(biome.biomeID) ? biomesDefaultMap.get(biome.biomeID) : 0);
-			prop.setMinValue(0).setMaxValue(100).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(ConfigEntryClass.NUMBER_SLIDER.get());
+			prop.setMinValue(0).setMaxValue(100).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 			prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 			propOrder.add(prop.getName());
@@ -443,7 +431,7 @@ public class Config
 
 			if (weight > 0)
 			{
-				CaveBiomeManager.addCaveBiome(new CaveBiome(biome, weight, new BlockEntry(block, metadata, Blocks.stone)));
+				CaveworldAPI.addCaveBiome(new CaveBiome(biome, weight, new BlockEntry(block, metadata)));
 			}
 		}
 
@@ -460,7 +448,7 @@ public class Config
 			veinsCfg = loadConfig("veins");
 		}
 
-		CaveVeinManager.clearCaveVeins();
+		CaveworldAPI.clearCaveVeins();
 
 		if (veinsCfg.getCategoryNames().isEmpty())
 		{
@@ -484,7 +472,7 @@ public class Config
 
 			for (Map.Entry<String, CaveVein> entry : veins.entrySet())
 			{
-				CaveVeinManager.addCaveVeinWithConfig(entry.getKey(), entry.getValue());
+				CaveworldAPI.addCaveVeinWithConfig(entry.getKey(), entry.getValue());
 			}
 		}
 		else
@@ -501,7 +489,7 @@ public class Config
 				}
 				else
 				{
-					CaveVeinManager.addCaveVeinFromConfig(name);
+					CaveworldAPI.addCaveVeinFromConfig(name);
 				}
 			}
 		}
