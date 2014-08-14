@@ -22,7 +22,6 @@ import net.minecraft.util.StatCollector;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
-import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
@@ -279,14 +278,6 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		dimensionCaveworld = prop.getInt(dimensionCaveworld);
-
-		if (DimensionManager.isDimensionRegistered(dimensionCaveworld))
-		{
-			dimensionCaveworld = DimensionManager.getNextFreeDimId();
-
-			prop.set(dimensionCaveworld);
-		}
-
 		prop = dimensionCfg.get(category, "subsurfaceHeight", 127);
 		prop.setMinValue(63).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");

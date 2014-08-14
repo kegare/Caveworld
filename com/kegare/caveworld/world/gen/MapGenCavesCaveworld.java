@@ -25,8 +25,8 @@ public class MapGenCavesCaveworld extends MapGenCaves
 	{
 		int worldHeight = worldObj.getActualHeight();
 		Random random = new Random(caveSeed);
-		double centerX = (chunkX << 4) + 8;
-		double centerZ = (chunkZ << 4) + 8;
+		double centerX = chunkX * 16 + 8;
+		double centerZ = chunkZ * 16 + 8;
 		float leftRightChange = 0.0F;
 		float upDownChange = 0.0F;
 
@@ -94,21 +94,21 @@ public class MapGenCavesCaveworld extends MapGenCaves
 
 				if (blockX >= centerX - 16.0D - roomWidth * 2.0D && blockZ >= centerZ - 16.0D - roomWidth * 2.0D && blockX <= centerX + 16.0D + roomWidth * 2.0D && blockZ <= centerZ + 16.0D + roomWidth * 2.0D)
 				{
-					int xLow = Math.max(MathHelper.floor_double(blockX - roomWidth) - (chunkX << 4) - 1, 0);
-					int xHigh = Math.min(MathHelper.floor_double(blockX + roomWidth) - (chunkX << 4) + 1, 16);
+					int xLow = Math.max(MathHelper.floor_double(blockX - roomWidth) - chunkX * 16 - 1, 0);
+					int xHigh = Math.min(MathHelper.floor_double(blockX + roomWidth) - chunkX * 16 + 1, 16);
 					int yLow = Math.max(MathHelper.floor_double(blockY - roomHeight) - 1, 1);
 					int yHigh = Math.min(MathHelper.floor_double(blockY + roomHeight) + 1, worldHeight - 8);
-					int zLow = Math.max(MathHelper.floor_double(blockZ - roomWidth) - (chunkZ << 4) - 1, 0);
-					int zHigh = Math.min(MathHelper.floor_double(blockZ + roomWidth) - (chunkZ << 4) + 1, 16);
+					int zLow = Math.max(MathHelper.floor_double(blockZ - roomWidth) - chunkZ * 16 - 1, 0);
+					int zHigh = Math.min(MathHelper.floor_double(blockZ + roomWidth) - chunkZ * 16 + 1, 16);
 
 					for (int x = xLow; x < xHigh; ++x)
 					{
-						double xScale = ((chunkX << 4) + x + 0.5D - blockX) / roomWidth;
+						double xScale = (chunkX * 16 + x + 0.5D - blockX) / roomWidth;
 
 						for (int z = zLow; z < zHigh; ++z)
 						{
-							double zScale = ((chunkZ << 4) + z + 0.5D - blockZ) / roomWidth;
-							int index = ((x << 4) + z) * 128 + yHigh;
+							double zScale = (chunkZ * 16 + z + 0.5D - blockZ) / roomWidth;
+							int index = (x * 16 + z) * 256 + yHigh;
 
 							if (xScale * xScale + zScale * zScale < 1.0D)
 							{
@@ -149,9 +149,9 @@ public class MapGenCavesCaveworld extends MapGenCaves
 
 		for (int i = 0; i < chance; ++i)
 		{
-			double blockX = (x << 4) + rand.nextInt(16);
+			double blockX = x * 16 + rand.nextInt(16);
 			double blockY = rand.nextInt(rand.nextInt(worldHeight - 8) + 8);
-			double blockZ = (z << 4) + rand.nextInt(16);
+			double blockZ = z * 16 + rand.nextInt(16);
 			int count = 1;
 
 			if (rand.nextInt(4) == 0)
@@ -165,11 +165,11 @@ public class MapGenCavesCaveworld extends MapGenCaves
 			{
 				float leftRightRadian = rand.nextFloat() * (float)Math.PI * 2.0F;
 				float upDownRadian = (rand.nextFloat() - 0.5F) * 2.0F / 8.0F;
-				float scale = rand.nextFloat() * 2.0F + rand.nextFloat();
+				float scale = rand.nextFloat() * 2.5F + rand.nextFloat();
 
 				if (rand.nextInt(10) == 0)
 				{
-					scale *= rand.nextFloat() * rand.nextFloat() * 3.0F + 1.0F;
+					scale *= rand.nextFloat() * rand.nextFloat() * 3.5F + 1.0F;
 				}
 
 				func_151541_a(rand.nextLong(), chunkX, chunkZ, blocks, blockX, blockY, blockZ, scale, leftRightRadian, upDownRadian, 0, 0, 1.0D);

@@ -91,9 +91,9 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		random.setSeed(chunkX * 341873128712L + chunkZ * 132897987541L);
 
 		int worldHeight = worldObj.provider.getActualHeight();
-		BiomeGenBase biome = worldObj.getWorldChunkManager().getBiomeGenAt(chunkX << 4, chunkZ << 4);
-		Block[] blocks = new Block[256 * MathHelper.clamp_int(worldHeight, 128, 256)];
-		byte[] metadata = new byte[blocks.length];
+		BiomeGenBase biome = worldObj.getWorldChunkManager().getBiomeGenAt(chunkX * 16, chunkZ * 16);
+		Block[] blocks = new Block[65536];
+		byte[] metadata = new byte[65536];
 		BlockEntry entry = CaveworldAPI.getBiomeTerrainBlock(biome);
 		Block block = entry.getBlock();
 		int meta = entry.getMetadata();
@@ -112,6 +112,23 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 		int i;
 
+		for (int x = 0; x < 16; ++x)
+		{
+			for (int z = 0; z < 16; ++z)
+			{
+				i = (x * 16 + z) * 256;
+
+				blocks[i] = Blocks.bedrock;
+				blocks[i + worldHeight - 1] = Blocks.bedrock;
+				blocks[i + worldHeight - 2] = block;
+
+				for (int y = 255; y >= worldHeight; --y)
+				{
+					blocks[i + y] = null;
+				}
+			}
+		}
+
 		for (i = 0; meta != 0 && i < blocks.length; ++i)
 		{
 			if (blocks[i] != block)
@@ -121,24 +138,11 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		}
 
 		Chunk chunk = new Chunk(worldObj, blocks, metadata, chunkX, chunkZ);
+		byte[] biomes = new byte[256];
 
-		Arrays.fill(chunk.getBiomeArray(), (byte)biome.biomeID);
+		Arrays.fill(biomes, (byte)biome.biomeID);
 
-		for (int x = 0; x < 16; ++x)
-		{
-			for (int z = 0; z < 16; ++z)
-			{
-				chunk.func_150807_a(x, 0, z, Blocks.bedrock, 0);
-				chunk.func_150807_a(x, worldHeight - 1, z, Blocks.bedrock, 0);
-				chunk.func_150807_a(x, worldHeight - 2, z, block, 0);
-
-				for (i = worldHeight; worldHeight < 128 && i < 128; ++i)
-				{
-					chunk.func_150807_a(x, i, z, Blocks.air, 0);
-				}
-			}
-		}
-
+		chunk.setBiomeArray(biomes);
 		chunk.resetRelightChecks();
 
 		return chunk;
@@ -155,8 +159,8 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	{
 		BlockFalling.fallInstantly = true;
 
-		int worldX = chunkX << 4;
-		int worldZ = chunkZ << 4;
+		int worldX = chunkX * 16;
+		int worldZ = chunkZ * 16;
 		BiomeGenBase biome = worldObj.getBiomeGenForCoords(worldX, worldZ);
 		BiomeDecorator decorator = biome.theBiomeDecorator;
 		int worldHeight = worldObj.provider.getActualHeight();

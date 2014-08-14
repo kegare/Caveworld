@@ -120,7 +120,7 @@ public class MapGenStrongholdCaveworld extends MapGenStronghold
 		{
 			super(chunkX, chunkZ);
 			StructureStrongholdPiecesCaveworld.prepareStructurePieces();
-			Stairs2 stairs2 = new Stairs2(0, random, (chunkX << 4) + 2, (chunkZ << 4) + 2);
+			Stairs2 stairs2 = new Stairs2(0, random, chunkX * 16 + 2, chunkZ * 16 + 2);
 			this.components.add(stairs2);
 			stairs2.buildComponent(stairs2, components, random);
 			List list = stairs2.field_75026_c;

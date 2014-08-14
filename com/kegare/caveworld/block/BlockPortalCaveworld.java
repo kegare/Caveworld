@@ -204,6 +204,12 @@ public class BlockPortalCaveworld extends BlockPortal
 				int dimNew = dimOld == Config.dimensionCaveworld ? entity.getEntityData().getInteger("Caveworld:LastDim") : Config.dimensionCaveworld;
 				WorldServer worldOld = server.worldServerForDimension(dimOld);
 				WorldServer worldNew = server.worldServerForDimension(dimNew);
+
+				if (worldOld == null || worldNew == null)
+				{
+					return;
+				}
+
 				Teleporter teleporter = new TeleporterCaveworld(worldNew);
 
 				entity.worldObj.removeEntity(entity);
