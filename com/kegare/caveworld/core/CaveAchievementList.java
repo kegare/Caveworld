@@ -10,54 +10,56 @@
 
 package com.kegare.caveworld.core;
 
-import java.util.Set;
+import java.util.List;
 
 import net.minecraft.block.Block;
-import net.minecraft.init.Items;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.stats.Achievement;
 import net.minecraftforge.common.AchievementPage;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 import com.kegare.caveworld.block.CaveBlocks;
 
 public class CaveAchievementList
 {
-	private static final Set<Achievement> CAVE_ACHIEVEMENTS = Sets.newHashSet();
+	private static final List<Achievement> achievementList = Lists.newArrayList();
 
-	public static final Achievement caveworld = new CaveAchievement("caveworld", 0, 0, CaveBlocks.caveworld_portal, null).initIndependentStat().registerStat();
-	public static final Achievement miner = new CaveAchievement("miner", 2, 1, Items.iron_pickaxe, caveworld).registerStat();
+	public static final Achievement portal = new CaveAchievement("portal", 0, 0, Blocks.mossy_cobblestone, null).initIndependentStat().registerStat();
+	public static final Achievement caveworld = new CaveAchievement("caveworld", 2, 1, CaveBlocks.caveworld_portal, portal).registerStat();
 
 	public static void registerAchievements()
 	{
-		AchievementPage.registerAchievementPage(new AchievementPage("Caveworld", CAVE_ACHIEVEMENTS.toArray(new Achievement[CAVE_ACHIEVEMENTS.size()])));
+		AchievementPage page = new AchievementPage("Caveworld");
+		page.getAchievements().addAll(achievementList);
+
+		AchievementPage.registerAchievementPage(page);
 	}
 
 	private static class CaveAchievement extends Achievement
 	{
-		public CaveAchievement(String name, int column, int row, Block block, Achievement achievement)
+		public CaveAchievement(String name, int column, int row, Block block, Achievement parent)
 		{
-			this(name, column, row, new ItemStack(block), achievement);
+			this(name, column, row, new ItemStack(block), parent);
 		}
 
-		public CaveAchievement(String name, int column, int row, Item item, Achievement achievement)
+		public CaveAchievement(String name, int column, int row, Item item, Achievement parent)
 		{
-			this(name, column, row, new ItemStack(item), achievement);
+			this(name, column, row, new ItemStack(item), parent);
 		}
 
-		public CaveAchievement(String name, int column, int row, ItemStack itemstack, Achievement achievement)
+		public CaveAchievement(String name, int column, int row, ItemStack itemstack, Achievement parent)
 		{
-			super("achievement.caveworld." + name, "caveworld." + name, column, row, itemstack, achievement);
+			super("achievement.caveworld." + name, "caveworld." + name, column, row, itemstack, parent);
 		}
 
 		@Override
 		public Achievement registerStat()
 		{
-			super.registerStat();
-			CAVE_ACHIEVEMENTS.add(this);
+			achievementList.add(this);
 
-			return this;
+			return super.registerStat();
 		}
 	}
 }

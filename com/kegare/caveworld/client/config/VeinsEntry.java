@@ -21,7 +21,7 @@ import net.minecraftforge.common.config.ConfigElement;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
-import org.apache.commons.lang3.ArrayUtils;
+import org.lwjgl.input.Keyboard;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
@@ -71,52 +71,31 @@ public class VeinsEntry extends CaveCategoryEntry
 
 	public static class VeinElement extends ConfigElement
 	{
-		private final String block;
-		private final int blockMetadata;
-		private final int genBlockCount;
-		private final int genWeight;
-		private final int genMinHeight;
-		private final int genMaxHeight;
-		private final String genTargetBlock;
-		private final int genTargetBlockMetadata;
-		private final int[] genBiomes;
+		private final ConfigCategory category;
 
 		public VeinElement(ConfigCategory category)
 		{
 			super(category);
-			this.block = category.get("block").getString();
-			this.blockMetadata = category.get("blockMetadata").getInt(0);
-			this.genBlockCount = category.get("genBlockCount").getInt(1);
-			this.genWeight = category.get("genWeight").getInt(1);
-			this.genMinHeight = category.get("genMinHeight").getInt(0);
-			this.genMaxHeight = category.get("genMaxHeight").getInt(255);
-			this.genTargetBlock = category.get("genTargetBlock").getString();
-			this.genTargetBlockMetadata = category.get("genTargetBlockMetadata").getInt(0);
-			this.genBiomes = category.get("genBiomes").getIntList();
+			this.category = category;
 		}
 
 		@Override
 		public String getComment()
 		{
 			List<String> list = Lists.newArrayList();
-			list.add(block);
-			list.add(Integer.toString(blockMetadata));
-			list.add(Integer.toString(genBlockCount));
-			list.add(Integer.toString(genWeight));
-			list.add(Integer.toString(genMinHeight));
-			list.add(Integer.toString(genMaxHeight));
-			list.add(genTargetBlock);
-			list.add(Integer.toString(genTargetBlockMetadata));
+			list.add(category.get("block").getString());
+			list.add(category.get("blockMetadata").getString());
+			list.add(category.get("genBlockCount").getString());
+			list.add(category.get("genWeight").getString());
+			list.add(category.get("genMinHeight").getString());
+			list.add(category.get("genMaxHeight").getString());
+			list.add(category.get("genTargetBlock").getString());
+			list.add(category.get("genTargetBlockMetadata").getString());
 
-			if (genBiomes != null && genBiomes.length > 0)
+			String[] biomes = category.get("genBiomes").getStringList();
+
+			if (biomes != null && biomes.length > 0)
 			{
-				List<String> biomes = Lists.newArrayList();
-
-				for (int biome : genBiomes)
-				{
-					biomes.add(Integer.toString(biome));
-				}
-
 				list.add("[" + Joiner.on(", ").join(biomes) + "]");
 			}
 
@@ -136,7 +115,7 @@ public class VeinsEntry extends CaveCategoryEntry
 		{
 			List<IConfigElement> list = Lists.newArrayList();
 
-			list.add(new ConfigElement<String>(new Property("veinName", "New Vein", Property.Type.STRING, Caveworld.CONFIG_LANG + "veins.veinName").setConfigEntryClass(VeinConfigEntry.class)));
+			list.add(new ConfigElement<String>(new Property("veinName", "", Property.Type.STRING, Caveworld.CONFIG_LANG + "veins.veinName").setConfigEntryClass(VeinConfigEntry.class)));
 			list.add(new ConfigElement<String>(new Property("block", Block.blockRegistry.getNameForObject(Blocks.stone), Property.Type.STRING, Caveworld.CONFIG_LANG + "veins.block")));
 			list.add(new ConfigElement<Integer>(new Property("blockMetadata", "0", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.blockMetadata").setMinValue(0).setMaxValue(15)));
 			list.add(new ConfigElement<Integer>(new Property("genBlockCount", "1", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genBlockCount").setMinValue(1).setMaxValue(100)));
@@ -167,10 +146,34 @@ public class VeinsEntry extends CaveCategoryEntry
 		}
 
 		@Override
+		public void keyTyped(char eventChar, int eventKey)
+		{
+			super.keyTyped(eventChar, eventKey);
+
+			if (enabled() && eventKey == Keyboard.KEY_DELETE && (owningScreen.configID == null || !owningScreen.configID.endsWith(".add")))
+			{
+				for (IConfigElement element : owningScreen.configElements)
+				{
+					switch (element.getName())
+					{
+						case "block":
+							element.set("");
+							break;
+						case "genWeight":
+							element.set(0);
+							break;
+					}
+				}
+
+				mc.displayGuiScreen(owningScreen.parentScreen);
+			}
+		}
+
+		@Override
 		public void onGuiClosed()
 		{
 			String name = null;
-			String block = Block.blockRegistry.getNameForObject(Blocks.stone);
+			String block = null;
 			int blockMetadata = 0;
 			int count = 1;
 			int weight = 1;
@@ -209,22 +212,20 @@ public class VeinsEntry extends CaveCategoryEntry
 						break;
 					case "genTargetBlock":
 						target = element.get().toString();
-
-						if (Strings.isNullOrEmpty(target))
-						{
-							target = element.getDefault().toString();
-						}
-
 						break;
 					case "genTargetBlockMetadata":
 						targetMetadata = Integer.valueOf(element.get().toString());
 						break;
 					case "genBiomes":
-						for (Object obj : element.getList())
+						Object[] temp = element.getList();
+						int[] ids = new int[temp.length];
+
+						for (int i = 0; i < temp.length; ++i)
 						{
-							biomes = ArrayUtils.add(new int[] {}, Integer.valueOf(obj.toString()));
+							ids[i] = Integer.valueOf(temp[i].toString());
 						}
 
+						biomes = ids;
 						break;
 				}
 			}
@@ -234,14 +235,14 @@ public class VeinsEntry extends CaveCategoryEntry
 				min = 0;
 			}
 
-			CaveVein vein = new CaveVein(new BlockEntry(block, blockMetadata), count, weight, min, max, new BlockEntry(target, targetMetadata), biomes);
-
 			if (!Strings.isNullOrEmpty(owningScreen.configID) && owningScreen.configID.endsWith(".add"))
 			{
 				if (Strings.isNullOrEmpty(name) || Strings.isNullOrEmpty(block) || weight <= 0)
 				{
 					return;
 				}
+
+				CaveVein vein = new CaveVein(new BlockEntry(block, blockMetadata), count, weight, min, max, new BlockEntry(target, targetMetadata), biomes);
 
 				if (CaveworldAPI.addCaveVeinWithConfig(name, vein) && owningScreen.parentScreen instanceof GuiConfig)
 				{
@@ -269,27 +270,22 @@ public class VeinsEntry extends CaveCategoryEntry
 			{
 				name = owningScreen.titleLine2;
 
-				if (Strings.isNullOrEmpty(name) || Strings.isNullOrEmpty(block) || weight <= 0)
+				if (!Strings.isNullOrEmpty(name) && (Strings.isNullOrEmpty(block) || weight <= 0))
 				{
-					if (CaveworldAPI.removeCaveVeinFromConfig(name))
+					if (CaveworldAPI.removeCaveVeinFromConfig(name) && owningScreen.parentScreen instanceof GuiConfig)
 					{
-						CaveworldAPI.removeCaveVein(vein);
+						GuiConfig parent = (GuiConfig)owningScreen.parentScreen;
 
-						if (owningScreen.parentScreen instanceof GuiConfig)
+						for (Iterator<IConfigElement> elements = parent.configElements.iterator(); elements.hasNext();)
 						{
-							GuiConfig parent = (GuiConfig)owningScreen.parentScreen;
-
-							for (Iterator<IConfigElement> elements = parent.configElements.iterator(); elements.hasNext();)
+							if (elements.next().getName().equals(name))
 							{
-								if (elements.next().getName().equals(name))
-								{
-									elements.remove();
-								}
+								elements.remove();
 							}
-
-							parent.needsRefresh = true;
-							parent.initGui();
 						}
+
+						parent.needsRefresh = true;
+						parent.initGui();
 					}
 				}
 			}

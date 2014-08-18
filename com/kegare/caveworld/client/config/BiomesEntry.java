@@ -63,18 +63,14 @@ public class BiomesEntry extends CaveCategoryEntry
 
 	public static class BiomeElement extends ConfigElement
 	{
+		private final ConfigCategory category;
 		private BiomeGenBase biome;
-		private final int genWeight;
-		private final String terrainBlock;
-		private final int terrainBlockMetadata;
 
 		public BiomeElement(ConfigCategory category)
 		{
 			super(category);
+			this.category = category;
 			this.biome = BiomeGenBase.getBiome(NumberUtils.toInt(category.getName(), BiomeGenBase.plains.biomeID));
-			this.genWeight = category.get("genWeight").getInt(0);
-			this.terrainBlock = category.get("terrainBlock").getString();
-			this.terrainBlockMetadata = category.get("terrainBlockMetadata").getInt(0);
 		}
 
 		public BiomeGenBase getBiome()
@@ -92,14 +88,14 @@ public class BiomesEntry extends CaveCategoryEntry
 		public String getComment()
 		{
 			List<String> list = Lists.newArrayList();
-			list.add(Integer.toString(genWeight));
-			list.add(terrainBlock);
-			list.add(Integer.toString(terrainBlockMetadata));
+			list.add(category.get("genWeight").getString());
+			list.add(category.get("terrainBlock").getString());
+			list.add(category.get("terrainBlockMetadata").getString());
 			String data = Joiner.on(", ").skipNulls().join(list);
 
 			if (BiomeDictionary.isBiomeRegistered(getBiome()))
 			{
-				Set<String> types = Sets.newHashSet();
+				Set<String> types = Sets.newTreeSet();
 
 				for (Type type : BiomeDictionary.getTypesForBiome(getBiome()))
 				{

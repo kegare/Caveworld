@@ -12,23 +12,23 @@ package com.kegare.caveworld.core;
 
 import java.util.Map;
 
+import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.common.IExtendedEntityProperties;
-import shift.mceconomy2.api.MCEconomyAPI;
 
 import com.google.common.collect.Maps;
 import com.kegare.caveworld.api.ICaveMiningManager;
 import com.kegare.caveworld.network.MiningSyncMessage;
-import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 
 public class CaveMiningManager implements ICaveMiningManager
 {
 	public static final String MINING_TAG = "Caveworld:CaveMining";
 
+	private static final Map<String, Integer> pointAmounts = Maps.newHashMap();
 	private static final Map<String, NBTTagCompound> miningData = Maps.newHashMap();
 
 	private MiningPlayer getMiningPlayer(EntityPlayer player)
@@ -42,45 +42,35 @@ public class CaveMiningManager implements ICaveMiningManager
 	}
 
 	@Override
-	public void setMiningCount(EntityPlayer player, int count)
+	public int getMiningPoint(EntityPlayer player)
 	{
-		getMiningPlayer(player).setMiningCount(count);
+		return getMiningPlayer(player).getMiningPoint();
 	}
 
 	@Override
-	public int getMiningCount(EntityPlayer player)
+	public void setMiningPoint(EntityPlayer player, int value)
 	{
-		return getMiningPlayer(player).getMiningCount();
+		getMiningPlayer(player).setMiningPoint(value);
 	}
 
 	@Override
-	public void addMiningCount(EntityPlayer player, int count)
+	public void addMiningPoint(EntityPlayer player, int value)
 	{
-		getMiningPlayer(player).addMiningCount(count);
+		getMiningPlayer(player).addMiningPoint(value);
 	}
 
 	@Override
-	public int getNextAmount(EntityPlayer player)
+	public int getMiningPointAmount(Block block, int metadata)
 	{
-		return getMiningPlayer(player).getNextAmount();
+		String key = Block.blockRegistry.getNameForObject(block) + "," + metadata;
+
+		return pointAmounts.containsKey(key) ? pointAmounts.get(key) : 0;
 	}
 
 	@Override
-	public void setMiningLevel(EntityPlayer player, int level)
+	public void setMiningPointAmount(Block block, int metadata, int amount)
 	{
-		getMiningPlayer(player).setMiningLevel(level);
-	}
-
-	@Override
-	public int getMiningLevel(EntityPlayer player)
-	{
-		return getMiningPlayer(player).getMiningLevel();
-	}
-
-	@Override
-	public void addMiningLevel(EntityPlayer player, int level)
-	{
-		getMiningPlayer(player).addMiningLevel(level);
+		pointAmounts.put(Block.blockRegistry.getNameForObject(block) + "," + metadata, amount);
 	}
 
 	@Override
@@ -123,8 +113,7 @@ public class CaveMiningManager implements ICaveMiningManager
 	{
 		private final EntityPlayer player;
 
-		private int miningCount;
-		private int miningLevel;
+		private int point;
 
 		public MiningPlayer(EntityPlayer player)
 		{
@@ -136,8 +125,7 @@ public class CaveMiningManager implements ICaveMiningManager
 		{
 			NBTTagCompound data = new NBTTagCompound();
 
-			data.setInteger("MiningCount", miningCount);
-			data.setInteger("MiningLevel", miningLevel);
+			data.setInteger("MiningPoint", point);
 
 			compound.setTag(MINING_TAG, data);
 		}
@@ -152,67 +140,32 @@ public class CaveMiningManager implements ICaveMiningManager
 
 			NBTTagCompound data = compound.getCompoundTag(MINING_TAG);
 
-			miningCount = data.getInteger("MiningCount");
-			miningLevel = data.getInteger("MiningLevel");
+			point = data.getInteger("MiningPoint");
+
+			if (data.hasKey("MiningCount") && point <= 0)
+			{
+				point = data.getInteger("MiningCount");
+			}
 		}
 
 		@Override
 		public void init(Entity entity, World world) {}
 
-		public void setMiningCount(int count)
+		public int getMiningPoint()
 		{
-			miningCount = Math.max(count, 0);
+			return point;
+		}
+
+		public void setMiningPoint(int value)
+		{
+			point = Math.max(value, 0);
 
 			syncMiningData();
 		}
 
-		public int getMiningCount()
+		public void addMiningPoint(int value)
 		{
-			return miningCount;
-		}
-
-		public void addMiningCount(int count)
-		{
-			setMiningCount(miningCount + count);
-
-			if (miningCount == getNextAmount())
-			{
-				addMiningLevel(1);
-			}
-
-			if (miningCount > 0 && miningCount % 100 == 0)
-			{
-				player.addExperience(player.xpBarCap() / 2);
-
-				if (MCEconomyPlugin.enabled())
-				{
-					MCEconomyAPI.addPlayerMP(player, 10 + miningCount / 100 - 1, false);
-				}
-			}
-		}
-
-		public int getNextAmount()
-		{
-			return 100 * miningLevel + 100 * (miningLevel + 1);
-		}
-
-		public void setMiningLevel(int level)
-		{
-			miningLevel = Math.max(level, 0);
-
-			syncMiningData();
-		}
-
-		public int getMiningLevel()
-		{
-			return miningLevel;
-		}
-
-		public void addMiningLevel(int level)
-		{
-			setMiningLevel(miningLevel + level);
-
-			player.addStat(CaveAchievementList.miner, level);
+			setMiningPoint(point + value);
 		}
 
 		public void syncMiningData()

@@ -13,6 +13,7 @@ package com.kegare.caveworld.core;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import net.minecraft.block.Block;
@@ -59,7 +60,8 @@ public class Config
 	private static final Map<Integer, Integer> biomesDefaultMap = Maps.newHashMap();
 
 	public static boolean versionNotify;
-	public static boolean deathLoseMiningCount;
+	public static boolean veinsAutoRegister;
+	public static boolean deathLoseMiningPoint;
 
 	public static boolean portalCraftRecipe;
 	public static boolean mossStoneCraftRecipe;
@@ -157,12 +159,12 @@ public class Config
 		syncGeneralCfg();
 		syncBlocksCfg();
 		syncDimensionCfg();
+		syncVeinsCfg();
 	}
 
 	public static void syncPostConfig()
 	{
 		syncBiomesCfg();
-		syncVeinsCfg();
 	}
 
 	public static void syncGeneralCfg()
@@ -184,14 +186,22 @@ public class Config
 		prop.comment += "Note: If multiplayer, does not have to match client-side and server-side.";
 		propOrder.add(prop.getName());
 		versionNotify = prop.getBoolean(versionNotify);
-		prop = generalCfg.get(category, "deathLoseMiningCount", false);
+		prop = generalCfg.get(category, "veinsAutoRegister", false);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		prop.comment += Configuration.NEW_LINE;
+		prop.comment += "Note: If multiplayer, server-side only.";
+		propOrder.add(prop.getName());
+		veinsAutoRegister = prop.getBoolean(veinsAutoRegister);
+		prop = generalCfg.get(category, "deathLoseMiningPoint", false);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		prop.comment += Configuration.NEW_LINE;
 		prop.comment += "Note: If multiplayer, server-side only.";
 		propOrder.add(prop.getName());
-		deathLoseMiningCount = prop.getBoolean(deathLoseMiningCount);
+		deathLoseMiningPoint = prop.getBoolean(deathLoseMiningPoint);
 
 		generalCfg.setCategoryPropertyOrder(category, propOrder);
 
@@ -283,7 +293,7 @@ public class Config
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
-		subsurfaceHeight = prop.getInt(subsurfaceHeight);
+		subsurfaceHeight = MathHelper.clamp_int(prop.getInt(subsurfaceHeight), Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue()));
 		prop = dimensionCfg.get(category, "generateCaves", true);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -345,8 +355,10 @@ public class Config
 		{
 			biomesCfg = loadConfig(category);
 		}
-
-		CaveworldAPI.clearCaveBiomes();
+		else
+		{
+			CaveworldAPI.clearCaveBiomes();
+		}
 
 		if (biomesDefaultMap.isEmpty())
 		{
@@ -404,7 +416,7 @@ public class Config
 
 			if (BiomeDictionary.isBiomeRegistered(biome))
 			{
-				Set<String> types = Sets.newHashSet();
+				Set<String> types = Sets.newTreeSet();
 
 				for (Type type : BiomeDictionary.getTypesForBiome(biome))
 				{
@@ -438,14 +450,16 @@ public class Config
 		{
 			veinsCfg = loadConfig("veins");
 		}
-
-		CaveworldAPI.clearCaveVeins();
+		else
+		{
+			CaveworldAPI.clearCaveVeins();
+		}
 
 		if (veinsCfg.getCategoryNames().isEmpty())
 		{
 			Map<String, CaveVein> veins = Maps.newHashMap();
 
-			veins.put("Coal Ore Vein", new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 16, 20, 0, 255));
+			veins.put("Coal Ore Vein", new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 17, 20, 0, 255));
 			veins.put("Iron Ore Vein", new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 10, 28, 0, 255));
 			veins.put("Gold Ore Vein", new CaveVein(new BlockEntry(Blocks.gold_ore, 0), 8, 2, 0, 127));
 			veins.put("Redstone Ore Vein", new CaveVein(new BlockEntry(Blocks.redstone_ore, 0), 7, 8, 0, 40));
@@ -461,7 +475,7 @@ public class Config
 			veins.put("Hardened Clay Vein, 0", new CaveVein(new BlockEntry(Blocks.hardened_clay, 1), 24, 20, 0, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
 			veins.put("Hardened Clay Vein, 1", new CaveVein(new BlockEntry(Blocks.hardened_clay, 12), 24, 14, 0, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
 
-			for (Map.Entry<String, CaveVein> entry : veins.entrySet())
+			for (Entry<String, CaveVein> entry : veins.entrySet())
 			{
 				CaveworldAPI.addCaveVeinWithConfig(entry.getKey(), entry.getValue());
 			}
@@ -472,15 +486,36 @@ public class Config
 
 			for (String name : veinsCfg.getCategoryNames())
 			{
-				category = veinsCfg.getCategory(name);
+				try
+				{
+					category = veinsCfg.getCategory(name);
 
-				if (category.get("genWeight").getInt() <= 0)
-				{
-					veinsCfg.removeCategory(category);
+					if (!Block.blockRegistry.containsKey(category.get("block").getString()) || category.get("genWeight").getInt() <= 0)
+					{
+						veinsCfg.removeCategory(category);
+					}
+					else
+					{
+						Property prop = category.get("genTargetBlock");
+
+						if (!Block.blockRegistry.containsKey(prop.getString()))
+						{
+							prop.set(Block.blockRegistry.getNameForObject(Blocks.stone));
+						}
+
+						prop = category.get("genMinHeight");
+
+						if (prop.getInt() > category.get("genMaxHeight").getInt())
+						{
+							prop.set(0);
+						}
+
+						CaveworldAPI.addCaveVeinFromConfig(name);
+					}
 				}
-				else
+				catch (Exception e)
 				{
-					CaveworldAPI.addCaveVeinFromConfig(name);
+					continue;
 				}
 			}
 		}

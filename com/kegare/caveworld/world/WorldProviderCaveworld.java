@@ -21,6 +21,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.WorldProvider;
+import net.minecraft.world.WorldProviderSurface;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
@@ -30,6 +31,7 @@ import net.minecraftforge.common.DimensionManager;
 
 import org.apache.logging.log4j.Level;
 
+import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.network.CaveSoundMessage;
@@ -41,7 +43,7 @@ import com.kegare.caveworld.world.gen.StructureStrongholdPiecesCaveworld;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class WorldProviderCaveworld extends WorldProvider
+public class WorldProviderCaveworld extends WorldProviderSurface
 {
 	private static NBTTagCompound dimData;
 
@@ -98,21 +100,30 @@ public class WorldProviderCaveworld extends WorldProvider
 	private static NBTTagCompound readDimData()
 	{
 		NBTTagCompound data;
-		File file = new File(getDimDir(), "caveworld.dat");
+		File dir = getDimDir();
 
-		if (file == null || !file.exists())
+		if (dir == null)
 		{
 			data = null;
 		}
-		else try (FileInputStream input = new FileInputStream(file))
+		else
 		{
-			data = CompressedStreamTools.readCompressed(input);
-		}
-		catch (Exception e)
-		{
-			CaveLog.log(Level.ERROR, e, "An error occurred trying to reading Caveworld dimension data");
+			File file = new File(dir, "caveworld.dat");
 
-			data = null;
+			if (!file.exists() || !file.isFile() || !file.canRead())
+			{
+				data = null;
+			}
+			else try (FileInputStream input = new FileInputStream(file))
+			{
+				data = CompressedStreamTools.readCompressed(input);
+			}
+			catch (Exception e)
+			{
+				CaveLog.log(Level.ERROR, e, "An error occurred trying to reading Caveworld dimension data");
+
+				data = null;
+			}
 		}
 
 		return data == null ? new NBTTagCompound() : data;
@@ -120,9 +131,14 @@ public class WorldProviderCaveworld extends WorldProvider
 
 	private static void writeDimData()
 	{
-		File file = new File(getDimDir(), "caveworld.dat");
+		File dir = getDimDir();
 
-		try (FileOutputStream output = new FileOutputStream(file))
+		if (dir == null)
+		{
+			return;
+		}
+
+		try (FileOutputStream output = new FileOutputStream(new File(dir, "caveworld.dat")))
 		{
 			CompressedStreamTools.writeCompressed(getDimData(), output);
 		}
@@ -169,6 +185,11 @@ public class WorldProviderCaveworld extends WorldProvider
 
 		MapGenStructureIO.registerStructure(MapGenStrongholdCaveworld.Start.class, "Caveworld.Stronghold");
 		StructureStrongholdPiecesCaveworld.registerStrongholdPieces();
+
+		if (!worldObj.isRemote)
+		{
+			CaveBlocks.caveworld_portal.loadInventoryFromDimData();
+		}
 	}
 
 	@Override
@@ -195,12 +216,6 @@ public class WorldProviderCaveworld extends WorldProvider
 	public Vec3 getFogColor(float angle, float ticks)
 	{
 		return Vec3.createVectorHelper(0.01D, 0.01D, 0.01D);
-	}
-
-	@Override
-	public boolean canRespawnHere()
-	{
-		return false;
 	}
 
 	@Override
@@ -269,12 +284,7 @@ public class WorldProviderCaveworld extends WorldProvider
 	@Override
 	public int getRespawnDimension(EntityPlayerMP player)
 	{
-		if (Config.hardcore || player.getBedLocation(dimensionId) != null)
-		{
-			return dimensionId;
-		}
-
-		return player.getEntityData().getInteger("Caveworld:LastDim");
+		return dimensionId;
 	}
 
 	@Override
@@ -295,6 +305,13 @@ public class WorldProviderCaveworld extends WorldProvider
 	@Override
 	public void updateWeather()
 	{
+		if (worldObj.rainingStrength != 0.0F)
+		{
+			worldObj.rainingStrength = 0.0F;
+		}
+
+		worldObj.prevRainingStrength = worldObj.rainingStrength;
+
 		if (!worldObj.isRemote)
 		{
 			if (ambientTickCountdown > 0)

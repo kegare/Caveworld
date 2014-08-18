@@ -50,7 +50,7 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 
 		random.setSeed(chunkSeed ^ worldObj.getSeed());
 
-		return CaveworldAPI.getRandomBiome(random);
+		return CaveworldAPI.getRandomCaveBiome(random).getBiome();
 	}
 
 	@Override

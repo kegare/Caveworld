@@ -14,7 +14,6 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
-import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
 
@@ -22,8 +21,6 @@ import org.apache.logging.log4j.Level;
 
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.util.CaveLog;
-
-import cpw.mods.fml.common.FMLCommonHandler;
 
 public class CommonProxy
 {
@@ -83,10 +80,5 @@ public class CommonProxy
 		{
 			CaveLog.log(Level.WARN, e, "Failed to register a shapeless recipe: %s", result.getUnlocalizedName());
 		}
-	}
-
-	public MinecraftServer getServer()
-	{
-		return FMLCommonHandler.instance().getMinecraftServerInstance();
 	}
 }

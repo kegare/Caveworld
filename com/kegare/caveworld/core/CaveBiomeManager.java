@@ -30,6 +30,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.BlockEntry;
+import com.kegare.caveworld.api.EmptyCaveBiome;
 import com.kegare.caveworld.api.ICaveBiome;
 import com.kegare.caveworld.api.ICaveBiomeManager;
 
@@ -146,15 +147,15 @@ public class CaveBiomeManager implements ICaveBiomeManager
 	}
 
 	@Override
-	public BiomeGenBase getRandomBiome(Random random)
+	public ICaveBiome getRandomCaveBiome(Random random)
 	{
 		try
 		{
-			return ((CaveBiome)WeightedRandom.getRandomItem(random, CAVE_BIOMES)).getBiome();
+			return (ICaveBiome)WeightedRandom.getRandomItem(random, CAVE_BIOMES);
 		}
 		catch (Exception e)
 		{
-			return BiomeGenBase.plains;
+			return new EmptyCaveBiome();
 		}
 	}
 

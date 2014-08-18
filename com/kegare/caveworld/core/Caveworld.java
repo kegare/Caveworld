@@ -14,6 +14,7 @@ import static com.kegare.caveworld.core.Caveworld.*;
 
 import java.lang.reflect.Field;
 
+import net.minecraft.init.Blocks;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 
@@ -129,6 +130,9 @@ public class Caveworld
 		FMLCommonHandler.instance().bus().register(CaveEventHooks.instance);
 
 		MinecraftForge.EVENT_BUS.register(CaveEventHooks.instance);
+
+		CaveworldAPI.setMiningPointAmount(Blocks.emerald_ore, 0, 2);
+		CaveworldAPI.setMiningPointAmount(Blocks.diamond_ore, 0, 3);
 	}
 
 	private void registerMessages()

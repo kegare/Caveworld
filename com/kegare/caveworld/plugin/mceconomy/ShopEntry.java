@@ -19,6 +19,8 @@ import net.minecraftforge.common.config.ConfigElement;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
+import org.lwjgl.input.Keyboard;
+
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -130,6 +132,30 @@ public class ShopEntry extends CaveCategoryEntry
 		}
 
 		@Override
+		public void keyTyped(char eventChar, int eventKey)
+		{
+			super.keyTyped(eventChar, eventKey);
+
+			if (enabled() && eventKey == Keyboard.KEY_DELETE && (owningScreen.configID == null || !owningScreen.configID.endsWith(".add")))
+			{
+				for (IConfigElement element : owningScreen.configElements)
+				{
+					switch (element.getName())
+					{
+						case "item":
+							element.set("");
+							break;
+						case "stackSize":
+							element.set(0);
+							break;
+					}
+				}
+
+				mc.displayGuiScreen(owningScreen.parentScreen);
+			}
+		}
+
+		@Override
 		public void onGuiClosed()
 		{
 			String name = null;
@@ -162,14 +188,14 @@ public class ShopEntry extends CaveCategoryEntry
 				}
 			}
 
-			CaveProduct product = new CaveProduct(item, damage, stack, cost);
-
 			if (!Strings.isNullOrEmpty(owningScreen.configID) && owningScreen.configID.endsWith(".add"))
 			{
 				if (Strings.isNullOrEmpty(name) || Strings.isNullOrEmpty(item) || stack <= 0)
 				{
 					return;
 				}
+
+				CaveProduct product = new CaveProduct(item, damage, stack, cost);
 
 				if (PortalShop.addProductWithConfig(name, product) && owningScreen.parentScreen instanceof GuiConfig)
 				{
@@ -197,27 +223,22 @@ public class ShopEntry extends CaveCategoryEntry
 			{
 				name = owningScreen.titleLine2;
 
-				if (Strings.isNullOrEmpty(name) || Strings.isNullOrEmpty(item) || stack <= 0)
+				if (!Strings.isNullOrEmpty(name) && (Strings.isNullOrEmpty(item) || stack <= 0))
 				{
-					if (PortalShop.removeProductFromConfig(name))
+					if (PortalShop.removeProductFromConfig(name) && owningScreen.parentScreen instanceof GuiConfig)
 					{
-						PortalShop.removeProduct(product);
+						GuiConfig parent = (GuiConfig)owningScreen.parentScreen;
 
-						if (owningScreen.parentScreen instanceof GuiConfig)
+						for (Iterator<IConfigElement> elements = parent.configElements.iterator(); elements.hasNext();)
 						{
-							GuiConfig parent = (GuiConfig)owningScreen.parentScreen;
-
-							for (Iterator<IConfigElement> elements = parent.configElements.iterator(); elements.hasNext();)
+							if (elements.next().getName().equals(name))
 							{
-								if (elements.next().getName().equals(name))
-								{
-									elements.remove();
-								}
+								elements.remove();
 							}
-
-							parent.needsRefresh = true;
-							parent.initGui();
 						}
+
+						parent.needsRefresh = true;
+						parent.initGui();
 					}
 				}
 			}

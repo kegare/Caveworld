@@ -14,6 +14,8 @@ import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockBed;
+import net.minecraft.block.BlockOre;
+import net.minecraft.block.BlockRedstoneOre;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
@@ -33,13 +35,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.S02PacketChat;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.ChatStyle;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.Teleporter;
@@ -47,12 +50,12 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.EntityEvent.EntityConstructing;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
@@ -65,7 +68,6 @@ import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.core.CaveAchievementList;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
-import com.kegare.caveworld.inventory.InventoryCaveworldPortal;
 import com.kegare.caveworld.network.BiomesSyncMessage;
 import com.kegare.caveworld.network.CaveSoundMessage;
 import com.kegare.caveworld.network.ConfigSyncMessage;
@@ -80,6 +82,7 @@ import com.kegare.caveworld.world.WorldProviderCaveworld;
 
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
@@ -138,24 +141,9 @@ public class CaveEventHooks
 			{
 				event.left.add("dim: Caveworld");
 			}
-			else if ((mc.gameSettings.advancedItemTooltips || player.isSneaking()) && CaveUtils.isItemPickaxe(player.getHeldItem()))
+			else if (mc.gameSettings.advancedItemTooltips || CaveUtils.isItemPickaxe(player.getHeldItem()))
 			{
-				int count = CaveworldAPI.getMiningCount(player);
-
-				if (count > 0)
-				{
-					int level = CaveworldAPI.getMiningLevel(player);
-					StringBuilder builder = new StringBuilder();
-
-					builder.append(I18n.format("caveworld.mining.count")).append(": ").append(count);
-
-					if (level > 0)
-					{
-						builder.append(" (").append(level).append(')');
-					}
-
-					event.right.add(builder.toString());
-				}
+				event.right.add(I18n.format("caveworld.mining.point") + ": " + CaveworldAPI.getMiningPoint(player));
 			}
 		}
 	}
@@ -170,11 +158,11 @@ public class CaveEventHooks
 		}
 		else if (Version.DEV_DEBUG || Config.versionNotify && Version.isOutdated())
 		{
-			ChatStyle style = new ChatStyle();
-			style.setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, Caveworld.metadata.url));
+			IChatComponent component = new ChatComponentTranslation("caveworld.version.message", EnumChatFormatting.AQUA + "Caveworld" + EnumChatFormatting.RESET);
+			component.appendText(" : " + EnumChatFormatting.YELLOW + Version.getLatest());
+			component.getChatStyle().setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, Caveworld.metadata.url));
 
-			event.handler.handleChat(new S02PacketChat(new ChatComponentText(I18n.format("caveworld.version.message",
-					EnumChatFormatting.AQUA + "Caveworld" + EnumChatFormatting.RESET) + " : " + EnumChatFormatting.YELLOW + Version.getLatest()).setChatStyle(style)));
+			event.handler.handleChat(new S02PacketChat(component));
 		}
 	}
 
@@ -199,24 +187,14 @@ public class CaveEventHooks
 
 			if (dim == Config.dimensionCaveworld)
 			{
-				ChunkCoordinates spawn = player.getBedLocation(dim);
-
-				if (spawn == null)
+				if (player.getBedLocation(dim) == null || player.posY >= player.worldObj.getActualHeight())
 				{
-					MinecraftServer server = Caveworld.proxy.getServer();
-					WorldServer world = server.worldServerForDimension(0);
+					dim = player.getEntityData().getInteger("Caveworld:LastDim");
+					MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+					WorldServer world = server.worldServerForDimension(dim);
 					Teleporter teleporter = new TeleporterCaveworld(world, false, false);
 
-					server.getConfigurationManager().transferPlayerToDimension(player, 0, teleporter);
-				}
-				else if (!Config.hardcore)
-				{
-					int level = CaveworldAPI.getMiningLevel(player);
-
-					if (level <= 0 || player.getRNG().nextInt(level) == 0)
-					{
-						player.setSpawnChunk(null, true, dim);
-					}
+					server.getConfigurationManager().transferPlayerToDimension(player, dim, teleporter);
 				}
 			}
 		}
@@ -241,7 +219,10 @@ public class CaveEventHooks
 
 				data.setLong("Caveworld:LastTeleportTime", world.getTotalWorldTime());
 
-				player.triggerAchievement(CaveAchievementList.caveworld);
+				if (player.func_147099_x().canUnlockAchievement(CaveAchievementList.caveworld))
+				{
+					player.triggerAchievement(CaveAchievementList.caveworld);
+				}
 			}
 			else if (Config.hardcore && event.fromDim == Config.dimensionCaveworld)
 			{
@@ -273,32 +254,22 @@ public class CaveEventHooks
 				Block block = event.block;
 				int metadata = event.blockMetadata;
 
-				if (CaveUtils.isItemPickaxe(current) && CaveUtils.isOreBlock(block, metadata))
+				if (CaveUtils.isItemPickaxe(current))
 				{
-					CaveworldAPI.addMiningCount(player, 1);
-				}
-			}
-		}
-	}
+					int amount = CaveworldAPI.getMiningPointAmount(block, metadata);
 
-	@SubscribeEvent
-	public void onBreakSpeed(BreakSpeed event)
-	{
-		EntityPlayer player = event.entityPlayer;
+					if (amount == 0)
+					{
+						if (block instanceof BlockOre || block instanceof BlockRedstoneOre)
+						{
+							amount = 1;
+						}
+					}
 
-		if (player != null && player.dimension == Config.dimensionCaveworld && player.isSneaking())
-		{
-			ItemStack current = player.getCurrentEquippedItem();
-			Block block = event.block;
-			int metadata = event.metadata;
-
-			if (CaveUtils.isItemPickaxe(current) && CaveUtils.isOreBlock(block, metadata))
-			{
-				int level = CaveworldAPI.getMiningLevel(player);
-
-				if (level > 0)
-				{
-					event.newSpeed *= Math.min(1.25F + 0.25F * level, 3.0F);
+					if (amount != 0)
+					{
+						CaveworldAPI.addMiningPoint(player, amount);
+					}
 				}
 			}
 		}
@@ -347,6 +318,13 @@ public class CaveEventHooks
 				if (CaveBlocks.caveworld_portal.func_150000_e(world, x, y, z))
 				{
 					world.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, CaveBlocks.caveworld_portal.stepSound.func_150496_b(), 1.0F, 2.0F);
+
+					if (!player.capabilities.isCreativeMode && --current.stackSize <= 0)
+					{
+						player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
+					}
+
+					player.triggerAchievement(CaveAchievementList.portal);
 
 					event.setCanceled(true);
 				}
@@ -449,7 +427,7 @@ public class CaveEventHooks
 	{
 		if (event.entity instanceof EntityPlayer)
 		{
-			CaveworldAPI.getMiningCount((EntityPlayer)event.entity);
+			CaveworldAPI.getMiningPoint((EntityPlayer)event.entity);
 		}
 	}
 
@@ -507,7 +485,7 @@ public class CaveEventHooks
 	{
 		if (event.entityLiving instanceof EntityPlayerMP)
 		{
-			if (!Config.deathLoseMiningCount)
+			if (!Config.deathLoseMiningPoint)
 			{
 				CaveworldAPI.saveMiningData((EntityPlayerMP)event.entityLiving, null);
 			}
@@ -560,18 +538,47 @@ public class CaveEventHooks
 
 		if (!world.isRemote && world.provider.dimensionId == Config.dimensionCaveworld)
 		{
+			CaveBlocks.caveworld_portal.saveInventoryToDimData();
+
 			WorldProviderCaveworld.saveDimData();
 		}
 	}
 
 	@SubscribeEvent
-	public void onWorldSave(WorldEvent.Save event)
+	public void onServerChat(ServerChatEvent event)
 	{
-		World world = event.world;
+		EntityPlayerMP player = event.player;
+		String message = event.message.trim();
 
-		if (!world.isRemote && world.provider.dimensionId == Config.dimensionCaveworld)
+		if (message.matches("@buff|@buff ([0-9]*$|max)") && player.dimension == Config.dimensionCaveworld)
 		{
-			InventoryCaveworldPortal.instance().saveInventory();
+			int point = CaveworldAPI.getMiningPoint(player);
+
+			if (message.matches("@buff [0-9]*$"))
+			{
+				point = MathHelper.clamp_int(Integer.valueOf(message.substring(6)), 0, point);
+			}
+			else if (!message.endsWith("max") && point > 30)
+			{
+				point = 30;
+			}
+
+			if (point > 0)
+			{
+				Random random = new Random();
+				Potion potion = null;
+
+				while (potion == null || potion.isBadEffect() || player.isPotionActive(potion))
+				{
+					potion = Potion.potionTypes[random.nextInt(Potion.potionTypes.length)];
+				}
+
+				CaveworldAPI.addMiningPoint(player, -point);
+
+				player.addPotionEffect(new PotionEffect(potion.id, point * 20));
+			}
+
+			event.setCanceled(true);
 		}
 	}
 }

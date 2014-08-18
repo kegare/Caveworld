@@ -1,55 +1,45 @@
 package com.kegare.caveworld.api;
 
+import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 
 public interface ICaveMiningManager
 {
 	/**
-	 * Sets mining count of the player.
+	 * Returns mining point of the player.
 	 * @param player The player
-	 * @param count The set count amount
 	 */
-	public void setMiningCount(EntityPlayer player, int count);
+	public int getMiningPoint(EntityPlayer player);
 
 	/**
-	 * Returns mining count of the player.
+	 * Sets mining point of the player.
 	 * @param player The player
+	 * @param value The set point amount
 	 */
-	public int getMiningCount(EntityPlayer player);
+	public void setMiningPoint(EntityPlayer player, int value);
 
 	/**
-	 * Adds mining count of the player.
+	 * Adds mining point of the player.
 	 * @param player The player
-	 * @param level The additional count amount
+	 * @param value The additional point amount
 	 */
-	public void addMiningCount(EntityPlayer player, int count);
+	public void addMiningPoint(EntityPlayer player, int value);
 
 	/**
-	 * Returns next level-up requirement mining count amount of the player.
-	 * @param player The player
+	 * Returns mining point amount of the block and metadata
+	 * @param block The block
+	 * @param metadata The block metadata
 	 */
-	public int getNextAmount(EntityPlayer player);
+	public int getMiningPointAmount(Block block, int metadata);
 
 	/**
-	 * Sets mining level of the player.
-	 * @param player The player
-	 * @param count The set level amount
+	 * Sets mining point amount of the block and metadata
+	 * @param block The block
+	 * @param metadata The block metadata
+	 * @param amount The amount
 	 */
-	public void setMiningLevel(EntityPlayer player, int level);
-
-	/**
-	 * Returns mining level of the player.
-	 * @param player The player
-	 */
-	public int getMiningLevel(EntityPlayer player);
-
-	/**
-	 * Adds mining level of the player.
-	 * @param player The player
-	 * @param level The additional level amount
-	 */
-	public void addMiningLevel(EntityPlayer player, int level);
+	public void setMiningPointAmount(Block block, int metadata, int amount);
 
 	public void saveMiningData(EntityPlayer player, NBTTagCompound compound);
 

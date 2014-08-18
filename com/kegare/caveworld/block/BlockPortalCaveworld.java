@@ -10,6 +10,7 @@
 
 package com.kegare.caveworld.block;
 
+import java.util.Map;
 import java.util.Random;
 
 import net.minecraft.block.Block;
@@ -27,8 +28,11 @@ import net.minecraft.entity.passive.EntityBat;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.potion.Potion;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChunkCoordinates;
@@ -42,20 +46,26 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import shift.mceconomy2.api.MCEconomyAPI;
 
-import com.kegare.caveworld.core.Caveworld;
+import com.google.common.collect.Maps;
 import com.kegare.caveworld.core.Config;
-import com.kegare.caveworld.inventory.InventoryCaveworldPortal;
 import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.world.TeleporterCaveworld;
+import com.kegare.caveworld.world.WorldProviderCaveworld;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class BlockPortalCaveworld extends BlockPortal
+public class BlockPortalCaveworld extends BlockPortal implements IInventory
 {
+	private final ItemStack[] inventoryContents = new ItemStack[getSizeInventory()];
+	private final Map<String, ChunkCoordinates> portalCoord = Maps.newHashMap();
+
 	@SideOnly(Side.CLIENT)
 	public IIcon portalIcon;
+
+	public boolean portalDisabled;
 
 	public BlockPortalCaveworld(String name)
 	{
@@ -135,10 +145,7 @@ public class BlockPortalCaveworld extends BlockPortal
 		{
 			size2.setPortalBlocks();
 		}
-		else
-		{
-			return false;
-		}
+		else return false;
 
 		if (world.provider.dimensionId == 1)
 		{
@@ -186,7 +193,7 @@ public class BlockPortalCaveworld extends BlockPortal
 				}
 			}
 
-			InventoryCaveworldPortal.instance().displayInventory(player, x, y, z);
+			displayInventory(player, x, y, z);
 		}
 
 		return true;
@@ -195,11 +202,11 @@ public class BlockPortalCaveworld extends BlockPortal
 	@Override
 	public void onEntityCollidedWithBlock(World world, int x, int y, int z, Entity entity)
 	{
-		if (!world.isRemote && entity.isEntityAlive() && (entity.dimension != Config.dimensionCaveworld || !Config.hardcore))
+		if (!world.isRemote && !portalDisabled && entity.isEntityAlive() && (entity.dimension != Config.dimensionCaveworld || !Config.hardcore))
 		{
 			if (entity.timeUntilPortal <= 0)
 			{
-				MinecraftServer server = Caveworld.proxy.getServer();
+				MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
 				int dimOld = entity.dimension;
 				int dimNew = dimOld == Config.dimensionCaveworld ? entity.getEntityData().getInteger("Caveworld:LastDim") : Config.dimensionCaveworld;
 				WorldServer worldOld = server.worldServerForDimension(dimOld);
@@ -322,6 +329,183 @@ public class BlockPortalCaveworld extends BlockPortal
 		return Item.getItemFromBlock(this);
 	}
 
+	@Override
+	public String getInventoryName()
+	{
+		return "inventory.caveworld.portal";
+	}
+
+	@Override
+	public boolean hasCustomInventoryName()
+	{
+		return false;
+	}
+
+	@Override
+	public int getSizeInventory()
+	{
+		return 18;
+	}
+
+	@Override
+	public int getInventoryStackLimit()
+	{
+		return 64;
+	}
+
+	@Override
+	public ItemStack getStackInSlot(int slot)
+	{
+		return slot >= 0 && slot < inventoryContents.length ? inventoryContents[slot] : null;
+	}
+
+	@Override
+	public ItemStack decrStackSize(int slot, int stack)
+	{
+		if (getStackInSlot(slot) != null)
+		{
+			ItemStack itemstack;
+
+			if (getStackInSlot(slot).stackSize <= stack)
+			{
+				itemstack = getStackInSlot(slot);
+				setInventorySlotContents(slot, null);
+
+				return itemstack;
+			}
+
+			itemstack = getStackInSlot(slot).splitStack(stack);
+
+			if (getStackInSlot(slot).stackSize == 0)
+			{
+				setInventorySlotContents(slot, null);
+			}
+
+			return itemstack;
+		}
+
+		return null;
+	}
+
+	@Override
+	public ItemStack getStackInSlotOnClosing(int slot)
+	{
+		if (getStackInSlot(slot) != null)
+		{
+			ItemStack itemstack = getStackInSlot(slot);
+			setInventorySlotContents(slot, null);
+
+			return itemstack;
+		}
+
+		return null;
+	}
+
+	@Override
+	public void setInventorySlotContents(int slot, ItemStack itemstack)
+	{
+		inventoryContents[slot] = itemstack;
+
+		if (itemstack != null && itemstack.stackSize > getInventoryStackLimit())
+		{
+			itemstack.stackSize = getInventoryStackLimit();
+		}
+	}
+
+	@Override
+	public void markDirty() {}
+
+	@Override
+	public boolean isUseableByPlayer(EntityPlayer player)
+	{
+		ChunkCoordinates coord = portalCoord.get(player.getUniqueID().toString());
+
+		if (coord == null)
+		{
+			return false;
+		}
+
+		int x = coord.posX;
+		int y = coord.posY;
+		int z = coord.posZ;
+
+		if (player.worldObj.getBlock(x, y, z) != CaveBlocks.caveworld_portal)
+		{
+			return false;
+		}
+
+		return player.getDistance(x, y, z) <= 6.0D;
+	}
+
+	@Override
+	public boolean isItemValidForSlot(int slot, ItemStack itemstack)
+	{
+		return true;
+	}
+
+	public void displayInventory(EntityPlayer player, int x, int y, int z)
+	{
+		portalCoord.put(player.getUniqueID().toString(), new ChunkCoordinates(x, y, z));
+
+		player.displayGUIChest(this);
+	}
+
+	public void loadInventoryFromDimData()
+	{
+		NBTTagCompound data = WorldProviderCaveworld.getDimData();
+
+		if (!data.hasKey("PortalItems"))
+		{
+			return;
+		}
+
+		NBTTagList list = (NBTTagList)data.getTag("PortalItems");
+
+		for (int slot = 0; slot < getSizeInventory(); ++slot)
+		{
+			setInventorySlotContents(slot, null);
+		}
+
+		for (int i = 0; i < list.tagCount(); ++i)
+		{
+			NBTTagCompound nbttag = list.getCompoundTagAt(i);
+			int slot = nbttag.getByte("Slot") & 255;
+
+			if (slot >= 0 && slot < getSizeInventory())
+			{
+				setInventorySlotContents(slot, ItemStack.loadItemStackFromNBT(nbttag));
+			}
+		}
+
+		data.removeTag("PortalItems");
+	}
+
+	public void saveInventoryToDimData()
+	{
+		NBTTagList list = new NBTTagList();
+
+		for (int slot = 0; slot < getSizeInventory(); ++slot)
+		{
+			ItemStack itemstack = getStackInSlot(slot);
+
+			if (itemstack != null)
+			{
+				NBTTagCompound nbttag = new NBTTagCompound();
+				nbttag.setByte("Slot", (byte)slot);
+				itemstack.writeToNBT(nbttag);
+				list.appendTag(nbttag);
+			}
+		}
+
+		WorldProviderCaveworld.getDimData().setTag("PortalItems", list);
+	}
+
+	@Override
+	public void openInventory() {}
+
+	@Override
+	public void closeInventory() {}
+
 	public static class Size
 	{
 		private final World worldObj;
@@ -393,22 +577,21 @@ public class BlockPortalCaveworld extends BlockPortal
 
 		protected int getPortalHeight()
 		{
-			int i, j, k, l;
+			int i, x, y, z;
 
-			label:
-			for (portalHeight = 0; portalHeight < 21; ++portalHeight)
+			outside: for (portalHeight = 0; portalHeight < 21; ++portalHeight)
 			{
-				i = portalCoord.posY + portalHeight;
+				y = portalCoord.posY + portalHeight;
 
-				for (j = 0; j < portalWidth; ++j)
+				for (i = 0; i < portalWidth; ++i)
 				{
-					k = portalCoord.posX + j * Direction.offsetX[field_150866_c];
-					l = portalCoord.posZ + j * Direction.offsetZ[field_150866_c];
-					Block block = worldObj.getBlock(k, i, l);
+					x = portalCoord.posX + i * Direction.offsetX[field_150866_c];
+					z = portalCoord.posZ + i * Direction.offsetZ[field_150866_c];
+					Block block = worldObj.getBlock(x, y, z);
 
 					if (!isReplaceablePortal(block))
 					{
-						break label;
+						break outside;
 					}
 
 					if (block == CaveBlocks.caveworld_portal)
@@ -416,34 +599,34 @@ public class BlockPortalCaveworld extends BlockPortal
 						++portalBlockCount;
 					}
 
-					if (j == 0)
+					if (i == 0)
 					{
-						block = worldObj.getBlock(k + Direction.offsetX[field_150863_d], i, l + Direction.offsetZ[field_150863_d]);
+						block = worldObj.getBlock(x + Direction.offsetX[field_150863_d], y, z + Direction.offsetZ[field_150863_d]);
 
 						if (block != Blocks.mossy_cobblestone)
 						{
-							break label;
+							break outside;
 						}
 					}
-					else if (j == portalWidth - 1)
+					else if (i == portalWidth - 1)
 					{
-						block = worldObj.getBlock(k + Direction.offsetX[field_150866_c], i, l + Direction.offsetZ[field_150866_c]);
+						block = worldObj.getBlock(x + Direction.offsetX[field_150866_c], y, z + Direction.offsetZ[field_150866_c]);
 
 						if (block != Blocks.mossy_cobblestone)
 						{
-							break label;
+							break outside;
 						}
 					}
 				}
 			}
 
-			for (i = 0; i < portalWidth; ++i)
+			for (y = 0; y < portalWidth; ++y)
 			{
-				j = portalCoord.posX + i * Direction.offsetX[field_150866_c];
-				k = portalCoord.posY + portalHeight;
-				l = portalCoord.posZ + i * Direction.offsetZ[field_150866_c];
+				i = portalCoord.posX + y * Direction.offsetX[field_150866_c];
+				x = portalCoord.posY + portalHeight;
+				z = portalCoord.posZ + y * Direction.offsetZ[field_150866_c];
 
-				if (worldObj.getBlock(j, k, l) != Blocks.mossy_cobblestone)
+				if (worldObj.getBlock(i, x, z) != Blocks.mossy_cobblestone)
 				{
 					portalHeight = 0;
 
@@ -512,10 +695,12 @@ public class BlockPortalCaveworld extends BlockPortal
 
 		public void setPortalBlocks()
 		{
+			int x, z;
+
 			for (int i = 0; i < portalWidth; ++i)
 			{
-				int x = portalCoord.posX + Direction.offsetX[field_150866_c] * i;
-				int z = portalCoord.posZ + Direction.offsetZ[field_150866_c] * i;
+				x = portalCoord.posX + Direction.offsetX[field_150866_c] * i;
+				z = portalCoord.posZ + Direction.offsetZ[field_150866_c] * i;
 
 				for (int j = 0; j < portalHeight; ++j)
 				{

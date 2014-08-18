@@ -2,15 +2,21 @@
 
 caveworld.version.message=A new %s version is available
 
-caveworld.mining.count=Mining Count
+caveworld.regenerate.regenerating=Regenerating Caveworld dimension...
+caveworld.regenerate.regenerated=Caveworld dimension was regenerated
+caveworld.regenerate.failed=Failed to regenerating caveworld dimension
+
+caveworld.mining.point=Mining Point
 
 caveworld.configgui.title=Caveworld Configuration
 caveworld.configgui.general=General Settings
 caveworld.configgui.general.tooltip=This is where you can edit the settings contained in caveworld-general.cfg
 caveworld.configgui.general.versionNotify=Version Notify
 caveworld.configgui.general.versionNotify.tooltip=Whether or not to notify when a new Caveworld version is available.
-caveworld.configgui.general.deathLoseMiningCount=Death Lose Mining Count
-caveworld.configgui.general.deathLoseMiningCount.tooltip=Whether or not to lose mining count on death.
+caveworld.configgui.general.veinsAutoRegister=Veins Auto Register
+caveworld.configgui.general.veinsAutoRegister.tooltip=Whether or not to auto register of modded ore veins.
+caveworld.configgui.general.deathLoseMiningPoint=Death Lose Mining Point
+caveworld.configgui.general.deathLoseMiningPoint.tooltip=Whether or not to lose mining point on death.
 caveworld.configgui.recipes.portalCraftRecipe=Caveworld Portal Crafting Recipe
 caveworld.configgui.recipes.portalCraftRecipe.tooltip=Whether or not to add crafting recipe of Caveworld Portal Block.
 caveworld.configgui.recipes.mossStoneCraftRecipe=Moss Stone Crafting Recipe
@@ -77,12 +83,12 @@ caveworld.configgui.veins.genBiomes.tooltip=Specify the generate biomes of this 
 tile.portalCaveworld.name=Caveworld Portal Block
 tile.rope.name=Rope
 
-inventory.portal.caveworld=Caveworld Portal
+inventory.caveworld.portal=Caveworld Portal
 
+achievement.caveworld.portal=Caveworld Portal
+achievement.caveworld.portal.desc=Create of the Caveworld Portal
 achievement.caveworld.caveworld=Caveworld
-achievement.caveworld.caveworld.desc=Visit to Caveworld
-achievement.caveworld.miner=Miner
-achievement.caveworld.miner.desc=Mining many ores
+achievement.caveworld.caveworld.desc=Visit to the Caveworld
 
 caveworld.shop.title=Caveworld Shop
 caveworld.configgui.shop=Shop Product Customize

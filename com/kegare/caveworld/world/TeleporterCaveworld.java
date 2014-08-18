@@ -16,7 +16,6 @@ import java.util.Random;
 import java.util.Set;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.potion.Potion;
@@ -61,22 +60,14 @@ public class TeleporterCaveworld extends Teleporter
 	@Override
 	public void placeInPortal(Entity entity, double posX, double posY, double posZ, float rotationYaw)
 	{
-		if (generatePortal)
+		if (!placeInExistingPortal(entity, posX, posY, posZ, rotationYaw))
 		{
-			if (!placeInExistingPortal(entity, posX, posY, posZ, rotationYaw))
+			if (generatePortal)
 			{
 				makePortal(entity);
-				placeInExistingPortal(entity, posX, posY, posZ, rotationYaw);
 			}
-		}
-		else if (!placeInExistingPortal(entity, posX, posY, posZ, rotationYaw))
-		{
-			ChunkCoordinates spawn = worldObj.provider.getRandomizedSpawnPoint();
-			int x = spawn.posX;
-			int z = spawn.posZ;
-			int y = worldObj.getTopSolidOrLiquidBlock(x, z);
 
-			entity.setLocationAndAngles(x, y, z, entity.rotationYaw, entity.rotationPitch);
+			placeInExistingPortal(entity, posX, posY, posZ, rotationYaw);
 		}
 
 		if (entity instanceof EntityPlayerMP)
@@ -96,7 +87,6 @@ public class TeleporterCaveworld extends Teleporter
 	@Override
 	public boolean placeInExistingPortal(Entity entity, double posX, double posY, double posZ, float rotationYaw)
 	{
-		int worldHeight = worldObj.provider.getActualHeight();
 		int x = MathHelper.floor_double(entity.posX);
 		int z = MathHelper.floor_double(entity.posZ);
 		long chunkSeed = ChunkCoordIntPair.chunkXZ2Int(x, z);
@@ -126,7 +116,7 @@ public class TeleporterCaveworld extends Teleporter
 				{
 					double zScale = var3 + 0.5D - entity.posZ;
 
-					for (int y = worldHeight - 1; y >= 0; --y)
+					for (int y = worldObj.getActualHeight() - 1; y >= 0; --y)
 					{
 						if (worldObj.getBlock(var2, y, var3) == CaveBlocks.caveworld_portal)
 						{
@@ -268,13 +258,13 @@ public class TeleporterCaveworld extends Teleporter
 
 			entity.setLocationAndAngles(var2, var3, var4, entity.rotationYaw, entity.rotationPitch);
 
-			if (Config.hardcore && entity.dimension == Config.dimensionCaveworld && entity instanceof EntityPlayer)
+			if (entity.dimension == Config.dimensionCaveworld && entity instanceof EntityPlayerMP)
 			{
 				blockX = MathHelper.floor_double(var2);
 				blockY = MathHelper.floor_double(var3);
 				blockZ = MathHelper.floor_double(var4);
 
-				((EntityPlayer)entity).setSpawnChunk(new ChunkCoordinates(blockX, blockY, blockZ), true, entity.dimension);
+				((EntityPlayerMP)entity).setSpawnChunk(new ChunkCoordinates(blockX, blockY, blockZ), true, entity.dimension);
 			}
 
 			return true;
@@ -286,7 +276,7 @@ public class TeleporterCaveworld extends Teleporter
 	@Override
 	public boolean makePortal(Entity entity)
 	{
-		int worldHeight = worldObj.provider.getActualHeight();
+		int worldHeight = worldObj.getActualHeight();
 		int x = MathHelper.floor_double(entity.posX);
 		int y = MathHelper.floor_double(entity.posY);
 		int z = MathHelper.floor_double(entity.posZ);
@@ -320,8 +310,7 @@ public class TeleporterCaveworld extends Teleporter
 			{
 				zScale = blockZ + 0.5D - entity.posZ;
 
-				label1:
-				for (blockY = worldHeight - 2; blockY >= 0; --blockY)
+				outside: for (blockY = worldHeight - 2; blockY >= 0; --blockY)
 				{
 					if (worldObj.isAirBlock(blockX, blockY, blockZ))
 					{
@@ -353,7 +342,7 @@ public class TeleporterCaveworld extends Teleporter
 
 										if (var11 < 0 && !worldObj.getBlock(var14, var13, var17).getMaterial().isSolid() || var11 >= 0 && !worldObj.isAirBlock(var14, var13, var17))
 										{
-											continue label1;
+											continue outside;
 										}
 									}
 								}
@@ -386,8 +375,7 @@ public class TeleporterCaveworld extends Teleporter
 				{
 					zScale = blockZ + 0.5D - entity.posZ;
 
-					label2:
-					for (blockY = worldHeight - 2; blockY >= 0; --blockY)
+					outside: for (blockY = worldHeight - 2; blockY >= 0; --blockY)
 					{
 						if (worldObj.isAirBlock(blockX, blockY, blockZ))
 						{
@@ -411,7 +399,7 @@ public class TeleporterCaveworld extends Teleporter
 
 										if (var12 < 0 && !worldObj.getBlock(var11, var14, var13).getMaterial().isSolid() || var12 >= 0 && !worldObj.isAirBlock(var11, var14, var13))
 										{
-											continue label2;
+											continue outside;
 										}
 									}
 								}

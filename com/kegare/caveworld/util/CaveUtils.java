@@ -10,12 +10,6 @@
 
 package com.kegare.caveworld.util;
 
-import java.util.regex.Pattern;
-
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockOre;
-import net.minecraft.block.BlockRedstoneOre;
-import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.init.Blocks;
@@ -26,8 +20,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
 
 import com.google.common.base.Strings;
-import com.kegare.caveworld.api.CaveworldAPI;
-import com.kegare.caveworld.api.ICaveVein;
 import com.kegare.caveworld.core.Caveworld;
 
 import cpw.mods.fml.common.Loader;
@@ -35,13 +27,6 @@ import cpw.mods.fml.common.ModContainer;
 
 public class CaveUtils
 {
-	public static final Pattern patternControlCode = Pattern.compile("(?i)\\u00A7[0-9A-FK-OR]");
-
-	public static String stripControlCodes(String str)
-	{
-		return patternControlCode.matcher(str).replaceAll("");
-	}
-
 	public static ModContainer getModContainer()
 	{
 		ModContainer mod = Loader.instance().getIndexedModList().get(Caveworld.MODID);
@@ -57,27 +42,6 @@ public class CaveUtils
 		}
 
 		return mod;
-	}
-
-	public static boolean isOreBlock(Block block, int metadata)
-	{
-		if (block != null && block.getMaterial().isSolid() && !block.getMaterial().isToolNotRequired())
-		{
-			if (block instanceof BlockOre || block instanceof BlockRedstoneOre)
-			{
-				return true;
-			}
-
-			for (ICaveVein vein : CaveworldAPI.getCaveVeins())
-			{
-				if (vein.getBlock().getBlock() == block && vein.getBlock().getMetadata() == metadata)
-				{
-					return vein.getBlock().getBlock().getMaterial() == Material.rock;
-				}
-			}
-		}
-
-		return false;
 	}
 
 	public static boolean isItemPickaxe(ItemStack itemstack)

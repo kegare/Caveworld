@@ -10,12 +10,9 @@
 
 package com.kegare.caveworld.client;
 
-import net.minecraft.server.MinecraftServer;
-
 import com.kegare.caveworld.core.CommonProxy;
 import com.kegare.caveworld.renderer.RenderPortalCaveworld;
 
-import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -33,11 +30,5 @@ public class ClientProxy extends CommonProxy
 	public int getUniqueRenderType()
 	{
 		return RenderingRegistry.getNextAvailableRenderId();
-	}
-
-	@Override
-	public MinecraftServer getServer()
-	{
-		return FMLClientHandler.instance().getServer();
 	}
 }

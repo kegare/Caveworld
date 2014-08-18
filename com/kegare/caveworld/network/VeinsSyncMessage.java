@@ -12,8 +12,9 @@ package com.kegare.caveworld.network;
 
 import io.netty.buffer.ByteBuf;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import net.minecraft.block.Block;
@@ -43,14 +44,16 @@ public class VeinsSyncMessage implements IMessage, IMessageHandler<VeinsSyncMess
 
 	public VeinsSyncMessage() {}
 
-	public VeinsSyncMessage(Collection<ICaveVein> veins)
+	public VeinsSyncMessage(Map<String, ICaveVein> veins)
 	{
 		List<String> dat = Lists.newArrayList();
 		List<String> list = Lists.newArrayList();
 		Set<String> biomes = Sets.newHashSet();
+		ICaveVein vein;
 
-		for (ICaveVein vein : veins)
+		for (Entry<String, ICaveVein> entry : veins.entrySet())
 		{
+			vein = entry.getValue();
 			list.clear();
 			list.add(Block.blockRegistry.getNameForObject(vein.getBlock().getBlock()));
 			list.add(Integer.toString(vein.getBlock().getMetadata()));
@@ -73,7 +76,7 @@ public class VeinsSyncMessage implements IMessage, IMessageHandler<VeinsSyncMess
 				list.add(Joiner.on('.').join(biomes));
 			}
 
-			dat.add(Joiner.on(',').join(list));
+			dat.add(entry.getKey() + "#" + Joiner.on(',').join(list));
 		}
 
 		this.data = Joiner.on('&').join(dat);
@@ -99,6 +102,7 @@ public class VeinsSyncMessage implements IMessage, IMessageHandler<VeinsSyncMess
 		try
 		{
 			List<String> list;
+			String[] dat;
 			int metadata;
 			int count;
 			int weight;
@@ -109,7 +113,8 @@ public class VeinsSyncMessage implements IMessage, IMessageHandler<VeinsSyncMess
 
 			for (String entry : Splitter.on('&').splitToList(message.data))
 			{
-				list = Splitter.on(',').splitToList(entry);
+				dat = entry.split("#");
+				list = Splitter.on(',').splitToList(dat[1]);
 				metadata = NumberUtils.toInt(list.get(1));
 				count = NumberUtils.toInt(list.get(2));
 				weight = NumberUtils.toInt(list.get(3));
@@ -126,7 +131,7 @@ public class VeinsSyncMessage implements IMessage, IMessageHandler<VeinsSyncMess
 					}
 				}
 
-				CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(list.get(0), metadata), count, weight, min, max, new BlockEntry(list.get(6), target), biomes));
+				CaveworldAPI.addCaveVein(dat[0], new CaveVein(new BlockEntry(list.get(0), metadata), count, weight, min, max, new BlockEntry(list.get(6), target), biomes));
 			}
 
 			CaveLog.info("Loaded %d cave veins from server", CaveworldAPI.getCaveVeins().size());

@@ -238,7 +238,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 		MinecraftForge.ORE_GEN_BUS.post(new OreGenEvent.Pre(worldObj, random, worldX, worldZ));
 
-		for (ICaveVein vein : CaveworldAPI.getCaveVeins())
+		for (ICaveVein vein : CaveworldAPI.getCaveVeins().values())
 		{
 			generateVein(vein, worldX, worldZ);
 		}

@@ -35,7 +35,7 @@ public interface ICaveBiomeManager
 	 */
 	public BlockEntry getBiomeTerrainBlock(BiomeGenBase biome);
 
-	public BiomeGenBase getRandomBiome(Random random);
+	public ICaveBiome getRandomCaveBiome(Random random);
 
 	public Set<ICaveBiome> getCaveBiomes();
 

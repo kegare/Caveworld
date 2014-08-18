@@ -93,15 +93,22 @@ public final class MCEconomyPlugin
 
 			for (String name : shopCfg.getCategoryNames())
 			{
-				category = shopCfg.getCategory(name);
+				try
+				{
+					category = shopCfg.getCategory(name);
 
-				if (Strings.isNullOrEmpty(category.get("item").getString()))
-				{
-					shopCfg.removeCategory(category);
+					if (Strings.isNullOrEmpty(category.get("item").getString()) || category.get("stackSize").getInt() <= 0)
+					{
+						shopCfg.removeCategory(category);
+					}
+					else
+					{
+						PortalShop.addProductFromConfig(name);
+					}
 				}
-				else
+				catch (Exception e)
 				{
-					PortalShop.addProductFromConfig(name);
+					continue;
 				}
 			}
 		}

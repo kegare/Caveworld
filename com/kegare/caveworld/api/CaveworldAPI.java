@@ -1,8 +1,10 @@
 package com.kegare.caveworld.api;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -59,11 +61,11 @@ public class CaveworldAPI
 	}
 
 	/**
-	 * @see ICaveBiomeManager#getRandomBiome(Random)
+	 * @see ICaveBiomeManager#getRandomCaveBiome(Random)
 	 */
-	public static BiomeGenBase getRandomBiome(Random random)
+	public static ICaveBiome getRandomCaveBiome(Random random)
 	{
-		return biomeManager == null ? BiomeGenBase.plains : biomeManager.getRandomBiome(random);
+		return biomeManager == null ? null : biomeManager.getRandomCaveBiome(random);
 	}
 
 	/**
@@ -94,11 +96,11 @@ public class CaveworldAPI
 	}
 
 	/**
-	 * @see ICaveVeinManager#addCaveVein(ICaveVein)
+	 * @see ICaveVeinManager#addCaveVein(String, ICaveVein)
 	 */
-	public static boolean addCaveVein(ICaveVein vein)
+	public static boolean addCaveVein(String name, ICaveVein vein)
 	{
-		return veinManager == null ? false : veinManager.addCaveVein(vein);
+		return veinManager == null ? false : veinManager.addCaveVein(name, vein);
 	}
 
 	/**
@@ -118,19 +120,19 @@ public class CaveworldAPI
 	}
 
 	/**
-	 * @see ICaveVeinManager#removeCaveVein(ICaveVein)
+	 * @see ICaveVeinManager#removeCaveVein(String)
 	 */
-	public static boolean removeCaveVein(ICaveVein vein)
+	public static boolean removeCaveVein(String name)
 	{
-		return veinManager == null ? false : veinManager.removeCaveVein(vein);
+		return veinManager == null ? false : veinManager.removeCaveVein(name);
 	}
 
 	/**
-	 * @see ICaveVeinManager#removeCaveVeinWithConfig(String, ICaveVein)
+	 * @see ICaveVeinManager#removeCaveVeinWithConfig(String)
 	 */
-	public static boolean removeCaveVeinWithConfig(String name, ICaveVein vein)
+	public static boolean removeCaveVeinWithConfig(String name)
 	{
-		return veinManager == null ? false : veinManager.removeCaveVeinWithConfig(name, vein);
+		return veinManager == null ? false : veinManager.removeCaveVeinWithConfig(name);
 	}
 
 	/**
@@ -150,62 +152,27 @@ public class CaveworldAPI
 	}
 
 	/**
-	 * @see ICaveVeinManager#getRandomVein(Random)
+	 * @see ICaveVeinManager#getRandomCaveVein(Random)
 	 */
-	public static ICaveVein getRandomVein(Random random)
+	public static ICaveVein getRandomCaveVein(Random random)
 	{
-		return veinManager == null ? new ICaveVein()
-		{
-			@Override
-			public int getGenWeight()
-			{
-				return 0;
-			}
+		return veinManager == null ? null : veinManager.getRandomCaveVein(random);
+	}
 
-			@Override
-			public BlockEntry getGenTargetBlock()
-			{
-				return new BlockEntry(Blocks.stone, 0);
-			}
-
-			@Override
-			public int getGenMinHeight()
-			{
-				return 0;
-			}
-
-			@Override
-			public int getGenMaxHeight()
-			{
-				return 0;
-			}
-
-			@Override
-			public int getGenBlockCount()
-			{
-				return 0;
-			}
-
-			@Override
-			public int[] getGenBiomes()
-			{
-				return new int[] {};
-			}
-
-			@Override
-			public BlockEntry getBlock()
-			{
-				return new BlockEntry(Blocks.stone, 0);
-			}
-		} : veinManager.getRandomVein(random);
+	/**
+	 * @see ICaveVeinManager#getCaveVein(String)
+	 */
+	public static ICaveVein getCaveVein(String name)
+	{
+		return veinManager == null ? null : veinManager.getCaveVein(name);
 	}
 
 	/**
 	 * @see ICaveVeinManager#getCaveVeins()
 	 */
-	public static Set<ICaveVein> getCaveVeins()
+	public static Map<String, ICaveVein> getCaveVeins()
 	{
-		return veinManager == null ? new HashSet<ICaveVein>() : veinManager.getCaveVeins();
+		return veinManager == null ? new HashMap<String, ICaveVein>() : veinManager.getCaveVeins();
 	}
 
 	/**
@@ -220,70 +187,51 @@ public class CaveworldAPI
 	}
 
 	/**
-	 * @see ICaveMiningManager#setMiningCount(EntityPlayer, int)
+	 * @see ICaveMiningManager#getMiningPoint(EntityPlayer)
 	 */
-	public static void setMiningCount(EntityPlayer player, int count)
+	public static int getMiningPoint(EntityPlayer player)
+	{
+		return miningManager == null ? 0 : miningManager.getMiningPoint(player);
+	}
+
+	/**
+	 * @see ICaveMiningManager#setMiningPoint(EntityPlayer, int)
+	 */
+	public static void setMiningPoint(EntityPlayer player, int value)
 	{
 		if (miningManager != null)
 		{
-			miningManager.setMiningCount(player, count);
+			miningManager.setMiningPoint(player, value);
 		}
 	}
 
 	/**
-	 * @see ICaveMiningManager#getMiningCount(EntityPlayer)
+	 * @see ICaveMiningManager#addMiningPoint(EntityPlayer, int)
 	 */
-	public static int getMiningCount(EntityPlayer player)
-	{
-		return miningManager == null ? 0 : miningManager.getMiningCount(player);
-	}
-
-	/**
-	 * @see ICaveMiningManager#addMiningCount(EntityPlayer, int)
-	 */
-	public static void addMiningCount(EntityPlayer player, int count)
+	public static void addMiningPoint(EntityPlayer player, int value)
 	{
 		if (miningManager != null)
 		{
-			miningManager.addMiningCount(player, count);
+			miningManager.addMiningPoint(player, value);
 		}
 	}
 
 	/**
-	 * @see ICaveMiningManager#getNextAmount(EntityPlayer)
+	 * @see ICaveMiningManager#getMiningPointAmount(Block, int)
 	 */
-	public static int getNextAmount(EntityPlayer player)
+	public static int getMiningPointAmount(Block block, int metadata)
 	{
-		return miningManager == null ? 0 : miningManager.getNextAmount(player);
+		return miningManager == null ? 0 : miningManager.getMiningPointAmount(block, metadata);
 	}
 
 	/**
-	 * @see ICaveMiningManager#setMiningLevel(EntityPlayer, int)
+	 * @see ICaveMiningManager#setMiningPointAmount(Block, int, int)
 	 */
-	public static void setMiningLevel(EntityPlayer player, int level)
+	public static void setMiningPointAmount(Block block, int metadata, int amount)
 	{
 		if (miningManager != null)
 		{
-			miningManager.setMiningLevel(player, level);
-		}
-	}
-
-	/**
-	 * @see ICaveMiningManager#getMiningLevel(EntityPlayer)
-	 */
-	public static int getMiningLevel(EntityPlayer player)
-	{
-		return miningManager == null ? 0 : miningManager.getMiningLevel(player);
-	}
-
-	/**
-	 * @see ICaveMiningManager#addMiningLevel(EntityPlayer, int)
-	 */
-	public static void addMiningLevel(EntityPlayer player, int level)
-	{
-		if (miningManager != null)
-		{
-			miningManager.addMiningLevel(player, level);
+			miningManager.setMiningPointAmount(block, metadata, amount);
 		}
 	}
 

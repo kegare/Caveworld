@@ -17,6 +17,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
 import com.kegare.caveworld.block.CaveBlocks;
+import com.kegare.caveworld.core.CaveAchievementList;
 
 public class ItemPortalCaveworld extends ItemBlock
 {
@@ -64,6 +65,8 @@ public class ItemPortalCaveworld extends ItemBlock
 				{
 					player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
 				}
+
+				player.triggerAchievement(CaveAchievementList.portal);
 
 				return true;
 			}
