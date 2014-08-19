@@ -37,6 +37,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.CaveworldAPI;
+import com.kegare.caveworld.api.ICaveBiome;
 import com.kegare.caveworld.client.config.VeinsEntry.VeinConfigEntry;
 import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome;
 import com.kegare.caveworld.core.CaveVeinManager.CaveVein;
@@ -57,7 +58,7 @@ public class Config
 	public static Configuration biomesCfg;
 	public static Configuration veinsCfg;
 
-	private static final Map<Integer, Integer> biomesDefaultMap = Maps.newHashMap();
+	private static final Map<Integer, ICaveBiome> biomesDefaultMap = Maps.newHashMap();
 
 	public static boolean versionNotify;
 	public static boolean veinsAutoRegister;
@@ -362,23 +363,25 @@ public class Config
 
 		if (biomesDefaultMap.isEmpty())
 		{
-			biomesDefaultMap.put(BiomeGenBase.ocean.biomeID, 15);
-			biomesDefaultMap.put(BiomeGenBase.plains.biomeID, 100);
-			biomesDefaultMap.put(BiomeGenBase.desert.biomeID, 70);
-			biomesDefaultMap.put(BiomeGenBase.desertHills.biomeID, 10);
-			biomesDefaultMap.put(BiomeGenBase.forest.biomeID, 80);
-			biomesDefaultMap.put(BiomeGenBase.forestHills.biomeID, 10);
-			biomesDefaultMap.put(BiomeGenBase.taiga.biomeID, 80);
-			biomesDefaultMap.put(BiomeGenBase.taigaHills.biomeID, 10);
-			biomesDefaultMap.put(BiomeGenBase.jungle.biomeID, 80);
-			biomesDefaultMap.put(BiomeGenBase.jungleHills.biomeID, 10);
-			biomesDefaultMap.put(BiomeGenBase.swampland.biomeID, 60);
-			biomesDefaultMap.put(BiomeGenBase.extremeHills.biomeID, 30);
-			biomesDefaultMap.put(BiomeGenBase.icePlains.biomeID, 15);
-			biomesDefaultMap.put(BiomeGenBase.iceMountains.biomeID, 15);
-			biomesDefaultMap.put(BiomeGenBase.mushroomIsland.biomeID, 10);
-			biomesDefaultMap.put(BiomeGenBase.savanna.biomeID, 50);
-			biomesDefaultMap.put(BiomeGenBase.mesa.biomeID, 50);
+			biomesDefaultMap.put(BiomeGenBase.ocean.biomeID, new CaveBiome(null, 15));
+			biomesDefaultMap.put(BiomeGenBase.plains.biomeID, new CaveBiome(null, 100));
+			biomesDefaultMap.put(BiomeGenBase.desert.biomeID, new CaveBiome(null, 70));
+			biomesDefaultMap.put(BiomeGenBase.desertHills.biomeID, new CaveBiome(null, 10));
+			biomesDefaultMap.put(BiomeGenBase.forest.biomeID, new CaveBiome(null, 80));
+			biomesDefaultMap.put(BiomeGenBase.forestHills.biomeID, new CaveBiome(null, 10));
+			biomesDefaultMap.put(BiomeGenBase.taiga.biomeID, new CaveBiome(null, 80));
+			biomesDefaultMap.put(BiomeGenBase.taigaHills.biomeID, new CaveBiome(null, 10));
+			biomesDefaultMap.put(BiomeGenBase.jungle.biomeID, new CaveBiome(null, 80));
+			biomesDefaultMap.put(BiomeGenBase.jungleHills.biomeID, new CaveBiome(null, 10));
+			biomesDefaultMap.put(BiomeGenBase.swampland.biomeID, new CaveBiome(null, 60));
+			biomesDefaultMap.put(BiomeGenBase.extremeHills.biomeID, new CaveBiome(null, 30));
+			biomesDefaultMap.put(BiomeGenBase.icePlains.biomeID, new CaveBiome(null, 15));
+			biomesDefaultMap.put(BiomeGenBase.iceMountains.biomeID, new CaveBiome(null, 15));
+			biomesDefaultMap.put(BiomeGenBase.mushroomIsland.biomeID, new CaveBiome(null, 10));
+			biomesDefaultMap.put(BiomeGenBase.savanna.biomeID, new CaveBiome(null, 50));
+			biomesDefaultMap.put(BiomeGenBase.mesa.biomeID, new CaveBiome(null, 50));
+			biomesDefaultMap.put(BiomeGenBase.hell.biomeID, new CaveBiome(null, 0, new BlockEntry(Blocks.netherrack, 0)));
+			biomesDefaultMap.put(BiomeGenBase.sky.biomeID, new CaveBiome(null, 0, new BlockEntry(Blocks.end_stone, 0)));
 		}
 
 		String name;
@@ -393,21 +396,36 @@ public class Config
 				continue;
 			}
 
+			if (biomesDefaultMap.containsKey(biome.biomeID))
+			{
+				ICaveBiome entry = biomesDefaultMap.get(biome.biomeID);
+
+				weight = entry.getGenWeight();
+				block = Block.blockRegistry.getNameForObject(entry.getTerrainBlock().getBlock());
+				metadata = entry.getTerrainBlock().getMetadata();
+			}
+			else
+			{
+				weight = 0;
+				block = Block.blockRegistry.getNameForObject(Blocks.stone);
+				metadata = 0;
+			}
+
 			propOrder.clear();
 			name = String.valueOf(biome.biomeID);
-			prop = biomesCfg.get(name, "genWeight", biomesDefaultMap.containsKey(biome.biomeID) ? biomesDefaultMap.get(biome.biomeID) : 0);
+			prop = biomesCfg.get(name, "genWeight", weight);
 			prop.setMinValue(0).setMaxValue(100).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 			prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 			propOrder.add(prop.getName());
 			weight = MathHelper.clamp_int(prop.getInt(), Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue()));
-			prop = biomesCfg.get(name, "terrainBlock", Block.blockRegistry.getNameForObject(Blocks.stone));
+			prop = biomesCfg.get(name, "terrainBlock", block);
 			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 			prop.comment += " [default: " + prop.getDefault() + "]";
 			propOrder.add(prop.getName());
 			block = prop.getString();
-			prop = biomesCfg.get(name, "terrainBlockMetadata", 0);
+			prop = biomesCfg.get(name, "terrainBlockMetadata", metadata);
 			prop.setMinValue(0).setMaxValue(15).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 			prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";

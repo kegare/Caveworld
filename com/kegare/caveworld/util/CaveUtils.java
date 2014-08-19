@@ -10,6 +10,16 @@
 
 package com.kegare.caveworld.util;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.zip.Deflater;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.init.Blocks;
@@ -18,6 +28,8 @@ import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
+
+import org.apache.commons.io.FilenameUtils;
 
 import com.google.common.base.Strings;
 import com.kegare.caveworld.core.Caveworld;
@@ -89,6 +101,87 @@ public class CaveUtils
 			CaveLog.warning("Failed to create entity: %s", clazz.getSimpleName());
 
 			return null;
+		}
+	}
+
+	public static void archiveDirZip(File dir, File dest)
+	{
+		ZipOutputStream zos = null;
+
+		try
+		{
+			zos = new ZipOutputStream(new FileOutputStream(dest), Charset.defaultCharset());
+			zos.setLevel(Deflater.BEST_COMPRESSION);
+
+			addEntry(zos, dir, dir.getName());
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		finally
+		{
+			if (zos != null)
+			{
+				try
+				{
+					zos.close();
+				}
+				catch (IOException e) {}
+			}
+		}
+	}
+
+	private static void addEntry(ZipOutputStream zos, File dir, String root)
+	{
+		for (File file : dir.listFiles())
+		{
+			if (file.isDirectory())
+			{
+				addEntry(zos, file, root + File.separator + file.getName());
+			}
+			else
+			{
+				BufferedInputStream input = null;
+
+				try
+				{
+					input = new BufferedInputStream(new FileInputStream(file));
+
+					zos.putNextEntry(new ZipEntry(root + File.separator + FilenameUtils.getName(file.getAbsolutePath())));
+
+					byte[] buf = new byte[1024];
+
+					for (;;)
+					{
+						int len = input.read(buf);
+
+						if (len < 0)
+						{
+							break;
+						}
+
+						zos.write(buf, 0, len);
+					}
+
+					zos.closeEntry();
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+				finally
+				{
+					if (input != null)
+					{
+						try
+						{
+							input.close();
+						}
+						catch (IOException e) {}
+					}
+				}
+			}
 		}
 	}
 }

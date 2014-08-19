@@ -68,11 +68,9 @@ import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.core.CaveAchievementList;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
-import com.kegare.caveworld.network.BiomesSyncMessage;
 import com.kegare.caveworld.network.CaveSoundMessage;
 import com.kegare.caveworld.network.ConfigSyncMessage;
 import com.kegare.caveworld.network.DimSyncMessage;
-import com.kegare.caveworld.network.VeinsSyncMessage;
 import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Version;
@@ -171,10 +169,8 @@ public class CaveEventHooks
 	{
 		NetworkManager manager = event.manager;
 
-		manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new ConfigSyncMessage()));
+		manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new ConfigSyncMessage(null)));
 		manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new DimSyncMessage(WorldProviderCaveworld.getDimData())));
-		manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new BiomesSyncMessage(CaveworldAPI.getCaveBiomes())));
-		manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new VeinsSyncMessage(CaveworldAPI.getCaveVeins())));
 	}
 
 	@SubscribeEvent

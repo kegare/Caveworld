@@ -13,10 +13,11 @@ package com.kegare.caveworld.core;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
@@ -24,10 +25,12 @@ import net.minecraft.util.WeightedRandom;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.config.ConfigCategory;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.EmptyCaveBiome;
@@ -45,23 +48,54 @@ public class CaveBiomeManager implements ICaveBiomeManager
 		}
 	});
 
-	private final Map<Integer, Integer> genWeightMap = Maps.newHashMap();
-	private final Map<Integer, BlockEntry> terrainBlockMap = Maps.newHashMap();
+	private final LoadingCache<Integer, BlockEntry> terrainBlockCache = CacheBuilder.newBuilder()
+		.maximumSize(BiomeGenBase.getBiomeGenArray().length).expireAfterWrite(3, TimeUnit.MINUTES).build(
+			new CacheLoader<Integer, BlockEntry>()
+			{
+				@Override
+				public BlockEntry load(Integer key) throws Exception
+				{
+					for (ICaveBiome entry : CAVE_BIOMES)
+					{
+						if (entry.getBiome().biomeID == key.intValue())
+						{
+							BlockEntry terrain = entry.getTerrainBlock();
+							Block block = terrain.getBlock();
+
+							if (block == null || block.getMaterial().isLiquid() || !block.getMaterial().isSolid() || block.getMaterial().isReplaceable())
+							{
+								terrain = new BlockEntry(Blocks.stone, 0);
+							}
+
+							return terrain;
+						}
+					}
+
+					return new BlockEntry(Blocks.stone, 0);
+				}
+			});
 
 	@Override
 	public boolean addCaveBiome(ICaveBiome biome)
 	{
-		for (ICaveBiome entry : CAVE_BIOMES)
+		try
 		{
-			if (entry.getBiome().biomeID == biome.getBiome().biomeID)
+			for (ICaveBiome entry : CAVE_BIOMES)
 			{
-				entry.setGenWeight(entry.getGenWeight() + biome.getGenWeight());
+				if (entry.getBiome().biomeID == biome.getBiome().biomeID)
+				{
+					entry.setGenWeight(entry.getGenWeight() + biome.getGenWeight());
 
-				return false;
+					return false;
+				}
 			}
-		}
 
-		return CAVE_BIOMES.add((CaveBiome)biome);
+			return CAVE_BIOMES.add((CaveBiome)biome);
+		}
+		finally
+		{
+			terrainBlockCache.invalidate(biome.getBiome().biomeID);
+		}
 	}
 
 	@Override
@@ -72,6 +106,8 @@ public class CaveBiomeManager implements ICaveBiomeManager
 			if (biomes.next().getBiome().biomeID == biome.biomeID)
 			{
 				biomes.remove();
+
+				terrainBlockCache.invalidate(biome.biomeID);
 
 				return true;
 			}
@@ -99,17 +135,10 @@ public class CaveBiomeManager implements ICaveBiomeManager
 	@Override
 	public int getBiomeGenWeight(BiomeGenBase biome)
 	{
-		if (genWeightMap.containsKey(biome.biomeID))
-		{
-			return genWeightMap.get(biome.biomeID);
-		}
-
 		for (ICaveBiome entry : CAVE_BIOMES)
 		{
 			if (entry.getBiome().biomeID == biome.biomeID)
 			{
-				genWeightMap.put(biome.biomeID, entry.getGenWeight());
-
 				return entry.getGenWeight();
 			}
 		}
@@ -120,30 +149,14 @@ public class CaveBiomeManager implements ICaveBiomeManager
 	@Override
 	public BlockEntry getBiomeTerrainBlock(BiomeGenBase biome)
 	{
-		if (terrainBlockMap.containsKey(biome.biomeID))
+		try
 		{
-			return terrainBlockMap.get(biome.biomeID);
+			return terrainBlockCache.get(Integer.valueOf(biome.biomeID));
 		}
-
-		for (ICaveBiome entry : CAVE_BIOMES)
+		catch (ExecutionException e)
 		{
-			if (entry.getBiome().biomeID == biome.biomeID)
-			{
-				BlockEntry terrainBlock = entry.getTerrainBlock();
-				Block block = terrainBlock.getBlock();
-
-				if (block == null || block.getMaterial().isLiquid() || !block.getMaterial().isSolid() || block.getMaterial().isReplaceable())
-				{
-					terrainBlock = new BlockEntry(Blocks.stone, 0);
-				}
-
-				terrainBlockMap.put(biome.biomeID, terrainBlock);
-
-				return terrainBlock;
-			}
+			return new BlockEntry(Blocks.stone, 0);
 		}
-
-		return new BlockEntry(Blocks.stone, 0);
 	}
 
 	@Override
@@ -182,6 +195,8 @@ public class CaveBiomeManager implements ICaveBiomeManager
 	public void clearCaveBiomes()
 	{
 		CAVE_BIOMES.clear();
+
+		terrainBlockCache.invalidateAll();
 	}
 
 	public static List<ConfigCategory> getBiomeCategories()

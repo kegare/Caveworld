@@ -29,12 +29,15 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.common.DimensionManager;
 
+import org.apache.commons.io.FileDeleteStrategy;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Level;
 
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.util.CaveLog;
+import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 
@@ -68,7 +71,7 @@ public class CommandCaveworld implements ICommand
 	}
 
 	@Override
-	public void processCommand(ICommandSender sender, String[] args)
+	public void processCommand(ICommandSender sender, final String[] args)
 	{
 		if (args.length <= 0 || args[0].equalsIgnoreCase("version"))
 		{
@@ -114,11 +117,11 @@ public class CommandCaveworld implements ICommand
 			{
 				Desktop.getDesktop().browse(new URI(Caveworld.metadata.url));
 			}
-			catch (Exception ignored) {}
+			catch (Exception e) {}
 		}
 		else if (args[0].equalsIgnoreCase("regenerate"))
 		{
-			MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+			final MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
 			IChatComponent component;
 
 			if (sender instanceof EntityPlayerMP)
@@ -133,66 +136,102 @@ public class CommandCaveworld implements ICommand
 				}
 			}
 
-			try
+			new Thread()
 			{
-				int dim = Config.dimensionCaveworld;
-
-				CaveBlocks.caveworld_portal.portalDisabled = true;
-
-				component = new ChatComponentTranslation("caveworld.regenerate.regenerating");
-				component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
-				server.getConfigurationManager().sendChatMsg(component);
-
-				if (DimensionManager.getWorld(dim) != null)
+				@Override
+				public void run()
 				{
-					EntityPlayerMP player;
+					IChatComponent component;
 
-					for (Iterator iterator = server.getConfigurationManager().playerEntityList.iterator(); iterator.hasNext();)
+					try
 					{
-						player = (EntityPlayerMP)iterator.next();
+						component = new ChatComponentTranslation("caveworld.regenerate.regenerating");
+						component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
+						server.getConfigurationManager().sendChatMsg(component);
 
-						if (player != null && player.dimension == dim)
+						CaveBlocks.caveworld_portal.portalDisabled = true;
+
+						int dim = Config.dimensionCaveworld;
+						EntityPlayerMP player;
+
+						for (Iterator iterator = server.getConfigurationManager().playerEntityList.iterator(); iterator.hasNext();)
 						{
-							server.getConfigurationManager().transferPlayerToDimension(player, 0);
-							player.playerNetServerHandler.playerEntity = server.getConfigurationManager().respawnPlayer(player, 0, true);
+							player = (EntityPlayerMP)iterator.next();
+
+							if (player != null && player.dimension == dim)
+							{
+								player.playerNetServerHandler.playerEntity = server.getConfigurationManager().respawnPlayer(player, 0, true);
+							}
 						}
+
+						if (DimensionManager.getWorld(dim) != null)
+						{
+							DimensionManager.unloadWorld(dim);
+
+							for (;;)
+							{
+								if (DimensionManager.getWorld(dim) == null)
+								{
+									break;
+								}
+							}
+						}
+
+						File dir = WorldProviderCaveworld.getDimDir();
+
+						if (dir != null)
+						{
+							File bak = new File(dir.getParentFile(), dir.getName() + "_bak.zip");
+
+							if (bak.exists())
+							{
+								FileUtils.deleteQuietly(bak);
+							}
+
+							component = new ChatComponentTranslation("caveworld.regenerate.backingup");
+							component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
+							server.getConfigurationManager().sendChatMsg(component);
+
+							CaveUtils.archiveDirZip(dir, bak);
+
+							ClickEvent click = new ClickEvent(ClickEvent.Action.OPEN_FILE, FilenameUtils.normalize(bak.getParentFile().getPath()));
+
+							component = new ChatComponentTranslation("caveworld.regenerate.backedup");
+							component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true).setChatClickEvent(click);
+							server.getConfigurationManager().sendChatMsg(component);
+
+							for (File file : dir.listFiles())
+							{
+								FileDeleteStrategy.FORCE.deleteQuietly(file);
+							}
+
+							FileUtils.deleteDirectory(dir);
+						}
+
+						DimensionManager.initDimension(dim);
+
+						CaveBlocks.caveworld_portal.portalDisabled = false;
+
+						component = new ChatComponentTranslation("caveworld.regenerate.regenerated");
+						component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
+						server.getConfigurationManager().sendChatMsg(component);
 					}
+					catch (Exception e)
+					{
+						component = new ChatComponentTranslation("caveworld.regenerate.failed");
+						component.getChatStyle().setColor(EnumChatFormatting.RED).setItalic(true);
+						server.getConfigurationManager().sendChatMsg(component);
 
-					DimensionManager.unloadWorld(dim);
-					DimensionManager.unloadWorlds(server.worldTickTimes);
+						CaveLog.log(Level.ERROR, e, component.getUnformattedText());
+					}
 				}
-
-				File dir = WorldProviderCaveworld.getDimDir();
-
-				if (dir != null)
-				{
-					FileUtils.deleteDirectory(dir);
-				}
-
-				DimensionManager.initDimension(dim);
-				DimensionManager.getWorld(dim).saveAllChunks(true, null);
-
-				component = new ChatComponentTranslation("caveworld.regenerate.regenerated");
-				component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
-				server.getConfigurationManager().sendChatMsg(component);
-
-				CaveBlocks.caveworld_portal.portalDisabled = false;
-			}
-			catch (Exception e)
-			{
-				component = new ChatComponentTranslation("caveworld.regenerate.failed");
-				component.getChatStyle().setColor(EnumChatFormatting.RED).setItalic(true);
-				server.getConfigurationManager().sendChatMsg(component);
-
-				CaveLog.log(Level.ERROR, e, component.getUnformattedText());
-			}
+			}.start();
 		}
-		else if (Version.DEV_DEBUG && args[0].equalsIgnoreCase("mp") && args.length > 1 && sender instanceof EntityPlayerMP)
+		else if (args[0].equalsIgnoreCase("mp") && args.length > 1 && sender instanceof EntityPlayerMP)
 		{
 			EntityPlayerMP player = CommandBase.getCommandSenderAsPlayer(sender);
-			MinecraftServer server = player.mcServer;
 
-			if (server.getConfigurationManager().func_152596_g(player.getGameProfile()))
+			if (player.mcServer.isSinglePlayer() && player.getServerForPlayer().getWorldInfo().areCommandsAllowed())
 			{
 				int value = Integer.valueOf(args[1]);
 

@@ -24,12 +24,10 @@ import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.handler.CaveEventHooks;
 import com.kegare.caveworld.handler.CaveFuelHandler;
-import com.kegare.caveworld.network.BiomesSyncMessage;
 import com.kegare.caveworld.network.CaveSoundMessage;
 import com.kegare.caveworld.network.ConfigSyncMessage;
 import com.kegare.caveworld.network.DimSyncMessage;
 import com.kegare.caveworld.network.MiningSyncMessage;
-import com.kegare.caveworld.network.VeinsSyncMessage;
 import com.kegare.caveworld.plugin.CaveModPlugin;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.Version;
@@ -74,6 +72,8 @@ public class Caveworld
 	@EventHandler
 	public void construct(FMLConstructionEvent event)
 	{
+		Version.versionCheck();
+
 		try
 		{
 			for (Field field : CaveworldAPI.class.getDeclaredFields())
@@ -101,8 +101,6 @@ public class Caveworld
 		}
 
 		CaveModPlugin.initializePlugins(event.getASMHarvestedData());
-
-		Version.versionCheck();
 	}
 
 	@EventHandler
@@ -141,8 +139,6 @@ public class Caveworld
 
 		network.registerMessage(ConfigSyncMessage.class, ConfigSyncMessage.class, id++, Side.CLIENT);
 		network.registerMessage(DimSyncMessage.class, DimSyncMessage.class, id++, Side.CLIENT);
-		network.registerMessage(BiomesSyncMessage.class, BiomesSyncMessage.class, id++, Side.CLIENT);
-		network.registerMessage(VeinsSyncMessage.class, VeinsSyncMessage.class, id++, Side.CLIENT);
 		network.registerMessage(MiningSyncMessage.class, MiningSyncMessage.class, id++, Side.CLIENT);
 		network.registerMessage(CaveSoundMessage.class, CaveSoundMessage.class, id++, Side.CLIENT);
 	}

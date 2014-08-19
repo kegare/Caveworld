@@ -3,6 +3,8 @@
 caveworld.version.message=%s の新しいバージョンが利用可能です
 
 caveworld.regenerate.regenerating=Caveworld ディメンションを再生成しています...
+caveworld.regenerate.backingup=Caveworld ディメンションフォルダをバックアップしています...
+caveworld.regenerate.backedup=Caveworld ディメンションフォルダをバックアップしました
 caveworld.regenerate.regenerated=Caveworld ディメンションを再生成しました
 caveworld.regenerate.failed=Caveworld ディメンションの再生成に失敗しました
 

@@ -1595,25 +1595,25 @@ public class StructureStrongholdPiecesCaveworld
 			{
 				doorEnum[Door.OPENING.ordinal()] = 1;
 			}
-			catch (NoSuchFieldError ignored) {}
+			catch (NoSuchFieldError e) {}
 
 			try
 			{
 				doorEnum[Door.WOOD_DOOR.ordinal()] = 2;
 			}
-			catch (NoSuchFieldError ignored) {}
+			catch (NoSuchFieldError e) {}
 
 			try
 			{
 				doorEnum[Door.GRATES.ordinal()] = 3;
 			}
-			catch (NoSuchFieldError ignored) {}
+			catch (NoSuchFieldError e) {}
 
 			try
 			{
 				doorEnum[Door.IRON_DOOR.ordinal()] = 4;
 			}
-			catch (NoSuchFieldError ignored) {}
+			catch (NoSuchFieldError e) {}
 		}
 	}
 
