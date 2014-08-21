@@ -15,10 +15,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.classloading.FMLForgePlugin;
@@ -32,6 +29,10 @@ import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.gson.Gson;
 import com.kegare.caveworld.core.Caveworld;
 
@@ -99,37 +100,28 @@ public class Version implements Callable<Version.Status>
 			initialize();
 		}
 
-		ExecutorService pool = Executors.newSingleThreadExecutor();
-		Future<Status> task = pool.submit(new Version());
+		ListeningExecutorService pool = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor());
 
-		try
+		Futures.addCallback(pool.submit(new Version()), new FutureCallback<Status>()
 		{
-			status = Optional.of(task.get());
-		}
-		catch (Exception e)
-		{
-			CaveLog.log(Level.WARN, e, "An error occurred trying to version check");
-
-			status = Optional.of(Status.FAILED);
-		}
-		finally
-		{
-			pool.shutdown();
-
-			try
+			@Override
+			public void onSuccess(Status result)
 			{
-				if (!pool.awaitTermination(1, TimeUnit.MINUTES))
-				{
-					pool.shutdownNow();
-				}
-			}
-			catch (InterruptedException e)
-			{
-				pool.shutdownNow();
+				CaveLog.fine("Version status checked: %s", result.name());
+
+				status = Optional.of(result);
 			}
 
-			CaveLog.fine("Version status checked: %s", getStatus().name());
-		}
+			@Override
+			public void onFailure(Throwable throwable)
+			{
+				CaveLog.log(Level.WARN, throwable, "An error occurred trying to version check");
+
+				status = Optional.of(Status.FAILED);
+			}
+		});
+
+		pool.shutdown();
 	}
 
 	public static String getCurrent()

@@ -20,7 +20,9 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.common.IExtendedEntityProperties;
 
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Table;
 import com.kegare.caveworld.api.ICaveMiningManager;
 import com.kegare.caveworld.network.MiningSyncMessage;
 
@@ -28,7 +30,7 @@ public class CaveMiningManager implements ICaveMiningManager
 {
 	public static final String MINING_TAG = "Caveworld:CaveMining";
 
-	private static final Map<String, Integer> pointAmounts = Maps.newHashMap();
+	private static final Table<Block, Integer, Integer> pointAmounts = HashBasedTable.create();
 	private static final Map<String, NBTTagCompound> miningData = Maps.newHashMap();
 
 	private MiningPlayer getMiningPlayer(EntityPlayer player)
@@ -62,15 +64,13 @@ public class CaveMiningManager implements ICaveMiningManager
 	@Override
 	public int getMiningPointAmount(Block block, int metadata)
 	{
-		String key = Block.blockRegistry.getNameForObject(block) + "," + metadata;
-
-		return pointAmounts.containsKey(key) ? pointAmounts.get(key) : 0;
+		return pointAmounts.contains(block, metadata) ? pointAmounts.get(block, metadata) : 0;
 	}
 
 	@Override
 	public void setMiningPointAmount(Block block, int metadata, int amount)
 	{
-		pointAmounts.put(Block.blockRegistry.getNameForObject(block) + "," + metadata, amount);
+		pointAmounts.put(block, metadata, amount);
 	}
 
 	@Override
@@ -141,11 +141,6 @@ public class CaveMiningManager implements ICaveMiningManager
 			NBTTagCompound data = compound.getCompoundTag(MINING_TAG);
 
 			point = data.getInteger("MiningPoint");
-
-			if (data.hasKey("MiningCount") && point <= 0)
-			{
-				point = data.getInteger("MiningCount");
-			}
 		}
 
 		@Override

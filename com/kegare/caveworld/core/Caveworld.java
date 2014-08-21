@@ -11,17 +11,13 @@
 package com.kegare.caveworld.core;
 
 import static com.kegare.caveworld.core.Caveworld.*;
-
-import java.lang.reflect.Field;
-
 import net.minecraft.init.Blocks;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 
-import org.apache.logging.log4j.Level;
-
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
+import com.kegare.caveworld.handler.CaveAPIHandler;
 import com.kegare.caveworld.handler.CaveEventHooks;
 import com.kegare.caveworld.handler.CaveFuelHandler;
 import com.kegare.caveworld.network.CaveSoundMessage;
@@ -29,7 +25,6 @@ import com.kegare.caveworld.network.ConfigSyncMessage;
 import com.kegare.caveworld.network.DimSyncMessage;
 import com.kegare.caveworld.network.MiningSyncMessage;
 import com.kegare.caveworld.plugin.CaveModPlugin;
-import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 
@@ -72,33 +67,12 @@ public class Caveworld
 	@EventHandler
 	public void construct(FMLConstructionEvent event)
 	{
-		Version.versionCheck();
+		CaveworldAPI.apiHandler = new CaveAPIHandler();
+		CaveworldAPI.biomeManager = new CaveBiomeManager();
+		CaveworldAPI.veinManager = new CaveVeinManager();
+		CaveworldAPI.miningManager = new CaveMiningManager();
 
-		try
-		{
-			for (Field field : CaveworldAPI.class.getDeclaredFields())
-			{
-				switch (field.getName())
-				{
-					case "biomeManager":
-						field.setAccessible(true);
-						field.set(null, new CaveBiomeManager());
-						break;
-					case "veinManager":
-						field.setAccessible(true);
-						field.set(null, new CaveVeinManager());
-						break;
-					case "miningManager":
-						field.setAccessible(true);
-						field.set(null, new CaveMiningManager());
-						break;
-				}
-			}
-		}
-		catch (Exception e)
-		{
-			CaveLog.log(Level.ERROR, e, "An error occurred trying to initialize api instance");
-		}
+		Version.versionCheck();
 
 		CaveModPlugin.initializePlugins(event.getASMHarvestedData());
 	}
@@ -106,6 +80,8 @@ public class Caveworld
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event)
 	{
+		proxy.initializeConfigClasses();
+
 		Config.syncConfig();
 
 		CaveBlocks.registerBlocks();
@@ -117,13 +93,19 @@ public class Caveworld
 	@EventHandler
 	public void init(FMLInitializationEvent event)
 	{
-		registerMessages();
+		int id = 0;
+
+		network.registerMessage(ConfigSyncMessage.class, ConfigSyncMessage.class, id++, Side.CLIENT);
+		network.registerMessage(DimSyncMessage.class, DimSyncMessage.class, id++, Side.CLIENT);
+		network.registerMessage(MiningSyncMessage.class, MiningSyncMessage.class, id++, Side.CLIENT);
+		network.registerMessage(CaveSoundMessage.class, CaveSoundMessage.class, id++, Side.CLIENT);
 
 		proxy.registerRenderers();
 		proxy.registerRecipes();
 
-		DimensionManager.registerProviderType(Config.dimensionCaveworld, WorldProviderCaveworld.class, true);
-		DimensionManager.registerDimension(Config.dimensionCaveworld, Config.dimensionCaveworld);
+		id = CaveworldAPI.getDimension();
+		DimensionManager.registerProviderType(id, WorldProviderCaveworld.class, true);
+		DimensionManager.registerDimension(id, id);
 
 		FMLCommonHandler.instance().bus().register(CaveEventHooks.instance);
 
@@ -131,16 +113,6 @@ public class Caveworld
 
 		CaveworldAPI.setMiningPointAmount(Blocks.emerald_ore, 0, 2);
 		CaveworldAPI.setMiningPointAmount(Blocks.diamond_ore, 0, 3);
-	}
-
-	private void registerMessages()
-	{
-		byte id = 0;
-
-		network.registerMessage(ConfigSyncMessage.class, ConfigSyncMessage.class, id++, Side.CLIENT);
-		network.registerMessage(DimSyncMessage.class, DimSyncMessage.class, id++, Side.CLIENT);
-		network.registerMessage(MiningSyncMessage.class, MiningSyncMessage.class, id++, Side.CLIENT);
-		network.registerMessage(CaveSoundMessage.class, CaveSoundMessage.class, id++, Side.CLIENT);
 	}
 
 	@EventHandler

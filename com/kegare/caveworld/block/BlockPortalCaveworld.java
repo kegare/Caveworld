@@ -10,7 +10,6 @@
 
 package com.kegare.caveworld.block;
 
-import java.util.Map;
 import java.util.Random;
 
 import net.minecraft.block.Block;
@@ -46,7 +45,9 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import shift.mceconomy2.api.MCEconomyAPI;
 
-import com.google.common.collect.Maps;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.util.CaveUtils;
@@ -60,7 +61,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 public class BlockPortalCaveworld extends BlockPortal implements IInventory
 {
 	private final ItemStack[] inventoryContents = new ItemStack[getSizeInventory()];
-	private final Map<String, ChunkCoordinates> portalCoord = Maps.newHashMap();
+	private final Table<String, Integer, ChunkCoordinates> portalCoord = HashBasedTable.create();
 
 	@SideOnly(Side.CLIENT)
 	public IIcon portalIcon;
@@ -183,7 +184,7 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 		{
 			world.playSoundAtEntity(player, "random.click", 0.8F, 1.5F);
 
-			if (MCEconomyPlugin.enabled() && MCEconomyPlugin.SHOP >= 0 && player.dimension == Config.dimensionCaveworld)
+			if (MCEconomyPlugin.enabled() && MCEconomyPlugin.SHOP >= 0 && CaveworldAPI.isEntityInCaveworld(player))
 			{
 				if (CaveUtils.isItemPickaxe(player.getCurrentEquippedItem()))
 				{
@@ -202,13 +203,13 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 	@Override
 	public void onEntityCollidedWithBlock(World world, int x, int y, int z, Entity entity)
 	{
-		if (!world.isRemote && !portalDisabled && entity.isEntityAlive() && (entity.dimension != Config.dimensionCaveworld || !Config.hardcore))
+		if (!world.isRemote && !portalDisabled && entity.isEntityAlive() && (!CaveworldAPI.isEntityInCaveworld(entity) || !Config.hardcore))
 		{
 			if (entity.timeUntilPortal <= 0)
 			{
 				MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
 				int dimOld = entity.dimension;
-				int dimNew = dimOld == Config.dimensionCaveworld ? entity.getEntityData().getInteger("Caveworld:LastDim") : Config.dimensionCaveworld;
+				int dimNew = dimOld == CaveworldAPI.getDimension() ? entity.getEntityData().getInteger("Caveworld:LastDim") : CaveworldAPI.getDimension();
 				WorldServer worldOld = server.worldServerForDimension(dimOld);
 				WorldServer worldNew = server.worldServerForDimension(dimNew);
 
@@ -418,7 +419,7 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 	@Override
 	public boolean isUseableByPlayer(EntityPlayer player)
 	{
-		ChunkCoordinates coord = portalCoord.get(player.getUniqueID().toString());
+		ChunkCoordinates coord = portalCoord.get(player.getUniqueID().toString(), player.dimension);
 
 		if (coord == null)
 		{
@@ -445,7 +446,7 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 
 	public void displayInventory(EntityPlayer player, int x, int y, int z)
 	{
-		portalCoord.put(player.getUniqueID().toString(), new ChunkCoordinates(x, y, z));
+		portalCoord.put(player.getUniqueID().toString(), player.dimension, new ChunkCoordinates(x, y, z));
 
 		player.displayGUIChest(this);
 	}

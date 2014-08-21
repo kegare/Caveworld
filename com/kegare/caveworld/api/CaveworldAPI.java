@@ -9,16 +9,48 @@ import java.util.Random;
 import java.util.Set;
 
 import net.minecraft.block.Block;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraftforge.common.DimensionManager;
 
-public class CaveworldAPI
+/**
+ * NOTE: Do not access to this class fields.
+ */
+public final class CaveworldAPI
 {
-	private static ICaveBiomeManager biomeManager;
-	private static ICaveVeinManager veinManager;
-	private static ICaveMiningManager miningManager;
+	public static ICaveAPIHandler apiHandler;
+	public static ICaveBiomeManager biomeManager;
+	public static ICaveVeinManager veinManager;
+	public static ICaveMiningManager miningManager;
+
+	private CaveworldAPI() {}
+
+	/**
+	 * @see ICaveAPIHandler#getVersion()
+	 */
+	public static String getVersion()
+	{
+		return apiHandler == null ? null : apiHandler.getVersion();
+	}
+
+	/**
+	 * @see ICaveAPIHandler#getDimension()
+	 */
+	public static int getDimension()
+	{
+		return apiHandler == null ? DimensionManager.getNextFreeDimId() : apiHandler.getDimension();
+	}
+
+	/**
+	 * @see ICaveAPIHandler#isEntityInCaveworld(Entity)
+	 */
+	public static boolean isEntityInCaveworld(Entity entity)
+	{
+		return apiHandler == null ? false : apiHandler.isEntityInCaveworld(entity);
+	}
 
 	/**
 	 * @see ICaveBiomeManager#addCaveBiome(ICaveBiome)

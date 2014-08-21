@@ -14,32 +14,45 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.security.SecureRandom;
+import java.util.Iterator;
 
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.event.ClickEvent;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IChatComponent;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
-import net.minecraft.world.WorldProvider;
 import net.minecraft.world.WorldProviderSurface;
+import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.structure.MapGenStructureIO;
 import net.minecraftforge.client.IRenderHandler;
 import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.world.WorldEvent;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Level;
 
+import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.network.CaveSoundMessage;
 import com.kegare.caveworld.renderer.EmptyRenderer;
 import com.kegare.caveworld.util.CaveLog;
+import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.world.gen.MapGenStrongholdCaveworld;
 import com.kegare.caveworld.world.gen.StructureStrongholdPiecesCaveworld;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -62,24 +75,6 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 
 	public static File getDimDir()
 	{
-		WorldProvider provider = null;
-
-		try
-		{
-			provider = WorldProviderCaveworld.class.newInstance();
-		}
-		catch (Exception e)
-		{
-			provider = null;
-		}
-		finally
-		{
-			if (provider == null)
-			{
-				return null;
-			}
-		}
-
 		File root = DimensionManager.getCurrentSaveRootDirectory();
 
 		if (root == null || !root.exists() || root.isFile())
@@ -87,7 +82,7 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 			return null;
 		}
 
-		File dir = new File(root, provider.getSaveFolder());
+		File dir = new File(root, new WorldProviderCaveworld().getSaveFolder());
 
 		if (!dir.exists())
 		{
@@ -174,13 +169,123 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 		}
 	}
 
+	public static void regenerate(final boolean backup)
+	{
+		final MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+		EntityPlayerMP player;
+
+		for (Iterator iterator = server.getConfigurationManager().playerEntityList.iterator(); iterator.hasNext();)
+		{
+			player = (EntityPlayerMP)iterator.next();
+
+			if (CaveworldAPI.isEntityInCaveworld(player))
+			{
+				player.playerNetServerHandler.playerEntity = server.getConfigurationManager().respawnPlayer(player, 0, true);
+			}
+		}
+
+		new Thread("Caveworld Regenerator")
+		{
+			@Override
+			public void run()
+			{
+				IChatComponent component;
+
+				try
+				{
+					component = new ChatComponentTranslation("caveworld.regenerate.regenerating");
+					component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
+					server.getConfigurationManager().sendChatMsg(component);
+
+					CaveBlocks.caveworld_portal.portalDisabled = true;
+
+					int dim = CaveworldAPI.getDimension();
+					WorldServer world = DimensionManager.getWorld(dim);
+
+					if (world != null)
+					{
+						world.saveAllChunks(true, null);
+						world.flush();
+
+						MinecraftForge.EVENT_BUS.post(new WorldEvent.Unload(world));
+
+						DimensionManager.setWorld(dim, null);
+					}
+
+					File dir = WorldProviderCaveworld.getDimDir();
+
+					if (dir != null)
+					{
+						if (backup)
+						{
+							File bak = new File(dir.getParentFile(), dir.getName() + "_bak.zip");
+
+							if (bak.exists())
+							{
+								FileUtils.deleteQuietly(bak);
+							}
+
+							component = new ChatComponentTranslation("caveworld.regenerate.backingup");
+							component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
+							server.getConfigurationManager().sendChatMsg(component);
+
+							if (CaveUtils.archiveDirZip(dir, bak))
+							{
+								ClickEvent click = new ClickEvent(ClickEvent.Action.OPEN_FILE, FilenameUtils.normalize(bak.getParentFile().getPath()));
+
+								component = new ChatComponentTranslation("caveworld.regenerate.backedup");
+								component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true).setChatClickEvent(click);
+								server.getConfigurationManager().sendChatMsg(component);
+							}
+							else
+							{
+								component = new ChatComponentTranslation("caveworld.regenerate.backup.failed");
+								component.getChatStyle().setColor(EnumChatFormatting.RED).setItalic(true);
+								server.getConfigurationManager().sendChatMsg(component);
+							}
+						}
+
+						FileUtils.deleteDirectory(dir);
+					}
+
+					if (DimensionManager.shouldLoadSpawn(dim))
+					{
+						DimensionManager.initDimension(dim);
+
+						world = DimensionManager.getWorld(dim);
+
+						if (world != null)
+						{
+							world.saveAllChunks(true, null);
+							world.flush();
+						}
+					}
+
+					CaveBlocks.caveworld_portal.portalDisabled = false;
+
+					component = new ChatComponentTranslation("caveworld.regenerate.regenerated");
+					component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
+					server.getConfigurationManager().sendChatMsg(component);
+				}
+				catch (Exception e)
+				{
+					component = new ChatComponentTranslation("caveworld.regenerate.failed");
+					component.getChatStyle().setColor(EnumChatFormatting.RED).setItalic(true);
+					server.getConfigurationManager().sendChatMsg(component);
+
+					CaveLog.log(Level.ERROR, e, component.getUnformattedText());
+				}
+			}
+		}.start();
+	}
+
 	private int ambientTickCountdown = 0;
 
 	@Override
 	protected void registerWorldChunkManager()
 	{
 		worldChunkMgr = new WorldChunkManagerCaveworld(worldObj);
-		dimensionId = Config.dimensionCaveworld;
+		dimensionId = CaveworldAPI.getDimension();
 		hasNoSky = true;
 
 		MapGenStructureIO.registerStructure(MapGenStrongholdCaveworld.Start.class, "Caveworld.Stronghold");
@@ -240,6 +345,11 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 	@Override
 	public String getSaveFolder()
 	{
+		if (CaveUtils.mcpc)
+		{
+			return "DIM" + CaveworldAPI.getDimension();
+		}
+
 		return "DIM-" + getDimensionName();
 	}
 

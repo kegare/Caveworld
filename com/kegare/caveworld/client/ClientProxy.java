@@ -10,7 +10,11 @@
 
 package com.kegare.caveworld.client;
 
+import com.kegare.caveworld.client.config.VeinsEntry.VeinConfigEntry;
+import com.kegare.caveworld.core.CaveVeinManager;
 import com.kegare.caveworld.core.CommonProxy;
+import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
+import com.kegare.caveworld.plugin.mceconomy.ShopEntry.ShopProductEntry;
 import com.kegare.caveworld.renderer.RenderPortalCaveworld;
 
 import cpw.mods.fml.client.registry.RenderingRegistry;
@@ -20,6 +24,13 @@ import cpw.mods.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class ClientProxy extends CommonProxy
 {
+	@Override
+	public void initializeConfigClasses()
+	{
+		CaveVeinManager.veinEntryClass = VeinConfigEntry.class;
+		MCEconomyPlugin.productEntryClass = ShopProductEntry.class;
+	}
+
 	@Override
 	public void registerRenderers()
 	{

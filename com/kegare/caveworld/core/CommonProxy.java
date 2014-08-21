@@ -24,6 +24,8 @@ import com.kegare.caveworld.util.CaveLog;
 
 public class CommonProxy
 {
+	public void initializeConfigClasses() {}
+
 	public void registerRenderers() {}
 
 	public int getUniqueRenderType()

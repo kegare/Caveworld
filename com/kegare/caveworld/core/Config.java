@@ -31,24 +31,18 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Level;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.api.ICaveBiome;
-import com.kegare.caveworld.client.config.VeinsEntry.VeinConfigEntry;
 import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome;
 import com.kegare.caveworld.core.CaveVeinManager.CaveVein;
-import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
-import com.kegare.caveworld.plugin.mceconomy.ShopEntry.ShopProductEntry;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.Version;
 
 import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
 public class Config
 {
@@ -131,28 +125,6 @@ public class Config
 		}
 
 		return null;
-	}
-
-	public static Optional<Class> VEIN_ENTRY = Optional.absent();
-
-	@SideOnly(Side.CLIENT)
-	private static void initializeConfigEntryClasses()
-	{
-		VEIN_ENTRY = Optional.of((Class)VeinConfigEntry.class);
-
-		if (MCEconomyPlugin.enabled())
-		{
-			MCEconomyPlugin.PRODUCT_ENTRY = Optional.of((Class)ShopProductEntry.class);
-		}
-	}
-
-	static
-	{
-		try
-		{
-			initializeConfigEntryClasses();
-		}
-		catch (NoSuchMethodError e) {}
 	}
 
 	public static void syncConfig()

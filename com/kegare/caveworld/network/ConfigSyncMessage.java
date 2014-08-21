@@ -17,7 +17,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import net.minecraft.block.Block;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -240,18 +239,6 @@ public class ConfigSyncMessage implements IMessage, IMessageHandler<ConfigSyncMe
 		});
 
 		pool.shutdown();
-
-		try
-		{
-			if (!pool.awaitTermination(1, TimeUnit.MINUTES))
-			{
-				pool.shutdownNow();
-			}
-		}
-		catch (InterruptedException e)
-		{
-			pool.shutdownNow();
-		}
 
 		return null;
 	}

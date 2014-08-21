@@ -10,13 +10,11 @@
 
 package com.kegare.caveworld.core;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
-import java.util.TreeSet;
 
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
@@ -32,6 +30,8 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.google.common.primitives.Ints;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.ICaveVein;
 import com.kegare.caveworld.api.ICaveVeinManager;
@@ -39,6 +39,8 @@ import com.kegare.caveworld.api.ICaveVeinManager;
 public class CaveVeinManager implements ICaveVeinManager
 {
 	private final Map<String, CaveVein> CAVE_VEINS = Maps.newHashMap();
+
+	public static Class veinEntryClass = null;
 
 	@Override
 	public boolean addCaveVein(String name, ICaveVein vein)
@@ -71,7 +73,7 @@ public class CaveVeinManager implements ICaveVeinManager
 		List<String> propOrder = Lists.newArrayList();
 
 		prop = Config.veinsCfg.get(name, "block", Block.blockRegistry.getNameForObject(Blocks.stone));
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(Config.VEIN_ENTRY.orNull());
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(veinEntryClass);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		if (!Strings.isNullOrEmpty(block)) prop.set(block);
 		propOrder.add(prop.getName());
@@ -251,7 +253,7 @@ public class CaveVeinManager implements ICaveVeinManager
 			this.genBlockCount = count;
 			this.genMinHeight = min;
 			this.genMaxHeight = max;
-			this.genBiomes = new int[] {};
+			this.genBiomes = new int[0];
 		}
 
 		public CaveVein(BlockEntry block, int count, int weight, int min, int max, BlockEntry target, Object... biomes)
@@ -330,25 +332,18 @@ public class CaveVeinManager implements ICaveVeinManager
 		@Override
 		public int[] getGenBiomes()
 		{
-			return genBiomes == null ? new int[] {} : genBiomes;
+			return genBiomes == null ? new int[0] : genBiomes;
 		}
 
 		private int[] getBiomes(Object... objects)
 		{
-			Set<BiomeGenBase> biomes = new TreeSet<BiomeGenBase>(new Comparator<BiomeGenBase>()
-			{
-				@Override
-				public int compare(BiomeGenBase o1, BiomeGenBase o2)
-				{
-					return Integer.valueOf(o1.biomeID).compareTo(o2.biomeID);
-				}
-			});
+			Set<Integer> biomes = Sets.newTreeSet();
 
 			for (Object obj : objects)
 			{
 				if (obj instanceof BiomeGenBase)
 				{
-					biomes.add((BiomeGenBase)obj);
+					biomes.add(((BiomeGenBase)obj).biomeID);
 				}
 				else if (obj instanceof Integer)
 				{
@@ -356,7 +351,7 @@ public class CaveVeinManager implements ICaveVeinManager
 
 					if (biome != null)
 					{
-						biomes.add(biome);
+						biomes.add(biome.biomeID);
 					}
 				}
 				else if (obj instanceof Type)
@@ -365,20 +360,12 @@ public class CaveVeinManager implements ICaveVeinManager
 
 					for (BiomeGenBase biome : BiomeDictionary.getBiomesForType(type))
 					{
-						biomes.add(biome);
+						biomes.add(biome.biomeID);
 					}
 				}
 			}
 
-			Object[] temp = biomes.toArray();
-			int[] ids = new int[temp.length];
-
-			for (int i = 0; i < temp.length; ++i)
-			{
-				ids[i] = ((BiomeGenBase)temp[i]).biomeID;
-			}
-
-			return ids;
+			return Ints.toArray(biomes);
 		}
 	}
 }

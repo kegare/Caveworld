@@ -34,11 +34,14 @@ import org.apache.commons.io.FilenameUtils;
 import com.google.common.base.Strings;
 import com.kegare.caveworld.core.Caveworld;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 
 public class CaveUtils
 {
+	public static boolean mcpc = FMLCommonHandler.instance().getModName().contains("mcpc");
+
 	public static ModContainer getModContainer()
 	{
 		ModContainer mod = Loader.instance().getIndexedModList().get(Caveworld.MODID);
@@ -94,7 +97,7 @@ public class CaveUtils
 				return null;
 			}
 
-			return (T)entity;
+			return clazz.cast(entity);
 		}
 		catch (Exception e)
 		{
@@ -104,7 +107,7 @@ public class CaveUtils
 		}
 	}
 
-	public static void archiveDirZip(File dir, File dest)
+	public static boolean archiveDirZip(File dir, File dest)
 	{
 		ZipOutputStream zos = null;
 
@@ -114,10 +117,14 @@ public class CaveUtils
 			zos.setLevel(Deflater.BEST_COMPRESSION);
 
 			addEntry(zos, dir, dir.getName());
+
+			return true;
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
+
+			return false;
 		}
 		finally
 		{

@@ -21,7 +21,6 @@ import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 import shift.mceconomy2.api.MCEconomyAPI;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.kegare.caveworld.block.CaveBlocks;
@@ -42,7 +41,7 @@ public final class MCEconomyPlugin
 
 	public static int Player_MP_MAX = 1000000;
 
-	public static Optional<Class> PRODUCT_ENTRY = Optional.absent();
+	public static Class productEntryClass;
 
 	public static boolean enabled()
 	{

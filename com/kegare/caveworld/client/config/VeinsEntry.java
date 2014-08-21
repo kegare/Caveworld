@@ -10,6 +10,7 @@
 
 package com.kegare.caveworld.client.config;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -25,12 +26,14 @@ import org.lwjgl.input.Keyboard;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.core.CaveVeinManager.CaveVein;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.util.ConfigCategoryFunction;
 
 import cpw.mods.fml.client.config.DummyConfigElement.DummyCategoryElement;
 import cpw.mods.fml.client.config.GuiConfig;
@@ -58,12 +61,13 @@ public class VeinsEntry extends CaveCategoryEntry
 	protected List<IConfigElement> getConfigElements()
 	{
 		List<IConfigElement> list = Lists.newArrayList();
+		Collection<ConfigCategory> categories = Collections2.transform(getConfig().getCategoryNames(), new ConfigCategoryFunction(getConfig()));
 
 		list.add(new DummyCategoryElement("addVeinEntry", Caveworld.CONFIG_LANG + "veins.add", AddVeinEntry.class));
 
-		for (String category : getConfig().getCategoryNames())
+		for (ConfigCategory category : categories)
 		{
-			list.add(new VeinElement(getConfig().getCategory(category)));
+			list.add(new VeinElement(category));
 		}
 
 		return list;

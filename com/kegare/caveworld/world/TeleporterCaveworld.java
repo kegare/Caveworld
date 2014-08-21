@@ -29,8 +29,8 @@ import net.minecraft.world.WorldServer;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
-import com.kegare.caveworld.core.Config;
 
 public class TeleporterCaveworld extends Teleporter
 {
@@ -78,8 +78,7 @@ public class TeleporterCaveworld extends Teleporter
 
 			if (teleportEffect)
 			{
-				player.addPotionEffect(new PotionEffect(Potion.confusion.getId(), 120));
-				player.addPotionEffect(new PotionEffect(Potion.blindness.getId(), 20));
+				player.addPotionEffect(new PotionEffect(Potion.blindness.getId(), 25));
 			}
 		}
 	}
@@ -258,7 +257,7 @@ public class TeleporterCaveworld extends Teleporter
 
 			entity.setLocationAndAngles(var2, var3, var4, entity.rotationYaw, entity.rotationPitch);
 
-			if (entity.dimension == Config.dimensionCaveworld && entity instanceof EntityPlayerMP)
+			if (CaveworldAPI.isEntityInCaveworld(entity) && entity instanceof EntityPlayerMP)
 			{
 				blockX = MathHelper.floor_double(var2);
 				blockY = MathHelper.floor_double(var3);

@@ -14,7 +14,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -23,12 +22,11 @@ import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.WeightedRandom;
 import net.minecraft.world.biome.BiomeGenBase;
-import net.minecraftforge.common.config.ConfigCategory;
 
+import com.google.common.base.Function;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -37,14 +35,14 @@ import com.kegare.caveworld.api.EmptyCaveBiome;
 import com.kegare.caveworld.api.ICaveBiome;
 import com.kegare.caveworld.api.ICaveBiomeManager;
 
-public class CaveBiomeManager implements ICaveBiomeManager
+public class CaveBiomeManager implements ICaveBiomeManager, Function<CaveBiomeManager.CaveBiome, BiomeGenBase>
 {
 	private final SortedSet<CaveBiome> CAVE_BIOMES = Sets.newTreeSet(new Comparator<CaveBiome>()
 	{
 		@Override
 		public int compare(CaveBiome o1, CaveBiome o2)
 		{
-			return Integer.valueOf(o1.getBiome().biomeID).compareTo(o2.getBiome().biomeID);
+			return Integer.compare(o1.getBiome().biomeID, o2.getBiome().biomeID);
 		}
 	});
 
@@ -179,16 +177,9 @@ public class CaveBiomeManager implements ICaveBiomeManager
 	}
 
 	@Override
-	public ImmutableList<BiomeGenBase> getBiomeList()
+	public List<BiomeGenBase> getBiomeList()
 	{
-		Set<BiomeGenBase> biomes = Sets.newHashSet();
-
-		for (ICaveBiome entry : CAVE_BIOMES)
-		{
-			biomes.add(entry.getBiome());
-		}
-
-		return new ImmutableList.Builder<BiomeGenBase>().addAll(biomes).build();
+		return Lists.transform(Lists.newArrayList(CAVE_BIOMES), this);
 	}
 
 	@Override
@@ -199,26 +190,10 @@ public class CaveBiomeManager implements ICaveBiomeManager
 		terrainBlockCache.invalidateAll();
 	}
 
-	public static List<ConfigCategory> getBiomeCategories()
+	@Override
+	public BiomeGenBase apply(CaveBiome input)
 	{
-		List<ConfigCategory> list = Lists.newArrayList();
-		SortedSet<String> entries = Sets.newTreeSet(new Comparator<String>()
-		{
-			@Override
-			public int compare(String o1, String o2)
-			{
-				return Integer.valueOf(o1).compareTo(Integer.valueOf(o2));
-			}
-		});
-
-		entries.addAll(Config.biomesCfg.getCategoryNames());
-
-		for (String name : entries)
-		{
-			list.add(Config.biomesCfg.getCategory(name));
-		}
-
-		return list;
+		return input.getBiome();
 	}
 
 	public static class CaveBiome extends WeightedRandom.Item implements ICaveBiome

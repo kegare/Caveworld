@@ -54,7 +54,7 @@ public class PortalShop
 		List<String> propOrder = Lists.newArrayList();
 
 		prop = MCEconomyPlugin.shopCfg.get(name, "item", "");
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(MCEconomyPlugin.PRODUCT_ENTRY.orNull());
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(MCEconomyPlugin.productEntryClass);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		if (!Strings.isNullOrEmpty(item)) prop.set(item);
 		propOrder.add(prop.getName());

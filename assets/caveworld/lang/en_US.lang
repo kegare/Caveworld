@@ -5,8 +5,9 @@ caveworld.version.message=A new %s version is available
 caveworld.regenerate.regenerating=Regenerating Caveworld dimension...
 caveworld.regenerate.backingup=Backing up Caveworld dimension folder...
 caveworld.regenerate.backedup=Caveworld dimension folder was backed up
+caveworld.regenerate.backup.failed=Failed to backing up Caveworld dimension folder
 caveworld.regenerate.regenerated=Caveworld dimension was regenerated
-caveworld.regenerate.failed=Failed to regenerating caveworld dimension
+caveworld.regenerate.failed=Failed to regenerating Caveworld dimension
 
 caveworld.mining.point=Mining Point
 

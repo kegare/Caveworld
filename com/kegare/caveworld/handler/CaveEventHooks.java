@@ -133,7 +133,7 @@ public class CaveEventHooks
 		Minecraft mc = FMLClientHandler.instance().getClient();
 		EntityPlayer player = mc == null ? null : mc.thePlayer;
 
-		if (player != null && player.dimension == Config.dimensionCaveworld)
+		if (CaveworldAPI.isEntityInCaveworld(player))
 		{
 			if (mc.gameSettings.showDebugInfo)
 			{
@@ -181,7 +181,7 @@ public class CaveEventHooks
 			EntityPlayerMP player = (EntityPlayerMP)event.player;
 			int dim = player.dimension;
 
-			if (dim == Config.dimensionCaveworld)
+			if (CaveworldAPI.isEntityInCaveworld(player))
 			{
 				if (player.getBedLocation(dim) == null || player.posY >= player.worldObj.getActualHeight())
 				{
@@ -204,7 +204,7 @@ public class CaveEventHooks
 			EntityPlayerMP player = (EntityPlayerMP)event.player;
 			WorldServer world = player.getServerForPlayer();
 
-			if (event.toDim == Config.dimensionCaveworld)
+			if (event.toDim == CaveworldAPI.getDimension())
 			{
 				NBTTagCompound data = player.getEntityData();
 
@@ -220,7 +220,7 @@ public class CaveEventHooks
 					player.triggerAchievement(CaveAchievementList.caveworld);
 				}
 			}
-			else if (Config.hardcore && event.fromDim == Config.dimensionCaveworld)
+			else if (Config.hardcore && event.fromDim == CaveworldAPI.getDimension())
 			{
 				MinecraftServer server = world.func_73046_m();
 				WorldServer worldNew = server.worldServerForDimension(event.fromDim);
@@ -244,7 +244,7 @@ public class CaveEventHooks
 		{
 			EntityPlayerMP player = (EntityPlayerMP)event.harvester;
 
-			if (player.dimension == Config.dimensionCaveworld)
+			if (CaveworldAPI.isEntityInCaveworld(player))
 			{
 				ItemStack current = player.getCurrentEquippedItem();
 				Block block = event.block;
@@ -325,7 +325,7 @@ public class CaveEventHooks
 					event.setCanceled(true);
 				}
 			}
-			else if (player.dimension == Config.dimensionCaveworld && world.getBlock(x, y, z).isBed(world, x, y, z, player))
+			else if (CaveworldAPI.isEntityInCaveworld(player) && world.getBlock(x, y, z).isBed(world, x, y, z, player))
 			{
 				int metadata = world.getBlockMetadata(x, y, z);
 
@@ -396,7 +396,7 @@ public class CaveEventHooks
 			EntityPlayerMP player = (EntityPlayerMP)event.entityPlayer;
 			WorldServer world = player.getServerForPlayer();
 
-			if (player.dimension == Config.dimensionCaveworld && !player.capabilities.isCreativeMode)
+			if (CaveworldAPI.isEntityInCaveworld(player) && !player.capabilities.isCreativeMode)
 			{
 				NBTTagCompound data = player.getEntityData();
 				ChunkCoordinates spawn = player.getBedLocation(player.dimension);
@@ -438,7 +438,7 @@ public class CaveEventHooks
 			CaveworldAPI.loadMiningData((EntityPlayerMP)entity, null);
 		}
 
-		if (entity.dimension == Config.dimensionCaveworld)
+		if (CaveworldAPI.isEntityInCaveworld(entity))
 		{
 			if (entity instanceof EntityBat)
 			{
@@ -460,7 +460,7 @@ public class CaveEventHooks
 	{
 		EntityLivingBase living = event.entityLiving;
 
-		if (living.dimension == Config.dimensionCaveworld && living.ticksExisted % 20 == 0)
+		if (CaveworldAPI.isEntityInCaveworld(living) && living.ticksExisted % 20 == 0)
 		{
 			if (living instanceof EntityPlayerMP)
 			{
@@ -500,7 +500,7 @@ public class CaveEventHooks
 			Random random = living.getRNG();
 			int looting = MathHelper.clamp_int(event.lootingLevel, 0, 3);
 
-			if (MCEconomyPlugin.enabled() && living.dimension == Config.dimensionCaveworld && living instanceof IMob)
+			if (MCEconomyPlugin.enabled() && CaveworldAPI.isEntityInCaveworld(living) && living instanceof IMob)
 			{
 				if (!MCEconomyAPI.ShopManager.hasEntityPurchase(living))
 				{
@@ -532,7 +532,7 @@ public class CaveEventHooks
 	{
 		World world = event.world;
 
-		if (!world.isRemote && world.provider.dimensionId == Config.dimensionCaveworld)
+		if (!world.isRemote && world.provider.dimensionId == CaveworldAPI.getDimension())
 		{
 			CaveBlocks.caveworld_portal.saveInventoryToDimData();
 
@@ -546,7 +546,7 @@ public class CaveEventHooks
 		EntityPlayerMP player = event.player;
 		String message = event.message.trim();
 
-		if (message.matches("@buff|@buff ([0-9]*$|max)") && player.dimension == Config.dimensionCaveworld)
+		if (message.matches("@buff|@buff ([0-9]*$|max)") && CaveworldAPI.isEntityInCaveworld(player))
 		{
 			int point = CaveworldAPI.getMiningPoint(player);
 
