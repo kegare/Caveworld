@@ -56,16 +56,12 @@ public class CaveSoundMessage implements IMessage, IMessageHandler<CaveSoundMess
 	public IMessage onMessage(CaveSoundMessage message, MessageContext ctx)
 	{
 		Minecraft mc = FMLClientHandler.instance().getClient();
+		SoundHandler handler = mc.getSoundHandler();
+		ISound sound = PositionedSoundRecord.func_147673_a(message.resource);
 
-		if (mc != null)
+		if (!handler.isSoundPlaying(sound))
 		{
-			SoundHandler handler = mc.getSoundHandler();
-			ISound sound = PositionedSoundRecord.func_147673_a(message.resource);
-
-			if (!handler.isSoundPlaying(sound))
-			{
-				handler.playSound(sound);
-			}
+			handler.playSound(sound);
 		}
 
 		return null;

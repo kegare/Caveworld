@@ -33,7 +33,6 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.S02PacketChat;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
@@ -69,7 +68,6 @@ import com.kegare.caveworld.core.CaveAchievementList;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.network.CaveSoundMessage;
-import com.kegare.caveworld.network.ConfigSyncMessage;
 import com.kegare.caveworld.network.DimSyncMessage;
 import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.util.CaveUtils;
@@ -167,10 +165,7 @@ public class CaveEventHooks
 	@SubscribeEvent
 	public void onServerConnected(ServerConnectionFromClientEvent event)
 	{
-		NetworkManager manager = event.manager;
-
-		manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new ConfigSyncMessage(null)));
-		manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new DimSyncMessage(WorldProviderCaveworld.getDimData())));
+		event.manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new DimSyncMessage(WorldProviderCaveworld.getDimData())));
 	}
 
 	@SubscribeEvent
@@ -543,7 +538,7 @@ public class CaveEventHooks
 	@SubscribeEvent
 	public void onServerChat(ServerChatEvent event)
 	{
-		EntityPlayerMP player = event.player;
+		final EntityPlayerMP player = event.player;
 		String message = event.message.trim();
 
 		if (message.matches("@buff|@buff ([0-9]*$|max)") && CaveworldAPI.isEntityInCaveworld(player))

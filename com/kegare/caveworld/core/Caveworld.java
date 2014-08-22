@@ -21,7 +21,6 @@ import com.kegare.caveworld.handler.CaveAPIHandler;
 import com.kegare.caveworld.handler.CaveEventHooks;
 import com.kegare.caveworld.handler.CaveFuelHandler;
 import com.kegare.caveworld.network.CaveSoundMessage;
-import com.kegare.caveworld.network.ConfigSyncMessage;
 import com.kegare.caveworld.network.DimSyncMessage;
 import com.kegare.caveworld.network.MiningSyncMessage;
 import com.kegare.caveworld.plugin.CaveModPlugin;
@@ -95,7 +94,6 @@ public class Caveworld
 	{
 		int id = 0;
 
-		network.registerMessage(ConfigSyncMessage.class, ConfigSyncMessage.class, id++, Side.CLIENT);
 		network.registerMessage(DimSyncMessage.class, DimSyncMessage.class, id++, Side.CLIENT);
 		network.registerMessage(MiningSyncMessage.class, MiningSyncMessage.class, id++, Side.CLIENT);
 		network.registerMessage(CaveSoundMessage.class, CaveSoundMessage.class, id++, Side.CLIENT);
