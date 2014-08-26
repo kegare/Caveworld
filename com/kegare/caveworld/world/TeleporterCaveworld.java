@@ -36,25 +36,16 @@ public class TeleporterCaveworld extends Teleporter
 {
 	private final WorldServer worldObj;
 	private final Random random;
-	private final boolean generatePortal;
-	private final boolean teleportEffect;
 
 	private final Map<Long, PortalPosition> coordCache = Maps.newHashMap();
 	private final Set<Long> coordKeys = Sets.newHashSet();
 
 	public TeleporterCaveworld(WorldServer worldServer)
 	{
-		this(worldServer, true, true);
-	}
-
-	public TeleporterCaveworld(WorldServer worldServer, boolean portal, boolean effect)
-	{
 		super(worldServer);
 		this.worldObj = worldServer;
 		this.worldObj.customTeleporters.add(this);
 		this.random = new Random(worldServer.getSeed());
-		this.generatePortal = portal;
-		this.teleportEffect = effect;
 	}
 
 	@Override
@@ -62,10 +53,7 @@ public class TeleporterCaveworld extends Teleporter
 	{
 		if (!placeInExistingPortal(entity, posX, posY, posZ, rotationYaw))
 		{
-			if (generatePortal)
-			{
-				makePortal(entity);
-			}
+			makePortal(entity);
 
 			placeInExistingPortal(entity, posX, posY, posZ, rotationYaw);
 		}
@@ -75,11 +63,7 @@ public class TeleporterCaveworld extends Teleporter
 			EntityPlayerMP player = (EntityPlayerMP)entity;
 
 			player.addExperienceLevel(0);
-
-			if (teleportEffect)
-			{
-				player.addPotionEffect(new PotionEffect(Potion.blindness.getId(), 25));
-			}
+			player.addPotionEffect(new PotionEffect(Potion.blindness.getId(), 25));
 		}
 	}
 
@@ -220,8 +204,8 @@ public class TeleporterCaveworld extends Teleporter
 				var4 += var11 * var14 + var15 * var9;
 				var14 = 0.0F;
 				var15 = 0.0F;
-				float var18 = 0.0F;
-				float var19 = 0.0F;
+				float var16 = 0.0F;
+				float var17 = 0.0F;
 
 				if (var5 == var6)
 				{
@@ -235,19 +219,19 @@ public class TeleporterCaveworld extends Teleporter
 				}
 				else if (var5 == Direction.rotateRight[var6])
 				{
-					var18 = 1.0F;
-					var19 = -1.0F;
+					var16 = 1.0F;
+					var17 = -1.0F;
 				}
 				else
 				{
-					var18 = -1.0F;
-					var19 = 1.0F;
+					var16 = -1.0F;
+					var17 = 1.0F;
 				}
 
-				double var20 = entity.motionX;
-				double var21 = entity.motionZ;
-				entity.motionX = var20 * var14 + var21 * var19;
-				entity.motionZ = var20 * var18 + var21 * var15;
+				double var18 = entity.motionX;
+				double var19 = entity.motionZ;
+				entity.motionX = var18 * var14 + var19 * var17;
+				entity.motionZ = var18 * var16 + var19 * var15;
 				entity.rotationYaw = rotationYaw - var6 * 90 + var5 * 90;
 			}
 			else

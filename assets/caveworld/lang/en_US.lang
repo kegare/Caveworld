@@ -82,6 +82,11 @@ caveworld.configgui.veins.genTargetBlockMetadata=Target Block Metadata
 caveworld.configgui.veins.genTargetBlockMetadata.tooltip=Specify the generate target block metadata of this vein.
 caveworld.configgui.veins.genBiomes=Generate Biomes
 caveworld.configgui.veins.genBiomes.tooltip=Specify the generate biomes of this vein.
+caveworld.configgui.select.block=Select a block
+caveworld.configgui.select.item=Select a item
+caveworld.configgui.select.biome=Select the biomes
+caveworld.configgui.select.instant=Instant filter
+caveworld.configgui.select.instant.hover=Filter instantly when enter character in filter-textbox.
 
 tile.portalCaveworld.name=Caveworld Portal Block
 tile.rope.name=Rope

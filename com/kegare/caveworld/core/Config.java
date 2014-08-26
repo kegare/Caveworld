@@ -77,6 +77,10 @@ public class Config
 
 	public static final int RENDER_TYPE_PORTAL = Caveworld.proxy.getUniqueRenderType();
 
+	public static Class selectBlockEntryClass;
+	public static Class selectItemEntryClass;
+	public static Class selectBiomeEntryClass;
+
 	public static File getConfigFile(String name)
 	{
 		File dir = new File(Loader.instance().getConfigDir(), "caveworld");
@@ -392,7 +396,7 @@ public class Config
 			propOrder.add(prop.getName());
 			weight = MathHelper.clamp_int(prop.getInt(), Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue()));
 			prop = biomesCfg.get(name, "terrainBlock", block);
-			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(selectBlockEntryClass);
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 			prop.comment += " [default: " + prop.getDefault() + "]";
 			propOrder.add(prop.getName());

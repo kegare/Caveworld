@@ -1,4 +1,4 @@
-﻿# Localization file : ja_JP
+# Localization file : ja_JP
 
 caveworld.version.message=%s の新しいバージョンが利用可能です
 
@@ -82,6 +82,11 @@ caveworld.configgui.veins.genTargetBlockMetadata=対象ブロックメタデー�
 caveworld.configgui.veins.genTargetBlockMetadata.tooltip=この鉱脈を生成する際に置換対象となるブロックのメタデータを指定します。
 caveworld.configgui.veins.genBiomes=生成するバイオーム
 caveworld.configgui.veins.genBiomes.tooltip=この鉱脈を生成するバイオームを指定します。
+caveworld.configgui.select.block=ブロックを選択してください
+caveworld.configgui.select.item=アイテムを選択してください
+caveworld.configgui.select.biome=バイオームを選択してください
+caveworld.configgui.select.instant=インスタントフィルター
+caveworld.configgui.select.instant.hover=フィルタテキストボックスに文字を入力すると瞬時にフィルタリングします。
 
 tile.portalCaveworld.name=Caveworld ポータルブロック
 tile.rope.name=ロープ

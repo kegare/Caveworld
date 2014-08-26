@@ -36,15 +36,12 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.play.server.S02PacketChat;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.ChunkCoordinates;
-import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -73,12 +70,10 @@ import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.util.Version.Status;
-import com.kegare.caveworld.world.TeleporterCaveworld;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
@@ -180,12 +175,7 @@ public class CaveEventHooks
 			{
 				if (player.getBedLocation(dim) == null || player.posY >= player.worldObj.getActualHeight())
 				{
-					dim = player.getEntityData().getInteger("Caveworld:LastDim");
-					MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
-					WorldServer world = server.worldServerForDimension(dim);
-					Teleporter teleporter = new TeleporterCaveworld(world, false, false);
-
-					server.getConfigurationManager().transferPlayerToDimension(player, dim, teleporter);
+					CaveUtils.respawnPlayer(player, player.getEntityData().getInteger("Caveworld:LastDim"));
 				}
 			}
 		}
@@ -217,17 +207,7 @@ public class CaveEventHooks
 			}
 			else if (Config.hardcore && event.fromDim == CaveworldAPI.getDimension())
 			{
-				MinecraftServer server = world.func_73046_m();
-				WorldServer worldNew = server.worldServerForDimension(event.fromDim);
-				Teleporter teleporter = new TeleporterCaveworld(worldNew);
-
-				player.worldObj.removeEntity(player);
-				player.isDead = false;
-				player.timeUntilPortal = player.getPortalCooldown();
-
-				server.getConfigurationManager().transferPlayerToDimension(player, event.fromDim, teleporter);
-
-				player.attackEntityFrom(DamageSource.outOfWorld, 999.0F);
+				CaveUtils.respawnPlayer(player, event.fromDim);
 			}
 		}
 	}
@@ -538,7 +518,7 @@ public class CaveEventHooks
 	@SubscribeEvent
 	public void onServerChat(ServerChatEvent event)
 	{
-		final EntityPlayerMP player = event.player;
+		EntityPlayerMP player = event.player;
 		String message = event.message.trim();
 
 		if (message.matches("@buff|@buff ([0-9]*$|max)") && CaveworldAPI.isEntityInCaveworld(player))

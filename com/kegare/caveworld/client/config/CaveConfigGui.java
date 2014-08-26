@@ -30,6 +30,8 @@ import cpw.mods.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class CaveConfigGui extends GuiConfig
 {
+	public static boolean instantFilter = true;
+
 	public CaveConfigGui(GuiScreen parent)
 	{
 		super(parent, getConfigElements(), Caveworld.MODID, false, false, I18n.format(Caveworld.CONFIG_LANG + "title"));

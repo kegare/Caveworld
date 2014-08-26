@@ -120,15 +120,15 @@ public class VeinsEntry extends CaveCategoryEntry
 			List<IConfigElement> list = Lists.newArrayList();
 
 			list.add(new ConfigElement<String>(new Property("veinName", "", Property.Type.STRING, Caveworld.CONFIG_LANG + "veins.veinName").setConfigEntryClass(VeinConfigEntry.class)));
-			list.add(new ConfigElement<String>(new Property("block", Block.blockRegistry.getNameForObject(Blocks.stone), Property.Type.STRING, Caveworld.CONFIG_LANG + "veins.block")));
+			list.add(new ConfigElement<String>(new Property("block", Block.blockRegistry.getNameForObject(Blocks.stone), Property.Type.STRING, Caveworld.CONFIG_LANG + "veins.block").setConfigEntryClass(SelectBlockEntry.class)));
 			list.add(new ConfigElement<Integer>(new Property("blockMetadata", "0", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.blockMetadata").setMinValue(0).setMaxValue(15)));
 			list.add(new ConfigElement<Integer>(new Property("genBlockCount", "1", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genBlockCount").setMinValue(1).setMaxValue(100)));
 			list.add(new ConfigElement<Integer>(new Property("genWeight", "1", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genWeight").setMinValue(0).setMaxValue(100)));
 			list.add(new ConfigElement<Integer>(new Property("genMinHeight", "0", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genMinHeight").setMinValue(0).setMaxValue(254)));
 			list.add(new ConfigElement<Integer>(new Property("genMaxHeight", "255", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genMaxHeight").setMinValue(1).setMaxValue(255)));
-			list.add(new ConfigElement<String>(new Property("genTargetBlock", Block.blockRegistry.getNameForObject(Blocks.stone), Property.Type.STRING, Caveworld.CONFIG_LANG + "veins.genTargetBlock")));
+			list.add(new ConfigElement<String>(new Property("genTargetBlock", Block.blockRegistry.getNameForObject(Blocks.stone), Property.Type.STRING, Caveworld.CONFIG_LANG + "veins.genTargetBlock").setConfigEntryClass(SelectBlockEntry.class)));
 			list.add(new ConfigElement<Integer>(new Property("genTargetBlockMetadata", "0", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genTargetBlockMetadata").setMinValue(0).setMaxValue(15)));
-			list.add(new ConfigElement<Integer>(new Property("genBiomes", new String[] {}, Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genBiomes")));
+			list.add(new ConfigElement<Integer>(new Property("genBiomes", new String[0], Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genBiomes").setConfigEntryClass(SelectBiomeEntry.class)));
 
 			return list;
 		}

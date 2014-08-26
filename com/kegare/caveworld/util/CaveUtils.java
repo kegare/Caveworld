@@ -22,6 +22,7 @@ import java.util.zip.ZipOutputStream;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPickaxe;
@@ -105,6 +106,11 @@ public class CaveUtils
 
 			return null;
 		}
+	}
+
+	public static void respawnPlayer(EntityPlayerMP player, int dim)
+	{
+		player.playerNetServerHandler.playerEntity = player.mcServer.getConfigurationManager().respawnPlayer(player, dim, true);
 	}
 
 	public static boolean archiveDirZip(File dir, File dest)

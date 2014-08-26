@@ -24,6 +24,7 @@ import shift.mceconomy2.api.shop.ProductList;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.kegare.caveworld.core.Caveworld;
+import com.kegare.caveworld.core.Config;
 
 public class PortalShop
 {
@@ -54,12 +55,12 @@ public class PortalShop
 		List<String> propOrder = Lists.newArrayList();
 
 		prop = MCEconomyPlugin.shopCfg.get(name, "item", "");
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(MCEconomyPlugin.productEntryClass);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(Config.selectItemEntryClass);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		if (!Strings.isNullOrEmpty(item)) prop.set(item);
 		propOrder.add(prop.getName());
 		item = prop.getString();
-		prop = MCEconomyPlugin.shopCfg.get(name, "itemDamage", 0);
+		prop = MCEconomyPlugin.shopCfg.get(name, "itemDamage", 0).setConfigEntryClass(MCEconomyPlugin.productEntryClass);
 		prop.setMinValue(0).setMaxValue(Short.MAX_VALUE).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		if (damage >= 0) prop.set(MathHelper.clamp_int(damage, Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue())));

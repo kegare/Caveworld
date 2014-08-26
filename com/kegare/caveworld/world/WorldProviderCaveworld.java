@@ -180,7 +180,7 @@ public final class WorldProviderCaveworld extends WorldProviderSurface
 
 			if (CaveworldAPI.isEntityInCaveworld(player))
 			{
-				player.playerNetServerHandler.playerEntity = server.getConfigurationManager().respawnPlayer(player, 0, true);
+				CaveUtils.respawnPlayer(player, 0);
 			}
 		}
 
