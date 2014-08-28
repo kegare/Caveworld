@@ -20,7 +20,6 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.Direction;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.ChunkCoordIntPair;
@@ -64,6 +63,11 @@ public class TeleporterCaveworld extends Teleporter
 
 			player.addExperienceLevel(0);
 			player.addPotionEffect(new PotionEffect(Potion.blindness.getId(), 25));
+
+			if (CaveworldAPI.isEntityInCaveworld(player))
+			{
+				WorldProviderCaveworld.recentTeleportPos = player.getPlayerCoordinates();
+			}
 		}
 	}
 
@@ -240,15 +244,6 @@ public class TeleporterCaveworld extends Teleporter
 			}
 
 			entity.setLocationAndAngles(var2, var3, var4, entity.rotationYaw, entity.rotationPitch);
-
-			if (CaveworldAPI.isEntityInCaveworld(entity) && entity instanceof EntityPlayerMP)
-			{
-				blockX = MathHelper.floor_double(var2);
-				blockY = MathHelper.floor_double(var3);
-				blockZ = MathHelper.floor_double(var4);
-
-				((EntityPlayerMP)entity).setSpawnChunk(new ChunkCoordinates(blockX, blockY, blockZ), true, entity.dimension);
-			}
 
 			return true;
 		}

@@ -10,10 +10,13 @@
 
 package com.kegare.caveworld.client.config;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
 
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -26,15 +29,23 @@ import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
 
 import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.logging.log4j.Level;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
+import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.util.BiomeIdFunction;
+import com.kegare.caveworld.util.CaveLog;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
@@ -79,6 +90,7 @@ public class GuiSelectBiome extends GuiScreen
 
 		biomeList = new BiomeList(this);
 		biomeList.registerScrollButtons(2, 3);
+		biomeList.setFilter(null);
 
 		instantHoverChecker = new HoverChecker(instantFilter, 800);
 	}
@@ -152,14 +164,7 @@ public class GuiSelectBiome extends GuiScreen
 
 		if (Keyboard.getEventKey() == Keyboard.KEY_TAB)
 		{
-			if (Keyboard.getEventKeyState())
-			{
-				biomeList.advanced = true;
-			}
-			else
-			{
-				biomeList.advanced = false;
-			}
+			biomeList.showBiomeId = Keyboard.getEventKeyState();
 		}
 	}
 
@@ -177,11 +182,11 @@ public class GuiSelectBiome extends GuiScreen
 
 			if (Strings.isNullOrEmpty(text) && changed)
 			{
-				setFilter("");
+				biomeList.setFilter(null);
 			}
 			else if (instantFilter.isChecked() && changed || code == Keyboard.KEY_RETURN)
 			{
-				setFilter(text);
+				biomeList.setFilter(text);
 			}
 		}
 		else
@@ -206,41 +211,10 @@ public class GuiSelectBiome extends GuiScreen
 			{
 				filterTextField.setFocused(true);
 			}
-		}
-	}
-
-	private void setFilter(String filter)
-	{
-		biomeList.contents.clear();
-
-		if (Strings.isNullOrEmpty(filter))
-		{
-			biomeList.contents.addAll(biomeList.base);
-
-			return;
-		}
-
-		if (filterCache.containsKey(filter))
-		{
-			biomeList.contents.addAll(filterCache.get(filter));
-		}
-		else for (BiomeGenBase biome : biomeList.base)
-		{
-			try
+			else if (isCtrlKeyDown() && code == Keyboard.KEY_A)
 			{
-				if (biome.biomeID == NumberUtils.toInt(filter, -1) ||
-					biome.biomeName.toLowerCase().contains(filter.toLowerCase()) ||
-					BiomeDictionary.isBiomeOfType(biome, Type.valueOf(filter.toUpperCase())))
-				{
-					biomeList.contents.add(biome);
-				}
+				biomeList.selected.addAll(biomeList.contents);
 			}
-			catch (Exception e) {}
-		}
-
-		if (!biomeList.contents.isEmpty())
-		{
-			filterCache.put(filter, Lists.newArrayList(biomeList.contents));
 		}
 	}
 
@@ -257,11 +231,12 @@ public class GuiSelectBiome extends GuiScreen
 		private final GuiSelectBiome parentScreen;
 
 		private final List<BiomeGenBase>
-		base = Lists.newArrayList(),
-		contents = Lists.newArrayList();
+		biomes = Lists.newArrayList(),
+		contents = Collections.synchronizedList(new ArrayList<BiomeGenBase>());
 
-		private boolean advanced;
 		private final Set<BiomeGenBase> selected = Sets.newHashSet();
+
+		private boolean showBiomeId;
 
 		public BiomeList(GuiSelectBiome parent)
 		{
@@ -270,20 +245,15 @@ public class GuiSelectBiome extends GuiScreen
 
 			for (BiomeGenBase biome : BiomeGenBase.getBiomeGenArray())
 			{
-				if (biome != null && !base.contains(biome))
+				if (biome != null && !biomes.contains(biome))
 				{
-					base.add(biome);
+					biomes.add(biome);
 				}
 			}
 
-			contents.addAll(base);
-
 			for (Object obj : parent.parentElement.getCurrentValues())
 			{
-				if (obj instanceof Integer)
-				{
-					selected.add(BiomeGenBase.getBiome((Integer)obj));
-				}
+				selected.add(BiomeGenBase.getBiome(Integer.parseInt(String.valueOf(obj))));
 			}
 		}
 
@@ -302,23 +272,16 @@ public class GuiSelectBiome extends GuiScreen
 		@Override
 		protected void drawSlot(int id, int par2, int par3, int par4, Tessellator tessellator, int mouseX, int mouseY)
 		{
-			BiomeGenBase biome = contents.get(id);
-			String name;
-
-			try
+			if (contents.size() > id)
 			{
-				name = biome.biomeName;
-			}
-			catch (Exception e)
-			{
-				name = null;
-			}
+				BiomeGenBase biome = contents.get(id);
 
-			parentScreen.drawCenteredString(mc.fontRenderer, name, width / 2, par3 + 1, 0xFFFFFF);
+				parentScreen.drawCenteredString(mc.fontRenderer, biome.biomeName, width / 2, par3 + 1, 0xFFFFFF);
 
-			if (advanced)
-			{
-				parentScreen.drawString(mc.fontRenderer, Integer.toString(biome.biomeID), width / 2 - 100, par3 + 1, 0xE0E0E0);
+				if (showBiomeId)
+				{
+					parentScreen.drawString(mc.fontRenderer, Integer.toString(biome.biomeID), width / 2 - 100, par3 + 1, 0xE0E0E0);
+				}
 			}
 		}
 
@@ -335,6 +298,77 @@ public class GuiSelectBiome extends GuiScreen
 		protected boolean isSelected(int id)
 		{
 			return selected.contains(contents.get(id));
+		}
+
+		protected void setFilter(final String filter)
+		{
+			ListeningExecutorService pool = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor());
+
+			Futures.addCallback(pool.submit(
+				new Callable<List<BiomeGenBase>>()
+				{
+					@Override
+					public List<BiomeGenBase> call() throws Exception
+					{
+						if (Strings.isNullOrEmpty(filter))
+						{
+							return biomes;
+						}
+
+						if (!filterCache.containsKey(filter))
+						{
+							filterCache.put(filter, Lists.newArrayList(Collections2.filter(biomes, new BiomeFilter(filter))));
+						}
+
+						return filterCache.get(filter);
+					}
+				}),
+				new FutureCallback<List<BiomeGenBase>>()
+				{
+					@Override
+					public void onSuccess(List<BiomeGenBase> result)
+					{
+						contents.clear();
+						contents.addAll(result);
+					}
+
+					@Override
+					public void onFailure(Throwable throwable)
+					{
+						CaveLog.log(Level.WARN, throwable, "Failed to trying biomes filtering");
+
+						contents.clear();
+					}
+				});
+
+			pool.shutdown();
+		}
+	}
+
+	private class BiomeFilter implements Predicate<BiomeGenBase>
+	{
+		private final String filter;
+
+		private BiomeFilter(String filter)
+		{
+			this.filter = filter;
+		}
+
+		@Override
+		public boolean apply(BiomeGenBase biome)
+		{
+			try
+			{
+				if (biome.biomeID == NumberUtils.toInt(filter, -1) ||
+					biome.biomeName.toLowerCase().contains(filter.toLowerCase()) ||
+					BiomeDictionary.isBiomeOfType(biome, Type.valueOf(filter.toUpperCase())))
+				{
+					return true;
+				}
+			}
+			catch (Exception e) {}
+
+			return false;
 		}
 	}
 }

@@ -144,7 +144,7 @@ public class CommandCaveworld implements ICommand
 
 			if (player.mcServer.isSinglePlayer() && player.getServerForPlayer().getWorldInfo().areCommandsAllowed())
 			{
-				int value = Integer.valueOf(args[1]);
+				int value = Integer.parseInt(args[1]);
 
 				if (value != 0)
 				{

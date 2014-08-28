@@ -177,13 +177,13 @@ public class ShopEntry extends CaveCategoryEntry
 						item = element.get().toString();
 						break;
 					case "itemDamage":
-						damage = Integer.valueOf(element.get().toString());
+						damage = Integer.parseInt(element.get().toString());
 						break;
 					case "stackSize":
-						stack = Integer.valueOf(element.get().toString());
+						stack = Integer.parseInt(element.get().toString());
 						break;
 					case "productCost":
-						cost = Integer.valueOf(element.get().toString());
+						cost = Integer.parseInt(element.get().toString());
 						break;
 				}
 			}

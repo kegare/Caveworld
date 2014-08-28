@@ -30,6 +30,7 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.CaveworldAPI;
+import com.kegare.caveworld.core.CaveVeinManager;
 import com.kegare.caveworld.core.CaveVeinManager.CaveVein;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
@@ -119,16 +120,16 @@ public class VeinsEntry extends CaveCategoryEntry
 		{
 			List<IConfigElement> list = Lists.newArrayList();
 
-			list.add(new ConfigElement<String>(new Property("veinName", "", Property.Type.STRING, Caveworld.CONFIG_LANG + "veins.veinName").setConfigEntryClass(VeinConfigEntry.class)));
-			list.add(new ConfigElement<String>(new Property("block", Block.blockRegistry.getNameForObject(Blocks.stone), Property.Type.STRING, Caveworld.CONFIG_LANG + "veins.block").setConfigEntryClass(SelectBlockEntry.class)));
+			list.add(new ConfigElement<String>(new Property("veinName", "", Property.Type.STRING, Caveworld.CONFIG_LANG + "veins.veinName").setConfigEntryClass(CaveVeinManager.veinEntryClass)));
+			list.add(new ConfigElement<String>(new Property("block", Block.blockRegistry.getNameForObject(Blocks.stone), Property.Type.STRING, Caveworld.CONFIG_LANG + "veins.block").setConfigEntryClass(Config.selectBlockEntryClass)));
 			list.add(new ConfigElement<Integer>(new Property("blockMetadata", "0", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.blockMetadata").setMinValue(0).setMaxValue(15)));
 			list.add(new ConfigElement<Integer>(new Property("genBlockCount", "1", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genBlockCount").setMinValue(1).setMaxValue(100)));
 			list.add(new ConfigElement<Integer>(new Property("genWeight", "1", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genWeight").setMinValue(0).setMaxValue(100)));
 			list.add(new ConfigElement<Integer>(new Property("genMinHeight", "0", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genMinHeight").setMinValue(0).setMaxValue(254)));
 			list.add(new ConfigElement<Integer>(new Property("genMaxHeight", "255", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genMaxHeight").setMinValue(1).setMaxValue(255)));
-			list.add(new ConfigElement<String>(new Property("genTargetBlock", Block.blockRegistry.getNameForObject(Blocks.stone), Property.Type.STRING, Caveworld.CONFIG_LANG + "veins.genTargetBlock").setConfigEntryClass(SelectBlockEntry.class)));
+			list.add(new ConfigElement<String>(new Property("genTargetBlock", Block.blockRegistry.getNameForObject(Blocks.stone), Property.Type.STRING, Caveworld.CONFIG_LANG + "veins.genTargetBlock").setConfigEntryClass(Config.selectBlockEntryClass)));
 			list.add(new ConfigElement<Integer>(new Property("genTargetBlockMetadata", "0", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genTargetBlockMetadata").setMinValue(0).setMaxValue(15)));
-			list.add(new ConfigElement<Integer>(new Property("genBiomes", new String[0], Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genBiomes").setConfigEntryClass(SelectBiomeEntry.class)));
+			list.add(new ConfigElement<Integer>(new Property("genBiomes", new String[0], Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genBiomes").setConfigEntryClass(Config.selectBiomeEntryClass)));
 
 			return list;
 		}
@@ -200,25 +201,25 @@ public class VeinsEntry extends CaveCategoryEntry
 						block = element.get().toString();
 						break;
 					case "blockMetadata":
-						blockMetadata = Integer.valueOf(element.get().toString());
+						blockMetadata = Integer.parseInt(element.get().toString());
 						break;
 					case "genBlockCount":
-						count = Integer.valueOf(element.get().toString());
+						count = Integer.parseInt(element.get().toString());
 						break;
 					case "genWeight":
-						weight = Integer.valueOf(element.get().toString());
+						weight = Integer.parseInt(element.get().toString());
 						break;
 					case "genMinHeight":
-						min = Integer.valueOf(element.get().toString());
+						min = Integer.parseInt(element.get().toString());
 						break;
 					case "genMaxHeight":
-						max = Integer.valueOf(element.get().toString());
+						max = Integer.parseInt(element.get().toString());
 						break;
 					case "genTargetBlock":
 						target = element.get().toString();
 						break;
 					case "genTargetBlockMetadata":
-						targetMetadata = Integer.valueOf(element.get().toString());
+						targetMetadata = Integer.parseInt(element.get().toString());
 						break;
 					case "genBiomes":
 						Object[] temp = element.getList();
@@ -226,7 +227,7 @@ public class VeinsEntry extends CaveCategoryEntry
 
 						for (int i = 0; i < temp.length; ++i)
 						{
-							ids[i] = Integer.valueOf(temp[i].toString());
+							ids[i] = Integer.parseInt(temp[i].toString());
 						}
 
 						biomes = ids;

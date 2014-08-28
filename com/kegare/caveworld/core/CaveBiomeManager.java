@@ -149,7 +149,7 @@ public class CaveBiomeManager implements ICaveBiomeManager, Function<CaveBiomeMa
 	{
 		try
 		{
-			return terrainBlockCache.get(Integer.valueOf(biome.biomeID));
+			return terrainBlockCache.get(biome.biomeID);
 		}
 		catch (ExecutionException e)
 		{

@@ -63,21 +63,21 @@ public class PortalShop
 		prop = MCEconomyPlugin.shopCfg.get(name, "itemDamage", 0).setConfigEntryClass(MCEconomyPlugin.productEntryClass);
 		prop.setMinValue(0).setMaxValue(Short.MAX_VALUE).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-		if (damage >= 0) prop.set(MathHelper.clamp_int(damage, Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue())));
+		if (damage >= 0) prop.set(MathHelper.clamp_int(damage, Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue())));
 		propOrder.add(prop.getName());
-		damage = MathHelper.clamp_int(prop.getInt(), Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue()));
+		damage = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 		prop = MCEconomyPlugin.shopCfg.get(name, "stackSize", 1);
 		prop.setMinValue(0).setMaxValue(64).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-		if (stack >= 0) prop.set(MathHelper.clamp_int(stack, Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue())));
+		if (stack >= 0) prop.set(MathHelper.clamp_int(stack, Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue())));
 		propOrder.add(prop.getName());
-		stack = MathHelper.clamp_int(prop.getInt(), Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue()));
+		stack = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 		prop = MCEconomyPlugin.shopCfg.get(name, "productCost", 10);
 		prop.setMinValue(0).setMaxValue(MCEconomyPlugin.Player_MP_MAX).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-		if (cost >= 0) prop.set(MathHelper.clamp_int(cost, Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue())));
+		if (cost >= 0) prop.set(MathHelper.clamp_int(cost, Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue())));
 		propOrder.add(prop.getName());
-		cost = MathHelper.clamp_int(prop.getInt(), Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue()));
+		cost = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 
 		MCEconomyPlugin.shopCfg.setCategoryPropertyOrder(name, propOrder);
 

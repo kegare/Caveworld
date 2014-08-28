@@ -46,6 +46,7 @@ import net.minecraftforge.event.terraingen.PopulateChunkEvent;
 import net.minecraftforge.event.terraingen.PopulateChunkEvent.Populate.EventType;
 import net.minecraftforge.event.terraingen.TerrainGen;
 
+import com.google.common.primitives.Ints;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.api.ICaveVein;
@@ -373,66 +374,45 @@ public class ChunkProviderCaveworld implements IChunkProvider
 					double var8 = var2 + (var3 - var2) * j / count;
 					double var9 = var6 + (var7 - var6) * j / count;
 					double var10 = var4 + (var5 - var4) * j / count;
-					double var11 = random.nextDouble() * count / 16.0D;
-					double var12 = (MathHelper.sin(j * (float)Math.PI / count) + 1.0F) * var11 + 1.0D;
-					double var13 = (MathHelper.sin(j * (float)Math.PI / count) + 1.0F) * var11 + 1.0D;
-					int minX = MathHelper.floor_double(var8 - var12 / 2.0D);
-					int maxX = MathHelper.floor_double(var8 + var12 / 2.0D);
-					int minY = MathHelper.floor_double(var9 - var13 / 2.0D);
-					int maxY = MathHelper.floor_double(var9 + var13 / 2.0D);
-					int minZ = MathHelper.floor_double(var10 - var12 / 2.0D);
-					int maxZ = MathHelper.floor_double(var10 + var12 / 2.0D);
+					var2 = random.nextDouble() * count / 16.0D;
+					var3 = (MathHelper.sin(j * (float)Math.PI / count) + 1.0F) * var2 + 1.0D;
+					var4 = (MathHelper.sin(j * (float)Math.PI / count) + 1.0F) * var2 + 1.0D;
+					int minX = MathHelper.floor_double(var8 - var3 / 2.0D);
+					int maxX = MathHelper.floor_double(var8 + var3 / 2.0D);
+					int minY = MathHelper.floor_double(var9 - var4 / 2.0D);
+					int maxY = MathHelper.floor_double(var9 + var4 / 2.0D);
+					int minZ = MathHelper.floor_double(var10 - var3 / 2.0D);
+					int maxZ = MathHelper.floor_double(var10 + var3 / 2.0D);
 
-					for (int blockX = minX; blockX <= maxX; ++blockX)
+					for (x = minX; x <= maxX; ++x)
 					{
-						double xScale = (blockX + 0.5D - var8) / (var12 / 2.0D);
+						double xScale = (x + 0.5D - var8) / (var3 / 2.0D);
 
 						if (xScale * xScale < 1.0D)
 						{
-							for (int blockY = minY; blockY <= maxY; ++blockY)
+							for (y = minY; y <= maxY; ++y)
 							{
-								double yScale = (blockY + 0.5D - var9) / (var13 / 2.0D);
+								double yScale = (y + 0.5D - var9) / (var4 / 2.0D);
 
 								if (xScale * xScale + yScale * yScale < 1.0D)
 								{
-									for (int blockZ = minZ; blockZ <= maxZ; ++blockZ)
+									for (z = minZ; z <= maxZ; ++z)
 									{
-										double zScale = (blockZ + 0.5D - var10) / (var12 / 2.0D);
+										double zScale = (z + 0.5D - var10) / (var3 / 2.0D);
 
 										if (xScale * xScale + yScale * yScale + zScale * zScale < 1.0D)
 										{
-											if (target == null && !worldObj.getBlock(blockX, blockY, blockZ).isReplaceableOreGen(worldObj, blockX, blockY, blockZ, Blocks.stone))
+											if (target == null && !worldObj.getBlock(x, y, z).isReplaceableOreGen(worldObj, x, y, z, Blocks.stone))
 											{
 												continue;
 											}
-											else if (!worldObj.getBlock(blockX, blockY, blockZ).isReplaceableOreGen(worldObj, blockX, blockY, blockZ, target.getBlock()) || worldObj.getBlockMetadata(blockX, blockY, blockZ) != target.getMetadata())
+											else if (!worldObj.getBlock(x, y, z).isReplaceableOreGen(worldObj, x, y, z, target.getBlock()) || worldObj.getBlockMetadata(x, y, z) != target.getMetadata())
 											{
 												continue;
 											}
-
-											BiomeGenBase biome = worldObj.getBiomeGenForCoords(blockX, blockZ);
-											boolean flag = false;
-
-											if (biomes.length <= 0)
+											else if (biomes == null || biomes.length <= 0 || Ints.asList(biomes).contains(worldObj.getBiomeGenForCoords(x, z).biomeID))
 											{
-												flag = true;
-											}
-											else
-											{
-												for (int id : biomes)
-												{
-													if (id == biome.biomeID)
-													{
-														flag = true;
-
-														break;
-													}
-												}
-											}
-
-											if (flag)
-											{
-												worldObj.setBlock(blockX, blockY, blockZ, block.getBlock(), block.getMetadata(), 2);
+												worldObj.setBlock(x, y, z, block.getBlock(), block.getMetadata(), 2);
 											}
 										}
 									}

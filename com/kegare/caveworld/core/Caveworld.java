@@ -20,6 +20,7 @@ import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.handler.CaveAPIHandler;
 import com.kegare.caveworld.handler.CaveEventHooks;
 import com.kegare.caveworld.handler.CaveFuelHandler;
+import com.kegare.caveworld.network.BuffMessage;
 import com.kegare.caveworld.network.CaveSoundMessage;
 import com.kegare.caveworld.network.DimSyncMessage;
 import com.kegare.caveworld.network.MiningSyncMessage;
@@ -97,6 +98,7 @@ public class Caveworld
 		network.registerMessage(DimSyncMessage.class, DimSyncMessage.class, id++, Side.CLIENT);
 		network.registerMessage(MiningSyncMessage.class, MiningSyncMessage.class, id++, Side.CLIENT);
 		network.registerMessage(CaveSoundMessage.class, CaveSoundMessage.class, id++, Side.CLIENT);
+		network.registerMessage(BuffMessage.class, BuffMessage.class, id++, Side.SERVER);
 
 		proxy.registerRenderers();
 		proxy.registerRecipes();

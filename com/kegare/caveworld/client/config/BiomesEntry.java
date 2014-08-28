@@ -84,7 +84,7 @@ public class BiomesEntry extends CaveCategoryEntry
 		@Override
 		public String getName()
 		{
-			return BiomeGenBase.getBiome(Integer.valueOf(super.getName())).biomeName;
+			return BiomeGenBase.getBiome(Integer.parseInt(super.getName())).biomeName;
 		}
 
 		@Override

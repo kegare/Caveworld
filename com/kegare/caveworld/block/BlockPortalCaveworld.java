@@ -228,7 +228,7 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 				{
 					EntityPlayerMP player = (EntityPlayerMP)entity;
 
-					if (!player.isSneaking() && !player.isPotionActive(Potion.confusion))
+					if (!player.isSneaking() && !player.isPotionActive(Potion.blindness))
 					{
 						worldOld.playSoundToNearExcept(player, "caveworld:caveworld_portal", 0.5F, 1.0F);
 

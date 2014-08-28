@@ -270,7 +270,7 @@ public class Config
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
-		subsurfaceHeight = MathHelper.clamp_int(prop.getInt(subsurfaceHeight), Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue()));
+		subsurfaceHeight = MathHelper.clamp_int(prop.getInt(subsurfaceHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 		prop = dimensionCfg.get(category, "generateCaves", true);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -394,7 +394,7 @@ public class Config
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 			prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 			propOrder.add(prop.getName());
-			weight = MathHelper.clamp_int(prop.getInt(), Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue()));
+			weight = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 			prop = biomesCfg.get(name, "terrainBlock", block);
 			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(selectBlockEntryClass);
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -406,7 +406,7 @@ public class Config
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 			prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 			propOrder.add(prop.getName());
-			metadata = MathHelper.clamp_int(prop.getInt(), Integer.valueOf(prop.getMinValue()), Integer.valueOf(prop.getMaxValue()));
+			metadata = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 
 			if (BiomeDictionary.isBiomeRegistered(biome))
 			{

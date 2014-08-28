@@ -10,10 +10,13 @@
 
 package com.kegare.caveworld.client.config;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiButton;
@@ -24,16 +27,25 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
+import org.apache.logging.log4j.Level;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
+import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.kegare.caveworld.core.Caveworld;
+import com.kegare.caveworld.util.CaveLog;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
@@ -78,6 +90,7 @@ public class GuiSelectBlock extends GuiScreen
 
 		blockList = new BlockList(this);
 		blockList.registerScrollButtons(2, 3);
+		blockList.setFilter(null);
 
 		instantHoverChecker = new HoverChecker(instantFilter, 800);
 	}
@@ -156,11 +169,11 @@ public class GuiSelectBlock extends GuiScreen
 
 			if (Strings.isNullOrEmpty(text) && changed)
 			{
-				setFilter("");
+				blockList.setFilter(null);
 			}
 			else if (instantFilter.isChecked() && changed || code == Keyboard.KEY_RETURN)
 			{
-				setFilter(text);
+				blockList.setFilter(text);
 			}
 		}
 		else
@@ -195,37 +208,6 @@ public class GuiSelectBlock extends GuiScreen
 		}
 	}
 
-	private void setFilter(String filter)
-	{
-		blockList.contents.clear();
-
-		if (Strings.isNullOrEmpty(filter))
-		{
-			blockList.contents.addAll(blockList.base);
-
-			return;
-		}
-
-		if (filterCache.containsKey(filter))
-		{
-			blockList.contents.addAll(filterCache.get(filter));
-		}
-		else for (Block block : blockList.base)
-		{
-			if (GameData.getBlockRegistry().getNameForObject(block).toLowerCase().contains(filter.toLowerCase()) ||
-				block.getUnlocalizedName().toLowerCase().contains(filter.toLowerCase()) ||
-				block.getLocalizedName().toLowerCase().contains(filter.toLowerCase()))
-			{
-				blockList.contents.add(block);
-			}
-		}
-
-		if (!blockList.contents.isEmpty())
-		{
-			filterCache.put(filter, Lists.newArrayList(blockList.contents));
-		}
-	}
-
 	@Override
 	public void onGuiClosed()
 	{
@@ -234,42 +216,30 @@ public class GuiSelectBlock extends GuiScreen
 		CaveConfigGui.instantFilter = instantFilter.isChecked();
 	}
 
-	private class BlockList extends GuiSlot
+	private class BlockList extends GuiSlot implements Comparator<Block>
 	{
 		private final GuiSelectBlock parentScreen;
 
 		private final List<Block>
-		base = Lists.newArrayList(),
-		contents = Lists.newArrayList();
+		blocks = Lists.newArrayList(),
+		contents = Collections.synchronizedList(new ArrayList<Block>());
+
+		private Block selected = null;
 
 		private int nameType;
-		private Block selected = null;
 
 		public BlockList(GuiSelectBlock parent)
 		{
 			super(parent.mc, parent.width, parent.height, 32, parent.height - 28, 18);
 			this.parentScreen = parent;
+			this.selected = Block.getBlockFromName(parent.parentTextField.getText());
 
 			for (Object obj : GameData.getBlockRegistry())
 			{
-				base.add((Block)obj);
+				blocks.add((Block)obj);
 			}
 
-			Collections.sort(base, new Comparator<Block>()
-			{
-				@Override
-				public int compare(Block o1, Block o2)
-				{
-					String block1 = GameData.getBlockRegistry().getNameForObject(o1);
-					String block2 = GameData.getBlockRegistry().getNameForObject(o2);
-
-					return block1.substring(0, block1.indexOf(":")).compareTo(block2.substring(0, block2.indexOf(":")));
-				}
-			});
-
-			contents.addAll(base);
-
-			selected = Block.getBlockFromName(parent.parentTextField.getText());
+			Collections.sort(blocks, this);
 		}
 
 		@Override
@@ -287,38 +257,37 @@ public class GuiSelectBlock extends GuiScreen
 		@Override
 		protected void drawSlot(int id, int par2, int par3, int par4, Tessellator tessellator, int mouseX, int mouseY)
 		{
-			Block block = contents.get(id);
-
-			try
+			if (id >= 0 && id < contents.size())
 			{
-				GL11.glEnable(GL12.GL_RESCALE_NORMAL);
-				RenderHelper.enableGUIStandardItemLighting();
-				RenderItem.getInstance().renderItemIntoGUI(mc.fontRenderer, mc.getTextureManager(), new ItemStack(block), width / 2 - 100, par3 - 1);
-			}
-			catch (Exception e) {}
-			finally
-			{
-				RenderHelper.disableStandardItemLighting();
-				GL11.glDisable(GL12.GL_RESCALE_NORMAL);
-			}
+				Block block = contents.get(id);
 
-			String name = null;
+				if (Item.getItemFromBlock(block) != null)
+				{
+					GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+					RenderHelper.enableGUIStandardItemLighting();
+					RenderItem.getInstance().renderItemIntoGUI(mc.fontRenderer, mc.getTextureManager(), new ItemStack(block), width / 2 - 100, par3 - 1);
+					RenderHelper.disableStandardItemLighting();
+					GL11.glDisable(GL12.GL_RESCALE_NORMAL);
+				}
 
-			switch (nameType)
-			{
-				case 1:
-					name = GameData.getBlockRegistry().getNameForObject(block);
-					break;
-				case 2:
-					name = block.getUnlocalizedName();
-					name = name.substring(name.indexOf(".") + 1);
-					break;
-				default:
-					name = block.getLocalizedName();
-					break;
+				String name = null;
+
+				switch (nameType)
+				{
+					case 1:
+						name = GameData.getBlockRegistry().getNameForObject(block);
+						break;
+					case 2:
+						name = block.getUnlocalizedName();
+						name = name.substring(name.indexOf(".") + 1);
+						break;
+					default:
+						name = block.getLocalizedName();
+						break;
+				}
+
+				parentScreen.drawCenteredString(mc.fontRenderer, name, width / 2, par3 + 1, 0xFFFFFF);
 			}
-
-			parentScreen.drawCenteredString(mc.fontRenderer, name, width / 2, par3 + 1, 0xFFFFFF);
 		}
 
 		@Override
@@ -330,7 +299,88 @@ public class GuiSelectBlock extends GuiScreen
 		@Override
 		protected boolean isSelected(int id)
 		{
-			return selected != null && selected == contents.get(id);
+			if (id >= 0 && id < contents.size())
+			{
+				return selected != null && selected == contents.get(id);
+			}
+
+			return false;
+		}
+
+		@Override
+		public int compare(Block o1, Block o2)
+		{
+			String block1 = GameData.getBlockRegistry().getNameForObject(o1);
+			String block2 = GameData.getBlockRegistry().getNameForObject(o2);
+
+			return block1.substring(0, block1.indexOf(":")).compareTo(block2.substring(0, block2.indexOf(":")));
+		}
+
+		protected void setFilter(final String filter)
+		{
+			ListeningExecutorService pool = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor());
+
+			Futures.addCallback(pool.submit(
+				new Callable<List<Block>>()
+				{
+					@Override
+					public List<Block> call() throws Exception
+					{
+						if (Strings.isNullOrEmpty(filter))
+						{
+							return blocks;
+						}
+
+						if (!filterCache.containsKey(filter))
+						{
+							filterCache.put(filter, Lists.newArrayList(Collections2.filter(blocks, new BlockFilter(filter))));
+						}
+
+						return filterCache.get(filter);
+					}
+				}),
+				new FutureCallback<List<Block>>()
+				{
+					@Override
+					public void onSuccess(List<Block> result)
+					{
+						contents.clear();
+						contents.addAll(result);
+					}
+
+					@Override
+					public void onFailure(Throwable throwable)
+					{
+						CaveLog.log(Level.WARN, throwable, "Failed to trying blocks filtering");
+
+						contents.clear();
+					}
+				});
+
+			pool.shutdown();
+		}
+	}
+
+	private class BlockFilter implements Predicate<Block>
+	{
+		private final String filter;
+
+		private BlockFilter(String filter)
+		{
+			this.filter = filter;
+		}
+
+		@Override
+		public boolean apply(Block block)
+		{
+			if (GameData.getBlockRegistry().getNameForObject(block).toLowerCase().contains(filter.toLowerCase()) ||
+				block.getUnlocalizedName().toLowerCase().contains(filter.toLowerCase()) ||
+				block.getLocalizedName().toLowerCase().contains(filter.toLowerCase()))
+			{
+				return true;
+			}
+
+			return false;
 		}
 	}
 }

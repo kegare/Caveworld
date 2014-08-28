@@ -22,6 +22,7 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.ResourceLocation;
@@ -62,6 +63,8 @@ public final class WorldProviderCaveworld extends WorldProviderSurface
 
 	private static long dimensionSeed;
 	private static int subsurfaceHeight;
+
+	public static ChunkCoordinates recentTeleportPos;
 
 	public static NBTTagCompound getDimData()
 	{
@@ -135,7 +138,20 @@ public final class WorldProviderCaveworld extends WorldProviderSurface
 
 		try (FileOutputStream output = new FileOutputStream(new File(dir, "caveworld.dat")))
 		{
-			CompressedStreamTools.writeCompressed(getDimData(), output);
+			NBTTagCompound data = getDimData();
+
+			if (recentTeleportPos != null)
+			{
+				NBTTagCompound dat = new NBTTagCompound();
+
+				dat.setInteger("PosX", recentTeleportPos.posX);
+				dat.setInteger("PosY", recentTeleportPos.posY);
+				dat.setInteger("PosZ", recentTeleportPos.posZ);
+
+				data.setTag("TeleportPos", dat);
+			}
+
+			CompressedStreamTools.writeCompressed(data, output);
 		}
 		catch (Exception e)
 		{
@@ -157,6 +173,17 @@ public final class WorldProviderCaveworld extends WorldProviderSurface
 
 		dimensionSeed = data.getLong("Seed");
 		subsurfaceHeight = data.getInteger("SubsurfaceHeight");
+
+		NBTTagCompound dat = data.getCompoundTag("TeleportPos");
+
+		if (dat != null)
+		{
+			int posX = dat.getInteger("PosX");
+			int posY = dat.getInteger("PosY");
+			int posZ = dat.getInteger("PosZ");
+
+			recentTeleportPos = new ChunkCoordinates(posX, posY, posZ);
+		}
 	}
 
 	public static void saveDimData()
@@ -389,6 +416,12 @@ public final class WorldProviderCaveworld extends WorldProviderSurface
 	public boolean shouldMapSpin(String entity, double posX, double posY, double posZ)
 	{
 		return posY < 0 || posY >= getActualHeight();
+	}
+
+	@Override
+	public ChunkCoordinates getSpawnPoint()
+	{
+		return recentTeleportPos == null ? new ChunkCoordinates(0, getAverageGroundLevel(), 0) : recentTeleportPos;
 	}
 
 	@Override

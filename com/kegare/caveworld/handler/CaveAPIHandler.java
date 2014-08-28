@@ -15,7 +15,6 @@ import net.minecraft.entity.Entity;
 import com.kegare.caveworld.api.ICaveAPIHandler;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.util.Version;
-import com.kegare.caveworld.world.WorldProviderCaveworld;
 
 public class CaveAPIHandler implements ICaveAPIHandler
 {
@@ -34,6 +33,6 @@ public class CaveAPIHandler implements ICaveAPIHandler
 	@Override
 	public boolean isEntityInCaveworld(Entity entity)
 	{
-		return entity == null ? false : entity.worldObj.provider instanceof WorldProviderCaveworld;
+		return entity == null ? false : entity.dimension == getDimension();
 	}
 }

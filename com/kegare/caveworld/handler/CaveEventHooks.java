@@ -38,15 +38,16 @@ import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.ChunkCoordinates;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.EntityEvent.EntityConstructing;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -64,6 +65,7 @@ import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.core.CaveAchievementList;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.network.BuffMessage;
 import com.kegare.caveworld.network.CaveSoundMessage;
 import com.kegare.caveworld.network.DimSyncMessage;
 import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
@@ -76,7 +78,6 @@ import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
-import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ServerConnectionFromClientEvent;
 import cpw.mods.fml.relauncher.Side;
@@ -160,25 +161,7 @@ public class CaveEventHooks
 	@SubscribeEvent
 	public void onServerConnected(ServerConnectionFromClientEvent event)
 	{
-		event.manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new DimSyncMessage(WorldProviderCaveworld.getDimData())));
-	}
-
-	@SubscribeEvent
-	public void onPlayerRespawn(PlayerRespawnEvent event)
-	{
-		if (event.player instanceof EntityPlayerMP)
-		{
-			EntityPlayerMP player = (EntityPlayerMP)event.player;
-			int dim = player.dimension;
-
-			if (CaveworldAPI.isEntityInCaveworld(player))
-			{
-				if (player.getBedLocation(dim) == null || player.posY >= player.worldObj.getActualHeight())
-				{
-					CaveUtils.respawnPlayer(player, player.getEntityData().getInteger("Caveworld:LastDim"));
-				}
-			}
-		}
+		event.manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new DimSyncMessage(CaveworldAPI.getDimension(), WorldProviderCaveworld.getDimData())));
 	}
 
 	@SubscribeEvent
@@ -410,22 +393,27 @@ public class CaveEventHooks
 
 		if (entity instanceof EntityPlayerMP)
 		{
-			CaveworldAPI.loadMiningData((EntityPlayerMP)entity, null);
-		}
+			EntityPlayerMP player = (EntityPlayerMP)entity;
 
-		if (CaveworldAPI.isEntityInCaveworld(entity))
+			CaveworldAPI.loadMiningData(player, null);
+
+			if (player.posY >= world.provider.getActualHeight() - 1)
+			{
+				CaveUtils.respawnPlayer(player, 0);
+
+				player.attackEntityFrom(DamageSource.outOfWorld, 999.0F);
+			}
+		}
+		else if (entity instanceof EntityLiving && CaveworldAPI.isEntityInCaveworld(entity))
 		{
+			if (entity.posY >= world.provider.getActualHeight() - 1)
+			{
+				event.setCanceled(true);
+			}
+
 			if (entity instanceof EntityBat)
 			{
 				entity.getEntityData().setBoolean("Caveworld:CaveBat", true);
-			}
-
-			if (entity instanceof EntityLiving)
-			{
-				if (entity.posY >= world.provider.getActualHeight() - 1)
-				{
-					event.setCanceled(true);
-				}
 			}
 		}
 	}
@@ -515,11 +503,17 @@ public class CaveEventHooks
 		}
 	}
 
+	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
-	public void onServerChat(ServerChatEvent event)
+	public void onClientChat(ClientChatReceivedEvent event)
 	{
-		EntityPlayerMP player = event.player;
-		String message = event.message.trim();
+		String message = event.message.getUnformattedTextForChat();
+		EntityPlayer player = FMLClientHandler.instance().getClientPlayerEntity();
+
+		if (player != null && message.startsWith(String.format("<%s> ", player.getCommandSenderName())))
+		{
+			message = message.substring(message.indexOf(" ") + 1);
+		}
 
 		if (message.matches("@buff|@buff ([0-9]*$|max)") && CaveworldAPI.isEntityInCaveworld(player))
 		{
@@ -527,7 +521,7 @@ public class CaveEventHooks
 
 			if (message.matches("@buff [0-9]*$"))
 			{
-				point = MathHelper.clamp_int(Integer.valueOf(message.substring(6)), 0, point);
+				point = MathHelper.clamp_int(Integer.parseInt(message.substring(6)), 0, point);
 			}
 			else if (!message.endsWith("max") && point > 30)
 			{
@@ -544,9 +538,7 @@ public class CaveEventHooks
 					potion = Potion.potionTypes[random.nextInt(Potion.potionTypes.length)];
 				}
 
-				CaveworldAPI.addMiningPoint(player, -point);
-
-				player.addPotionEffect(new PotionEffect(potion.id, point * 20));
+				Caveworld.network.sendToServer(new BuffMessage(new PotionEffect(potion.id, point * 20)));
 			}
 
 			event.setCanceled(true);

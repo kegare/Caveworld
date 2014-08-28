@@ -10,10 +10,13 @@
 
 package com.kegare.caveworld.client.config;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
 
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -26,14 +29,22 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
+import org.apache.logging.log4j.Level;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
+import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.kegare.caveworld.core.Caveworld;
+import com.kegare.caveworld.util.CaveLog;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
@@ -78,6 +89,7 @@ public class GuiSelectItem extends GuiScreen
 
 		itemList = new ItemList(this);
 		itemList.registerScrollButtons(2, 3);
+		itemList.setFilter("");
 
 		instantHoverChecker = new HoverChecker(instantFilter, 800);
 	}
@@ -156,11 +168,11 @@ public class GuiSelectItem extends GuiScreen
 
 			if (Strings.isNullOrEmpty(text) && changed)
 			{
-				setFilter("");
+				itemList.setFilter("");
 			}
 			else if (instantFilter.isChecked() && changed || code == Keyboard.KEY_RETURN)
 			{
-				setFilter(text);
+				itemList.setFilter(text);
 			}
 		}
 		else
@@ -195,38 +207,6 @@ public class GuiSelectItem extends GuiScreen
 		}
 	}
 
-	private void setFilter(String filter)
-	{
-		itemList.contents.clear();
-
-		if (Strings.isNullOrEmpty(filter))
-		{
-			itemList.contents.addAll(itemList.base);
-
-			return;
-		}
-
-		if (filterCache.containsKey(filter))
-		{
-			itemList.contents.addAll(filterCache.get(filter));
-		}
-		else for (Item item : itemList.base)
-		{
-			if (GameData.getItemRegistry().getNameForObject(item).toLowerCase().contains(filter.toLowerCase()) ||
-				item.getUnlocalizedName().toLowerCase().contains(filter.toLowerCase()) ||
-				item.getItemStackDisplayName(new ItemStack(item)).toLowerCase().contains(filter.toLowerCase()) ||
-				item.getToolClasses(new ItemStack(item)).contains(filter))
-			{
-				itemList.contents.add(item);
-			}
-		}
-
-		if (!itemList.contents.isEmpty())
-		{
-			filterCache.put(filter, Lists.newArrayList(itemList.contents));
-		}
-	}
-
 	@Override
 	public void onGuiClosed()
 	{
@@ -235,13 +215,13 @@ public class GuiSelectItem extends GuiScreen
 		CaveConfigGui.instantFilter = instantFilter.isChecked();
 	}
 
-	private class ItemList extends GuiSlot
+	private class ItemList extends GuiSlot implements Comparator<Item>
 	{
 		private final GuiSelectItem parentScreen;
 
 		private final List<Item>
-		base = Lists.newArrayList(),
-		contents = Lists.newArrayList();
+		items = Lists.newArrayList(),
+		contents = Collections.synchronizedList(new ArrayList<Item>());
 
 		private int nameType;
 		private Item selected = null;
@@ -250,27 +230,14 @@ public class GuiSelectItem extends GuiScreen
 		{
 			super(parent.mc, parent.width, parent.height, 32, parent.height - 28, 18);
 			this.parentScreen = parent;
+			this.selected = GameData.getItemRegistry().getObject(parent.parentTextField.getText());
 
 			for (Object obj : GameData.getItemRegistry())
 			{
-				base.add((Item)obj);
+				items.add((Item)obj);
 			}
 
-			Collections.sort(base, new Comparator<Item>()
-			{
-				@Override
-				public int compare(Item o1, Item o2)
-				{
-					String item1 = GameData.getItemRegistry().getNameForObject(o1);
-					String item2 = GameData.getItemRegistry().getNameForObject(o2);
-
-					return item1.substring(0, item1.indexOf(":")).compareTo(item2.substring(0, item2.indexOf(":")));
-				}
-			});
-
-			contents.addAll(base);
-
-			selected = GameData.getItemRegistry().getObject(parent.parentTextField.getText());
+			Collections.sort(items, this);
 		}
 
 		@Override
@@ -288,38 +255,34 @@ public class GuiSelectItem extends GuiScreen
 		@Override
 		protected void drawSlot(int id, int par2, int par3, int par4, Tessellator tessellator, int mouseX, int mouseY)
 		{
-			Item item = contents.get(id);
-
-			try
+			if (id >= 0 && id < contents.size())
 			{
+				Item item = contents.get(id);
+
 				GL11.glEnable(GL12.GL_RESCALE_NORMAL);
 				RenderHelper.enableGUIStandardItemLighting();
-				RenderItem.getInstance().renderItemIntoGUI(mc.fontRenderer, mc.getTextureManager(), new ItemStack(item), width / 2 - 100, par3 - 1);
-			}
-			catch (Exception e) {}
-			finally
-			{
+				RenderItem.getInstance().renderItemIntoGUI(mc.fontRenderer, mc.getTextureManager(), new ItemStack(item), width / 2 - 100, par3 - 1, true);
 				RenderHelper.disableStandardItemLighting();
 				GL11.glDisable(GL12.GL_RESCALE_NORMAL);
+
+				String name = null;
+
+				switch (nameType)
+				{
+					case 1:
+						name = GameData.getItemRegistry().getNameForObject(item);
+						break;
+					case 2:
+						name = item.getUnlocalizedName();
+						name = name.substring(name.indexOf(".") + 1);
+						break;
+					default:
+						name = item.getItemStackDisplayName(new ItemStack(item));
+						break;
+				}
+
+				parentScreen.drawCenteredString(mc.fontRenderer, name, width / 2, par3 + 1, 0xFFFFFF);
 			}
-
-			String name = null;
-
-			switch (nameType)
-			{
-				case 1:
-					name = GameData.getItemRegistry().getNameForObject(item);
-					break;
-				case 2:
-					name = item.getUnlocalizedName();
-					name = name.substring(name.indexOf(".") + 1);
-					break;
-				default:
-					name = item.getItemStackDisplayName(new ItemStack(item));
-					break;
-			}
-
-			parentScreen.drawCenteredString(mc.fontRenderer, name, width / 2, par3 + 1, 0xFFFFFF);
 		}
 
 		@Override
@@ -331,7 +294,87 @@ public class GuiSelectItem extends GuiScreen
 		@Override
 		protected boolean isSelected(int id)
 		{
-			return selected != null && selected == contents.get(id);
+			if (id >= 0 && id < contents.size())
+			{
+				return selected != null && selected == contents.get(id);
+			}
+
+			return false;
+		}
+
+		@Override
+		public int compare(Item o1, Item o2)
+		{
+			String item1 = GameData.getItemRegistry().getNameForObject(o1);
+			String item2 = GameData.getItemRegistry().getNameForObject(o2);
+
+			return item1.substring(0, item1.indexOf(":")).compareTo(item2.substring(0, item2.indexOf(":")));
+		}
+
+		protected void setFilter(final String filter)
+		{
+			ListeningExecutorService pool = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor());
+
+			Futures.addCallback(pool.submit(
+				new Callable<List<Item>>()
+				{
+					@Override
+					public List<Item> call() throws Exception
+					{
+						if (Strings.isNullOrEmpty(filter))
+						{
+							return items;
+						}
+
+						if (!filterCache.containsKey(filter))
+						{
+							filterCache.put(filter, Lists.newArrayList(Collections2.filter(items, new ItemFilter(filter))));
+						}
+
+						return filterCache.get(filter);
+					}
+				}),
+				new FutureCallback<List<Item>>()
+				{
+					@Override
+					public void onSuccess(List<Item> result)
+					{
+						contents.clear();
+						contents.addAll(result);
+					}
+
+					@Override
+					public void onFailure(Throwable throwable)
+					{
+						CaveLog.log(Level.WARN, throwable, "Failed to trying items filtering");
+
+						contents.clear();
+					}
+				});
+		}
+	}
+
+	private class ItemFilter implements Predicate<Item>
+	{
+		private final String filter;
+
+		private ItemFilter(String filter)
+		{
+			this.filter = filter;
+		}
+
+		@Override
+		public boolean apply(Item item)
+		{
+			if (GameData.getItemRegistry().getNameForObject(item).toLowerCase().contains(filter.toLowerCase()) ||
+				item.getUnlocalizedName().toLowerCase().contains(filter.toLowerCase()) ||
+				item.getItemStackDisplayName(new ItemStack(item)).toLowerCase().contains(filter.toLowerCase()) ||
+				item.getToolClasses(new ItemStack(item)).contains(filter))
+			{
+				return true;
+			}
+
+			return false;
 		}
 	}
 }
