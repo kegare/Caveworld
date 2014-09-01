@@ -14,8 +14,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveAction;
 
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.classloading.FMLForgePlugin;
@@ -29,10 +29,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.gson.Gson;
 import com.kegare.caveworld.core.Caveworld;
 
@@ -40,7 +36,7 @@ import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.versioning.ArtifactVersion;
 import cpw.mods.fml.common.versioning.DefaultArtifactVersion;
 
-public class Version implements Callable<Version.Status>
+public class Version extends RecursiveAction
 {
 	private static Optional<String> CURRENT = Optional.absent();
 	private static Optional<String> LATEST = Optional.absent();
@@ -100,27 +96,9 @@ public class Version implements Callable<Version.Status>
 			initialize();
 		}
 
-		ListeningExecutorService pool = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor());
+		ForkJoinPool pool = new ForkJoinPool();
 
-		Futures.addCallback(pool.submit(new Version()), new FutureCallback<Status>()
-		{
-			@Override
-			public void onSuccess(Status result)
-			{
-				CaveLog.fine("Version status checked: %s", result.name());
-
-				status = Optional.of(result);
-			}
-
-			@Override
-			public void onFailure(Throwable throwable)
-			{
-				CaveLog.log(Level.WARN, throwable, "An error occurred trying to version check");
-
-				status = Optional.of(Status.FAILED);
-			}
-		});
-
+		pool.execute(new Version());
 		pool.shutdown();
 	}
 
@@ -145,69 +123,84 @@ public class Version implements Callable<Version.Status>
 	}
 
 	@Override
-	public Status call() throws Exception
+	protected void compute()
 	{
-		URL url = new URL(Caveworld.metadata.updateUrl);
-		Map<String, Object> data = null;
-
-		try (InputStream input = url.openStream())
+		try
 		{
-			byte[] dat = ByteStreams.toByteArray(input);
+			URL url = new URL(Caveworld.metadata.updateUrl);
+			Map<String, Object> data = null;
 
-			if (dat != null && dat.length > 0)
+			try (InputStream input = url.openStream())
 			{
-				data = new Gson().fromJson(new String(dat), Map.class);
+				byte[] dat = ByteStreams.toByteArray(input);
+
+				if (dat != null && dat.length > 0)
+				{
+					data = new Gson().fromJson(new String(dat), Map.class);
+				}
 			}
-		}
-		finally
-		{
-			if (data == null)
+			finally
 			{
-				return Status.FAILED;
+				if (data == null)
+				{
+					status = Optional.of(Status.FAILED);
+
+					return;
+				}
 			}
-		}
 
-		if (data.containsKey("homepage"))
-		{
-			Caveworld.metadata.url = (String)data.get("homepage");
-		}
-
-		Map<String, String> versions = Maps.newHashMap();
-
-		if (data.containsKey("versions"))
-		{
-			versions = (Map<String, String>)data.get("versions");
-		}
-
-		String version = versions.get(MinecraftForge.MC_VERSION);
-		ArtifactVersion current = new DefaultArtifactVersion(CURRENT.or("1.0.0"));
-
-		if (!Strings.isNullOrEmpty(version))
-		{
-			ArtifactVersion latest = new DefaultArtifactVersion(version);
-
-			LATEST = Optional.of(version);
-
-			switch (MathHelper.clamp_int(latest.compareTo(current), -1, 1))
+			if (data.containsKey("homepage"))
 			{
-				case 0:
-					return Status.UP_TO_DATE;
-				case -1:
-					return Status.AHEAD;
-				case 1:
-					return Status.OUTDATED;
-				default:
-					return Status.FAILED;
+				Caveworld.metadata.url = (String)data.get("homepage");
 			}
+
+			Map<String, String> versions = Maps.newHashMap();
+
+			if (data.containsKey("versions"))
+			{
+				versions = (Map<String, String>)data.get("versions");
+			}
+
+			String version = versions.get(MinecraftForge.MC_VERSION);
+			ArtifactVersion current = new DefaultArtifactVersion(CURRENT.or("1.0.0"));
+
+			if (!Strings.isNullOrEmpty(version))
+			{
+				ArtifactVersion latest = new DefaultArtifactVersion(version);
+
+				LATEST = Optional.of(version);
+
+				switch (MathHelper.clamp_int(latest.compareTo(current), -1, 1))
+				{
+					case 0:
+						status = Optional.of(Status.UP_TO_DATE);
+						return;
+					case -1:
+						status = Optional.of(Status.AHEAD);
+						return;
+					case 1:
+						status = Optional.of(Status.OUTDATED);
+						return;
+					default:
+						status = Optional.of(Status.FAILED);
+						return;
+				}
+			}
+
+			version = versions.get("latest");
+
+			if (!Strings.isNullOrEmpty(version))
+			{
+				LATEST = Optional.of(version);
+			}
+
+			status = Optional.of(Status.FAILED);
 		}
-
-		version = versions.get("latest");
-
-		if (!Strings.isNullOrEmpty(version))
+		catch (Exception e)
 		{
-			LATEST = Optional.of(version);
-		}
+			CaveLog.log(Level.WARN, e, "An error occurred trying to version check");
 
-		return Status.FAILED;
+			status = Optional.of(Status.FAILED);
+		}
 	}
 }

@@ -47,8 +47,8 @@ public class MiningSyncMessage implements IMessage, IMessageHandler<MiningSyncMe
 		ByteBufUtils.writeTag(buffer, data);
 	}
 
-	@Override
 	@SideOnly(Side.CLIENT)
+	@Override
 	public IMessage onMessage(MiningSyncMessage message, MessageContext ctx)
 	{
 		CaveworldAPI.loadMiningData(FMLClientHandler.instance().getClientPlayerEntity(), message.data);

@@ -73,8 +73,8 @@ public class BlockRope extends Block
 		this.setCreativeTab(CreativeTabs.tabTools);
 	}
 
-	@Override
 	@SideOnly(Side.CLIENT)
+	@Override
 	public String getItemIconName()
 	{
 		return getTextureName();

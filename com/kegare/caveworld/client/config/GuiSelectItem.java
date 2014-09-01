@@ -10,13 +10,11 @@
 
 package com.kegare.caveworld.client.config;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
+import java.util.Set;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveAction;
 
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -29,6 +27,7 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.Level;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
@@ -39,17 +38,19 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.collect.Sets;
 import com.kegare.caveworld.core.Caveworld;
+import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.util.ArrayListExtended;
 import com.kegare.caveworld.util.CaveLog;
+import com.kegare.caveworld.util.ItemComparator;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
 import cpw.mods.fml.client.config.HoverChecker;
 import cpw.mods.fml.common.registry.GameData;
+import cpw.mods.fml.common.registry.GameRegistry;
+import cpw.mods.fml.common.registry.GameRegistry.UniqueIdentifier;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -66,7 +67,7 @@ public class GuiSelectItem extends GuiScreen
 
 	private HoverChecker instantHoverChecker;
 
-	private final Map<String, List<Item>> filterCache = Maps.newHashMap();
+	private static final Map<String, List<Item>> filterCache = Maps.newHashMap();
 
 	public GuiSelectItem(GuiScreen parent, GuiTextField textField)
 	{
@@ -89,7 +90,6 @@ public class GuiSelectItem extends GuiScreen
 
 		itemList = new ItemList(this);
 		itemList.registerScrollButtons(2, 3);
-		itemList.setFilter("");
 
 		instantHoverChecker = new HoverChecker(instantFilter, 800);
 	}
@@ -132,6 +132,7 @@ public class GuiSelectItem extends GuiScreen
 	public void drawScreen(int mouseX, int mouseY, float ticks)
 	{
 		itemList.drawScreen(mouseX, mouseY, ticks);
+
 		drawCenteredString(fontRendererObj, I18n.format(Caveworld.CONFIG_LANG + "select.item"), width / 2, 15, 0xFFFFFF);
 
 		super.drawScreen(mouseX, mouseY, ticks);
@@ -194,13 +195,39 @@ public class GuiSelectItem extends GuiScreen
 			}
 			else if (code == Keyboard.KEY_UP)
 			{
-				itemList.scrollBy(-5);
+				int i = itemList.getAmountScrolled() % itemList.getSlotHeight();
+
+				if (i == 0)
+				{
+					itemList.scrollBy(-itemList.getSlotHeight());
+				}
+				else
+				{
+					itemList.scrollBy(-i);
+				}
 			}
 			else if (code == Keyboard.KEY_DOWN)
 			{
-				itemList.scrollBy(5);
+				itemList.scrollBy(itemList.getSlotHeight() - (itemList.getAmountScrolled() % itemList.getSlotHeight()));
 			}
-			else if (code == Keyboard.KEY_F)
+			else if (code == Keyboard.KEY_PRIOR)
+			{
+				itemList.scrollBy(-((itemList.getAmountScrolled() % itemList.getSlotHeight()) + ((itemList.bottom - itemList.top) / itemList.getSlotHeight()) * itemList.getSlotHeight()));
+			}
+			else if (code == Keyboard.KEY_NEXT)
+			{
+				itemList.scrollBy((itemList.getAmountScrolled() % itemList.getSlotHeight()) + ((itemList.bottom - itemList.top) / itemList.getSlotHeight()) * itemList.getSlotHeight());
+			}
+			else if (code == Keyboard.KEY_SPACE)
+			{
+				itemList.scrollBy(-itemList.getAmountScrolled());
+
+				if (itemList.selected != null)
+				{
+					itemList.scrollBy(itemList.contents.indexOf(itemList.selected) * itemList.getSlotHeight());
+				}
+			}
+			else if (code == Keyboard.KEY_F || code == mc.gameSettings.keyBindChat.getKeyCode())
 			{
 				filterTextField.setFocused(true);
 			}
@@ -215,13 +242,14 @@ public class GuiSelectItem extends GuiScreen
 		CaveConfigGui.instantFilter = instantFilter.isChecked();
 	}
 
-	private class ItemList extends GuiSlot implements Comparator<Item>
+	private static class ItemList extends GuiSlot
 	{
-		private final GuiSelectItem parentScreen;
+		private static final ArrayListExtended<Item> items = new ArrayListExtended<Item>().addAllObject(GameData.getItemRegistry()).sort(new ItemComparator());
 
-		private final List<Item>
-		items = Lists.newArrayList(),
-		contents = Collections.synchronizedList(new ArrayList<Item>());
+		private final GuiSelectItem parent;
+
+		private final ArrayListExtended<Item> contents = new ArrayListExtended(items);
+		private final Set<Item> ignoredRender = Sets.newHashSet();
 
 		private int nameType;
 		private Item selected = null;
@@ -229,15 +257,20 @@ public class GuiSelectItem extends GuiScreen
 		public ItemList(GuiSelectItem parent)
 		{
 			super(parent.mc, parent.width, parent.height, 32, parent.height - 28, 18);
-			this.parentScreen = parent;
+			this.parent = parent;
 			this.selected = GameData.getItemRegistry().getObject(parent.parentTextField.getText());
 
-			for (Object obj : GameData.getItemRegistry())
+			for (Item item : items)
 			{
-				items.add((Item)obj);
-			}
+				UniqueIdentifier unique = GameRegistry.findUniqueIdentifierFor(item);
 
-			Collections.sort(items, this);
+				if (unique != null && Config.ignoredRenderGuiItems != null && Config.ignoredRenderGuiItems.length > 0 &&
+					(ArrayUtils.contains(Config.ignoredRenderGuiItems, unique.modId) ||
+					ArrayUtils.contains(Config.ignoredRenderGuiItems, GameData.getItemRegistry().getNameForObject(item))))
+				{
+					ignoredRender.add(item);
+				}
+			}
 		}
 
 		@Override
@@ -249,112 +282,106 @@ public class GuiSelectItem extends GuiScreen
 		@Override
 		protected void drawBackground()
 		{
-			parentScreen.drawDefaultBackground();
+			parent.drawDefaultBackground();
 		}
 
 		@Override
-		protected void drawSlot(int id, int par2, int par3, int par4, Tessellator tessellator, int mouseX, int mouseY)
+		protected void drawSlot(int index, int par2, int par3, int par4, Tessellator tessellator, int mouseX, int mouseY)
 		{
-			if (id >= 0 && id < contents.size())
+			Item item = contents.get(index, null);
+
+			if (item == null)
 			{
-				Item item = contents.get(id);
+				return;
+			}
 
-				GL11.glEnable(GL12.GL_RESCALE_NORMAL);
-				RenderHelper.enableGUIStandardItemLighting();
-				RenderItem.getInstance().renderItemIntoGUI(mc.fontRenderer, mc.getTextureManager(), new ItemStack(item), width / 2 - 100, par3 - 1, true);
-				RenderHelper.disableStandardItemLighting();
-				GL11.glDisable(GL12.GL_RESCALE_NORMAL);
-
-				String name = null;
-
-				switch (nameType)
+			if (!ignoredRender.contains(item))
+			{
+				try
 				{
-					case 1:
-						name = GameData.getItemRegistry().getNameForObject(item);
-						break;
-					case 2:
-						name = item.getUnlocalizedName();
-						name = name.substring(name.indexOf(".") + 1);
-						break;
-					default:
-						name = item.getItemStackDisplayName(new ItemStack(item));
-						break;
+					GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+					RenderHelper.enableGUIStandardItemLighting();
+					RenderItem.getInstance().renderItemAndEffectIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), new ItemStack(item), width / 2 - 100, par3 - 1);
+					RenderHelper.disableStandardItemLighting();
+					GL11.glDisable(GL12.GL_RESCALE_NORMAL);
 				}
+				catch (Exception e)
+				{
+					CaveLog.log(Level.WARN, e, "Failed to trying render item into gui: %s", GameData.getBlockRegistry().getNameForObject(item));
 
-				parentScreen.drawCenteredString(mc.fontRenderer, name, width / 2, par3 + 1, 0xFFFFFF);
+					ignoredRender.add(item);
+				}
 			}
-		}
 
-		@Override
-		protected void elementClicked(int id, boolean flag, int mouseX, int mouseY)
-		{
-			selected = selected == contents.get(id) ? null : contents.get(id);
-		}
+			String name = null;
 
-		@Override
-		protected boolean isSelected(int id)
-		{
-			if (id >= 0 && id < contents.size())
+			switch (nameType)
 			{
-				return selected != null && selected == contents.get(id);
+				case 1:
+					name = GameData.getItemRegistry().getNameForObject(item);
+					break;
+				case 2:
+					name = item.getUnlocalizedName();
+					name = name.substring(name.indexOf(".") + 1);
+					break;
+				default:
+					name = item.getItemStackDisplayName(new ItemStack(item));
+					break;
 			}
 
-			return false;
+			parent.drawCenteredString(parent.fontRendererObj, name, width / 2, par3 + 1, 0xFFFFFF);
 		}
 
 		@Override
-		public int compare(Item o1, Item o2)
+		protected void elementClicked(int index, boolean flag, int mouseX, int mouseY)
 		{
-			String item1 = GameData.getItemRegistry().getNameForObject(o1);
-			String item2 = GameData.getItemRegistry().getNameForObject(o2);
+			selected = isSelected(index) ? null : contents.get(index, null);
+		}
 
-			return item1.substring(0, item1.indexOf(":")).compareTo(item2.substring(0, item2.indexOf(":")));
+		@Override
+		protected boolean isSelected(int index)
+		{
+			return selected == contents.get(index, null);
 		}
 
 		protected void setFilter(final String filter)
 		{
-			ListeningExecutorService pool = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor());
+			ForkJoinPool pool = new ForkJoinPool();
 
-			Futures.addCallback(pool.submit(
-				new Callable<List<Item>>()
+			pool.execute(new RecursiveAction()
+			{
+				@Override
+				protected void compute()
 				{
-					@Override
-					public List<Item> call() throws Exception
+					List<Item> result;
+
+					if (Strings.isNullOrEmpty(filter))
 					{
-						if (Strings.isNullOrEmpty(filter))
-						{
-							return items;
-						}
-
-						if (!filterCache.containsKey(filter))
-						{
-							filterCache.put(filter, Lists.newArrayList(Collections2.filter(items, new ItemFilter(filter))));
-						}
-
-						return filterCache.get(filter);
+						result = items;
 					}
-				}),
-				new FutureCallback<List<Item>>()
-				{
-					@Override
-					public void onSuccess(List<Item> result)
+					else
+					{
+						if (!GuiSelectItem.filterCache.containsKey(filter))
+						{
+							GuiSelectItem.filterCache.put(filter, Lists.newArrayList(Collections2.filter(items, new ItemFilter(filter))));
+						}
+
+						result = GuiSelectItem.filterCache.get(filter);
+					}
+
+					if (!contents.equals(result))
 					{
 						contents.clear();
 						contents.addAll(result);
 					}
+				}
+			});
 
-					@Override
-					public void onFailure(Throwable throwable)
-					{
-						CaveLog.log(Level.WARN, throwable, "Failed to trying items filtering");
-
-						contents.clear();
-					}
-				});
+			pool.shutdown();
 		}
 	}
 
-	private class ItemFilter implements Predicate<Item>
+	private static class ItemFilter implements Predicate<Item>
 	{
 		private final String filter;
 

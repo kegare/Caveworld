@@ -10,6 +10,8 @@
 
 package com.kegare.caveworld.client.config;
 
+import org.lwjgl.input.Keyboard;
+
 import cpw.mods.fml.client.config.GuiConfig;
 import cpw.mods.fml.client.config.GuiConfigEntries;
 import cpw.mods.fml.client.config.GuiConfigEntries.StringEntry;
@@ -30,7 +32,7 @@ public class SelectBlockEntry extends StringEntry
 	{
 		super.mouseClicked(x, y, mouseEvent);
 
-		if (textFieldValue.isFocused())
+		if (!Keyboard.isKeyDown(Keyboard.KEY_RSHIFT) && !Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && textFieldValue.isFocused())
 		{
 			textFieldValue.setFocused(false);
 

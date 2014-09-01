@@ -81,8 +81,8 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 		this.setCreativeTab(CreativeTabs.tabDecorations);
 	}
 
-	@Override
 	@SideOnly(Side.CLIENT)
+	@Override
 	public void registerBlockIcons(IIconRegister iconRegister)
 	{
 		blockIcon = iconRegister.registerIcon(getTextureName() + "_block");
@@ -304,8 +304,8 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 		}
 	}
 
-	@Override
 	@SideOnly(Side.CLIENT)
+	@Override
 	public void randomDisplayTick(World world, int x, int y, int z, Random random)
 	{
 		if (random.nextInt(200) == 0)
@@ -323,8 +323,8 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 		}
 	}
 
-	@Override
 	@SideOnly(Side.CLIENT)
+	@Override
 	public Item getItem(World world, int x, int y, int z)
 	{
 		return Item.getItemFromBlock(this);

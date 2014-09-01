@@ -42,10 +42,14 @@ import com.kegare.caveworld.core.CaveVeinManager.CaveVein;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.Version;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.relauncher.Side;
 
 public class Config
 {
+	private static final Side side = FMLCommonHandler.instance().getSide();
+
 	public static Configuration generalCfg;
 	public static Configuration blocksCfg;
 	public static Configuration dimensionCfg;
@@ -57,6 +61,7 @@ public class Config
 	public static boolean versionNotify;
 	public static boolean veinsAutoRegister;
 	public static boolean deathLoseMiningPoint;
+	public static String[] ignoredRenderGuiItems;
 
 	public static boolean portalCraftRecipe;
 	public static boolean mossStoneCraftRecipe;
@@ -179,6 +184,17 @@ public class Config
 		prop.comment += "Note: If multiplayer, server-side only.";
 		propOrder.add(prop.getName());
 		deathLoseMiningPoint = prop.getBoolean(deathLoseMiningPoint);
+
+		if (side.isClient())
+		{
+			prop = generalCfg.get(category, "ignoredRenderGuiItems", new String[] {"EnderIO"});
+			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+			prop.comment += Configuration.NEW_LINE;
+			prop.comment += "Note: Client-side only.";
+			propOrder.add(prop.getName());
+			ignoredRenderGuiItems = prop.getStringList();
+		}
 
 		generalCfg.setCategoryPropertyOrder(category, propOrder);
 

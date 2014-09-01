@@ -34,7 +34,9 @@ public class ClientProxy extends CommonProxy
 		Config.selectBlockEntryClass = SelectBlockEntry.class;
 		Config.selectItemEntryClass = SelectItemEntry.class;
 		Config.selectBiomeEntryClass = SelectBiomeEntry.class;
+
 		CaveVeinManager.veinEntryClass = VeinConfigEntry.class;
+
 		MCEconomyPlugin.productEntryClass = ShopProductEntry.class;
 	}
 

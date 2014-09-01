@@ -10,7 +10,7 @@
 
 package com.kegare.caveworld.client.config;
 
-import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -24,10 +24,10 @@ import net.minecraftforge.common.config.Configuration;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.util.ArrayListExtended;
 import com.kegare.caveworld.util.ConfigCategoryFunction;
 
 import cpw.mods.fml.client.config.GuiConfig;
@@ -54,7 +54,17 @@ public class BiomesEntry extends CaveCategoryEntry
 	protected List<IConfigElement> getConfigElements()
 	{
 		List<IConfigElement> list = Lists.newArrayList();
-		Collection<ConfigCategory> categories = Collections2.transform(getConfig().getCategoryNames(), new ConfigCategoryFunction(getConfig()));
+		ArrayListExtended<String> names = new ArrayListExtended(getConfig().getCategoryNames())
+			.sort(new Comparator<String>()
+			{
+				@Override
+				public int compare(String o1, String o2)
+				{
+					return Integer.compare(Integer.parseInt(o1), Integer.parseInt(o2));
+				}
+			});
+
+		List<ConfigCategory> categories = Lists.transform(names, new ConfigCategoryFunction(getConfig()));
 
 		for (ConfigCategory category : categories)
 		{

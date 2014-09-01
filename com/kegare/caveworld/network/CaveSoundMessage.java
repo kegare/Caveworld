@@ -51,8 +51,8 @@ public class CaveSoundMessage implements IMessage, IMessageHandler<CaveSoundMess
 		ByteBufUtils.writeUTF8String(buffer, resource.getResourcePath());
 	}
 
-	@Override
 	@SideOnly(Side.CLIENT)
+	@Override
 	public IMessage onMessage(CaveSoundMessage message, MessageContext ctx)
 	{
 		Minecraft mc = FMLClientHandler.instance().getClient();

@@ -15,6 +15,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.security.SecureRandom;
 import java.util.Iterator;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveAction;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.event.ClickEvent;
@@ -211,10 +213,12 @@ public final class WorldProviderCaveworld extends WorldProviderSurface
 			}
 		}
 
-		new Thread("Caveworld Regenerator")
+		ForkJoinPool pool = new ForkJoinPool();
+
+		pool.execute(new RecursiveAction()
 		{
 			@Override
-			public void run()
+			protected void compute()
 			{
 				IChatComponent component;
 
@@ -303,7 +307,9 @@ public final class WorldProviderCaveworld extends WorldProviderSurface
 					CaveLog.log(Level.ERROR, e, component.getUnformattedText());
 				}
 			}
-		}.start();
+		});
+
+		pool.shutdown();
 	}
 
 	private int ambientTickCountdown = 0;
@@ -336,15 +342,15 @@ public final class WorldProviderCaveworld extends WorldProviderSurface
 		return true;
 	}
 
-	@Override
 	@SideOnly(Side.CLIENT)
+	@Override
 	public float[] calcSunriseSunsetColors(float angle, float ticks)
 	{
 		return null;
 	}
 
-	@Override
 	@SideOnly(Side.CLIENT)
+	@Override
 	public Vec3 getFogColor(float angle, float ticks)
 	{
 		return Vec3.createVectorHelper(0.01D, 0.01D, 0.01D);
@@ -356,8 +362,8 @@ public final class WorldProviderCaveworld extends WorldProviderSurface
 		return 10;
 	}
 
-	@Override
 	@SideOnly(Side.CLIENT)
+	@Override
 	public boolean getWorldHasVoidParticles()
 	{
 		return terrainType != WorldType.FLAT;
@@ -398,16 +404,23 @@ public final class WorldProviderCaveworld extends WorldProviderSurface
 		return 3.0D;
 	}
 
-	@Override
 	@SideOnly(Side.CLIENT)
+	@Override
 	public IRenderHandler getSkyRenderer()
 	{
 		return EmptyRenderer.instance;
 	}
 
-	@Override
 	@SideOnly(Side.CLIENT)
+	@Override
 	public IRenderHandler getCloudRenderer()
+	{
+		return EmptyRenderer.instance;
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
+	public IRenderHandler getWeatherRenderer()
 	{
 		return EmptyRenderer.instance;
 	}
@@ -448,13 +461,6 @@ public final class WorldProviderCaveworld extends WorldProviderSurface
 	@Override
 	public void updateWeather()
 	{
-		if (worldObj.rainingStrength != 0.0F)
-		{
-			worldObj.rainingStrength = 0.0F;
-		}
-
-		worldObj.prevRainingStrength = worldObj.rainingStrength;
-
 		if (!worldObj.isRemote)
 		{
 			if (ambientTickCountdown > 0)
