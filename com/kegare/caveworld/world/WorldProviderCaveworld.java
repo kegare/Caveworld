@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.security.SecureRandom;
-import java.util.Iterator;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
@@ -49,6 +48,7 @@ import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.network.CaveSoundMessage;
+import com.kegare.caveworld.network.RegenerateMessage;
 import com.kegare.caveworld.renderer.EmptyRenderer;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.CaveUtils;
@@ -203,9 +203,9 @@ public final class WorldProviderCaveworld extends WorldProviderSurface
 		final MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
 		EntityPlayerMP player;
 
-		for (Iterator iterator = server.getConfigurationManager().playerEntityList.iterator(); iterator.hasNext();)
+		for (Object obj : server.getConfigurationManager().playerEntityList.toArray())
 		{
-			player = (EntityPlayerMP)iterator.next();
+			player = (EntityPlayerMP)obj;
 
 			if (CaveworldAPI.isEntityInCaveworld(player))
 			{
@@ -227,6 +227,13 @@ public final class WorldProviderCaveworld extends WorldProviderSurface
 					component = new ChatComponentTranslation("caveworld.regenerate.regenerating");
 					component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
 					server.getConfigurationManager().sendChatMsg(component);
+
+					if (server.isSinglePlayer())
+					{
+						Caveworld.network.sendToAll(new RegenerateMessage(backup));
+					}
+
+					Caveworld.network.sendToAll(new RegenerateMessage.ProgressNotify(0));
 
 					CaveBlocks.caveworld_portal.portalDisabled = true;
 
@@ -259,6 +266,8 @@ public final class WorldProviderCaveworld extends WorldProviderSurface
 							component = new ChatComponentTranslation("caveworld.regenerate.backingup");
 							component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
 							server.getConfigurationManager().sendChatMsg(component);
+
+							Caveworld.network.sendToAll(new RegenerateMessage.ProgressNotify(1));
 
 							if (CaveUtils.archiveDirZip(dir, bak))
 							{
@@ -297,12 +306,16 @@ public final class WorldProviderCaveworld extends WorldProviderSurface
 					component = new ChatComponentTranslation("caveworld.regenerate.regenerated");
 					component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
 					server.getConfigurationManager().sendChatMsg(component);
+
+					Caveworld.network.sendToAll(new RegenerateMessage.ProgressNotify(2));
 				}
 				catch (Exception e)
 				{
 					component = new ChatComponentTranslation("caveworld.regenerate.failed");
 					component.getChatStyle().setColor(EnumChatFormatting.RED).setItalic(true);
 					server.getConfigurationManager().sendChatMsg(component);
+
+					Caveworld.network.sendToAll(new RegenerateMessage.ProgressNotify(3));
 
 					CaveLog.log(Level.ERROR, e, component.getUnformattedText());
 				}

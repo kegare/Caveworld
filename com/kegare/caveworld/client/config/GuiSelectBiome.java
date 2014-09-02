@@ -144,7 +144,6 @@ public class GuiSelectBiome extends GuiScreen
 
 		GL11.glDisable(GL11.GL_LIGHTING);
 		filterTextField.drawTextBox();
-		GL11.glEnable(GL11.GL_LIGHTING);
 
 		if (biomeList.func_148141_e(mouseY))
 		{

@@ -33,6 +33,8 @@ public class CommonProxy
 		return -1;
 	}
 
+	public void displayClientGuiScreen(Object obj) {}
+
 	public void registerRecipes()
 	{
 		if (Config.rope)

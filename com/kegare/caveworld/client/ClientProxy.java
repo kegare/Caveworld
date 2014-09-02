@@ -10,6 +10,9 @@
 
 package com.kegare.caveworld.client;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
+
 import com.kegare.caveworld.client.config.SelectBiomeEntry;
 import com.kegare.caveworld.client.config.SelectBlockEntry;
 import com.kegare.caveworld.client.config.SelectItemEntry;
@@ -21,6 +24,7 @@ import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.plugin.mceconomy.ShopEntry.ShopProductEntry;
 import com.kegare.caveworld.renderer.RenderPortalCaveworld;
 
+import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -50,5 +54,16 @@ public class ClientProxy extends CommonProxy
 	public int getUniqueRenderType()
 	{
 		return RenderingRegistry.getNextAvailableRenderId();
+	}
+
+	@Override
+	public void displayClientGuiScreen(Object obj)
+	{
+		Minecraft mc = FMLClientHandler.instance().getClient();
+
+		if (obj instanceof GuiScreen && (mc.currentScreen == null || mc.currentScreen.getClass() != obj.getClass()))
+		{
+			mc.displayGuiScreen((GuiScreen)obj);
+		}
 	}
 }

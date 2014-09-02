@@ -10,6 +10,7 @@
 
 package com.kegare.caveworld.handler;
 
+import java.util.List;
 import java.util.Random;
 
 import net.minecraft.block.Block;
@@ -38,11 +39,11 @@ import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.ChunkCoordinates;
-import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
@@ -60,6 +61,7 @@ import net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import shift.mceconomy2.api.MCEconomyAPI;
 
+import com.google.common.collect.Lists;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.core.CaveAchievementList;
@@ -78,6 +80,7 @@ import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
+import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ServerConnectionFromClientEvent;
 import cpw.mods.fml.relauncher.Side;
@@ -165,6 +168,52 @@ public class CaveEventHooks
 	}
 
 	@SubscribeEvent
+	public void onPlayerLoggedIn(PlayerLoggedInEvent event)
+	{
+		if (event.player instanceof EntityPlayerMP)
+		{
+			EntityPlayerMP player = (EntityPlayerMP)event.player;
+			WorldServer world = player.getServerForPlayer();
+
+			if (CaveworldAPI.isEntityInCaveworld(player))
+			{
+				if (player.posY >= world.getActualHeight() - 1)
+				{
+					CaveUtils.forceTeleport(player, player.dimension);
+				}
+			}
+			else
+			{
+				if (Config.caveborn && world.getTotalWorldTime() < 1000 && !player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.caveworld))
+				{
+					List<ItemStack> bonus = Lists.newArrayList();
+
+					bonus.add(new ItemStack(Items.stone_pickaxe));
+					bonus.add(new ItemStack(Items.stone_sword));
+					bonus.add(new ItemStack(Blocks.torch, MathHelper.getRandomIntegerInRange(world.rand, 10, 20)));
+
+					if (world.difficultySetting.getDifficultyId() <= EnumDifficulty.NORMAL.getDifficultyId())
+					{
+						bonus.add(new ItemStack(Items.apple, MathHelper.getRandomIntegerInRange(world.rand, 5, 10)));
+					}
+
+					for (int i = 0; i < 5; ++i)
+					{
+						bonus.add(new ItemStack(Blocks.sapling, MathHelper.getRandomIntegerInRange(world.rand, 2, 5), i));
+					}
+
+					for (ItemStack stack : bonus)
+					{
+						player.inventory.addItemStackToInventory(stack);
+					}
+
+					CaveUtils.forceTeleport(player, CaveworldAPI.getDimension());
+				}
+			}
+		}
+	}
+
+	@SubscribeEvent
 	public void onPlayerChangedDimension(PlayerChangedDimensionEvent event)
 	{
 		if (event.player instanceof EntityPlayerMP)
@@ -183,10 +232,7 @@ public class CaveEventHooks
 
 				data.setLong("Caveworld:LastTeleportTime", world.getTotalWorldTime());
 
-				if (player.func_147099_x().canUnlockAchievement(CaveAchievementList.caveworld))
-				{
-					player.triggerAchievement(CaveAchievementList.caveworld);
-				}
+				player.triggerAchievement(CaveAchievementList.caveworld);
 			}
 			else if (Config.hardcore && event.fromDim == CaveworldAPI.getDimension())
 			{
@@ -393,16 +439,7 @@ public class CaveEventHooks
 
 		if (entity instanceof EntityPlayerMP)
 		{
-			EntityPlayerMP player = (EntityPlayerMP)entity;
-
-			CaveworldAPI.loadMiningData(player, null);
-
-			if (player.posY >= world.provider.getActualHeight() - 1)
-			{
-				CaveUtils.respawnPlayer(player, 0);
-
-				player.attackEntityFrom(DamageSource.outOfWorld, 999.0F);
-			}
+			CaveworldAPI.loadMiningData((EntityPlayerMP)entity, null);
 		}
 		else if (entity instanceof EntityLiving && CaveworldAPI.isEntityInCaveworld(entity))
 		{

@@ -8,6 +8,16 @@ caveworld.regenerate.backedup=Caveworld ディメンションフォルダをバ�
 caveworld.regenerate.backup.failed=Caveworld ディメンションフォルダのバックアップに失敗しました
 caveworld.regenerate.regenerated=Caveworld ディメンションを再生成しました
 caveworld.regenerate.failed=Caveworld ディメンションの再生成に失敗しました
+caveworld.regenerate.gui.title=Caveworldの再生成
+caveworld.regenerate.gui.info=再生成開始後のキャンセルはできません
+caveworld.regenerate.gui.regenerate=再生成
+caveworld.regenerate.gui.backup=バックアップ
+caveworld.regenerate.gui.backup.tooltip=再生成前にディメンションデータをバックアップします。
+caveworld.regenerate.gui.backup.open=バックアップフォルダを開く
+caveworld.regenerate.gui.progress.regenerating=再生成しています...
+caveworld.regenerate.gui.progress.backingup=バックアップしています..
+caveworld.regenerate.gui.progress.regenerated=再生成しました
+caveworld.regenerate.gui.progress.failed=再生成に失敗しました
 
 caveworld.mining.point=採掘ポイント
 
@@ -24,6 +34,8 @@ caveworld.configgui.general.ignoredRenderGuiItems=GUIアイテムのレンダリ
 caveworld.configgui.general.ignoredRenderGuiItems.tooltip=指定されたフィルタに一致するGUIのアイテムのレンダリングを無視します。
 caveworld.configgui.options.hardcore=ハードコアオプション
 caveworld.configgui.options.hardcore.tooltip=Caveworldへ行くと、Caveworldから戻ることができなくなります。
+caveworld.configgui.options.caveborn=ケイブボーンオプション
+caveworld.configgui.options.caveborn.tooltip=初めてワールドに入った際に、Caveworld ディメンションへ転送します。
 caveworld.configgui.recipes.portalCraftRecipe=Caveworld ポータルのクラフトレシピ
 caveworld.configgui.recipes.portalCraftRecipe.tooltip=Caveworld ポータルブロックのクラフトレシピを追加します。
 caveworld.configgui.recipes.mossStoneCraftRecipe=苔石のクラフトレシピ

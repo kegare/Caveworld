@@ -28,6 +28,7 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 
 import com.kegare.caveworld.api.CaveworldAPI;
+import com.kegare.caveworld.network.RegenerateMessage;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 
@@ -110,18 +111,6 @@ public class CommandCaveworld implements ICommand
 		}
 		else if (args[0].equalsIgnoreCase("regenerate"))
 		{
-			if (sender instanceof EntityPlayerMP)
-			{
-				if (((EntityPlayerMP)sender).mcServer.isDedicatedServer())
-				{
-					IChatComponent component = new ChatComponentTranslation("commands.generic.permission");
-					component.getChatStyle().setColor(EnumChatFormatting.RED);
-					sender.addChatMessage(component);
-
-					return;
-				}
-			}
-
 			boolean backup = true;
 
 			if (args.length > 1)
@@ -136,7 +125,26 @@ public class CommandCaveworld implements ICommand
 				}
 			}
 
-			WorldProviderCaveworld.regenerate(backup);
+			if (sender instanceof EntityPlayerMP)
+			{
+				EntityPlayerMP player = (EntityPlayerMP)sender;
+				MinecraftServer server = player.mcServer;
+
+				if (server.isSinglePlayer() || server.getConfigurationManager().func_152596_g(player.getGameProfile()))
+				{
+					Caveworld.network.sendTo(new RegenerateMessage(backup), player);
+				}
+				else
+				{
+					IChatComponent component = new ChatComponentTranslation("commands.generic.permission");
+					component.getChatStyle().setColor(EnumChatFormatting.RED);
+					sender.addChatMessage(component);
+				}
+			}
+			else
+			{
+				WorldProviderCaveworld.regenerate(backup);
+			}
 		}
 		else if (args[0].equalsIgnoreCase("mp") && args.length > 1 && sender instanceof EntityPlayerMP)
 		{

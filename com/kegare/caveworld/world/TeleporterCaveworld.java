@@ -243,7 +243,14 @@ public class TeleporterCaveworld extends Teleporter
 				entity.motionX = entity.motionY = entity.motionZ = 0.0D;
 			}
 
-			entity.setLocationAndAngles(var2, var3, var4, entity.rotationYaw, entity.rotationPitch);
+			if (entity instanceof EntityPlayerMP)
+			{
+				((EntityPlayerMP)entity).playerNetServerHandler.setPlayerLocation(var2, var3, var4, entity.rotationYaw, entity.rotationPitch);
+			}
+			else
+			{
+				entity.setLocationAndAngles(var2, var3, var4, entity.rotationYaw, entity.rotationPitch);
+			}
 
 			return true;
 		}

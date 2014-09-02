@@ -27,17 +27,23 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.ForgeHooks;
 
 import org.apache.commons.io.FilenameUtils;
 
 import com.google.common.base.Strings;
+import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.core.Caveworld;
+import com.kegare.caveworld.world.WorldProviderCaveworld;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
+import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 
 public class CaveUtils
 {
@@ -108,9 +114,68 @@ public class CaveUtils
 		}
 	}
 
-	public static void respawnPlayer(EntityPlayerMP player, int dim)
+	public static EntityPlayerMP forceTeleport(EntityPlayerMP player, int dim)
 	{
+		MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+		int dimOld = player.dimension;
+		final WorldServer world = server.worldServerForDimension(dim);
+
+		if (dim != player.dimension)
+		{
+			player = respawnPlayer(player, dim);
+
+			FMLCommonHandler.instance().bus().post(new PlayerChangedDimensionEvent(player, dimOld, dim));
+		}
+
+		ChunkCoordinates spawn = world.getSpawnPoint();
+		int var1 = 64;
+
+		for (int x = spawn.posX - var1; x < spawn.posX + var1; ++x)
+		{
+			for (int z = spawn.posZ - var1; z < spawn.posZ + var1; ++z)
+			{
+				for (int y = world.getActualHeight() - 3; y > world.provider.getAverageGroundLevel(); --y)
+				{
+					if (world.isAirBlock(x, y, z) && world.isAirBlock(x, y + 1, z) &&
+						world.isAirBlock(x - 1, y, z) && world.isAirBlock(x - 1, y + 1, z) &&
+						world.isAirBlock(x + 1, y, z) && world.isAirBlock(x + 1, y + 1, z) &&
+						world.isAirBlock(x, y, z - 1) && world.isAirBlock(x, y + 1, z - 1) &&
+						world.isAirBlock(x, y, z + 1) && world.isAirBlock(x, y + 1, z + 1) &&
+						!world.getBlock(x, y - 1, z).getMaterial().isLiquid())
+					{
+						while (world.isAirBlock(x, y - 1, z))
+						{
+							--y;
+						}
+
+						if (!world.getBlock(x, y - 1, z).getMaterial().isLiquid())
+						{
+							player.playerNetServerHandler.setPlayerLocation(x + 0.5D, y + 0.8D, z + 0.5D, player.rotationYaw, player.rotationPitch);
+							player.addExperienceLevel(0);
+
+							if (CaveworldAPI.isEntityInCaveworld(player))
+							{
+								WorldProviderCaveworld.recentTeleportPos = player.getPlayerCoordinates();
+							}
+
+							return player;
+						}
+					}
+				}
+			}
+		}
+
+		return player;
+	}
+
+	public static EntityPlayerMP respawnPlayer(EntityPlayerMP player, int dim)
+	{
+		player.isDead = false;
+		player.forceSpawn = true;
+		player.timeUntilPortal = player.getPortalCooldown();
 		player.playerNetServerHandler.playerEntity = player.mcServer.getConfigurationManager().respawnPlayer(player, dim, true);
+
+		return player.playerNetServerHandler.playerEntity;
 	}
 
 	public static boolean archiveDirZip(File dir, File dest)

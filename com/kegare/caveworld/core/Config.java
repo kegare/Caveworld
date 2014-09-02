@@ -67,6 +67,7 @@ public class Config
 	public static boolean mossStoneCraftRecipe;
 
 	public static boolean hardcore;
+	public static boolean caveborn;
 
 	public static boolean rope;
 
@@ -224,6 +225,14 @@ public class Config
 		prop.comment += "Note: If multiplayer, server-side only.";
 		propOrder.add(prop.getName());
 		hardcore = prop.getBoolean(hardcore);
+		prop = generalCfg.get(category, "caveborn", false);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		prop.comment += Configuration.NEW_LINE;
+		prop.comment += "Note: If multiplayer, server-side only.";
+		propOrder.add(prop.getName());
+		caveborn = prop.getBoolean(caveborn);
 
 		generalCfg.setCategoryPropertyOrder(category, propOrder);
 

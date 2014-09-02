@@ -27,7 +27,7 @@ public class CaveAchievementList
 	private static final List<Achievement> achievementList = Lists.newArrayList();
 
 	public static final Achievement portal = new CaveAchievement("portal", 0, 0, Blocks.mossy_cobblestone, null).initIndependentStat().registerStat();
-	public static final Achievement caveworld = new CaveAchievement("caveworld", 2, 1, CaveBlocks.caveworld_portal, portal).registerStat();
+	public static final Achievement caveworld = new CaveAchievement("caveworld", 2, 1, CaveBlocks.caveworld_portal, null).registerStat();
 
 	public static void registerAchievements()
 	{

@@ -2,12 +2,22 @@
 
 caveworld.version.message=A new %s version is available
 
-caveworld.regenerate.regenerating=Regenerating Caveworld dimension...
-caveworld.regenerate.backingup=Backing up Caveworld dimension folder...
+caveworld.regenerate.regenerating=Regenerating the Caveworld dimension...
+caveworld.regenerate.backingup=Backing up the Caveworld dimension folder...
 caveworld.regenerate.backedup=Caveworld dimension folder was backed up
-caveworld.regenerate.backup.failed=Failed to backing up Caveworld dimension folder
+caveworld.regenerate.backup.failed=Failed to backing up the Caveworld dimension folder
 caveworld.regenerate.regenerated=Caveworld dimension was regenerated
-caveworld.regenerate.failed=Failed to regenerating Caveworld dimension
+caveworld.regenerate.failed=Failed to regenerating the Caveworld dimension
+caveworld.regenerate.gui.title=Caveworld Regeneration
+caveworld.regenerate.gui.info=Cannot be canceled after the regeneration starts
+caveworld.regenerate.gui.regenerate=Regenerate
+caveworld.regenerate.gui.backup=Backup
+caveworld.regenerate.gui.backup.tooltip=Checked if backing up dimension data before regenerate.
+caveworld.regenerate.gui.backup.open=Open the backup folder...
+caveworld.regenerate.gui.progress.regenerating=Regenerating...
+caveworld.regenerate.gui.progress.backingup=Backing up..
+caveworld.regenerate.gui.progress.regenerated=Regenerated
+caveworld.regenerate.gui.progress.failed=Failed
 
 caveworld.mining.point=Mining Point
 
@@ -28,6 +38,8 @@ caveworld.configgui.recipes.mossStoneCraftRecipe=Moss Stone Crafting Recipe
 caveworld.configgui.recipes.mossStoneCraftRecipe.tooltip=Whether or not to add crafting recipe of Moss Stone.
 caveworld.configgui.options.hardcore=Hardcore Option
 caveworld.configgui.options.hardcore.tooltip=If go to the Caveworld, Cannot go back from the Caveworld.
+caveworld.configgui.options.caveborn=Caveborn Option
+caveworld.configgui.options.caveborn.tooltip=Transfer to the Caveworld dimension when join to world for the first time.
 caveworld.configgui.blocks=Block Settings
 caveworld.configgui.blocks.tooltip=This is where you can edit the settings contained in caveworld-blocks.cfg
 caveworld.configgui.blocks.Rope=Rope

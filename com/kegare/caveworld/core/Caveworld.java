@@ -24,6 +24,7 @@ import com.kegare.caveworld.network.BuffMessage;
 import com.kegare.caveworld.network.CaveSoundMessage;
 import com.kegare.caveworld.network.DimSyncMessage;
 import com.kegare.caveworld.network.MiningSyncMessage;
+import com.kegare.caveworld.network.RegenerateMessage;
 import com.kegare.caveworld.plugin.CaveModPlugin;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
@@ -98,6 +99,9 @@ public class Caveworld
 		network.registerMessage(DimSyncMessage.class, DimSyncMessage.class, id++, Side.CLIENT);
 		network.registerMessage(MiningSyncMessage.class, MiningSyncMessage.class, id++, Side.CLIENT);
 		network.registerMessage(CaveSoundMessage.class, CaveSoundMessage.class, id++, Side.CLIENT);
+		network.registerMessage(RegenerateMessage.class, RegenerateMessage.class, id++, Side.CLIENT);
+		network.registerMessage(RegenerateMessage.class, RegenerateMessage.class, id++, Side.SERVER);
+		network.registerMessage(RegenerateMessage.ProgressNotify.class, RegenerateMessage.ProgressNotify.class, id++, Side.CLIENT);
 		network.registerMessage(BuffMessage.class, BuffMessage.class, id++, Side.SERVER);
 
 		proxy.registerRenderers();
