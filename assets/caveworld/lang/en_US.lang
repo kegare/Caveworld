@@ -1,5 +1,10 @@
 # Localization file : en_US
 
+gui.edit=Edit
+gui.add=Add
+gui.remove=Remove
+gui.clear=Clear
+
 caveworld.version.message=A new %s version is available
 
 caveworld.regenerate.regenerating=Regenerating the Caveworld dimension...
@@ -12,7 +17,7 @@ caveworld.regenerate.gui.title=Caveworld Regeneration
 caveworld.regenerate.gui.info=Cannot be canceled after the regeneration starts
 caveworld.regenerate.gui.regenerate=Regenerate
 caveworld.regenerate.gui.backup=Backup
-caveworld.regenerate.gui.backup.tooltip=Checked if backing up dimension data before regenerate.
+caveworld.regenerate.gui.backup.tooltip=Checked if backing up dimension data before the regeneration.
 caveworld.regenerate.gui.backup.open=Open the backup folder...
 caveworld.regenerate.gui.progress.regenerating=Regenerating...
 caveworld.regenerate.gui.progress.backingup=Backing up..
@@ -22,6 +27,10 @@ caveworld.regenerate.gui.progress.failed=Failed
 caveworld.mining.point=Mining Point
 
 caveworld.configgui.title=Caveworld Configuration
+caveworld.configgui.detail=Detail info
+caveworld.configgui.detail.hover=Display detailed information.
+caveworld.configgui.instant=Instant filter
+caveworld.configgui.instant.hover=Filter instantly when enter character in filter-textbox.
 caveworld.configgui.general=General Settings
 caveworld.configgui.general.tooltip=This is where you can edit the settings contained in caveworld-general.cfg
 caveworld.configgui.general.versionNotify=Version Notify
@@ -103,8 +112,6 @@ caveworld.configgui.select.biome.selected=%d biomes selected
 caveworld.configgui.select.biome.info.temperature=Temperature
 caveworld.configgui.select.biome.info.rainfall=Rainfall
 caveworld.configgui.select.biome.info.type=Type
-caveworld.configgui.select.instant=Instant filter
-caveworld.configgui.select.instant.hover=Filter instantly when enter character in filter-textbox.
 
 tile.portalCaveworld.name=Caveworld Portal Block
 tile.rope.name=Rope

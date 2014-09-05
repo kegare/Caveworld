@@ -4,8 +4,7 @@
  * Copyright (c) 2014 kegare
  * https://github.com/kegare
  *
- * This mod is distributed under the terms of the Minecraft Mod Public License 1.0, or MMPL.
- * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
+ * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
  */
 
 package com.kegare.caveworld.util;
@@ -27,14 +26,19 @@ public class ArrayListExtended<E> extends ArrayList<E>
 		super(c);
 	}
 
+	public boolean addIfAbsent(E value)
+	{
+		return value != null && !contains(value) && add(value);
+	}
+
 	public boolean addObject(Object obj)
 	{
-		return obj == null ? false : add((E)obj);
+		return obj != null && add((E)obj);
 	}
 
 	public ArrayListExtended<E> addAllObject(Collection c)
 	{
-		for (Object obj : c)
+		for (Object obj : c.toArray())
 		{
 			addObject(obj);
 		}
@@ -64,7 +68,7 @@ public class ArrayListExtended<E> extends ArrayList<E>
 
 	public E get(int index, E value)
 	{
-		return index < 0 || index >= size() || super.get(index) == null ? value : super.get(index);
+		return index < 0 || index >= size() || get(index) == null ? value : get(index);
 	}
 
 	public ArrayListExtended<E> sort(Comparator<? super E> comparator)

@@ -4,8 +4,7 @@
  * Copyright (c) 2014 kegare
  * https://github.com/kegare
  *
- * This mod is distributed under the terms of the Minecraft Mod Public License 1.0, or MMPL.
- * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
+ * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
  */
 
 package com.kegare.caveworld.client;
@@ -17,12 +16,12 @@ import com.kegare.caveworld.client.config.SelectBiomeEntry;
 import com.kegare.caveworld.client.config.SelectBlockEntry;
 import com.kegare.caveworld.client.config.SelectItemEntry;
 import com.kegare.caveworld.client.config.VeinsEntry.VeinConfigEntry;
+import com.kegare.caveworld.client.renderer.RenderPortalCaveworld;
 import com.kegare.caveworld.core.CaveVeinManager;
 import com.kegare.caveworld.core.CommonProxy;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.plugin.mceconomy.ShopEntry.ShopProductEntry;
-import com.kegare.caveworld.renderer.RenderPortalCaveworld;
 
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.registry.RenderingRegistry;

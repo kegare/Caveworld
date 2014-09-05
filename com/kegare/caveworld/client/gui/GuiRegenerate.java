@@ -1,10 +1,18 @@
+/*
+ * Caveworld
+ *
+ * Copyright (c) 2014 kegare
+ * https://github.com/kegare
+ *
+ * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
+ */
+
 package com.kegare.caveworld.client.gui;
 
 import java.awt.Desktop;
 
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.GuiYesNoCallback;
 import net.minecraft.client.resources.I18n;
 
 import org.lwjgl.input.Keyboard;
@@ -18,14 +26,14 @@ import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
 import cpw.mods.fml.client.config.HoverChecker;
 
-public class GuiRegenerate extends GuiScreen implements GuiYesNoCallback
+public class GuiRegenerate extends GuiScreen
 {
 	private boolean backup;
 
-	private GuiButton regenButton;
-	private GuiButton browseButton;
-	private GuiButton cancelButton;
-	private GuiCheckBox backupCheckBox;
+	protected GuiButton regenButton;
+	protected GuiButton openButton;
+	protected GuiButton cancelButton;
+	protected GuiCheckBox backupCheckBox;
 
 	private HoverChecker backupHoverChecker;
 
@@ -39,15 +47,41 @@ public class GuiRegenerate extends GuiScreen implements GuiYesNoCallback
 	@Override
 	public void initGui()
 	{
-		regenButton = new GuiButtonExt(0, width / 2 - 100, height / 4 + 82, I18n.format("caveworld.regenerate.gui.regenerate"));
-		browseButton = new GuiButtonExt(1, regenButton.xPosition, regenButton.yPosition, I18n.format("caveworld.regenerate.gui.backup.open"));
-		browseButton.visible = false;
-		cancelButton = new GuiButtonExt(2, regenButton.xPosition, height / 4 + 106, I18n.format("gui.cancel"));
-		backupCheckBox = new GuiCheckBox(3, 10, height - 21, I18n.format("caveworld.regenerate.gui.backup"), backup);
+		if (regenButton == null)
+		{
+			regenButton = new GuiButtonExt(0, 0, 0, I18n.format("caveworld.regenerate.gui.regenerate"));
+		}
+
+		regenButton.xPosition = width / 2 - 100;
+		regenButton.yPosition = height / 4 + regenButton.height + 62;
+
+		if (openButton == null)
+		{
+			openButton = new GuiButtonExt(1, 0, 0, I18n.format("caveworld.regenerate.gui.backup.open"));
+			openButton.visible = false;
+		}
+
+		openButton.xPosition = regenButton.xPosition;
+		openButton.yPosition = regenButton.yPosition;
+
+		if (cancelButton == null)
+		{
+			cancelButton = new GuiButtonExt(2, 0, 0, I18n.format("gui.cancel"));
+		}
+
+		cancelButton.xPosition = regenButton.xPosition;
+		cancelButton.yPosition = regenButton.yPosition + regenButton.height + 5;
+
+		if (backupCheckBox == null)
+		{
+			backupCheckBox = new GuiCheckBox(3, 10, 0, I18n.format("caveworld.regenerate.gui.backup"), backup);
+		}
+
+		backupCheckBox.yPosition = height - 20;
 
 		buttonList.clear();
 		buttonList.add(regenButton);
-		buttonList.add(browseButton);
+		buttonList.add(openButton);
 		buttonList.add(cancelButton);
 		buttonList.add(backupCheckBox);
 
@@ -61,8 +95,8 @@ public class GuiRegenerate extends GuiScreen implements GuiYesNoCallback
 
 		if (Keyboard.getEventKey() == Keyboard.KEY_LSHIFT || Keyboard.getEventKey() == Keyboard.KEY_RSHIFT)
 		{
-			browseButton.visible = Keyboard.getEventKeyState();
-			regenButton.visible = !browseButton.visible;
+			openButton.visible = Keyboard.getEventKeyState();
+			regenButton.visible = !openButton.visible;
 		}
 	}
 
@@ -78,24 +112,28 @@ public class GuiRegenerate extends GuiScreen implements GuiYesNoCallback
 	@Override
 	protected void actionPerformed(GuiButton button)
 	{
-		switch (button.id)
+		if (button.enabled)
 		{
-			case 0:
-				Caveworld.network.sendToServer(new RegenerateMessage(backupCheckBox.isChecked()));
-				regenButton.enabled = false;
-				cancelButton.visible = false;
-				break;
-			case 1:
-				try
-				{
-					Desktop.getDesktop().open(WorldProviderCaveworld.getDimDir().getParentFile());
-				}
-				catch (Exception e) {}
+			switch (button.id)
+			{
+				case 0:
+					Caveworld.network.sendToServer(new RegenerateMessage(backupCheckBox.isChecked()));
 
-				break;
-			case 2:
-				mc.displayGuiScreen(null);
-				break;
+					regenButton.enabled = false;
+					cancelButton.visible = false;
+					break;
+				case 1:
+					try
+					{
+						Desktop.getDesktop().open(WorldProviderCaveworld.getDimDir().getParentFile());
+					}
+					catch (Exception e) {}
+
+					break;
+				case 2:
+					mc.displayGuiScreen(null);
+					break;
+			}
 		}
 	}
 
@@ -103,10 +141,12 @@ public class GuiRegenerate extends GuiScreen implements GuiYesNoCallback
 	public void drawScreen(int mouseX, int mouseY, float ticks)
 	{
 		drawGradientRect(0, 0, width, height, Integer.MIN_VALUE, Integer.MAX_VALUE);
+
 		GL11.glPushMatrix();
 		GL11.glScalef(1.5F, 1.5F, 1.5F);
 		drawCenteredString(fontRendererObj, I18n.format("caveworld.regenerate.gui.title"), width / 3, 30, 0xFFFFFF);
 		GL11.glPopMatrix();
+
 		drawCenteredString(fontRendererObj, I18n.format("caveworld.regenerate.gui.info"), width / 2, 90, 0xEEEEEE);
 
 		super.drawScreen(mouseX, mouseY, ticks);

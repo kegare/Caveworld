@@ -4,17 +4,16 @@
  * Copyright (c) 2014 kegare
  * https://github.com/kegare
  *
- * This mod is distributed under the terms of the Minecraft Mod Public License 1.0, or MMPL.
- * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
+ * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
  */
 
 package com.kegare.caveworld.core;
 
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
-import java.util.SortedSet;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -29,22 +28,17 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.EmptyCaveBiome;
 import com.kegare.caveworld.api.ICaveBiome;
 import com.kegare.caveworld.api.ICaveBiomeManager;
+import com.kegare.caveworld.util.CaveBiomeComparator;
 
-public class CaveBiomeManager implements ICaveBiomeManager, Function<CaveBiomeManager.CaveBiome, BiomeGenBase>
+public class CaveBiomeManager implements ICaveBiomeManager, Function<ICaveBiome, BiomeGenBase>
 {
-	private final SortedSet<CaveBiome> CAVE_BIOMES = Sets.newTreeSet(new Comparator<CaveBiome>()
-	{
-		@Override
-		public int compare(CaveBiome o1, CaveBiome o2)
-		{
-			return Integer.compare(o1.getBiome().biomeID, o2.getBiome().biomeID);
-		}
-	});
+	private final Set<ICaveBiome> CAVE_BIOMES = Sets.newTreeSet(new CaveBiomeComparator());
 
 	private final LoadingCache<Integer, BlockEntry> terrainBlockCache = CacheBuilder.newBuilder()
 		.maximumSize(BiomeGenBase.getBiomeGenArray().length).expireAfterWrite(3, TimeUnit.MINUTES).build(
@@ -73,6 +67,31 @@ public class CaveBiomeManager implements ICaveBiomeManager, Function<CaveBiomeMa
 				}
 			});
 
+	public static final Map<BiomeGenBase, ICaveBiome> defaultMapping = Maps.newHashMap();
+
+	static
+	{
+		defaultMapping.put(BiomeGenBase.ocean, new CaveBiome(BiomeGenBase.ocean, 15));
+		defaultMapping.put(BiomeGenBase.plains, new CaveBiome(BiomeGenBase.plains, 100));
+		defaultMapping.put(BiomeGenBase.desert, new CaveBiome(BiomeGenBase.desert, 70));
+		defaultMapping.put(BiomeGenBase.desertHills, new CaveBiome(BiomeGenBase.desertHills, 10));
+		defaultMapping.put(BiomeGenBase.forest, new CaveBiome(BiomeGenBase.forest, 80));
+		defaultMapping.put(BiomeGenBase.forestHills, new CaveBiome(BiomeGenBase.forestHills, 10));
+		defaultMapping.put(BiomeGenBase.taiga, new CaveBiome(BiomeGenBase.taiga, 80));
+		defaultMapping.put(BiomeGenBase.taigaHills, new CaveBiome(BiomeGenBase.taigaHills, 10));
+		defaultMapping.put(BiomeGenBase.jungle, new CaveBiome(BiomeGenBase.jungle, 80));
+		defaultMapping.put(BiomeGenBase.jungleHills, new CaveBiome(BiomeGenBase.jungleHills, 10));
+		defaultMapping.put(BiomeGenBase.swampland, new CaveBiome(BiomeGenBase.swampland, 60));
+		defaultMapping.put(BiomeGenBase.extremeHills, new CaveBiome(BiomeGenBase.extremeHills, 30));
+		defaultMapping.put(BiomeGenBase.icePlains, new CaveBiome(BiomeGenBase.icePlains, 15));
+		defaultMapping.put(BiomeGenBase.iceMountains, new CaveBiome(BiomeGenBase.iceMountains, 15));
+		defaultMapping.put(BiomeGenBase.mushroomIsland, new CaveBiome(BiomeGenBase.mushroomIsland, 10));
+		defaultMapping.put(BiomeGenBase.savanna, new CaveBiome(BiomeGenBase.savanna, 50));
+		defaultMapping.put(BiomeGenBase.mesa, new CaveBiome(BiomeGenBase.mesa, 50));
+		defaultMapping.put(BiomeGenBase.hell, new CaveBiome(BiomeGenBase.hell, 0, new BlockEntry(Blocks.netherrack, 0)));
+		defaultMapping.put(BiomeGenBase.sky, new CaveBiome(BiomeGenBase.sky, 0, new BlockEntry(Blocks.end_stone, 0)));
+	}
+
 	@Override
 	public boolean addCaveBiome(ICaveBiome biome)
 	{
@@ -88,7 +107,7 @@ public class CaveBiomeManager implements ICaveBiomeManager, Function<CaveBiomeMa
 				}
 			}
 
-			return CAVE_BIOMES.add((CaveBiome)biome);
+			return CAVE_BIOMES.add(biome);
 		}
 		finally
 		{
@@ -99,7 +118,7 @@ public class CaveBiomeManager implements ICaveBiomeManager, Function<CaveBiomeMa
 	@Override
 	public boolean removeCaveBiome(BiomeGenBase biome)
 	{
-		for (Iterator<CaveBiome> biomes = CAVE_BIOMES.iterator(); biomes.hasNext();)
+		for (Iterator<ICaveBiome> biomes = CAVE_BIOMES.iterator(); biomes.hasNext();)
 		{
 			if (biomes.next().getBiome().biomeID == biome.biomeID)
 			{
@@ -191,7 +210,7 @@ public class CaveBiomeManager implements ICaveBiomeManager, Function<CaveBiomeMa
 	}
 
 	@Override
-	public BiomeGenBase apply(CaveBiome input)
+	public BiomeGenBase apply(ICaveBiome input)
 	{
 		return input.getBiome();
 	}

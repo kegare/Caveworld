@@ -4,8 +4,7 @@
  * Copyright (c) 2014 kegare
  * https://github.com/kegare
  *
- * This mod is distributed under the terms of the Minecraft Mod Public License 1.0, or MMPL.
- * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
+ * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
  */
 
 package com.kegare.caveworld.util;
@@ -96,10 +95,7 @@ public class Version extends RecursiveAction
 			initialize();
 		}
 
-		ForkJoinPool pool = new ForkJoinPool();
-
-		pool.execute(new Version());
-		pool.shutdown();
+		new ForkJoinPool().execute(new Version());
 	}
 
 	public static String getCurrent()

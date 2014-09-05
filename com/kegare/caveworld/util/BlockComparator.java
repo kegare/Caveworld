@@ -4,8 +4,7 @@
  * Copyright (c) 2014 kegare
  * https://github.com/kegare
  *
- * This mod is distributed under the terms of the Minecraft Mod Public License 1.0, or MMPL.
- * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
+ * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
  */
 
 package com.kegare.caveworld.util;
@@ -21,14 +20,14 @@ public class BlockComparator implements Comparator<Block>
 	@Override
 	public int compare(Block o1, Block o2)
 	{
-		int i = compareWithNull(o1, o2);
+		int i = CaveUtils.compareWithNull(o1, o2);
 
 		if (i == 0 && o1 != null && o2 != null)
 		{
 			UniqueIdentifier unique1 = GameRegistry.findUniqueIdentifierFor(o1);
 			UniqueIdentifier unique2 = GameRegistry.findUniqueIdentifierFor(o2);
 
-			i = compareWithNull(unique1, unique2);
+			i = CaveUtils.compareWithNull(unique1, unique2);
 
 			if (i == 0 && unique1 != null && unique2 != null)
 			{
@@ -42,10 +41,5 @@ public class BlockComparator implements Comparator<Block>
 		}
 
 		return i;
-	}
-
-	private int compareWithNull(Object o1, Object o2)
-	{
-		return (o1 == null ? 1 : 0) - (o2 == null ? 1 : 0);
 	}
 }

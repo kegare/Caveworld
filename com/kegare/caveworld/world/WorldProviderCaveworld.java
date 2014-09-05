@@ -4,8 +4,7 @@
  * Copyright (c) 2014 kegare
  * https://github.com/kegare
  *
- * This mod is distributed under the terms of the Minecraft Mod Public License 1.0, or MMPL.
- * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
+ * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
  */
 
 package com.kegare.caveworld.world;
@@ -14,8 +13,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.security.SecureRandom;
+import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.RecursiveTask;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.event.ClickEvent;
@@ -43,13 +43,14 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Level;
 
+import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
+import com.kegare.caveworld.client.renderer.EmptyRenderer;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.network.CaveSoundMessage;
 import com.kegare.caveworld.network.RegenerateMessage;
-import com.kegare.caveworld.renderer.EmptyRenderer;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.world.gen.MapGenStrongholdCaveworld;
@@ -201,24 +202,20 @@ public final class WorldProviderCaveworld extends WorldProviderSurface
 	public static void regenerate(final boolean backup)
 	{
 		final MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
-		EntityPlayerMP player;
+		Set<EntityPlayerMP> target = Sets.newHashSet();
 
 		for (Object obj : server.getConfigurationManager().playerEntityList.toArray())
 		{
-			player = (EntityPlayerMP)obj;
-
-			if (CaveworldAPI.isEntityInCaveworld(player))
+			if (CaveworldAPI.isEntityInCaveworld((EntityPlayerMP)obj))
 			{
-				CaveUtils.respawnPlayer(player, 0);
+				target.add(CaveUtils.respawnPlayer((EntityPlayerMP)obj, 0));
 			}
 		}
 
-		ForkJoinPool pool = new ForkJoinPool();
-
-		pool.execute(new RecursiveAction()
+		boolean result = new ForkJoinPool().invoke(new RecursiveTask<Boolean>()
 		{
 			@Override
-			protected void compute()
+			protected Boolean compute()
 			{
 				IChatComponent component;
 
@@ -308,6 +305,8 @@ public final class WorldProviderCaveworld extends WorldProviderSurface
 					server.getConfigurationManager().sendChatMsg(component);
 
 					Caveworld.network.sendToAll(new RegenerateMessage.ProgressNotify(2));
+
+					return true;
 				}
 				catch (Exception e)
 				{
@@ -319,10 +318,21 @@ public final class WorldProviderCaveworld extends WorldProviderSurface
 
 					CaveLog.log(Level.ERROR, e, component.getUnformattedText());
 				}
+
+				return false;
 			}
 		});
 
-		pool.shutdown();
+		if (result && (Config.hardcore || Config.caveborn))
+		{
+			for (EntityPlayerMP player : target)
+			{
+				if (!CaveworldAPI.isEntityInCaveworld(player))
+				{
+					CaveUtils.forceTeleport(player, CaveworldAPI.getDimension());
+				}
+			}
+		}
 	}
 
 	private int ambientTickCountdown = 0;

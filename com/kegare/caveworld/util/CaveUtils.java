@@ -4,8 +4,7 @@
  * Copyright (c) 2014 kegare
  * https://github.com/kegare
  *
- * This mod is distributed under the terms of the Minecraft Mod Public License 1.0, or MMPL.
- * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
+ * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
  */
 
 package com.kegare.caveworld.util;
@@ -16,6 +15,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -32,10 +32,15 @@ import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.ForgeHooks;
+import net.minecraftforge.common.config.ConfigCategory;
+import net.minecraftforge.common.config.Configuration;
 
 import org.apache.commons.io.FilenameUtils;
 
+import com.google.common.base.Function;
 import com.google.common.base.Strings;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Lists;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
@@ -48,6 +53,18 @@ import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 public class CaveUtils
 {
 	public static boolean mcpc = FMLCommonHandler.instance().getModName().contains("mcpc");
+
+	public static List<ConfigCategory> getConfigCategories(final Configuration config)
+	{
+		return Lists.newArrayList(Collections2.transform(config.getCategoryNames(), new Function<String, ConfigCategory>()
+		{
+			@Override
+			public ConfigCategory apply(String category)
+			{
+				return config.getCategory(category);
+			}
+		}));
+	}
 
 	public static ModContainer getModContainer()
 	{
@@ -261,5 +278,10 @@ public class CaveUtils
 				}
 			}
 		}
+	}
+
+	public static int compareWithNull(Object o1, Object o2)
+	{
+		return (o1 == null ? 1 : 0) - (o2 == null ? 1 : 0);
 	}
 }

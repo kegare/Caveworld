@@ -4,8 +4,7 @@
  * Copyright (c) 2014 kegare
  * https://github.com/kegare
  *
- * This mod is distributed under the terms of the Minecraft Mod Public License 1.0, or MMPL.
- * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
+ * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
  */
 
 package com.kegare.caveworld.core;
@@ -55,8 +54,6 @@ public class Config
 	public static Configuration dimensionCfg;
 	public static Configuration biomesCfg;
 	public static Configuration veinsCfg;
-
-	private static final Map<Integer, ICaveBiome> biomesDefaultMap = Maps.newHashMap();
 
 	public static boolean versionNotify;
 	public static boolean veinsAutoRegister;
@@ -362,29 +359,6 @@ public class Config
 			CaveworldAPI.clearCaveBiomes();
 		}
 
-		if (biomesDefaultMap.isEmpty())
-		{
-			biomesDefaultMap.put(BiomeGenBase.ocean.biomeID, new CaveBiome(null, 15));
-			biomesDefaultMap.put(BiomeGenBase.plains.biomeID, new CaveBiome(null, 100));
-			biomesDefaultMap.put(BiomeGenBase.desert.biomeID, new CaveBiome(null, 70));
-			biomesDefaultMap.put(BiomeGenBase.desertHills.biomeID, new CaveBiome(null, 10));
-			biomesDefaultMap.put(BiomeGenBase.forest.biomeID, new CaveBiome(null, 80));
-			biomesDefaultMap.put(BiomeGenBase.forestHills.biomeID, new CaveBiome(null, 10));
-			biomesDefaultMap.put(BiomeGenBase.taiga.biomeID, new CaveBiome(null, 80));
-			biomesDefaultMap.put(BiomeGenBase.taigaHills.biomeID, new CaveBiome(null, 10));
-			biomesDefaultMap.put(BiomeGenBase.jungle.biomeID, new CaveBiome(null, 80));
-			biomesDefaultMap.put(BiomeGenBase.jungleHills.biomeID, new CaveBiome(null, 10));
-			biomesDefaultMap.put(BiomeGenBase.swampland.biomeID, new CaveBiome(null, 60));
-			biomesDefaultMap.put(BiomeGenBase.extremeHills.biomeID, new CaveBiome(null, 30));
-			biomesDefaultMap.put(BiomeGenBase.icePlains.biomeID, new CaveBiome(null, 15));
-			biomesDefaultMap.put(BiomeGenBase.iceMountains.biomeID, new CaveBiome(null, 15));
-			biomesDefaultMap.put(BiomeGenBase.mushroomIsland.biomeID, new CaveBiome(null, 10));
-			biomesDefaultMap.put(BiomeGenBase.savanna.biomeID, new CaveBiome(null, 50));
-			biomesDefaultMap.put(BiomeGenBase.mesa.biomeID, new CaveBiome(null, 50));
-			biomesDefaultMap.put(BiomeGenBase.hell.biomeID, new CaveBiome(null, 0, new BlockEntry(Blocks.netherrack, 0)));
-			biomesDefaultMap.put(BiomeGenBase.sky.biomeID, new CaveBiome(null, 0, new BlockEntry(Blocks.end_stone, 0)));
-		}
-
 		String name;
 		int weight;
 		String block;
@@ -397,9 +371,9 @@ public class Config
 				continue;
 			}
 
-			if (biomesDefaultMap.containsKey(biome.biomeID))
+			if (CaveBiomeManager.defaultMapping.containsKey(biome))
 			{
-				ICaveBiome entry = biomesDefaultMap.get(biome.biomeID);
+				ICaveBiome entry = CaveBiomeManager.defaultMapping.get(biome);
 
 				weight = entry.getGenWeight();
 				block = Block.blockRegistry.getNameForObject(entry.getTerrainBlock().getBlock());
@@ -413,7 +387,7 @@ public class Config
 			}
 
 			propOrder.clear();
-			name = String.valueOf(biome.biomeID);
+			name = Integer.toString(biome.biomeID);
 			prop = biomesCfg.get(name, "genWeight", weight);
 			prop.setMinValue(0).setMaxValue(100).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");

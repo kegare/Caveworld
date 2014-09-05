@@ -4,35 +4,31 @@
  * Copyright (c) 2014 kegare
  * https://github.com/kegare
  *
- * This mod is distributed under the terms of the Minecraft Mod Public License 1.0, or MMPL.
- * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
+ * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
  */
 
 package com.kegare.caveworld.client.config;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 
-import net.minecraft.world.biome.BiomeGenBase;
-import net.minecraftforge.common.BiomeDictionary;
-import net.minecraftforge.common.BiomeDictionary.Type;
-import net.minecraftforge.common.config.ConfigCategory;
-import net.minecraftforge.common.config.ConfigElement;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.common.config.Property;
 
-import org.apache.commons.lang3.math.NumberUtils;
-
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import com.kegare.caveworld.api.CaveworldAPI;
+import com.kegare.caveworld.api.ICaveBiome;
+import com.kegare.caveworld.core.CaveBiomeManager;
+import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
-import com.kegare.caveworld.util.ArrayListExtended;
-import com.kegare.caveworld.util.ConfigCategoryFunction;
 
 import cpw.mods.fml.client.config.GuiConfig;
 import cpw.mods.fml.client.config.GuiConfigEntries;
 import cpw.mods.fml.client.config.IConfigElement;
+import cpw.mods.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
+import cpw.mods.fml.client.event.ConfigChangedEvent.PostConfigChangedEvent;
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.eventhandler.Event.Result;
+import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -51,74 +47,52 @@ public class BiomesEntry extends CaveCategoryEntry
 	}
 
 	@Override
-	protected List<IConfigElement> getConfigElements()
+	protected GuiScreen buildChildScreen()
 	{
-		List<IConfigElement> list = Lists.newArrayList();
-		ArrayListExtended<String> names = new ArrayListExtended(getConfig().getCategoryNames())
-			.sort(new Comparator<String>()
-			{
-				@Override
-				public int compare(String o1, String o2)
-				{
-					return Integer.compare(Integer.parseInt(o1), Integer.parseInt(o2));
-				}
-			});
-
-		List<ConfigCategory> categories = Lists.transform(names, new ConfigCategoryFunction(getConfig()));
-
-		for (ConfigCategory category : categories)
-		{
-			list.add(new BiomeElement(category));
-		}
-
-		return list;
+		return new GuiBiomesEntry(owningScreen);
 	}
 
-	public static class BiomeElement extends ConfigElement
+	@Override
+	public boolean isDefault()
 	{
-		private final ConfigCategory category;
-		private BiomeGenBase biome;
+		return false;
+	}
 
-		public BiomeElement(ConfigCategory category)
+	@Override
+	public void setToDefault()
+	{
+		CaveworldAPI.clearCaveBiomes();
+
+		List<Property> properties;
+
+		for (ICaveBiome entry : CaveBiomeManager.defaultMapping.values())
 		{
-			super(category);
-			this.category = category;
-			this.biome = BiomeGenBase.getBiome(NumberUtils.toInt(category.getName(), BiomeGenBase.plains.biomeID));
+			properties = getConfig().getCategory(Integer.toString(entry.getBiome().biomeID)).getOrderedValues();
+			properties.get(0).set(entry.getGenWeight());
+			properties.get(1).set(GameData.getBlockRegistry().getNameForObject(entry.getTerrainBlock().getBlock()));
+			properties.get(2).set(entry.getTerrainBlock().getMetadata());
 		}
 
-		public BiomeGenBase getBiome()
+		OnConfigChangedEvent event = new OnConfigChangedEvent(Caveworld.MODID, "biomes", mc.theWorld != null, false);
+
+		FMLCommonHandler.instance().bus().post(event);
+
+		if (!event.getResult().equals(Result.DENY))
 		{
-			return biome == null ? BiomeGenBase.plains : biome;
+			FMLCommonHandler.instance().bus().post(new PostConfigChangedEvent(event.modID, event.configID, event.isWorldRunning, event.requiresMcRestart));
 		}
 
-		@Override
-		public String getName()
+		if (childScreen instanceof GuiBiomesEntry)
 		{
-			return BiomeGenBase.getBiome(Integer.parseInt(super.getName())).biomeName;
-		}
+			GuiBiomesEntry gui = (GuiBiomesEntry)childScreen;
 
-		@Override
-		public String getComment()
-		{
-			List<String> list = Lists.newArrayList();
-			list.add(category.get("genWeight").getString());
-			list.add(category.get("terrainBlock").getString());
-			list.add(category.get("terrainBlockMetadata").getString());
-			String data = Joiner.on(", ").skipNulls().join(list);
-
-			if (BiomeDictionary.isBiomeRegistered(getBiome()))
+			if (gui.biomeList != null)
 			{
-				Set<String> types = Sets.newTreeSet();
-
-				for (Type type : BiomeDictionary.getTypesForBiome(getBiome()))
-				{
-					types.add(type.name());
-				}
-
-				return super.getName() + ": " + Joiner.on(", ").skipNulls().join(types) + " [" + data + "]";
+				gui.biomeList.biomes.clear();
+				gui.biomeList.biomes.addAll(CaveworldAPI.getCaveBiomes());
+				gui.biomeList.contents.clear();
+				gui.biomeList.contents.addAll(gui.biomeList.biomes);
 			}
-
-			return super.getName() + ": [" + data + "]";
 		}
 	}
 }

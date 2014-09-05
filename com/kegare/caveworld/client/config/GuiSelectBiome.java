@@ -4,8 +4,7 @@
  * Copyright (c) 2014 kegare
  * https://github.com/kegare
  *
- * This mod is distributed under the terms of the Minecraft Mod Public License 1.0, or MMPL.
- * Please check the contents of the license located in http://www.mod-buildcraft.com/MMPL-1.0.txt
+ * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
  */
 
 package com.kegare.caveworld.client.config;
@@ -33,6 +32,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -44,7 +44,6 @@ import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.util.ArrayListExtended;
-import com.kegare.caveworld.util.BiomeIdFunction;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
@@ -57,13 +56,19 @@ import cpw.mods.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class GuiSelectBiome extends GuiScreen
 {
-	protected final GuiScreen parentScreen;
-	protected final ArrayEntry parentElement;
+	public interface SelectListener
+	{
+		public void setResult(List<Integer> result);
+	}
 
-	private GuiButtonExt doneButton;
-	private GuiCheckBox instantFilter;
-	private GuiTextField filterTextField;
-	private BiomeList biomeList;
+	protected final GuiScreen parentScreen;
+	protected ArrayEntry parentElement;
+
+	protected BiomeList biomeList;
+
+	protected GuiButton doneButton;
+	protected GuiCheckBox instantFilter;
+	protected GuiTextField filterTextField;
 
 	private HoverChecker selectedHoverChecker;
 	private HoverChecker instantHoverChecker;
@@ -71,27 +76,54 @@ public class GuiSelectBiome extends GuiScreen
 	private static final Map<String, List<BiomeGenBase>> filterCache = Maps.newHashMap();
 	private final Map<BiomeGenBase, List<String>> infoCache = Maps.newHashMap();
 
-	public GuiSelectBiome(GuiScreen parent, ArrayEntry entry)
+	public GuiSelectBiome(GuiScreen parent)
 	{
 		this.parentScreen = parent;
+	}
+
+	public GuiSelectBiome(GuiScreen parent, ArrayEntry entry)
+	{
+		this(parent);
 		this.parentElement = entry;
 	}
 
 	@Override
 	public void initGui()
 	{
-		doneButton = new GuiButtonExt(0, width / 2 - 155 + 165, height - 24, 145, 20, I18n.format("gui.done"));
-		instantFilter = new GuiCheckBox(1, width / 2 - 155 + 250, 8, I18n.format(Caveworld.CONFIG_LANG + "select.instant"), CaveConfigGui.instantFilter);
+		if (biomeList == null)
+		{
+			biomeList = new BiomeList(this);
+		}
+
+		biomeList.func_148122_a(width, height, 32, height - 28);
+
+		if (doneButton == null)
+		{
+			doneButton = new GuiButtonExt(0, 0, 0, 145, 20, I18n.format("gui.done"));
+		}
+
+		doneButton.xPosition = width / 2 + 10;
+		doneButton.yPosition = height - doneButton.height - 4;
+
+		if (instantFilter == null)
+		{
+			instantFilter = new GuiCheckBox(1, 0, 8, I18n.format(Caveworld.CONFIG_LANG + "instant"), CaveConfigGui.instantFilter);
+		}
+
+		instantFilter.xPosition = width / 2 + 95;
 
 		buttonList.clear();
 		buttonList.add(doneButton);
 		buttonList.add(instantFilter);
 
-		filterTextField = new GuiTextField(fontRendererObj, width / 2 - 155, height - 23, 150, 16);
-		filterTextField.setMaxStringLength(100);
+		if (filterTextField == null)
+		{
+			filterTextField = new GuiTextField(fontRendererObj, 0, 0, 150, 16);
+			filterTextField.setMaxStringLength(100);
+		}
 
-		biomeList = new BiomeList(this);
-		biomeList.registerScrollButtons(2, 3);
+		filterTextField.xPosition = width / 2 - filterTextField.width - 5;
+		filterTextField.yPosition = height - filterTextField.height - 6;
 
 		selectedHoverChecker = new HoverChecker(0, 20, 0, 100, 800);
 		instantHoverChecker = new HoverChecker(instantFilter, 800);
@@ -107,16 +139,33 @@ public class GuiSelectBiome extends GuiScreen
 				case 0:
 					if (biomeList.selected.isEmpty())
 					{
-						parentElement.setListFromChildScreen(new Object[0]);
+						if (parentElement != null)
+						{
+							parentElement.setListFromChildScreen(new Object[0]);
+						}
 					}
 					else
 					{
-						List<Integer> list = Lists.transform(Lists.newArrayList(biomeList.selected), new BiomeIdFunction());
-						List<Integer> result = Lists.newArrayList(list);
+						List<Integer> result = Lists.newArrayList(Collections2.transform(biomeList.selected, new Function<BiomeGenBase, Integer>()
+						{
+							@Override
+							public Integer apply(BiomeGenBase biome)
+							{
+								return biome == null ? 0 : biome.biomeID;
+							}
+						}));
 
 						Collections.sort(result);
 
-						parentElement.setListFromChildScreen(result.toArray());
+						if (parentScreen instanceof SelectListener)
+						{
+							((SelectListener)parentScreen).setResult(result);
+						}
+
+						if (parentElement != null)
+						{
+							parentElement.setListFromChildScreen(result.toArray());
+						}
 					}
 
 					mc.displayGuiScreen(parentScreen);
@@ -212,7 +261,7 @@ public class GuiSelectBiome extends GuiScreen
 
 		if (instantHoverChecker.checkHover(mouseX, mouseY))
 		{
-			func_146283_a(fontRendererObj.listFormattedStringToWidth(I18n.format(Caveworld.CONFIG_LANG + "select.instant.hover"), 300), mouseX, mouseY);
+			func_146283_a(fontRendererObj.listFormattedStringToWidth(I18n.format(Caveworld.CONFIG_LANG + "instant.hover"), 300), mouseX, mouseY);
 		}
 	}
 
@@ -294,6 +343,14 @@ public class GuiSelectBiome extends GuiScreen
 					biomeList.scrollBy(biomeList.contents.indexOf(biomeList.selected.iterator().next()) * biomeList.getSlotHeight());
 				}
 			}
+			else if (code == Keyboard.KEY_HOME)
+			{
+				biomeList.scrollBy(-biomeList.getAmountScrolled());
+			}
+			else if (code == Keyboard.KEY_END)
+			{
+				biomeList.scrollBy(biomeList.getSlotHeight() * biomeList.getSize());
+			}
 			else if (code == Keyboard.KEY_F || code == mc.gameSettings.keyBindChat.getKeyCode())
 			{
 				filterTextField.setFocused(true);
@@ -313,24 +370,26 @@ public class GuiSelectBiome extends GuiScreen
 		CaveConfigGui.instantFilter = instantFilter.isChecked();
 	}
 
-	private static class BiomeList extends GuiSlot implements Comparator<BiomeGenBase>
+	protected static class BiomeList extends GuiSlot implements Comparator<BiomeGenBase>
 	{
-		private static final ArrayListExtended<BiomeGenBase> biomes = new ArrayListExtended<BiomeGenBase>().addAllObject(BiomeGenBase.getBiomeGenArray());
+		protected static final ArrayListExtended<BiomeGenBase> biomes = new ArrayListExtended<BiomeGenBase>().addAllObject(BiomeGenBase.getBiomeGenArray());
 
-		private final GuiSelectBiome parent;
+		protected final GuiSelectBiome parent;
 
-		private final ArrayListExtended<BiomeGenBase> contents = new ArrayListExtended(biomes);
+		protected final ArrayListExtended<BiomeGenBase> contents = new ArrayListExtended(biomes);
+		protected final Set<BiomeGenBase> selected = Sets.newTreeSet(this);
 
-		private final Set<BiomeGenBase> selected = Sets.newTreeSet(this);
-
-		public BiomeList(GuiSelectBiome parent)
+		private BiomeList(GuiSelectBiome parent)
 		{
-			super(parent.mc, parent.width, parent.height, 32, parent.height - 28, 18);
+			super(parent.mc, 0, 0, 0, 0, 18);
 			this.parent = parent;
 
-			for (Object obj : parent.parentElement.getCurrentValues())
+			if (parent.parentElement != null)
 			{
-				selected.add(BiomeGenBase.getBiome(Integer.parseInt(String.valueOf(obj))));
+				for (Object obj : parent.parentElement.getCurrentValues())
+				{
+					selected.add(BiomeGenBase.getBiome(Integer.parseInt(String.valueOf(obj))));
+				}
 			}
 		}
 
@@ -391,9 +450,7 @@ public class GuiSelectBiome extends GuiScreen
 
 		protected void setFilter(final String filter)
 		{
-			ForkJoinPool pool = new ForkJoinPool();
-
-			pool.execute(new RecursiveAction()
+			new ForkJoinPool().execute(new RecursiveAction()
 			{
 				@Override
 				protected void compute()
@@ -421,8 +478,6 @@ public class GuiSelectBiome extends GuiScreen
 					}
 				}
 			});
-
-			pool.shutdown();
 		}
 	}
 
