@@ -12,7 +12,6 @@ package com.kegare.caveworld.client.config;
 import java.util.Iterator;
 import java.util.List;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.init.Blocks;
 import net.minecraftforge.common.config.ConfigCategory;
@@ -38,6 +37,7 @@ import cpw.mods.fml.client.config.GuiConfig;
 import cpw.mods.fml.client.config.GuiConfigEntries;
 import cpw.mods.fml.client.config.GuiConfigEntries.StringEntry;
 import cpw.mods.fml.client.config.IConfigElement;
+import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -117,13 +117,13 @@ public class VeinsEntry extends CaveCategoryEntry
 			List<IConfigElement> list = Lists.newArrayList();
 
 			list.add(new ConfigElement<String>(new Property("veinName", "", Property.Type.STRING, Caveworld.CONFIG_LANG + "veins.veinName").setConfigEntryClass(CaveVeinManager.veinEntryClass)));
-			list.add(new ConfigElement<String>(new Property("block", Block.blockRegistry.getNameForObject(Blocks.stone), Property.Type.STRING, Caveworld.CONFIG_LANG + "veins.block").setConfigEntryClass(Config.selectBlockEntryClass)));
+			list.add(new ConfigElement<String>(new Property("block", GameData.getBlockRegistry().getNameForObject(Blocks.stone), Property.Type.STRING, Caveworld.CONFIG_LANG + "veins.block").setConfigEntryClass(Config.selectBlockEntryClass)));
 			list.add(new ConfigElement<Integer>(new Property("blockMetadata", "0", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.blockMetadata").setMinValue(0).setMaxValue(15)));
 			list.add(new ConfigElement<Integer>(new Property("genBlockCount", "1", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genBlockCount").setMinValue(1).setMaxValue(100)));
 			list.add(new ConfigElement<Integer>(new Property("genWeight", "1", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genWeight").setMinValue(0).setMaxValue(100)));
 			list.add(new ConfigElement<Integer>(new Property("genMinHeight", "0", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genMinHeight").setMinValue(0).setMaxValue(254)));
 			list.add(new ConfigElement<Integer>(new Property("genMaxHeight", "255", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genMaxHeight").setMinValue(1).setMaxValue(255)));
-			list.add(new ConfigElement<String>(new Property("genTargetBlock", Block.blockRegistry.getNameForObject(Blocks.stone), Property.Type.STRING, Caveworld.CONFIG_LANG + "veins.genTargetBlock").setConfigEntryClass(Config.selectBlockEntryClass)));
+			list.add(new ConfigElement<String>(new Property("genTargetBlock", GameData.getBlockRegistry().getNameForObject(Blocks.stone), Property.Type.STRING, Caveworld.CONFIG_LANG + "veins.genTargetBlock").setConfigEntryClass(Config.selectBlockEntryClass)));
 			list.add(new ConfigElement<Integer>(new Property("genTargetBlockMetadata", "0", Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genTargetBlockMetadata").setMinValue(0).setMaxValue(15)));
 			list.add(new ConfigElement<Integer>(new Property("genBiomes", new String[0], Property.Type.INTEGER, Caveworld.CONFIG_LANG + "veins.genBiomes").setConfigEntryClass(Config.selectBiomeEntryClass)));
 
@@ -180,7 +180,7 @@ public class VeinsEntry extends CaveCategoryEntry
 			int weight = 1;
 			int min = 0;
 			int max = 255;
-			String target = Block.blockRegistry.getNameForObject(Blocks.stone);
+			String target = GameData.getBlockRegistry().getNameForObject(Blocks.stone);
 			int targetMetadata = 0;
 			int[] biomes = new int[] {};
 

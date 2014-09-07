@@ -15,14 +15,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
-import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
@@ -36,6 +34,7 @@ import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.api.ICaveBiome;
+import com.kegare.caveworld.api.ICaveVein;
 import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome;
 import com.kegare.caveworld.core.CaveVeinManager.CaveVein;
 import com.kegare.caveworld.util.CaveLog;
@@ -43,6 +42,7 @@ import com.kegare.caveworld.util.Version;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
 
 public class Config
@@ -71,6 +71,7 @@ public class Config
 	public static int dimensionCaveworld;
 	public static int subsurfaceHeight;
 	public static boolean generateCaves;
+	public static boolean generateExtremeCaves;
 	public static boolean generateRavine;
 	public static boolean generateMineshaft;
 	public static boolean generateStronghold;
@@ -287,7 +288,7 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		dimensionCaveworld = prop.getInt(dimensionCaveworld);
-		prop = dimensionCfg.get(category, "subsurfaceHeight", 127);
+		prop = dimensionCfg.get(category, "subsurfaceHeight", 255);
 		prop.setMinValue(63).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
@@ -299,6 +300,12 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		generateCaves = prop.getBoolean(generateCaves);
+		prop = dimensionCfg.get(category, "generateExtremeCaves", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		generateExtremeCaves = prop.getBoolean(generateExtremeCaves);
 		prop = dimensionCfg.get(category, "generateRavine", true);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -376,13 +383,13 @@ public class Config
 				ICaveBiome entry = CaveBiomeManager.defaultMapping.get(biome);
 
 				weight = entry.getGenWeight();
-				block = Block.blockRegistry.getNameForObject(entry.getTerrainBlock().getBlock());
+				block = GameData.getBlockRegistry().getNameForObject(entry.getTerrainBlock().getBlock());
 				metadata = entry.getTerrainBlock().getMetadata();
 			}
 			else
 			{
 				weight = 0;
-				block = Block.blockRegistry.getNameForObject(Blocks.stone);
+				block = GameData.getBlockRegistry().getNameForObject(Blocks.stone);
 				metadata = 0;
 			}
 
@@ -450,7 +457,7 @@ public class Config
 
 		if (veinsCfg.getCategoryNames().isEmpty())
 		{
-			Map<String, CaveVein> veins = Maps.newHashMap();
+			Map<String, ICaveVein> veins = Maps.newHashMap();
 
 			veins.put("Coal Ore Vein", new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 17, 20, 0, 255));
 			veins.put("Iron Ore Vein", new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 10, 28, 0, 255));
@@ -468,48 +475,16 @@ public class Config
 			veins.put("Hardened Clay Vein, 0", new CaveVein(new BlockEntry(Blocks.hardened_clay, 1), 24, 20, 0, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
 			veins.put("Hardened Clay Vein, 1", new CaveVein(new BlockEntry(Blocks.hardened_clay, 12), 24, 14, 0, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
 
-			for (Entry<String, CaveVein> entry : veins.entrySet())
+			for (Entry<String, ICaveVein> entry : veins.entrySet())
 			{
 				CaveworldAPI.addCaveVeinWithConfig(entry.getKey(), entry.getValue());
 			}
 		}
-		else
+		else for (String name : veinsCfg.getCategoryNames())
 		{
-			ConfigCategory category;
-
-			for (String name : veinsCfg.getCategoryNames())
+			if (!CaveworldAPI.addCaveVeinFromConfig(name))
 			{
-				try
-				{
-					category = veinsCfg.getCategory(name);
-
-					if (!Block.blockRegistry.containsKey(category.get("block").getString()) || category.get("genWeight").getInt() <= 0)
-					{
-						veinsCfg.removeCategory(category);
-					}
-					else
-					{
-						Property prop = category.get("genTargetBlock");
-
-						if (!Block.blockRegistry.containsKey(prop.getString()))
-						{
-							prop.set(Block.blockRegistry.getNameForObject(Blocks.stone));
-						}
-
-						prop = category.get("genMinHeight");
-
-						if (prop.getInt() > category.get("genMaxHeight").getInt())
-						{
-							prop.set(0);
-						}
-
-						CaveworldAPI.addCaveVeinFromConfig(name);
-					}
-				}
-				catch (Exception e)
-				{
-					continue;
-				}
+				veinsCfg.removeCategory(veinsCfg.getCategory(name));
 			}
 		}
 

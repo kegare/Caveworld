@@ -9,16 +9,19 @@
 
 package com.kegare.caveworld.util;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.net.URI;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
-import java.util.zip.Deflater;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import java.util.Map;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
@@ -35,12 +38,11 @@ import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 
-import org.apache.commons.io.FilenameUtils;
-
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
@@ -195,88 +197,63 @@ public class CaveUtils
 		return player.playerNetServerHandler.playerEntity;
 	}
 
-	public static boolean archiveDirZip(File dir, File dest)
+	public static boolean archiveDirZip(final File dir, final File dest)
 	{
-		ZipOutputStream zos = null;
+		final Path dirPath = dir.toPath();
+		final String parent = dir.getName();
+		Map<String, String> env = Maps.newHashMap();
+		env.put("create", "true");
+		URI uri = dest.toURI();
 
 		try
 		{
-			zos = new ZipOutputStream(new FileOutputStream(dest), Charset.defaultCharset());
-			zos.setLevel(Deflater.BEST_COMPRESSION);
+			uri = new URI("jar:" + uri.getScheme(), uri.getPath(), null);
+		}
+		catch (Exception e)
+		{
+			return false;
+		}
 
-			addEntry(zos, dir, dir.getName());
+		try (FileSystem zipfs = FileSystems.newFileSystem(uri, env))
+		{
+			Files.createDirectory(zipfs.getPath(parent));
+
+			for (File file : dir.listFiles())
+			{
+				if (file.isDirectory())
+				{
+					Files.walkFileTree(file.toPath(), new SimpleFileVisitor<Path>()
+					{
+						@Override
+						public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException
+						{
+							Files.copy(file, zipfs.getPath(parent, dirPath.relativize(file).toString()), StandardCopyOption.REPLACE_EXISTING);
+
+							return FileVisitResult.CONTINUE;
+						}
+
+						@Override
+						public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException
+						{
+							Files.createDirectory(zipfs.getPath(parent, dirPath.relativize(dir).toString()));
+
+							return FileVisitResult.CONTINUE;
+						}
+					});
+				}
+				else
+				{
+					Files.copy(file.toPath(), zipfs.getPath(parent, file.getName()), StandardCopyOption.REPLACE_EXISTING);
+				}
+			}
 
 			return true;
 		}
-		catch (IOException e)
+		catch (Exception e)
 		{
 			e.printStackTrace();
 
 			return false;
-		}
-		finally
-		{
-			if (zos != null)
-			{
-				try
-				{
-					zos.close();
-				}
-				catch (IOException e) {}
-			}
-		}
-	}
-
-	private static void addEntry(ZipOutputStream zos, File dir, String root)
-	{
-		for (File file : dir.listFiles())
-		{
-			if (file.isDirectory())
-			{
-				addEntry(zos, file, root + File.separator + file.getName());
-			}
-			else
-			{
-				BufferedInputStream input = null;
-
-				try
-				{
-					input = new BufferedInputStream(new FileInputStream(file));
-
-					zos.putNextEntry(new ZipEntry(root + File.separator + FilenameUtils.getName(file.getAbsolutePath())));
-
-					byte[] buf = new byte[1024];
-
-					for (;;)
-					{
-						int len = input.read(buf);
-
-						if (len < 0)
-						{
-							break;
-						}
-
-						zos.write(buf, 0, len);
-					}
-
-					zos.closeEntry();
-				}
-				catch (IOException e)
-				{
-					e.printStackTrace();
-				}
-				finally
-				{
-					if (input != null)
-					{
-						try
-						{
-							input.close();
-						}
-						catch (IOException e) {}
-					}
-				}
-			}
 		}
 	}
 

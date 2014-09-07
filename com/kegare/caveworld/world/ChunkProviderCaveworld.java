@@ -52,6 +52,7 @@ import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.api.ICaveVein;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.world.gen.MapGenCavesCaveworld;
+import com.kegare.caveworld.world.gen.MapGenExtremeCaves;
 import com.kegare.caveworld.world.gen.MapGenRavineCaveworld;
 import com.kegare.caveworld.world.gen.MapGenStrongholdCaveworld;
 
@@ -62,6 +63,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	private final boolean generateStructures;
 
 	private final MapGenBase caveGenerator = new MapGenCavesCaveworld();
+	private final MapGenBase extremeCaveGenerator = new MapGenExtremeCaves();
 	private final MapGenBase ravineGenerator = new MapGenRavineCaveworld();
 	private MapGenStronghold strongholdGenerator = new MapGenStrongholdCaveworld();
 	private MapGenMineshaft mineshaftGenerator = new MapGenMineshaft();
@@ -102,8 +104,20 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		Arrays.fill(blocks, block);
 		Arrays.fill(metadata, (byte)meta);
 
-		if (Config.generateCaves) caveGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
-		if (Config.generateRavine) ravineGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
+		if (Config.generateCaves)
+		{
+			caveGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
+		}
+
+		if (Config.generateExtremeCaves)
+		{
+			extremeCaveGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
+		}
+
+		if (Config.generateRavine)
+		{
+			ravineGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
+		}
 
 		if (generateStructures)
 		{
@@ -481,8 +495,15 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	{
 		if (generateStructures)
 		{
-			if (Config.generateMineshaft) mineshaftGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, null);
-			if (Config.generateStronghold) strongholdGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, null);
+			if (Config.generateMineshaft)
+			{
+				mineshaftGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, null);
+			}
+
+			if (Config.generateStronghold)
+			{
+				strongholdGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, null);
+			}
 		}
 	}
 }

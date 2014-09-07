@@ -35,9 +35,11 @@ import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.ICaveVein;
 import com.kegare.caveworld.api.ICaveVeinManager;
 
+import cpw.mods.fml.common.registry.GameData;
+
 public class CaveVeinManager implements ICaveVeinManager
 {
-	private final Map<String, CaveVein> CAVE_VEINS = Maps.newHashMap();
+	private final Map<String, ICaveVein> CAVE_VEINS = Maps.newHashMap();
 
 	public static Class veinEntryClass = null;
 
@@ -49,7 +51,7 @@ public class CaveVeinManager implements ICaveVeinManager
 			return false;
 		}
 
-		CAVE_VEINS.put(name, (CaveVein)vein);
+		CAVE_VEINS.put(name, vein);
 
 		return true;
 	}
@@ -71,10 +73,11 @@ public class CaveVeinManager implements ICaveVeinManager
 		Property prop;
 		List<String> propOrder = Lists.newArrayList();
 
-		prop = Config.veinsCfg.get(name, "block", Block.blockRegistry.getNameForObject(Blocks.stone));
+		prop = Config.veinsCfg.get(name, "block", GameData.getBlockRegistry().getNameForObject(Blocks.stone));
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(Config.selectBlockEntryClass);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		if (!Strings.isNullOrEmpty(block)) prop.set(block);
+		if (!GameData.getBlockRegistry().containsKey(prop.getString())) return false;
 		propOrder.add(prop.getName());
 		block = prop.getString();
 		prop = Config.veinsCfg.get(name, "blockMetadata", 0);
@@ -96,6 +99,7 @@ public class CaveVeinManager implements ICaveVeinManager
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		if (weight >= 0) prop.set(MathHelper.clamp_int(weight, Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue())));
+		if (prop.getInt() <= 0) return false;
 		propOrder.add(prop.getName());
 		weight = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 		prop = Config.veinsCfg.get(name, "genMinHeight", 0);
@@ -112,11 +116,12 @@ public class CaveVeinManager implements ICaveVeinManager
 		if (max >= 0) prop.set(MathHelper.clamp_int(max, min + 1, Integer.parseInt(prop.getMaxValue())));
 		propOrder.add(prop.getName());
 		max = MathHelper.clamp_int(prop.getInt(), min + 1, Integer.parseInt(prop.getMaxValue()));
-		prop = Config.veinsCfg.get(name, "genTargetBlock", Block.blockRegistry.getNameForObject(Blocks.stone)).setConfigEntryClass(Config.selectBlockEntryClass);
+		prop = Config.veinsCfg.get(name, "genTargetBlock", GameData.getBlockRegistry().getNameForObject(Blocks.stone)).setConfigEntryClass(Config.selectBlockEntryClass);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		if (!Strings.isNullOrEmpty(target)) prop.set(target);
+		if (!GameData.getBlockRegistry().containsKey(prop.getString())) prop.setToDefault();
 		propOrder.add(prop.getName());
 		target = prop.getString();
 		prop = Config.veinsCfg.get(name, "genTargetBlockMetadata", 0);
@@ -189,10 +194,10 @@ public class CaveVeinManager implements ICaveVeinManager
 	@Override
 	public int removeCaveVeins(Block block, int metadata)
 	{
-		CaveVein vein;
+		ICaveVein vein;
 		int count = 0;
 
-		for (Entry<String, CaveVein> entry : CAVE_VEINS.entrySet())
+		for (Entry<String, ICaveVein> entry : CAVE_VEINS.entrySet())
 		{
 			vein = entry.getValue();
 

@@ -100,7 +100,7 @@ public class BlockRope extends Block
 	@Override
 	public void addCollisionBoxesToList(World world, int x, int y, int z, AxisAlignedBB axis, List list, Entity entity)
 	{
-		if (entity instanceof EntityLivingBase)
+		if (entity != null && entity instanceof EntityLivingBase)
 		{
 			EntityLivingBase living = (EntityLivingBase)entity;
 
@@ -112,11 +112,25 @@ public class BlockRope extends Block
 				}
 			}
 
-			if (living.isOnLadder() || living.isSneaking() || !living.boundingBox.intersectsWith(axis))
+			if (!world.isAirBlock(x, y - 1, z) && world.getBlock(x, y - 1, z) != this || !living.onGround || living.isSneaking() || !living.boundingBox.intersectsWith(axis))
 			{
 				super.addCollisionBoxesToList(world, x, y, z, axis, list, living);
 			}
 		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
+	public AxisAlignedBB getSelectedBoundingBoxFromPool(World world, int x, int y, int z)
+	{
+		AxisAlignedBB result = super.getSelectedBoundingBoxFromPool(world, x, y, z);
+
+		if (world.getBlockMetadata(x, y, z) != 0)
+		{
+			return result == null ? null : result.expand(0.05D, 0.0D, 0.05D);
+		}
+
+		return result;
 	}
 
 	@Override
@@ -158,6 +172,12 @@ public class BlockRope extends Block
 	public boolean canBlockStay(World world, int x, int y, int z)
 	{
 		return !world.isAirBlock(x, y + 1, z);
+	}
+
+	@Override
+	public boolean func_149698_L()
+	{
+		return false;
 	}
 
 	@Override
