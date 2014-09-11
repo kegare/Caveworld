@@ -14,6 +14,8 @@ import net.minecraft.init.Blocks;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 
+import org.apache.logging.log4j.Level;
+
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.handler.CaveAPIHandler;
@@ -24,7 +26,10 @@ import com.kegare.caveworld.network.CaveSoundMessage;
 import com.kegare.caveworld.network.DimSyncMessage;
 import com.kegare.caveworld.network.MiningSyncMessage;
 import com.kegare.caveworld.network.RegenerateMessage;
-import com.kegare.caveworld.plugin.CaveModPlugin;
+import com.kegare.caveworld.plugin.ic2.IC2Plugin;
+import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
+import com.kegare.caveworld.plugin.thaumcraft.ThaumcraftPlugin;
+import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 
@@ -54,7 +59,7 @@ public class Caveworld
 	public static final String
 	MODID = "kegare.caveworld",
 	MOD_PACKAGE = "com.kegare.caveworld",
-	CONFIG_LANG = "caveworld.configgui.";
+	CONFIG_LANG = "caveworld.config.";
 
 	@Metadata(MODID)
 	public static ModMetadata metadata;
@@ -73,8 +78,6 @@ public class Caveworld
 		CaveworldAPI.miningManager = new CaveMiningManager();
 
 		Version.versionCheck();
-
-		CaveModPlugin.initializePlugins(event.getASMHarvestedData());
 	}
 
 	@EventHandler
@@ -123,7 +126,41 @@ public class Caveworld
 	{
 		Config.syncPostConfig();
 
-		CaveModPlugin.invokePlugins();
+		try
+		{
+			if (IC2Plugin.enabled())
+			{
+				IC2Plugin.invoke();
+			}
+		}
+		catch (Exception e)
+		{
+			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: " + IC2Plugin.class.getName());
+		}
+
+		try
+		{
+			if (MCEconomyPlugin.enabled())
+			{
+				MCEconomyPlugin.invoke();
+			}
+		}
+		catch (Exception e)
+		{
+			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: " + MCEconomyPlugin.class.getName());
+		}
+
+		try
+		{
+			if (ThaumcraftPlugin.enabled())
+			{
+				ThaumcraftPlugin.invoke();
+			}
+		}
+		catch (Exception e)
+		{
+			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: " + ThaumcraftPlugin.class.getName());
+		}
 	}
 
 	@EventHandler

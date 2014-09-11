@@ -10,8 +10,6 @@
 package com.kegare.caveworld.core;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 
@@ -25,49 +23,41 @@ import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
 import net.minecraftforge.common.config.Property;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.ICaveVein;
 import com.kegare.caveworld.api.ICaveVeinManager;
+import com.kegare.caveworld.util.ArrayListExtended;
 
 import cpw.mods.fml.common.registry.GameData;
 
 public class CaveVeinManager implements ICaveVeinManager
 {
-	private final Map<String, ICaveVein> CAVE_VEINS = Maps.newHashMap();
-
-	public static Class veinEntryClass = null;
+	private final ArrayListExtended<ICaveVein> CAVE_VEINS = new ArrayListExtended();
 
 	@Override
-	public boolean addCaveVein(String name, ICaveVein vein)
+	public boolean addCaveVein(ICaveVein vein)
 	{
-		if (CAVE_VEINS.containsKey(name))
-		{
-			return false;
-		}
-
-		CAVE_VEINS.put(name, vein);
-
-		return true;
-	}
-
-	@Override
-	public boolean addCaveVeinWithConfig(String name, ICaveVein vein)
-	{
-		String block = vein == null ? "" : Block.blockRegistry.getNameForObject(vein.getBlock().getBlock());
+		String block = vein == null ? null : GameData.getBlockRegistry().getNameForObject(vein.getBlock().getBlock());
 		int blockMetadata = vein == null ? -1 : vein.getBlock().getMetadata();
 		int count = vein == null ? -1 : vein.getGenBlockCount();
 		int weight = vein == null ? -1 : vein.getGenWeight();
 		int min = vein == null ? -1 : vein.getGenMinHeight();
 		int max = vein == null ? -1 : vein.getGenMaxHeight();
-		String target = vein == null ? "" : Block.blockRegistry.getNameForObject(vein.getGenTargetBlock().getBlock());
+		String target = vein == null ? null : GameData.getBlockRegistry().getNameForObject(vein.getGenTargetBlock().getBlock());
 		int targetMetadata = vein == null ? -1 : vein.getGenTargetBlock().getMetadata();
 		int[] biomes = vein == null ? null : vein.getGenBiomes();
+
+		String name = Integer.toString(CAVE_VEINS.size());
+
+		if (vein == null && !Config.veinsCfg.hasCategory(name))
+		{
+			return false;
+		}
 
 		String category = "veins";
 		Property prop;
@@ -77,11 +67,11 @@ public class CaveVeinManager implements ICaveVeinManager
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(Config.selectBlockEntryClass);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		if (!Strings.isNullOrEmpty(block)) prop.set(block);
-		if (!GameData.getBlockRegistry().containsKey(prop.getString())) return false;
 		propOrder.add(prop.getName());
 		block = prop.getString();
+		if (!GameData.getBlockRegistry().containsKey(Strings.nullToEmpty(block))) return false;
 		prop = Config.veinsCfg.get(name, "blockMetadata", 0);
-		prop.setMinValue(0).setMaxValue(15).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(veinEntryClass);
+		prop.setMinValue(0).setMaxValue(15).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		if (blockMetadata >= 0) prop.set(MathHelper.clamp_int(blockMetadata, Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue())));
@@ -116,7 +106,7 @@ public class CaveVeinManager implements ICaveVeinManager
 		if (max >= 0) prop.set(MathHelper.clamp_int(max, min + 1, Integer.parseInt(prop.getMaxValue())));
 		propOrder.add(prop.getName());
 		max = MathHelper.clamp_int(prop.getInt(), min + 1, Integer.parseInt(prop.getMaxValue()));
-		prop = Config.veinsCfg.get(name, "genTargetBlock", GameData.getBlockRegistry().getNameForObject(Blocks.stone)).setConfigEntryClass(Config.selectBlockEntryClass);
+		prop = Config.veinsCfg.get(name, "genTargetBlock", GameData.getBlockRegistry().getNameForObject(Blocks.stone));
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
@@ -132,7 +122,7 @@ public class CaveVeinManager implements ICaveVeinManager
 		propOrder.add(prop.getName());
 		targetMetadata = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 		prop = Config.veinsCfg.get(name, "genBiomes", new int[0]);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(Config.selectBiomeEntryClass);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		if (biomes != null) prop.set(biomes);
 		propOrder.add(prop.getName());
@@ -140,74 +130,48 @@ public class CaveVeinManager implements ICaveVeinManager
 
 		Config.veinsCfg.setCategoryPropertyOrder(name, propOrder);
 
-		if (Config.veinsCfg.hasChanged())
+		if (vein == null)
 		{
-			Config.veinsCfg.save();
+			vein = new CaveVein(new BlockEntry(block, blockMetadata), count, weight, min, max, new BlockEntry(target, targetMetadata), biomes);
 		}
 
-		return addCaveVein(name, new CaveVein(new BlockEntry(block, blockMetadata), count, weight, min, max, new BlockEntry(target, targetMetadata), biomes));
+		return CAVE_VEINS.addIfAbsent(vein);
 	}
 
 	@Override
-	public boolean addCaveVeinFromConfig(String name)
+	public int removeCaveVeins(ICaveVein vein)
 	{
-		return addCaveVeinWithConfig(name, null);
-	}
+		int prev = CAVE_VEINS.size();
 
-	@Override
-	public boolean removeCaveVein(String name)
-	{
-		if (CAVE_VEINS.containsKey(name))
+		for (int i = CAVE_VEINS.indexOf(vein); i >= 0;)
 		{
-			CAVE_VEINS.remove(name);
+			CAVE_VEINS.remove(i);
 
-			return true;
+			Config.veinsCfg.removeCategory(Config.veinsCfg.getCategory(Integer.toString(i)));
 		}
 
-		return false;
-	}
-
-	@Override
-	public boolean removeCaveVeinWithConfig(String name)
-	{
-		return removeCaveVeinFromConfig(name) && removeCaveVein(name);
-	}
-
-	@Override
-	public boolean removeCaveVeinFromConfig(String name)
-	{
-		if (Config.veinsCfg.hasCategory(name))
-		{
-			Config.veinsCfg.removeCategory(Config.veinsCfg.getCategory(name));
-
-			if (Config.veinsCfg.hasChanged())
-			{
-				Config.veinsCfg.save();
-			}
-
-			return true;
-		}
-
-		return false;
+		return Math.max(CAVE_VEINS.size(), prev);
 	}
 
 	@Override
 	public int removeCaveVeins(Block block, int metadata)
 	{
 		ICaveVein vein;
-		int count = 0;
+		int prev = CAVE_VEINS.size();
 
-		for (Entry<String, ICaveVein> entry : CAVE_VEINS.entrySet())
+		for (int i = 0; i < prev; ++i)
 		{
-			vein = entry.getValue();
+			vein = CAVE_VEINS.get(i);
 
-			if (vein.getBlock().getBlock() == block && vein.getBlock().getMetadata() == metadata && removeCaveVein(entry.getKey()))
+			if (vein.getBlock().getBlock() == block && vein.getBlock().getMetadata() == metadata)
 			{
-				++count;
+				CAVE_VEINS.remove(i);
+
+				Config.veinsCfg.removeCategory(Config.veinsCfg.getCategory(Integer.toString(i)));
 			}
 		}
 
-		return count;
+		return Math.max(CAVE_VEINS.size(), prev);
 	}
 
 	@Override
@@ -215,7 +179,7 @@ public class CaveVeinManager implements ICaveVeinManager
 	{
 		try
 		{
-			return (ICaveVein)WeightedRandom.getRandomItem(random, CAVE_VEINS.values());
+			return (ICaveVein)WeightedRandom.getRandomItem(random, CAVE_VEINS);
 		}
 		catch (Exception e)
 		{
@@ -224,15 +188,9 @@ public class CaveVeinManager implements ICaveVeinManager
 	}
 
 	@Override
-	public ICaveVein getCaveVein(String name)
+	public List<ICaveVein> getCaveVeins()
 	{
-		return CAVE_VEINS.get(name);
-	}
-
-	@Override
-	public ImmutableMap<String, ICaveVein> getCaveVeins()
-	{
-		return new ImmutableMap.Builder<String, ICaveVein>().putAll(CAVE_VEINS).build();
+		return CAVE_VEINS;
 	}
 
 	@Override
@@ -260,6 +218,13 @@ public class CaveVeinManager implements ICaveVeinManager
 			this.genBiomes = new int[0];
 		}
 
+		public CaveVein(BlockEntry block, int count, int weight, int min, int max, BlockEntry target, int[] biomes)
+		{
+			this(block, count, weight, min, max);
+			this.genTargetBlock = target;
+			this.genBiomes = biomes;
+		}
+
 		public CaveVein(BlockEntry block, int count, int weight, int min, int max, BlockEntry target, Object... biomes)
 		{
 			this(block, count, weight, min, max);
@@ -268,33 +233,22 @@ public class CaveVeinManager implements ICaveVeinManager
 		}
 
 		@Override
-		public boolean equals(Object obj)
+		public int hashCode()
 		{
-			if (obj instanceof ICaveVein)
+			int hash = Objects.hashCode(getBlock(), getGenBlockCount(), getGenWeight(), getGenMinHeight(), getGenMaxHeight(), getGenTargetBlock());
+
+			for (int id : getGenBiomes())
 			{
-				ICaveVein vein = (ICaveVein)obj;
-
-				if (getBlock().getBlock() != vein.getBlock().getBlock() || getBlock().getMetadata() != vein.getBlock().getMetadata())
-				{
-					return false;
-				}
-				else if (getGenBlockCount() != vein.getGenBlockCount())
-				{
-					return false;
-				}
-				else if (getGenMinHeight() != vein.getGenMinHeight() || getGenMaxHeight() != vein.getGenMaxHeight())
-				{
-					return false;
-				}
-				else if (getGenBiomes() != vein.getGenBiomes())
-				{
-					return false;
-				}
-
-				return true;
+				hash += id - 1;
 			}
 
-			return false;
+			return hash;
+		}
+
+		@Override
+		public BlockEntry setBlock(BlockEntry entry)
+		{
+			return block = entry;
 		}
 
 		@Override
@@ -304,9 +258,21 @@ public class CaveVeinManager implements ICaveVeinManager
 		}
 
 		@Override
+		public int setGenBlockCount(int count)
+		{
+			return genBlockCount = count;
+		}
+
+		@Override
 		public int getGenBlockCount()
 		{
 			return MathHelper.clamp_int(genBlockCount, 1, 100);
+		}
+
+		@Override
+		public int setGenWeight(int weight)
+		{
+			return itemWeight = weight;
 		}
 
 		@Override
@@ -316,9 +282,21 @@ public class CaveVeinManager implements ICaveVeinManager
 		}
 
 		@Override
+		public int setGenMinHeight(int height)
+		{
+			return genMinHeight = height;
+		}
+
+		@Override
 		public int getGenMinHeight()
 		{
 			return MathHelper.clamp_int(genMinHeight, 0, 254);
+		}
+
+		@Override
+		public int setGenMaxHeight(int height)
+		{
+			return genMaxHeight = height;
 		}
 
 		@Override
@@ -328,9 +306,21 @@ public class CaveVeinManager implements ICaveVeinManager
 		}
 
 		@Override
+		public BlockEntry setGenTargetBlock(BlockEntry entry)
+		{
+			return genTargetBlock = entry;
+		}
+
+		@Override
 		public BlockEntry getGenTargetBlock()
 		{
 			return genTargetBlock == null ? new BlockEntry(Blocks.stone, 0) : genTargetBlock;
+		}
+
+		@Override
+		public int[] setGenBiomes(int[] biomes)
+		{
+			return genBiomes = biomes;
 		}
 
 		@Override
@@ -343,24 +333,24 @@ public class CaveVeinManager implements ICaveVeinManager
 		{
 			Set<Integer> biomes = Sets.newTreeSet();
 
-			for (Object obj : objects)
+			for (Object element : objects)
 			{
-				if (obj instanceof BiomeGenBase)
+				if (element instanceof BiomeGenBase)
 				{
-					biomes.add(((BiomeGenBase)obj).biomeID);
+					biomes.add(((BiomeGenBase)element).biomeID);
 				}
-				else if (obj instanceof Integer)
+				else if (element instanceof Integer)
 				{
-					BiomeGenBase biome = BiomeGenBase.getBiome((Integer)obj);
+					BiomeGenBase biome = BiomeGenBase.getBiome((Integer)element);
 
 					if (biome != null)
 					{
 						biomes.add(biome.biomeID);
 					}
 				}
-				else if (obj instanceof Type)
+				else if (element instanceof Type)
 				{
-					Type type = (Type)obj;
+					Type type = (Type)element;
 
 					for (BiomeGenBase biome : BiomeDictionary.getBiomesForType(type))
 					{

@@ -6,9 +6,11 @@ public interface ICaveBiome
 {
 	public BiomeGenBase getBiome();
 
+	public int setGenWeight(int weight);
+
 	public int getGenWeight();
 
-	public BlockEntry getTerrainBlock();
+	public BlockEntry setTerrainBlock(BlockEntry entry);
 
-	public void setGenWeight(int weight);
+	public BlockEntry getTerrainBlock();
 }

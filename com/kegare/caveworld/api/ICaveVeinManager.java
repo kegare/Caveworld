@@ -1,6 +1,6 @@
 package com.kegare.caveworld.api;
 
-import java.util.Map;
+import java.util.List;
 import java.util.Random;
 
 import net.minecraft.block.Block;
@@ -9,43 +9,17 @@ public interface ICaveVeinManager
 {
 	/**
 	 * Add a cave vein.
-	 * @param name The vein name
 	 * @param vein The additional vein
 	 * @return <tt>true</tt> if has been added successfully.
 	 */
-	public boolean addCaveVein(String name, ICaveVein vein);
+	public boolean addCaveVein(ICaveVein vein);
 
 	/**
-	 * Add a cave vein with config.
-	 * @see #addCaveVein(String, ICaveVein)
+	 * Remove cave veins.
+	 * @param vein The removing vein
+	 * @return Removed vein count
 	 */
-	public boolean addCaveVeinWithConfig(String name, ICaveVein vein);
-
-	/**
-	 * Add a cave vein from config.
-	 * @param name The vein name
-	 * @return <tt>true</tt> if has been added successfully.
-	 */
-	public boolean addCaveVeinFromConfig(String name);
-
-	/**
-	 * Remove a cave vein.
-	 * @param name The removing vein name
-	 * @return <tt>true</tt> if has been removed successfully.
-	 */
-	public boolean removeCaveVein(String name);
-
-	/**
-	 * Remove a cave vein with config.
-	 * @see #removeCaveVein(String)
-	 */
-	public boolean removeCaveVeinWithConfig(String name);
-
-	/**
-	 * Remove a cave vein from config.
-	 * @see #removeCaveVein(String)
-	 */
-	public boolean removeCaveVeinFromConfig(String name);
+	public int removeCaveVeins(ICaveVein vein);
 
 	/**
 	 * Remove cave veins.
@@ -60,13 +34,7 @@ public interface ICaveVeinManager
 	 */
 	public ICaveVein getRandomCaveVein(Random random);
 
-	/**
-	 * Returns cave vein of the vein name.
-	 * @param name The vein name
-	 */
-	public ICaveVein getCaveVein(String name);
-
-	public Map<String, ICaveVein> getCaveVeins();
+	public List<ICaveVein> getCaveVeins();
 
 	/**
 	 * Remove all cave veins.

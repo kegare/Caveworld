@@ -43,6 +43,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class CaveConfigGui extends GuiConfig
 {
+	public static boolean detailInfo = true;
 	public static boolean instantFilter = true;
 
 	private static final Map<String[], Set<Block>> ignoredBlocksCache = Maps.newHashMap();

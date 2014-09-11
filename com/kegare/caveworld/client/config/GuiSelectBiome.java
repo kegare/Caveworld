@@ -17,33 +17,44 @@ import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
+import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.GuiSlot;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
 
 import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.logging.log4j.Level;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.primitives.Ints;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.CaveworldAPI;
+import com.kegare.caveworld.client.gui.GuiListSlot;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.util.ArrayListExtended;
+import com.kegare.caveworld.util.BiomeComparator;
+import com.kegare.caveworld.util.CaveLog;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
@@ -62,29 +73,55 @@ public class GuiSelectBiome extends GuiScreen
 	}
 
 	protected final GuiScreen parentScreen;
+	protected GuiTextField parentTextField;
 	protected ArrayEntry parentElement;
 
 	protected BiomeList biomeList;
 
 	protected GuiButton doneButton;
+	protected GuiCheckBox detailInfo;
 	protected GuiCheckBox instantFilter;
 	protected GuiTextField filterTextField;
 
-	private HoverChecker selectedHoverChecker;
-	private HoverChecker instantHoverChecker;
+	protected HoverChecker selectedHoverChecker;
+	protected HoverChecker detailHoverChecker;
+	protected HoverChecker instantHoverChecker;
 
-	private static final Map<String, List<BiomeGenBase>> filterCache = Maps.newHashMap();
-	private final Map<BiomeGenBase, List<String>> infoCache = Maps.newHashMap();
+	private final Set<BiomeGenBase> hiddenBiomes = Sets.newHashSet();
+	private final Map<BiomeGenBase, List<String>> hoverCache = Maps.newHashMap();
 
 	public GuiSelectBiome(GuiScreen parent)
 	{
 		this.parentScreen = parent;
 	}
 
+	public GuiSelectBiome(GuiScreen parent, GuiTextField textField)
+	{
+		this(parent);
+		this.parentTextField = textField;
+	}
+
 	public GuiSelectBiome(GuiScreen parent, ArrayEntry entry)
 	{
 		this(parent);
 		this.parentElement = entry;
+	}
+
+	public GuiSelectBiome setHiddenBiomes(BiomeGenBase... biomes)
+	{
+		hiddenBiomes.clear();
+
+		for (BiomeGenBase biome : biomes)
+		{
+			if (biome != null)
+			{
+				hiddenBiomes.add(biome);
+			}
+		}
+
+		BiomeList.biomes.removeAll(hiddenBiomes);
+
+		return this;
 	}
 
 	@Override
@@ -105,15 +142,25 @@ public class GuiSelectBiome extends GuiScreen
 		doneButton.xPosition = width / 2 + 10;
 		doneButton.yPosition = height - doneButton.height - 4;
 
-		if (instantFilter == null)
+		if (detailInfo == null)
 		{
-			instantFilter = new GuiCheckBox(1, 0, 8, I18n.format(Caveworld.CONFIG_LANG + "instant"), CaveConfigGui.instantFilter);
+			detailInfo = new GuiCheckBox(1, 0, 5, I18n.format(Caveworld.CONFIG_LANG + "detail"), true);
 		}
 
-		instantFilter.xPosition = width / 2 + 95;
+		detailInfo.setIsChecked(CaveConfigGui.detailInfo);
+		detailInfo.xPosition = width / 2 + 95;
+
+		if (instantFilter == null)
+		{
+			instantFilter = new GuiCheckBox(2, 0, detailInfo.yPosition + detailInfo.height + 2, I18n.format(Caveworld.CONFIG_LANG + "instant"), true);
+		}
+
+		instantFilter.setIsChecked(CaveConfigGui.instantFilter);
+		instantFilter.xPosition = detailInfo.xPosition;
 
 		buttonList.clear();
 		buttonList.add(doneButton);
+		buttonList.add(detailInfo);
 		buttonList.add(instantFilter);
 
 		if (filterTextField == null)
@@ -126,6 +173,7 @@ public class GuiSelectBiome extends GuiScreen
 		filterTextField.yPosition = height - filterTextField.height - 6;
 
 		selectedHoverChecker = new HoverChecker(0, 20, 0, 100, 800);
+		detailHoverChecker = new HoverChecker(detailInfo, 800);
 		instantHoverChecker = new HoverChecker(instantFilter, 800);
 	}
 
@@ -139,6 +187,11 @@ public class GuiSelectBiome extends GuiScreen
 				case 0:
 					if (biomeList.selected.isEmpty())
 					{
+						if (parentTextField != null)
+						{
+							parentTextField.setText("");
+						}
+
 						if (parentElement != null)
 						{
 							parentElement.setListFromChildScreen(new Object[0]);
@@ -162,13 +215,30 @@ public class GuiSelectBiome extends GuiScreen
 							((SelectListener)parentScreen).setResult(result);
 						}
 
+						if (parentTextField != null)
+						{
+							parentTextField.setText(Ints.join(", ", Ints.toArray(result)));
+						}
+
 						if (parentElement != null)
 						{
 							parentElement.setListFromChildScreen(result.toArray());
 						}
 					}
 
+					if (parentTextField != null)
+					{
+						parentTextField.setFocused(true);
+						parentTextField.setCursorPositionEnd();
+					}
+
 					mc.displayGuiScreen(parentScreen);
+					break;
+				case 1:
+					CaveConfigGui.detailInfo = detailInfo.isChecked();
+					break;
+				case 2:
+					CaveConfigGui.instantFilter = instantFilter.isChecked();
 					break;
 			}
 		}
@@ -194,23 +264,45 @@ public class GuiSelectBiome extends GuiScreen
 		GL11.glDisable(GL11.GL_LIGHTING);
 		filterTextField.drawTextBox();
 
-		if (biomeList.func_148141_e(mouseY))
+		if (detailHoverChecker.checkHover(mouseX, mouseY))
+		{
+			func_146283_a(fontRendererObj.listFormattedStringToWidth(I18n.format(Caveworld.CONFIG_LANG + "detail.hover"), 300), mouseX, mouseY);
+		}
+		else if (instantHoverChecker.checkHover(mouseX, mouseY))
+		{
+			func_146283_a(fontRendererObj.listFormattedStringToWidth(I18n.format(Caveworld.CONFIG_LANG + "instant.hover"), 300), mouseX, mouseY);
+		}
+		else if (biomeList.func_148141_e(mouseY) && isCtrlKeyDown())
 		{
 			BiomeGenBase biome = biomeList.contents.get(biomeList.func_148124_c(mouseX, mouseY), null);
 
-			if (biome != null && Keyboard.isKeyDown(Keyboard.KEY_TAB))
+			if (biome != null)
 			{
 				List<String> info;
 
-				if (!infoCache.containsKey(biome))
+				if (!hoverCache.containsKey(biome))
 				{
 					info = Lists.newArrayList();
 
 					info.add(EnumChatFormatting.DARK_GRAY + Integer.toString(biome.biomeID) + ": " + biome.biomeName);
 					info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "biomes.genWeight") + ": " + CaveworldAPI.getBiomeGenWeight(biome));
 
-					BlockEntry block = CaveworldAPI.getBiomeTerrainBlock(biome);
-					info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "biomes.terrainBlock") + ": " + GameData.getBlockRegistry().getNameForObject(block.getBlock()) + ", " + block.getMetadata());
+					BlockEntry entry = CaveworldAPI.getBiomeTerrainBlock(biome);
+					info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "biomes.terrainBlock") + ": " + GameData.getBlockRegistry().getNameForObject(entry.getBlock()) + ", " + entry.getMetadata());
+
+					Block block = biome.topBlock;
+
+					if (block != null)
+					{
+						info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "select.biome.info.topBlock") + ": " + GameData.getBlockRegistry().getNameForObject(block));
+					}
+
+					block = biome.fillerBlock;
+
+					if (block != null)
+					{
+						info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "select.biome.info.fillerBlock") + ": " + GameData.getBlockRegistry().getNameForObject(block));
+					}
 
 					info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "select.biome.info.temperature") + ": " + biome.temperature);
 					info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "select.biome.info.rainfall") + ": " + biome.rainfall);
@@ -227,10 +319,10 @@ public class GuiSelectBiome extends GuiScreen
 						info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "select.biome.info.type") + ": " + Joiner.on(", ").skipNulls().join(types));
 					}
 
-					infoCache.put(biome, info);
+					hoverCache.put(biome, info);
 				}
 
-				info = infoCache.get(biome);
+				info = hoverCache.get(biome);
 
 				if (!info.isEmpty())
 				{
@@ -257,11 +349,6 @@ public class GuiSelectBiome extends GuiScreen
 
 				func_146283_a(biomes, mouseX, mouseY);
 			}
-		}
-
-		if (instantHoverChecker.checkHover(mouseX, mouseY))
-		{
-			func_146283_a(fontRendererObj.listFormattedStringToWidth(I18n.format(Caveworld.CONFIG_LANG + "instant.hover"), 300), mouseX, mouseY);
 		}
 	}
 
@@ -311,45 +398,31 @@ public class GuiSelectBiome extends GuiScreen
 			}
 			else if (code == Keyboard.KEY_UP)
 			{
-				int i = biomeList.getAmountScrolled() % biomeList.getSlotHeight();
-
-				if (i == 0)
-				{
-					biomeList.scrollBy(-biomeList.getSlotHeight());
-				}
-				else
-				{
-					biomeList.scrollBy(-i);
-				}
+				biomeList.scrollUp();
 			}
 			else if (code == Keyboard.KEY_DOWN)
 			{
-				biomeList.scrollBy(biomeList.getSlotHeight() - (biomeList.getAmountScrolled() % biomeList.getSlotHeight()));
-			}
-			else if (code == Keyboard.KEY_PRIOR)
-			{
-				biomeList.scrollBy(-((biomeList.getAmountScrolled() % biomeList.getSlotHeight()) + ((biomeList.bottom - biomeList.top) / biomeList.getSlotHeight()) * biomeList.getSlotHeight()));
-			}
-			else if (code == Keyboard.KEY_NEXT)
-			{
-				biomeList.scrollBy((biomeList.getAmountScrolled() % biomeList.getSlotHeight()) + ((biomeList.bottom - biomeList.top) / biomeList.getSlotHeight()) * biomeList.getSlotHeight());
-			}
-			else if (code == Keyboard.KEY_SPACE)
-			{
-				biomeList.scrollBy(-biomeList.getAmountScrolled());
-
-				if (!biomeList.selected.isEmpty())
-				{
-					biomeList.scrollBy(biomeList.contents.indexOf(biomeList.selected.iterator().next()) * biomeList.getSlotHeight());
-				}
+				biomeList.scrollDown();
 			}
 			else if (code == Keyboard.KEY_HOME)
 			{
-				biomeList.scrollBy(-biomeList.getAmountScrolled());
+				biomeList.scrollToTop();
 			}
 			else if (code == Keyboard.KEY_END)
 			{
-				biomeList.scrollBy(biomeList.getSlotHeight() * biomeList.getSize());
+				biomeList.scrollToEnd();
+			}
+			else if (code == Keyboard.KEY_SPACE)
+			{
+				biomeList.scrollToSelected();
+			}
+			else if (code == Keyboard.KEY_PRIOR)
+			{
+				biomeList.scrollToPrev();
+			}
+			else if (code == Keyboard.KEY_NEXT)
+			{
+				biomeList.scrollToNext();
 			}
 			else if (code == Keyboard.KEY_F || code == mc.gameSettings.keyBindChat.getKeyCode())
 			{
@@ -367,22 +440,47 @@ public class GuiSelectBiome extends GuiScreen
 	{
 		super.onGuiClosed();
 
-		CaveConfigGui.instantFilter = instantFilter.isChecked();
+		if (BiomeList.biomes.addAll(hiddenBiomes))
+		{
+			BiomeList.biomes.sort(new BiomeComparator());
+		}
 	}
 
-	protected static class BiomeList extends GuiSlot implements Comparator<BiomeGenBase>
+	protected static class BiomeList extends GuiListSlot implements Comparator<BiomeGenBase>
 	{
 		protected static final ArrayListExtended<BiomeGenBase> biomes = new ArrayListExtended<BiomeGenBase>().addAllObject(BiomeGenBase.getBiomeGenArray());
+
+		private static final Map<String, List<BiomeGenBase>> filterCache = Maps.newHashMap();
 
 		protected final GuiSelectBiome parent;
 
 		protected final ArrayListExtended<BiomeGenBase> contents = new ArrayListExtended(biomes);
 		protected final Set<BiomeGenBase> selected = Sets.newTreeSet(this);
 
+		private final Set<Block> ignoredRender = CaveConfigGui.getIgnoredRenderBlocks();
+
 		private BiomeList(GuiSelectBiome parent)
 		{
 			super(parent.mc, 0, 0, 0, 0, 18);
 			this.parent = parent;
+
+			if (parent.parentTextField != null)
+			{
+				Set<Integer> ids = Sets.newHashSet();
+
+				for (String str : Splitter.on(',').trimResults().omitEmptyStrings().split(parent.parentTextField.getText()))
+				{
+					if (NumberUtils.isNumber(str))
+					{
+						ids.add(Integer.parseInt(str));
+					}
+				}
+
+				for (Integer id : ids)
+				{
+					selected.add(BiomeGenBase.getBiome(id));
+				}
+			}
 
 			if (parent.parentElement != null)
 			{
@@ -390,6 +488,17 @@ public class GuiSelectBiome extends GuiScreen
 				{
 					selected.add(BiomeGenBase.getBiome(Integer.parseInt(String.valueOf(obj))));
 				}
+			}
+		}
+
+		@Override
+		public void scrollToSelected()
+		{
+			scrollToTop();
+
+			if (!selected.isEmpty())
+			{
+				scrollBy(contents.indexOf(selected.iterator().next()) * getSlotHeight());
 			}
 		}
 
@@ -417,9 +526,52 @@ public class GuiSelectBiome extends GuiScreen
 
 			parent.drawCenteredString(parent.fontRendererObj, biome.biomeName, width / 2, par3 + 1, 0xFFFFFF);
 
-			if (Keyboard.isKeyDown(Keyboard.KEY_TAB))
+			if (parent.detailInfo.isChecked() || Keyboard.isKeyDown(Keyboard.KEY_TAB))
 			{
 				parent.drawString(parent.fontRendererObj, Integer.toString(biome.biomeID), width / 2 - 100, par3 + 1, 0xE0E0E0);
+
+				if (Keyboard.isKeyDown(Keyboard.KEY_TAB))
+				{
+					Block block = biome.topBlock;
+
+					if (block != null && !ignoredRender.contains(block) && Item.getItemFromBlock(block) != null)
+					{
+						try
+						{
+							GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+							RenderHelper.enableGUIStandardItemLighting();
+							RenderItem.getInstance().renderItemAndEffectIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), new ItemStack(block), width / 2 + 70, par3 - 1);
+							RenderHelper.disableStandardItemLighting();
+							GL11.glDisable(GL12.GL_RESCALE_NORMAL);
+						}
+						catch (Exception e)
+						{
+							CaveLog.log(Level.WARN, e, "Failed to trying render item block into gui: %s", GameData.getBlockRegistry().getNameForObject(block));
+
+							ignoredRender.add(block);
+						}
+					}
+
+					block = biome.fillerBlock;
+
+					if (block != null && !ignoredRender.contains(block) && Item.getItemFromBlock(block) != null)
+					{
+						try
+						{
+							GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+							RenderHelper.enableGUIStandardItemLighting();
+							RenderItem.getInstance().renderItemAndEffectIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), new ItemStack(block), width / 2 + 90, par3 - 1);
+							RenderHelper.disableStandardItemLighting();
+							GL11.glDisable(GL12.GL_RESCALE_NORMAL);
+						}
+						catch (Exception e)
+						{
+							CaveLog.log(Level.WARN, e, "Failed to trying render item block into gui: %s", GameData.getBlockRegistry().getNameForObject(block));
+
+							ignoredRender.add(block);
+						}
+					}
+				}
 			}
 		}
 
@@ -463,12 +615,12 @@ public class GuiSelectBiome extends GuiScreen
 					}
 					else
 					{
-						if (!GuiSelectBiome.filterCache.containsKey(filter))
+						if (!filterCache.containsKey(filter))
 						{
-							GuiSelectBiome.filterCache.put(filter, Lists.newArrayList(Collections2.filter(biomes, new BiomeFilter(filter))));
+							filterCache.put(filter, Lists.newArrayList(Collections2.filter(biomes, new BiomeFilter(filter))));
 						}
 
-						result = GuiSelectBiome.filterCache.get(filter);
+						result = filterCache.get(filter);
 					}
 
 					if (!contents.equals(result))
@@ -481,11 +633,11 @@ public class GuiSelectBiome extends GuiScreen
 		}
 	}
 
-	private static class BiomeFilter implements Predicate<BiomeGenBase>
+	public static class BiomeFilter implements Predicate<BiomeGenBase>
 	{
 		private final String filter;
 
-		private BiomeFilter(String filter)
+		public BiomeFilter(String filter)
 		{
 			this.filter = filter;
 		}

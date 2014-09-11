@@ -18,7 +18,6 @@ import java.util.concurrent.RecursiveAction;
 import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.GuiSlot;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
@@ -37,6 +36,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.kegare.caveworld.client.gui.GuiListSlot;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.util.ArrayListExtended;
 import com.kegare.caveworld.util.BlockComparator;
@@ -52,22 +52,32 @@ import cpw.mods.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class GuiSelectBlock extends GuiScreen
 {
+	public interface SelectListener
+	{
+		public void onSelected(Block block);
+	}
+
 	protected final GuiScreen parentScreen;
-	protected final GuiTextField parentTextField;
+	protected GuiTextField parentTextField;
 
 	protected BlockList blockList;
 
 	protected GuiButton doneButton;
+	protected GuiCheckBox detailInfo;
 	protected GuiCheckBox instantFilter;
 	protected GuiTextField filterTextField;
 
-	private HoverChecker instantHoverChecker;
+	protected HoverChecker detailHoverChecker;
+	protected HoverChecker instantHoverChecker;
 
-	private static final Map<String, List<Block>> filterCache = Maps.newHashMap();
+	public GuiSelectBlock(GuiScreen parent)
+	{
+		this.parentScreen = parent;
+	}
 
 	public GuiSelectBlock(GuiScreen parent, GuiTextField textField)
 	{
-		this.parentScreen = parent;
+		this(parent);
 		this.parentTextField = textField;
 	}
 
@@ -89,15 +99,25 @@ public class GuiSelectBlock extends GuiScreen
 		doneButton.xPosition = width / 2 + 10;
 		doneButton.yPosition = height - doneButton.height - 4;
 
-		if (instantFilter == null)
+		if (detailInfo == null)
 		{
-			instantFilter = new GuiCheckBox(1, 0, 8, I18n.format(Caveworld.CONFIG_LANG + "instant"), CaveConfigGui.instantFilter);
+			detailInfo = new GuiCheckBox(1, 0, 5, I18n.format(Caveworld.CONFIG_LANG + "detail"), true);
 		}
 
-		instantFilter.xPosition = width / 2 + 95;
+		detailInfo.setIsChecked(CaveConfigGui.detailInfo);
+		detailInfo.xPosition = width / 2 + 95;
+
+		if (instantFilter == null)
+		{
+			instantFilter = new GuiCheckBox(2, 0, detailInfo.yPosition + detailInfo.height + 2, I18n.format(Caveworld.CONFIG_LANG + "instant"), true);
+		}
+
+		instantFilter.setIsChecked(CaveConfigGui.instantFilter);
+		instantFilter.xPosition = detailInfo.xPosition;
 
 		buttonList.clear();
 		buttonList.add(doneButton);
+		buttonList.add(detailInfo);
 		buttonList.add(instantFilter);
 
 		if (filterTextField == null)
@@ -109,6 +129,7 @@ public class GuiSelectBlock extends GuiScreen
 		filterTextField.xPosition = width / 2 - filterTextField.width - 5;
 		filterTextField.yPosition = height - filterTextField.height - 6;
 
+		detailHoverChecker = new HoverChecker(detailInfo, 800);
 		instantHoverChecker = new HoverChecker(instantFilter, 800);
 	}
 
@@ -120,19 +141,33 @@ public class GuiSelectBlock extends GuiScreen
 			switch (button.id)
 			{
 				case 0:
-					if (blockList.selected == null)
+					if (blockList.selected != null && parentScreen instanceof SelectListener)
 					{
-						parentTextField.setText("");
-					}
-					else
-					{
-						parentTextField.setText(GameData.getBlockRegistry().getNameForObject(blockList.selected));
+						((SelectListener)parentScreen).onSelected(blockList.selected);
 					}
 
-					parentTextField.setFocused(true);
-					parentTextField.setCursorPositionEnd();
+					if (parentTextField != null)
+					{
+						if (blockList.selected == null)
+						{
+							parentTextField.setText("");
+						}
+						else
+						{
+							parentTextField.setText(GameData.getBlockRegistry().getNameForObject(blockList.selected));
+						}
+
+						parentTextField.setFocused(true);
+						parentTextField.setCursorPositionEnd();
+					}
 
 					mc.displayGuiScreen(parentScreen);
+					break;
+				case 1:
+					CaveConfigGui.detailInfo = detailInfo.isChecked();
+					break;
+				case 2:
+					CaveConfigGui.instantFilter = instantFilter.isChecked();
 					break;
 			}
 		}
@@ -157,7 +192,11 @@ public class GuiSelectBlock extends GuiScreen
 
 		filterTextField.drawTextBox();
 
-		if (instantHoverChecker.checkHover(mouseX, mouseY))
+		if (detailHoverChecker.checkHover(mouseX, mouseY))
+		{
+			func_146283_a(fontRendererObj.listFormattedStringToWidth(I18n.format(Caveworld.CONFIG_LANG + "detail.hover"), 300), mouseX, mouseY);
+		}
+		else if (instantHoverChecker.checkHover(mouseX, mouseY))
 		{
 			func_146283_a(fontRendererObj.listFormattedStringToWidth(I18n.format(Caveworld.CONFIG_LANG + "instant.hover"), 300), mouseX, mouseY);
 		}
@@ -216,45 +255,31 @@ public class GuiSelectBlock extends GuiScreen
 			}
 			else if (code == Keyboard.KEY_UP)
 			{
-				int i = blockList.getAmountScrolled() % blockList.getSlotHeight();
-
-				if (i == 0)
-				{
-					blockList.scrollBy(-blockList.getSlotHeight());
-				}
-				else
-				{
-					blockList.scrollBy(-i);
-				}
+				blockList.scrollUp();
 			}
 			else if (code == Keyboard.KEY_DOWN)
 			{
-				blockList.scrollBy(blockList.getSlotHeight() - (blockList.getAmountScrolled() % blockList.getSlotHeight()));
-			}
-			else if (code == Keyboard.KEY_PRIOR)
-			{
-				blockList.scrollBy(-((blockList.getAmountScrolled() % blockList.getSlotHeight()) + ((blockList.bottom - blockList.top) / blockList.getSlotHeight()) * blockList.getSlotHeight()));
-			}
-			else if (code == Keyboard.KEY_NEXT)
-			{
-				blockList.scrollBy((blockList.getAmountScrolled() % blockList.getSlotHeight()) + ((blockList.bottom - blockList.top) / blockList.getSlotHeight()) * blockList.getSlotHeight());
-			}
-			else if (code == Keyboard.KEY_SPACE)
-			{
-				blockList.scrollBy(-blockList.getAmountScrolled());
-
-				if (blockList.selected != null)
-				{
-					blockList.scrollBy(blockList.contents.indexOf(blockList.selected) * blockList.getSlotHeight());
-				}
+				blockList.scrollDown();
 			}
 			else if (code == Keyboard.KEY_HOME)
 			{
-				blockList.scrollBy(-blockList.getAmountScrolled());
+				blockList.scrollToTop();
 			}
 			else if (code == Keyboard.KEY_END)
 			{
-				blockList.scrollBy(blockList.getSlotHeight() * blockList.getSize());
+				blockList.scrollToEnd();
+			}
+			else if (code == Keyboard.KEY_SPACE)
+			{
+				blockList.scrollToSelected();
+			}
+			else if (code == Keyboard.KEY_PRIOR)
+			{
+				blockList.scrollToPrev();
+			}
+			else if (code == Keyboard.KEY_NEXT)
+			{
+				blockList.scrollToNext();
 			}
 			else if (code == Keyboard.KEY_F || code == mc.gameSettings.keyBindChat.getKeyCode())
 			{
@@ -263,17 +288,11 @@ public class GuiSelectBlock extends GuiScreen
 		}
 	}
 
-	@Override
-	public void onGuiClosed()
-	{
-		super.onGuiClosed();
-
-		CaveConfigGui.instantFilter = instantFilter.isChecked();
-	}
-
-	protected static class BlockList extends GuiSlot
+	protected static class BlockList extends GuiListSlot
 	{
 		protected static final ArrayListExtended<Block> blocks = new ArrayListExtended<Block>().addAllObject(GameData.getBlockRegistry()).sort(new BlockComparator());
+
+		private static final Map<String, List<Block>> filterCache = Maps.newHashMap();
 
 		protected final GuiSelectBlock parent;
 
@@ -288,7 +307,22 @@ public class GuiSelectBlock extends GuiScreen
 		{
 			super(parent.mc, 0, 0, 0, 0, 18);
 			this.parent = parent;
-			this.selected = Block.getBlockFromName(parent.parentTextField.getText());
+
+			if (parent.parentTextField != null)
+			{
+				this.selected = Block.getBlockFromName(parent.parentTextField.getText());
+			}
+		}
+
+		@Override
+		public void scrollToSelected()
+		{
+			scrollToTop();
+
+			if (selected != null)
+			{
+				scrollBy(contents.indexOf(selected) * getSlotHeight());
+			}
 		}
 
 		@Override
@@ -313,24 +347,6 @@ public class GuiSelectBlock extends GuiScreen
 				return;
 			}
 
-			if (!ignoredRender.contains(block) && Item.getItemFromBlock(block) != null)
-			{
-				try
-				{
-					GL11.glEnable(GL12.GL_RESCALE_NORMAL);
-					RenderHelper.enableGUIStandardItemLighting();
-					RenderItem.getInstance().renderItemAndEffectIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), new ItemStack(block), width / 2 - 100, par3 - 1);
-					RenderHelper.disableStandardItemLighting();
-					GL11.glDisable(GL12.GL_RESCALE_NORMAL);
-				}
-				catch (Exception e)
-				{
-					CaveLog.log(Level.WARN, e, "Failed to trying render item block into gui: %s", GameData.getBlockRegistry().getNameForObject(block));
-
-					ignoredRender.add(block);
-				}
-			}
-
 			String name = null;
 
 			switch (nameType)
@@ -348,6 +364,24 @@ public class GuiSelectBlock extends GuiScreen
 			}
 
 			parent.drawCenteredString(parent.fontRendererObj, name, width / 2, par3 + 1, 0xFFFFFF);
+
+			if (parent.detailInfo.isChecked() && !ignoredRender.contains(block) && Item.getItemFromBlock(block) != null)
+			{
+				try
+				{
+					GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+					RenderHelper.enableGUIStandardItemLighting();
+					RenderItem.getInstance().renderItemAndEffectIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), new ItemStack(block), width / 2 - 100, par3 - 1);
+					RenderHelper.disableStandardItemLighting();
+					GL11.glDisable(GL12.GL_RESCALE_NORMAL);
+				}
+				catch (Exception e)
+				{
+					CaveLog.log(Level.WARN, e, "Failed to trying render item block into gui: %s", GameData.getBlockRegistry().getNameForObject(block));
+
+					ignoredRender.add(block);
+				}
+			}
 		}
 
 		@Override
@@ -377,12 +411,12 @@ public class GuiSelectBlock extends GuiScreen
 					}
 					else
 					{
-						if (!GuiSelectBlock.filterCache.containsKey(filter))
+						if (!filterCache.containsKey(filter))
 						{
-							GuiSelectBlock.filterCache.put(filter, Lists.newArrayList(Collections2.filter(blocks, new BlockFilter(filter))));
+							filterCache.put(filter, Lists.newArrayList(Collections2.filter(blocks, new BlockFilter(filter))));
 						}
 
-						result = GuiSelectBlock.filterCache.get(filter);
+						result = filterCache.get(filter);
 					}
 
 					if (!contents.equals(result))
@@ -395,11 +429,11 @@ public class GuiSelectBlock extends GuiScreen
 		}
 	}
 
-	private static class BlockFilter implements Predicate<Block>
+	public static class BlockFilter implements Predicate<Block>
 	{
 		private final String filter;
 
-		private BlockFilter(String filter)
+		public BlockFilter(String filter)
 		{
 			this.filter = filter;
 		}

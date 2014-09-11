@@ -9,41 +9,29 @@
 
 package com.kegare.caveworld.client.config;
 
-import java.util.List;
+import java.io.File;
+import java.io.IOException;
 
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.common.config.Property;
+
+import org.apache.commons.io.FileUtils;
 
 import com.kegare.caveworld.api.CaveworldAPI;
-import com.kegare.caveworld.api.ICaveBiome;
-import com.kegare.caveworld.core.CaveBiomeManager;
-import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 
 import cpw.mods.fml.client.config.GuiConfig;
 import cpw.mods.fml.client.config.GuiConfigEntries;
+import cpw.mods.fml.client.config.GuiConfigEntries.CategoryEntry;
 import cpw.mods.fml.client.config.IConfigElement;
-import cpw.mods.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
-import cpw.mods.fml.client.event.ConfigChangedEvent.PostConfigChangedEvent;
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.eventhandler.Event.Result;
-import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class BiomesEntry extends CaveCategoryEntry
+public class BiomesEntry extends CategoryEntry
 {
 	public BiomesEntry(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement prop)
 	{
 		super(owningScreen, owningEntryList, prop);
-	}
-
-	@Override
-	protected Configuration getConfig()
-	{
-		return Config.biomesCfg;
 	}
 
 	@Override
@@ -61,25 +49,20 @@ public class BiomesEntry extends CaveCategoryEntry
 	@Override
 	public void setToDefault()
 	{
-		CaveworldAPI.clearCaveBiomes();
-
-		List<Property> properties;
-
-		for (ICaveBiome entry : CaveBiomeManager.defaultMapping.values())
+		try
 		{
-			properties = getConfig().getCategory(Integer.toString(entry.getBiome().biomeID)).getOrderedValues();
-			properties.get(0).set(entry.getGenWeight());
-			properties.get(1).set(GameData.getBlockRegistry().getNameForObject(entry.getTerrainBlock().getBlock()));
-			properties.get(2).set(entry.getTerrainBlock().getMetadata());
+			FileUtils.forceDelete(new File(Config.biomesCfg.toString()));
+
+			CaveworldAPI.clearCaveBiomes();
+
+			Config.biomesCfg = null;
+			Config.syncBiomesCfg();
 		}
-
-		OnConfigChangedEvent event = new OnConfigChangedEvent(Caveworld.MODID, "biomes", mc.theWorld != null, false);
-
-		FMLCommonHandler.instance().bus().post(event);
-
-		if (!event.getResult().equals(Result.DENY))
+		catch (IOException e)
 		{
-			FMLCommonHandler.instance().bus().post(new PostConfigChangedEvent(event.modID, event.configID, event.isWorldRunning, event.requiresMcRestart));
+			e.printStackTrace();
+
+			return;
 		}
 
 		if (childScreen instanceof GuiBiomesEntry)

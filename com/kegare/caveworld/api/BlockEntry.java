@@ -29,4 +29,18 @@ public class BlockEntry
 	{
 		return MathHelper.clamp_int(metadata, 0, 15);
 	}
+
+	@Override
+	public int hashCode()
+	{
+		Object[] elements = {getBlock().getUnlocalizedName(), getMetadata()};
+		int result = 0;
+
+		for (Object element : elements)
+		{
+			result = 31 * result + (element == null ? 0 : element.hashCode());
+		}
+
+		return result;
+	}
 }

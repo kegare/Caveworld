@@ -7,16 +7,16 @@
  * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
  */
 
-package com.kegare.caveworld.client.config;
+package com.kegare.caveworld.plugin.mceconomy;
 
-import java.util.Comparator;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
@@ -27,10 +27,8 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.world.biome.BiomeGenBase;
-import net.minecraftforge.common.BiomeDictionary;
-import net.minecraftforge.common.BiomeDictionary.Type;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.Level;
@@ -44,17 +42,13 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.kegare.caveworld.api.BlockEntry;
-import com.kegare.caveworld.api.CaveworldAPI;
-import com.kegare.caveworld.api.ICaveBiome;
-import com.kegare.caveworld.client.config.GuiSelectBiome.SelectListener;
+import com.kegare.caveworld.client.config.CaveConfigGui;
+import com.kegare.caveworld.client.config.GuiSelectItem;
+import com.kegare.caveworld.client.config.GuiSelectItem.SelectListener;
 import com.kegare.caveworld.client.gui.GuiListSlot;
-import com.kegare.caveworld.core.CaveBiomeManager;
-import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome;
 import com.kegare.caveworld.core.Caveworld;
-import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.plugin.mceconomy.ShopProductManager.ShopProduct;
 import com.kegare.caveworld.util.ArrayListExtended;
-import com.kegare.caveworld.util.CaveBiomeComparator;
 import com.kegare.caveworld.util.CaveLog;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
@@ -65,11 +59,11 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class GuiBiomesEntry extends GuiScreen implements SelectListener
+public class GuiShopEntry extends GuiScreen implements SelectListener
 {
 	protected final GuiScreen parentScreen;
 
-	protected BiomeList biomeList;
+	protected ProductList productList;
 
 	protected GuiButton doneButton;
 	protected GuiButton editButton;
@@ -85,12 +79,14 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 	protected HoverChecker instantHoverChecker;
 
 	protected boolean editMode;
-	protected GuiTextField weightField;
-	protected GuiTextField blockField;
-	protected GuiTextField metadataField;
+	protected GuiTextField itemField;
+	protected GuiTextField damageField;
+	protected GuiTextField stackField;
+	protected GuiTextField costField;
 
-	protected HoverChecker weightHoverChecker;
-	protected HoverChecker blockHoverChecker;
+	protected HoverChecker itemHoverChecker;
+	protected HoverChecker stackHoverChecker;
+	protected HoverChecker costHoverChecker;
 
 	private int maxLabelWidth;
 
@@ -99,7 +95,7 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 
 	private final Map<Object, List<String>> hoverCache = Maps.newHashMap();
 
-	public GuiBiomesEntry(GuiScreen parent)
+	public GuiShopEntry(GuiScreen parent)
 	{
 		this.parentScreen = parent;
 	}
@@ -109,12 +105,12 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 	{
 		Keyboard.enableRepeatEvents(true);
 
-		if (biomeList == null)
+		if (productList == null)
 		{
-			biomeList = new BiomeList(this);
+			productList = new ProductList(this);
 		}
 
-		biomeList.func_148122_a(width, height, 32, height - (editMode ? 85 : 28));
+		productList.func_148122_a(width, height, 32, height - (editMode ? 90 : 28));
 
 		if (doneButton == null)
 		{
@@ -132,7 +128,7 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 
 		editButton.xPosition = doneButton.xPosition - doneButton.width - 3;
 		editButton.yPosition = doneButton.yPosition;
-		editButton.enabled = biomeList.selected != null;
+		editButton.enabled = productList.selected != null;
 		editButton.visible = !editMode;
 
 		if (cancelButton == null)
@@ -218,57 +214,70 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 		instantHoverChecker = new HoverChecker(instantFilter, 800);
 
 		editLabelList.clear();
-		editLabelList.add(I18n.format(Caveworld.CONFIG_LANG + "biomes.genWeight"));
-		editLabelList.add(I18n.format(Caveworld.CONFIG_LANG + "biomes.terrainBlock"));
+		editLabelList.add(I18n.format(Caveworld.CONFIG_LANG + "shop.item"));
 		editLabelList.add("");
+		editLabelList.add(I18n.format(Caveworld.CONFIG_LANG + "shop.stackSize"));
+		editLabelList.add(I18n.format(Caveworld.CONFIG_LANG + "shop.productCost"));
 
 		for (String key : editLabelList)
 		{
 			maxLabelWidth = Math.max(maxLabelWidth, fontRendererObj.getStringWidth(key));
 		}
 
-		if (weightField == null)
+		if (itemField == null)
 		{
-			weightField = new GuiTextField(fontRendererObj, 0, 0, 0, 15);
-			weightField.setMaxStringLength(3);
+			itemField = new GuiTextField(fontRendererObj, 0, 0, 0, 15);
+			itemField.setMaxStringLength(100);
 		}
 
 		int i = maxLabelWidth + 8 + width / 2;
-		weightField.xPosition = width / 2 - i / 2 + maxLabelWidth + 10;
-		weightField.yPosition = biomeList.bottom + 1 + 20;
-		weightField.width = width / 2 + i / 2 - 45 - weightField.xPosition + 40;
+		itemField.xPosition = width / 2 - i / 2 + maxLabelWidth + 10;
+		itemField.yPosition = productList.bottom + 5;
+		int fieldWidth = width / 2 + i / 2 - 45 - itemField.xPosition + 40;
+		itemField.width = fieldWidth / 4 + fieldWidth / 2 - 1;
 
-		if (blockField == null)
+		if (damageField == null)
 		{
-			blockField = new GuiTextField(fontRendererObj, 0, 0, 0, weightField.height);
-			blockField.setMaxStringLength(100);
+			damageField = new GuiTextField(fontRendererObj, 0, 0, 0, itemField.height);
+			damageField.setMaxStringLength(5);
 		}
 
-		blockField.xPosition = weightField.xPosition;
-		blockField.yPosition = weightField.yPosition + weightField.height + 5;
-		blockField.width = weightField.width / 4 + weightField.width / 2 - 1;
+		damageField.xPosition = itemField.xPosition + itemField.width + 3;
+		damageField.yPosition = itemField.yPosition;
+		damageField.width = fieldWidth / 4 - 1;
 
-		if (metadataField == null)
+		if (stackField == null)
 		{
-			metadataField = new GuiTextField(fontRendererObj, 0, 0, 0, blockField.height);
-			metadataField.setMaxStringLength(2);
+			stackField = new GuiTextField(fontRendererObj, 0, 0, 0, itemField.height);
+			stackField.setMaxStringLength(2);
 		}
 
-		metadataField.xPosition = blockField.xPosition + blockField.width + 3;
-		metadataField.yPosition = blockField.yPosition;
-		metadataField.width = weightField.width / 4 - 1;
+		stackField.xPosition = itemField.xPosition;
+		stackField.yPosition = itemField.yPosition + itemField.height + 5;
+		stackField.width = fieldWidth;
+
+		if (costField == null)
+		{
+			costField = new GuiTextField(fontRendererObj, 0, 0, 0, itemField.height);
+		}
+
+		costField.xPosition = stackField.xPosition;
+		costField.yPosition = stackField.yPosition + stackField.height + 5;
+		costField.width = fieldWidth;
 
 		editFieldList.clear();
 
 		if (editMode)
 		{
-			editFieldList.add(weightField);
-			editFieldList.add(blockField);
-			editFieldList.add(metadataField);
+			editFieldList.add(itemField);
+			editFieldList.add(damageField);
+			editFieldList.add(stackField);
+			editFieldList.add(costField);
 		}
 
-		weightHoverChecker = new HoverChecker(weightField.yPosition - 1, weightField.yPosition + weightField.height, weightField.xPosition - maxLabelWidth - 12, weightField.xPosition - 10, 800);
-		blockHoverChecker = new HoverChecker(blockField.yPosition - 1, blockField.yPosition + blockField.height, blockField.xPosition - maxLabelWidth - 12, blockField.xPosition - 10, 800);
+		itemHoverChecker = new HoverChecker(itemField.yPosition - 1, itemField.yPosition + itemField.height, itemField.xPosition - maxLabelWidth - 12, itemField.xPosition - 10, 800);
+		stackHoverChecker = new HoverChecker(stackField.yPosition - 1, stackField.yPosition + stackField.height, stackField.xPosition - maxLabelWidth - 12, stackField.xPosition - 10, 800);
+		costHoverChecker = new HoverChecker(costField.yPosition - 1, costField.yPosition + costField.height, costField.xPosition - maxLabelWidth - 12, costField.xPosition - 10, 800);
 	}
 
 	@Override
@@ -281,28 +290,49 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 				case 0:
 					if (editMode)
 					{
-						if (NumberUtils.toInt(weightField.getText()) <= 0)
+						if (Strings.isNullOrEmpty(itemField.getText()) || !GameData.getItemRegistry().containsKey(itemField.getText()) || NumberUtils.toInt(stackField.getText()) <= 0)
 						{
 							return;
 						}
 
-						biomeList.selected.setGenWeight(NumberUtils.toInt(weightField.getText(), biomeList.selected.getGenWeight()));
-						biomeList.selected.setTerrainBlock(new BlockEntry(blockField.getText(), NumberUtils.toInt(metadataField.getText())));
+						productList.selected.setProductItem(new ItemStack(GameData.getItemRegistry().getObject(itemField.getText()),
+							NumberUtils.toInt(stackField.getText()), NumberUtils.toInt(damageField.getText())));
+						productList.selected.setCost(NumberUtils.toInt(costField.getText()));
 
-						hoverCache.remove(biomeList.selected);
+						hoverCache.remove(productList.selected);
 
 						actionPerformed(cancelButton);
 
-						biomeList.scrollToSelected();
+						productList.scrollToSelected();
 					}
 					else
 					{
-						CaveworldAPI.clearCaveBiomes();
-						CaveworldAPI.getCaveBiomes().addAll(biomeList.biomes);
+						boolean flag = ShopProductManager.instance().getShopProducts().size() != productList.products.size();
 
-						if (Config.biomesCfg.hasChanged())
+						ShopProductManager.instance().getShopProducts().clear();
+
+						if (flag)
 						{
-							Config.biomesCfg.save();
+							try
+							{
+								FileUtils.forceDelete(new File(MCEconomyPlugin.shopCfg.toString()));
+
+								MCEconomyPlugin.shopCfg.load();
+							}
+							catch (IOException e)
+							{
+								e.printStackTrace();
+							}
+						}
+
+						for (ShopProduct product : productList.products)
+						{
+							ShopProductManager.instance().addShopProduct(product);
+						}
+
+						if (MCEconomyPlugin.shopCfg.hasChanged())
+						{
+							MCEconomyPlugin.shopCfg.save();
 						}
 
 						actionPerformed(cancelButton);
@@ -319,11 +349,12 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 						editMode = true;
 						initGui();
 
-						biomeList.scrollToSelected();
+						productList.scrollToSelected();
 
-						weightField.setText(Integer.toString(biomeList.selected.getGenWeight()));
-						blockField.setText(GameData.getBlockRegistry().getNameForObject(biomeList.selected.getTerrainBlock().getBlock()));
-						metadataField.setText(Integer.toString(biomeList.selected.getTerrainBlock().getMetadata()));
+						itemField.setText(GameData.getItemRegistry().getNameForObject(productList.selected.getProductItem().getItem()));
+						damageField.setText(Integer.toString(productList.selected.getProductItem().getItemDamage()));
+						stackField.setText(Integer.toString(productList.selected.getProductItem().stackSize));
+						costField.setText(Integer.toString(productList.selected.getcost()));
 					}
 
 					break;
@@ -340,29 +371,22 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 
 					break;
 				case 3:
-					BiomeGenBase[] biomes = new BiomeGenBase[biomeList.biomes.size()];
-
-					for (int i = 0; i < biomes.length; ++i)
-					{
-						biomes[i] = biomeList.biomes.get(i).getBiome();
-					}
-
-					mc.displayGuiScreen(new GuiSelectBiome(this).setHiddenBiomes(biomes));
+					mc.displayGuiScreen(new GuiSelectItem(this));
 					break;
 				case 4:
-					if (biomeList.biomes.remove(biomeList.selected))
+					if (productList.products.remove(productList.selected))
 					{
-						int i = biomeList.contents.indexOf(biomeList.selected);
+						int i = productList.contents.indexOf(productList.selected);
 
-						biomeList.contents.remove(i);
-						biomeList.selected = biomeList.contents.get(--i, null);
+						productList.contents.remove(i);
+						productList.selected = productList.contents.get(--i, null);
 					}
 
 					break;
 				case 5:
-					for (Object entry : biomeList.biomes.toArray())
+					for (Object obj : productList.products.toArray())
 					{
-						biomeList.selected = (ICaveBiome)entry;
+						productList.selected = (ShopProduct)obj;
 
 						actionPerformed(removeButton);
 					}
@@ -379,64 +403,21 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 	}
 
 	@Override
-	public void setResult(final List<Integer> result)
+	public void onSelected(Item item)
 	{
-		new ForkJoinPool().execute(new RecursiveAction()
+		if (!editMode)
 		{
-			@Override
-			protected void compute()
+			ShopProduct product = new ShopProduct(new ItemStack(item), 0);
+
+			if (productList.products.addIfAbsent(product))
 			{
-				BiomeGenBase biome;
-				ICaveBiome entry;
+				productList.contents.addIfAbsent(product);
+				productList.selected = product;
 
-				for (Integer id : result)
-				{
-					biome = BiomeGenBase.getBiome(id);
-
-					if (biome != null)
-					{
-						for (ICaveBiome cave : biomeList.biomes)
-						{
-							if (cave.getBiome() == biome)
-							{
-								biome = null;
-								biomeList.selected = cave;
-								break;
-							}
-						}
-
-						if (biome == null)
-						{
-							continue;
-						}
-
-						if (CaveBiomeManager.defaultMapping.containsKey(biome))
-						{
-							entry = CaveBiomeManager.defaultMapping.get(biome);
-						}
-						else
-						{
-							entry = new CaveBiome(biome, 10);
-						}
-
-						if (biomeList.biomes.addIfAbsent(entry))
-						{
-							biomeList.contents.addIfAbsent(entry);
-							biomeList.selected = entry;
-
-							entry.setGenWeight(entry.getGenWeight());
-							entry.setTerrainBlock(entry.getTerrainBlock());
-						}
-					}
-				}
-
-				Comparator<ICaveBiome> comparator = new CaveBiomeComparator();
-
-				biomeList.contents.sort(comparator);
-				biomeList.biomes.sort(comparator);
-				biomeList.scrollToSelected();
+				editButton.enabled = true;
+				actionPerformed(editButton);
 			}
-		});
+		}
 	}
 
 	@Override
@@ -451,7 +432,7 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 		}
 		else
 		{
-			editButton.enabled = biomeList.selected != null;
+			editButton.enabled = productList.selected != null;
 			addButton.visible = !editButton.enabled;
 			removeButton.visible = !addButton.visible;
 
@@ -462,16 +443,14 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float ticks)
 	{
-		biomeList.drawScreen(mouseX, mouseY, ticks);
+		productList.drawScreen(mouseX, mouseY, ticks);
 
-		drawCenteredString(fontRendererObj, I18n.format(Caveworld.CONFIG_LANG + "biomes"), width / 2, 15, 0xFFFFFF);
+		drawCenteredString(fontRendererObj, I18n.format(Caveworld.CONFIG_LANG + "shop"), width / 2, 15, 0xFFFFFF);
 
 		super.drawScreen(mouseX, mouseY, ticks);
 
 		if (editMode)
 		{
-			drawCenteredString(fontRendererObj, biomeList.selected.getBiome().biomeName, width / 2, biomeList.bottom + 6, 0xFFFFFF);
-
 			GuiTextField textField;
 
 			for (int i = 0; i < editFieldList.size(); ++i)
@@ -504,49 +483,62 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 
 			func_146283_a(hoverCache.get(instantHoverChecker), mouseX, mouseY);
 		}
-		else if (weightHoverChecker.checkHover(mouseX, mouseY))
+		else if (itemHoverChecker.checkHover(mouseX, mouseY))
 		{
-			if (!hoverCache.containsKey(weightHoverChecker))
+			if (!hoverCache.containsKey(itemHoverChecker))
 			{
 				List<String> hover = Lists.newArrayList();
-				String key = Caveworld.CONFIG_LANG + "biomes.genWeight";
+				String key = Caveworld.CONFIG_LANG + "shop.item";
 				hover.add(EnumChatFormatting.GRAY + I18n.format(key));
 				hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
 
-				hoverCache.put(weightHoverChecker, hover);
+				hoverCache.put(itemHoverChecker, hover);
 			}
 
-			func_146283_a(hoverCache.get(weightHoverChecker), mouseX, mouseY);
+			func_146283_a(hoverCache.get(itemHoverChecker), mouseX, mouseY);
 		}
-		else if (blockHoverChecker.checkHover(mouseX, mouseY))
+		else if (stackHoverChecker.checkHover(mouseX, mouseY))
 		{
-			if (!hoverCache.containsKey(blockHoverChecker))
+			if (!hoverCache.containsKey(stackHoverChecker))
 			{
 				List<String> hover = Lists.newArrayList();
-				String key = Caveworld.CONFIG_LANG + "biomes.terrainBlock";
+				String key = Caveworld.CONFIG_LANG + "shop.stackSize";
 				hover.add(EnumChatFormatting.GRAY + I18n.format(key));
 				hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
 
-				hoverCache.put(blockHoverChecker, hover);
+				hoverCache.put(stackHoverChecker, hover);
 			}
 
-			func_146283_a(hoverCache.get(blockHoverChecker), mouseX, mouseY);
+			func_146283_a(hoverCache.get(stackHoverChecker), mouseX, mouseY);
 		}
-		else if (biomeList.func_148141_e(mouseY) && isCtrlKeyDown())
+		else if (costHoverChecker.checkHover(mouseX, mouseY))
 		{
-			ICaveBiome entry = biomeList.contents.get(biomeList.func_148124_c(mouseX, mouseY), null);
+			if (!hoverCache.containsKey(costHoverChecker))
+			{
+				List<String> hover = Lists.newArrayList();
+				String key = Caveworld.CONFIG_LANG + "shop.productCost";
+				hover.add(EnumChatFormatting.GRAY + I18n.format(key));
+				hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
+
+				hoverCache.put(costHoverChecker, hover);
+			}
+
+			func_146283_a(hoverCache.get(costHoverChecker), mouseX, mouseY);
+		}
+		else if (productList.func_148141_e(mouseY) && isCtrlKeyDown())
+		{
+			ShopProduct entry = productList.contents.get(productList.func_148124_c(mouseX, mouseY), null);
 
 			if (entry != null)
 			{
 				if (!hoverCache.containsKey(entry))
 				{
-					BiomeGenBase biome = entry.getBiome();
-					BlockEntry block = entry.getTerrainBlock();
 					List<String> info = Lists.newArrayList();
 
-					info.add(EnumChatFormatting.DARK_GRAY + Integer.toString(biome.biomeID) + ": " + biome.biomeName);
-					info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "biomes.genWeight") + ": " + entry.getGenWeight());
-					info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "biomes.terrainBlock") + ": " + GameData.getBlockRegistry().getNameForObject(block.getBlock()) + ", " + block.getMetadata());
+					info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "shop.item") + ": " +
+						GameData.getItemRegistry().getNameForObject(entry.getProductItem().getItem()) + ", " + entry.getProductItem().getItemDamage());
+					info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "shop.stackSize") + ": " + entry.getProductItem().stackSize);
+					info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "shop.productCost") + ": " + entry.getcost());
 
 					hoverCache.put(entry, info);
 				}
@@ -561,30 +553,43 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 	{
 		super.handleMouseInput();
 
-		if (weightField.isFocused())
+		if (damageField.isFocused())
 		{
 			int i = Mouse.getDWheel();
 
 			if (i < 0)
 			{
-				weightField.setText(Integer.toString(Math.max(NumberUtils.toInt(weightField.getText()) - 1, 0)));
+				damageField.setText(Integer.toString(Math.max(NumberUtils.toInt(damageField.getText()) - 1, 0)));
 			}
 			else if (i > 0)
 			{
-				weightField.setText(Integer.toString(Math.min(NumberUtils.toInt(weightField.getText()) + 1, 100)));
+				damageField.setText(Integer.toString(Math.min(NumberUtils.toInt(damageField.getText()) + 1, Short.MAX_VALUE)));
 			}
 		}
-		else if (metadataField.isFocused())
+		else if (stackField.isFocused())
 		{
 			int i = Mouse.getDWheel();
 
 			if (i < 0)
 			{
-				metadataField.setText(Integer.toString(Math.max(NumberUtils.toInt(metadataField.getText()) - 1, 0)));
+				stackField.setText(Integer.toString(Math.max(NumberUtils.toInt(stackField.getText()) - 1, 0)));
 			}
 			else if (i > 0)
 			{
-				metadataField.setText(Integer.toString(Math.min(NumberUtils.toInt(metadataField.getText()) + 1, 15)));
+				stackField.setText(Integer.toString(Math.min(NumberUtils.toInt(stackField.getText()) + 1, 64)));
+			}
+		}
+		else if (costField.isFocused())
+		{
+			int i = Mouse.getDWheel();
+
+			if (i < 0)
+			{
+				costField.setText(Integer.toString(Math.max(NumberUtils.toInt(costField.getText()) - 1, 0)));
+			}
+			else if (i > 0)
+			{
+				costField.setText(Integer.toString(Math.min(NumberUtils.toInt(costField.getText()) + 1, MCEconomyPlugin.Player_MP_MAX)));
 			}
 		}
 	}
@@ -601,11 +606,14 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 				textField.mouseClicked(x, y, code);
 			}
 
-			if (!isShiftKeyDown() && blockField.isFocused())
+			if (!isShiftKeyDown())
 			{
-				blockField.setFocused(false);
+				if (itemField.isFocused())
+				{
+					itemField.setFocused(false);
 
-				mc.displayGuiScreen(new GuiSelectBlock(this, blockField));
+					mc.displayGuiScreen(new GuiSelectItem(this, itemField));
+				}
 			}
 		}
 		else
@@ -630,37 +638,23 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 	{
 		if (editMode)
 		{
-			if (weightField.isFocused())
+			for (GuiTextField textField : editFieldList)
 			{
 				if (code == Keyboard.KEY_ESCAPE)
 				{
-					weightField.setFocused(false);
+					textField.setFocused(false);
 				}
+				else if (textField.isFocused())
+				{
+					if (textField != itemField)
+					{
+						if (!CharUtils.isAsciiControl(c) && !CharUtils.isAsciiNumeric(c))
+						{
+							continue;
+						}
+					}
 
-				if (CharUtils.isAsciiControl(c) || CharUtils.isAsciiNumeric(c))
-				{
-					weightField.textboxKeyTyped(c, code);
-				}
-			}
-			else if (blockField.isFocused())
-			{
-				if (code == Keyboard.KEY_ESCAPE)
-				{
-					blockField.setFocused(false);
-				}
-
-				blockField.textboxKeyTyped(c, code);
-			}
-			else if  (metadataField.isFocused())
-			{
-				if (code == Keyboard.KEY_ESCAPE)
-				{
-					metadataField.setFocused(false);
-				}
-
-				if (CharUtils.isAsciiControl(c) || CharUtils.isAsciiNumeric(c))
-				{
-					metadataField.textboxKeyTyped(c, code);
+					textField.textboxKeyTyped(c, code);
 				}
 			}
 		}
@@ -682,11 +676,11 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 
 				if (Strings.isNullOrEmpty(text) && changed)
 				{
-					biomeList.setFilter(null);
+					productList.setFilter(null);
 				}
 				else if (instantFilter.isChecked() && changed || code == Keyboard.KEY_RETURN)
 				{
-					biomeList.setFilter(text);
+					productList.setFilter(text);
 				}
 			}
 			else
@@ -697,41 +691,48 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 				}
 				else if (code == Keyboard.KEY_BACK)
 				{
-					biomeList.selected = null;
+					productList.selected = null;
+				}
+				else if (code == Keyboard.KEY_TAB)
+				{
+					if (++productList.nameType > 2)
+					{
+						productList.nameType = 0;
+					}
 				}
 				else if (code == Keyboard.KEY_UP)
 				{
-					biomeList.scrollUp();
+					productList.scrollUp();
 				}
 				else if (code == Keyboard.KEY_DOWN)
 				{
-					biomeList.scrollDown();
+					productList.scrollDown();
 				}
 				else if (code == Keyboard.KEY_HOME)
 				{
-					biomeList.scrollToTop();
+					productList.scrollToTop();
 				}
 				else if (code == Keyboard.KEY_END)
 				{
-					biomeList.scrollToEnd();
+					productList.scrollToEnd();
 				}
 				else if (code == Keyboard.KEY_SPACE)
 				{
-					biomeList.scrollToSelected();
+					productList.scrollToSelected();
 				}
 				else if (code == Keyboard.KEY_PRIOR)
 				{
-					biomeList.scrollToPrev();
+					productList.scrollToPrev();
 				}
 				else if (code == Keyboard.KEY_NEXT)
 				{
-					biomeList.scrollToNext();
+					productList.scrollToNext();
 				}
 				else if (code == Keyboard.KEY_F || code == mc.gameSettings.keyBindChat.getKeyCode())
 				{
 					filterTextField.setFocused(true);
 				}
-				else if (code == Keyboard.KEY_DELETE && biomeList.selected != null)
+				else if (code == Keyboard.KEY_DELETE && productList.selected != null)
 				{
 					actionPerformed(removeButton);
 				}
@@ -739,19 +740,20 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 		}
 	}
 
-	protected static class BiomeList extends GuiListSlot
+	protected static class ProductList extends GuiListSlot
 	{
-		protected final GuiBiomesEntry parent;
+		protected final GuiShopEntry parent;
 
-		protected final ArrayListExtended<ICaveBiome> biomes = new ArrayListExtended(CaveworldAPI.getCaveBiomes());
-		protected final ArrayListExtended<ICaveBiome> contents = new ArrayListExtended(biomes);
+		protected final ArrayListExtended<ShopProduct> products = new ArrayListExtended(ShopProductManager.instance().getShopProducts());
+		protected final ArrayListExtended<ShopProduct> contents = new ArrayListExtended(products);
 
-		private final Map<String, List<ICaveBiome>> filterCache = Maps.newHashMap();
-		private final Set<Block> ignoredRender = CaveConfigGui.getIgnoredRenderBlocks();
+		private final Map<String, List<ShopProduct>> filterCache = Maps.newHashMap();
+		private final Set<Item> ignoredRender = CaveConfigGui.getIgnoredRenderItems();
 
-		protected ICaveBiome selected;
+		protected int nameType;
+		protected ShopProduct selected;
 
-		private BiomeList(GuiBiomesEntry parent)
+		private ProductList(GuiShopEntry parent)
 		{
 			super(parent.mc, 0, 0, 0, 0, 22);
 			this.parent = parent;
@@ -783,44 +785,54 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 		@Override
 		protected void drawSlot(int index, int par2, int par3, int par4, Tessellator tessellator, int mouseX, int mouseY)
 		{
-			ICaveBiome entry = contents.get(index, null);
+			ShopProduct entry = contents.get(index, null);
 
 			if (entry == null)
 			{
 				return;
 			}
 
-			BiomeGenBase biome = entry.getBiome();
+			ItemStack itemstack = entry.getProductItem();
+			String name = null;
 
-			parent.drawCenteredString(parent.fontRendererObj, biome.biomeName, width / 2, par3 + 3, 0xFFFFFF);
-
-			if (parent.detailInfo.isChecked() || Keyboard.isKeyDown(Keyboard.KEY_TAB))
+			switch (nameType)
 			{
-				parent.drawString(parent.fontRendererObj, Integer.toString(biome.biomeID), width / 2 - 100, par3 + 3, 0xE0E0E0);
+				case 1:
+					name = GameData.getItemRegistry().getNameForObject(itemstack.getItem());
+					break;
+				case 2:
+					name = itemstack.getUnlocalizedName();
+					name = name.substring(name.indexOf(".") + 1);
+					break;
+				default:
+					name = itemstack.getDisplayName();
+					break;
+			}
 
-				BlockEntry terrain = entry.getTerrainBlock();
-				Block block = terrain.getBlock();
+			parent.drawCenteredString(parent.fontRendererObj, name, width / 2, par3 + 3, 0xFFFFFF);
 
-				if (!ignoredRender.contains(block) && Item.getItemFromBlock(block) != null)
+			if (parent.detailInfo.isChecked())
+			{
+				if (!ignoredRender.contains(itemstack.getItem()))
 				{
 					try
 					{
-						ItemStack itemstack = new ItemStack(block, entry.getGenWeight(), terrain.getMetadata());
-
 						GL11.glEnable(GL12.GL_RESCALE_NORMAL);
 						RenderHelper.enableGUIStandardItemLighting();
-						RenderItem.getInstance().renderItemAndEffectIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, width / 2 + 90, par3 + 1);
-						RenderItem.getInstance().renderItemOverlayIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, width / 2 + 90, par3 + 1);
+						RenderItem.getInstance().renderItemAndEffectIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, width / 2 - 100, par3 + 1);
+						RenderItem.getInstance().renderItemOverlayIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, width / 2 - 100, par3 + 1);
 						RenderHelper.disableStandardItemLighting();
 						GL11.glDisable(GL12.GL_RESCALE_NORMAL);
 					}
 					catch (Exception e)
 					{
-						CaveLog.log(Level.WARN, e, "Failed to trying render item block into gui: %s", GameData.getBlockRegistry().getNameForObject(block));
+						CaveLog.log(Level.WARN, e, "Failed to trying render item into gui: %s", GameData.getBlockRegistry().getNameForObject(itemstack.getItem()));
 
-						ignoredRender.add(block);
+						ignoredRender.add(itemstack.getItem());
 					}
 				}
+
+				parent.fontRendererObj.drawString(Integer.toString(entry.getcost()), width / 2 + 107 - parent.fontRendererObj.getStringWidth(Integer.toString(entry.getcost())), par3 + 8, 0xD0D0D0);
 			}
 		}
 
@@ -846,17 +858,17 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 				@Override
 				protected void compute()
 				{
-					List<ICaveBiome> result;
+					List<ShopProduct> result;
 
 					if (Strings.isNullOrEmpty(filter))
 					{
-						result = biomes;
+						result = products;
 					}
 					else
 					{
 						if (!filterCache.containsKey(filter))
 						{
-							filterCache.put(filter, Lists.newArrayList(Collections2.filter(biomes, new BiomeFilter(filter))));
+							filterCache.put(filter, Lists.newArrayList(Collections2.filter(products, new ProductFilter(filter))));
 						}
 
 						result = filterCache.get(filter);
@@ -872,41 +884,25 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 		}
 	}
 
-	public static class BiomeFilter implements Predicate<ICaveBiome>
+	public static class ProductFilter implements Predicate<ShopProduct>
 	{
 		private final String filter;
 
-		public BiomeFilter(String filter)
+		public ProductFilter(String filter)
 		{
 			this.filter = filter;
 		}
 
 		@Override
-		public boolean apply(ICaveBiome entry)
+		public boolean apply(ShopProduct product)
 		{
-			try
-			{
-				BiomeGenBase biome = entry.getBiome();
+			ItemStack itemstack = product.getProductItem();
 
-				if (biome.biomeID == NumberUtils.toInt(filter, -1) ||
-					biome.biomeName.toLowerCase().contains(filter.toLowerCase()) ||
-					BiomeDictionary.isBiomeOfType(biome, Type.valueOf(filter.toUpperCase())))
-				{
-					return true;
-				}
-			}
-			catch (Exception e) {}
-
-			if (entry.getGenWeight() == NumberUtils.toInt(filter, -1))
-			{
-				return true;
-			}
-
-			Block block = entry.getTerrainBlock().getBlock();
-
-			if (GameData.getBlockRegistry().getNameForObject(block).toLowerCase().contains(filter.toLowerCase()) ||
-				block.getUnlocalizedName().toLowerCase().contains(filter.toLowerCase()) ||
-				block.getLocalizedName().toLowerCase().contains(filter.toLowerCase()))
+			if (GameData.getItemRegistry().getNameForObject(itemstack.getItem()).toLowerCase().contains(filter.toLowerCase()) ||
+				itemstack.getUnlocalizedName().toLowerCase().contains(filter.toLowerCase()) ||
+				itemstack.getDisplayName().toLowerCase().contains(filter.toLowerCase()) ||
+				itemstack.getItem().getToolClasses(itemstack).contains(filter) ||
+				product.getcost() == NumberUtils.toInt(filter, -1))
 			{
 				return true;
 			}

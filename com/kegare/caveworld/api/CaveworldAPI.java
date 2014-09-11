@@ -1,10 +1,8 @@
 package com.kegare.caveworld.api;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -128,51 +126,55 @@ public final class CaveworldAPI
 	}
 
 	/**
-	 * @see ICaveVeinManager#addCaveVein(String, ICaveVein)
+	 * @see ICaveVeinManager#addCaveVein(ICaveVein)
 	 */
+	public static boolean addCaveVein(ICaveVein vein)
+	{
+		return veinManager == null ? false : veinManager.addCaveVein(vein);
+	}
+
+	@Deprecated
 	public static boolean addCaveVein(String name, ICaveVein vein)
 	{
-		return veinManager == null ? false : veinManager.addCaveVein(name, vein);
+		return addCaveVein(vein);
 	}
 
-	/**
-	 * @see ICaveVeinManager#addCaveVeinWithConfig(String, ICaveVein)
-	 */
+	@Deprecated
 	public static boolean addCaveVeinWithConfig(String name, ICaveVein vein)
 	{
-		return veinManager == null ? false : veinManager.addCaveVeinWithConfig(name, vein);
+		return addCaveVein(vein);
 	}
 
-	/**
-	 * @see ICaveVeinManager#addCaveVeinFromConfig(String)
-	 */
+	@Deprecated
 	public static boolean addCaveVeinFromConfig(String name)
 	{
-		return veinManager == null ? false : veinManager.addCaveVeinFromConfig(name);
+		return false;
 	}
 
 	/**
-	 * @see ICaveVeinManager#removeCaveVein(String)
+	 * @see ICaveVeinManager#removeCaveVeins(ICaveVein)
 	 */
+	public static int removeCaveVeins(ICaveVein vein)
+	{
+		return veinManager == null ? 0 : veinManager.removeCaveVeins(vein);
+	}
+
+	@Deprecated
 	public static boolean removeCaveVein(String name)
 	{
-		return veinManager == null ? false : veinManager.removeCaveVein(name);
+		return false;
 	}
 
-	/**
-	 * @see ICaveVeinManager#removeCaveVeinWithConfig(String)
-	 */
+	@Deprecated
 	public static boolean removeCaveVeinWithConfig(String name)
 	{
-		return veinManager == null ? false : veinManager.removeCaveVeinWithConfig(name);
+		return false;
 	}
 
-	/**
-	 * @see ICaveVeinManager#removeCaveVeinFromConfig(String)
-	 */
+	@Deprecated
 	public static boolean removeCaveVeinFromConfig(String name)
 	{
-		return veinManager == null ? false : veinManager.removeCaveVeinFromConfig(name);
+		return false;
 	}
 
 	/**
@@ -191,20 +193,15 @@ public final class CaveworldAPI
 		return veinManager == null ? null : veinManager.getRandomCaveVein(random);
 	}
 
-	/**
-	 * @see ICaveVeinManager#getCaveVein(String)
-	 */
+	@Deprecated
 	public static ICaveVein getCaveVein(String name)
 	{
-		return veinManager == null ? null : veinManager.getCaveVein(name);
+		return null;
 	}
 
-	/**
-	 * @see ICaveVeinManager#getCaveVeins()
-	 */
-	public static Map<String, ICaveVein> getCaveVeins()
+	public static List<ICaveVein> getCaveVeins()
 	{
-		return veinManager == null ? new HashMap<String, ICaveVein>() : veinManager.getCaveVeins();
+		return veinManager == null ? new ArrayList<ICaveVein>() : veinManager.getCaveVeins();
 	}
 
 	/**

@@ -12,9 +12,21 @@ public class EmptyCaveBiome implements ICaveBiome
 	}
 
 	@Override
+	public int setGenWeight(int weight)
+	{
+		return getGenWeight();
+	}
+
+	@Override
 	public int getGenWeight()
 	{
 		return 0;
+	}
+
+	@Override
+	public BlockEntry setTerrainBlock(BlockEntry entry)
+	{
+		return getTerrainBlock();
 	}
 
 	@Override
@@ -22,7 +34,4 @@ public class EmptyCaveBiome implements ICaveBiome
 	{
 		return new BlockEntry(Blocks.stone, 0);
 	}
-
-	@Override
-	public void setGenWeight(int weight) {}
 }

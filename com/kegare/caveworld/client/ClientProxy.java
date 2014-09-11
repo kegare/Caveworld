@@ -15,13 +15,9 @@ import net.minecraft.client.gui.GuiScreen;
 import com.kegare.caveworld.client.config.SelectBiomeEntry;
 import com.kegare.caveworld.client.config.SelectBlockEntry;
 import com.kegare.caveworld.client.config.SelectItemEntry;
-import com.kegare.caveworld.client.config.VeinsEntry.VeinConfigEntry;
 import com.kegare.caveworld.client.renderer.RenderPortalCaveworld;
-import com.kegare.caveworld.core.CaveVeinManager;
 import com.kegare.caveworld.core.CommonProxy;
 import com.kegare.caveworld.core.Config;
-import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
-import com.kegare.caveworld.plugin.mceconomy.ShopEntry.ShopProductEntry;
 
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.registry.RenderingRegistry;
@@ -37,10 +33,6 @@ public class ClientProxy extends CommonProxy
 		Config.selectBlockEntryClass = SelectBlockEntry.class;
 		Config.selectItemEntryClass = SelectItemEntry.class;
 		Config.selectBiomeEntryClass = SelectBiomeEntry.class;
-
-		CaveVeinManager.veinEntryClass = VeinConfigEntry.class;
-
-		MCEconomyPlugin.productEntryClass = ShopProductEntry.class;
 	}
 
 	@Override

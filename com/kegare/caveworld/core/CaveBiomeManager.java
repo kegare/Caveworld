@@ -21,12 +21,13 @@ import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.WeightedRandom;
 import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraftforge.common.config.ConfigCategory;
 
 import com.google.common.base.Function;
+import com.google.common.base.Objects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -35,6 +36,8 @@ import com.kegare.caveworld.api.EmptyCaveBiome;
 import com.kegare.caveworld.api.ICaveBiome;
 import com.kegare.caveworld.api.ICaveBiomeManager;
 import com.kegare.caveworld.util.CaveBiomeComparator;
+
+import cpw.mods.fml.common.registry.GameData;
 
 public class CaveBiomeManager implements ICaveBiomeManager, Function<ICaveBiome, BiomeGenBase>
 {
@@ -190,9 +193,9 @@ public class CaveBiomeManager implements ICaveBiomeManager, Function<ICaveBiome,
 	}
 
 	@Override
-	public ImmutableSet<ICaveBiome> getCaveBiomes()
+	public Set<ICaveBiome> getCaveBiomes()
 	{
-		return new ImmutableSet.Builder<ICaveBiome>().addAll(CAVE_BIOMES).build();
+		return CAVE_BIOMES;
 	}
 
 	@Override
@@ -233,9 +236,26 @@ public class CaveBiomeManager implements ICaveBiomeManager, Function<ICaveBiome,
 		}
 
 		@Override
+		public int hashCode()
+		{
+			return Objects.hashCode(getBiome().biomeID, getGenWeight(), getTerrainBlock());
+		}
+
+		@Override
 		public BiomeGenBase getBiome()
 		{
 			return biome == null ? BiomeGenBase.plains : biome;
+		}
+
+		@Override
+		public int setGenWeight(int weight)
+		{
+			if (biome != null)
+			{
+				Config.biomesCfg.getCategory(Integer.toString(biome.biomeID)).get("genWeight").set(weight);
+			}
+
+			return itemWeight = weight;
 		}
 
 		@Override
@@ -245,15 +265,22 @@ public class CaveBiomeManager implements ICaveBiomeManager, Function<ICaveBiome,
 		}
 
 		@Override
-		public BlockEntry getTerrainBlock()
+		public BlockEntry setTerrainBlock(BlockEntry entry)
 		{
-			return terrainBlock == null ? new BlockEntry(Blocks.stone, 0) : terrainBlock;
+			if (biome != null)
+			{
+				ConfigCategory category = Config.biomesCfg.getCategory(Integer.toString(biome.biomeID));
+				category.get("terrainBlock").set(GameData.getBlockRegistry().getNameForObject(entry.getBlock()));
+				category.get("terrainBlockMetadata").set(entry.getMetadata());
+			}
+
+			return terrainBlock = entry;
 		}
 
 		@Override
-		public void setGenWeight(int weight)
+		public BlockEntry getTerrainBlock()
 		{
-			itemWeight = weight;
+			return terrainBlock == null ? new BlockEntry(Blocks.stone, 0) : terrainBlock;
 		}
 	}
 }

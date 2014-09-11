@@ -109,7 +109,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 			caveGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
 		}
 
-		if (Config.generateExtremeCaves)
+		if (Config.generateExtremeCaves && worldHeight > 150)
 		{
 			extremeCaveGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
 		}
@@ -253,7 +253,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 		MinecraftForge.ORE_GEN_BUS.post(new OreGenEvent.Pre(worldObj, random, worldX, worldZ));
 
-		for (ICaveVein vein : CaveworldAPI.getCaveVeins().values())
+		for (ICaveVein vein : CaveworldAPI.getCaveVeins())
 		{
 			generateVein(vein, worldX, worldZ);
 		}
