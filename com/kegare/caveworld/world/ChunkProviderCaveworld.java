@@ -26,7 +26,6 @@ import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.MapGenBase;
-import net.minecraft.world.gen.feature.WorldGenDungeons;
 import net.minecraft.world.gen.feature.WorldGenGlowStone1;
 import net.minecraft.world.gen.feature.WorldGenLakes;
 import net.minecraft.world.gen.feature.WorldGenLiquids;
@@ -47,6 +46,7 @@ import net.minecraftforge.event.terraingen.TerrainGen;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import com.google.common.base.Strings;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.api.ICaveVein;
@@ -55,6 +55,8 @@ import com.kegare.caveworld.world.gen.MapGenCavesCaveworld;
 import com.kegare.caveworld.world.gen.MapGenExtremeCaves;
 import com.kegare.caveworld.world.gen.MapGenRavineCaveworld;
 import com.kegare.caveworld.world.gen.MapGenStrongholdCaveworld;
+import com.kegare.caveworld.world.gen.WorldGenAnimalDungeons;
+import com.kegare.caveworld.world.gen.WorldGenDungeonsCaveworld;
 
 public class ChunkProviderCaveworld implements IChunkProvider
 {
@@ -65,20 +67,21 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	private final MapGenBase caveGenerator = new MapGenCavesCaveworld();
 	private final MapGenBase extremeCaveGenerator = new MapGenExtremeCaves();
 	private final MapGenBase ravineGenerator = new MapGenRavineCaveworld();
-	private MapGenStronghold strongholdGenerator = new MapGenStrongholdCaveworld();
 	private MapGenMineshaft mineshaftGenerator = new MapGenMineshaft();
+	private MapGenStronghold strongholdGenerator = new MapGenStrongholdCaveworld();
 
 	private final WorldGenerator lakeWaterGen = new WorldGenLakes(Blocks.water);
 	private final WorldGenerator lakeLavaGen = new WorldGenLakes(Blocks.lava);
-	private final WorldGenerator dungeonGen = new WorldGenDungeons();
+	private final WorldGenerator dungeonGen = new WorldGenDungeonsCaveworld();
+	private final WorldGenerator animalDungeonGen = new WorldGenAnimalDungeons();
 	private final WorldGenerator glowStoneGen = new WorldGenGlowStone1();
 	private final WorldGenerator liquidWaterGen = new WorldGenLiquids(Blocks.flowing_water);
 	private final WorldGenerator liquidLavaGen = new WorldGenLiquids(Blocks.flowing_lava);
 	private final WorldGenerator vinesGen = new WorldGenVines();
 
 	{
-		strongholdGenerator = (MapGenStronghold)TerrainGen.getModdedMapGen(strongholdGenerator, InitMapGenEvent.EventType.STRONGHOLD);
 		mineshaftGenerator = (MapGenMineshaft)TerrainGen.getModdedMapGen(mineshaftGenerator, InitMapGenEvent.EventType.MINESHAFT);
+		strongholdGenerator = (MapGenStronghold)TerrainGen.getModdedMapGen(strongholdGenerator, InitMapGenEvent.EventType.STRONGHOLD);
 	}
 
 	public ChunkProviderCaveworld(World world)
@@ -121,8 +124,15 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 		if (generateStructures)
 		{
-			if (Config.generateMineshaft) mineshaftGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
-			if (Config.generateStronghold) strongholdGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
+			if (Config.generateMineshaft)
+			{
+				mineshaftGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
+			}
+
+			if (Config.generateStronghold)
+			{
+				strongholdGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
+			}
 		}
 
 		int i;
@@ -189,8 +199,15 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 		if (generateStructures)
 		{
-			if (Config.generateMineshaft) mineshaftGenerator.generateStructuresInChunk(worldObj, random, chunkX, chunkZ);
-			if (Config.generateStronghold) strongholdGenerator.generateStructuresInChunk(worldObj, random, chunkX, chunkZ);
+			if (Config.generateMineshaft)
+			{
+				mineshaftGenerator.generateStructuresInChunk(worldObj, random, chunkX, chunkZ);
+			}
+
+			if (Config.generateStronghold)
+			{
+				strongholdGenerator.generateStructuresInChunk(worldObj, random, chunkX, chunkZ);
+			}
 		}
 
 		int i, x, y, z;
@@ -240,7 +257,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 			if (Config.generateDungeons && generateStructures && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.DUNGEON))
 			{
-				for (i = 0; i < 8; ++i)
+				for (i = 0; i < 12; ++i)
 				{
 					x = worldX + random.nextInt(16) + 8;
 					y = random.nextInt(worldHeight - 24);
@@ -248,6 +265,15 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 					dungeonGen.generate(worldObj, random, x, y, z);
 				}
+			}
+
+			if (Config.generateAnimalDungeons && random.nextInt(5) == 0 && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.DUNGEON))
+			{
+				x = worldX + random.nextInt(16) + 8;
+				y = random.nextInt(worldHeight - 24);
+				z = worldZ + random.nextInt(16) + 8;
+
+				animalDungeonGen.generate(worldObj, random, x, y, z);
 			}
 		}
 
@@ -481,7 +507,22 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	@Override
 	public ChunkPosition func_147416_a(World world, String name, int x, int y, int z)
 	{
-		return "Mineshaft".equals(name) ? mineshaftGenerator.func_151545_a(world, x, y, z) : "Stronghold".equals(name) ? strongholdGenerator.func_151545_a(world, x, y, z) : null;
+		if (Strings.isNullOrEmpty(name))
+		{
+			return null;
+		}
+
+		switch (name)
+		{
+			case "Mineshaft":
+				mineshaftGenerator.func_151545_a(world, x, y, z);
+				break;
+			case "Stronghold":
+				strongholdGenerator.func_151545_a(world, x, y, z);
+				break;
+		}
+
+		return null;
 	}
 
 	@Override

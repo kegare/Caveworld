@@ -22,6 +22,7 @@ import net.minecraftforge.common.BiomeDictionary.Type;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.Level;
@@ -74,6 +75,7 @@ public class Config
 	public static boolean generateStronghold;
 	public static boolean generateLakes;
 	public static boolean generateDungeons;
+	public static boolean generateAnimalDungeons;
 	public static boolean decorateVines;
 
 	public static final int RENDER_TYPE_PORTAL = Caveworld.proxy.getUniqueRenderType();
@@ -333,6 +335,12 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		generateDungeons = prop.getBoolean(generateDungeons);
+		prop = dimensionCfg.get(category, "generateAnimalDungeons", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		generateAnimalDungeons = prop.getBoolean(generateAnimalDungeons);
 		prop = dimensionCfg.get(category, "decorateVines", true);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -470,11 +478,34 @@ public class Config
 			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.hardened_clay, 1), 24, 20, 0, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
 			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.hardened_clay, 12), 24, 14, 0, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
 		}
-		else for (String name : veinsCfg.getCategoryNames())
+		else
 		{
-			if (NumberUtils.isNumber(name))
+			int i = 0;
+
+			for (String name : veinsCfg.getCategoryNames())
 			{
-				CaveworldAPI.addCaveVein(null);
+				if (NumberUtils.isNumber(name))
+				{
+					CaveworldAPI.addCaveVein(null);
+				}
+				else ++i;
+			}
+
+			if (i > 0)
+			{
+				try
+				{
+					FileUtils.forceDelete(new File(Config.veinsCfg.toString()));
+
+					CaveworldAPI.clearCaveVeins();
+
+					veinsCfg = null;
+					syncVeinsCfg();
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
 			}
 		}
 

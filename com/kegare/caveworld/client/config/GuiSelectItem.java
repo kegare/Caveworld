@@ -301,7 +301,11 @@ public class GuiSelectItem extends GuiScreen
 		{
 			super(parent.mc, 0, 0, 0, 0, 18);
 			this.parent = parent;
-			this.selected = GameData.getItemRegistry().getObject(parent.parentTextField.getText());
+
+			if (parent.parentTextField != null)
+			{
+				this.selected = GameData.getItemRegistry().getObject(parent.parentTextField.getText());
+			}
 		}
 
 		@Override

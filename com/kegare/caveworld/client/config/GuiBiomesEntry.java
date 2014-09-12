@@ -118,10 +118,10 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 
 		if (doneButton == null)
 		{
-			doneButton = new GuiButtonExt(0, 0, 0, 70, 20, I18n.format("gui.done"));
+			doneButton = new GuiButtonExt(0, 0, 0, 65, 20, I18n.format("gui.done"));
 		}
 
-		doneButton.xPosition = width / 2 + 115;
+		doneButton.xPosition = width / 2 + 135;
 		doneButton.yPosition = height - doneButton.height - 4;
 
 		if (editButton == null)
@@ -144,23 +144,23 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 		cancelButton.yPosition = editButton.yPosition;
 		cancelButton.visible = editMode;
 
+		if (removeButton == null)
+		{
+			removeButton = new GuiButtonExt(4, 0, 0, doneButton.width, doneButton.height, I18n.format("gui.remove"));
+		}
+
+		removeButton.xPosition = editButton.xPosition - editButton.width - 3;
+		removeButton.yPosition = doneButton.yPosition;
+		removeButton.visible =  !editMode;
+
 		if (addButton == null)
 		{
 			addButton = new GuiButtonExt(3, 0, 0, doneButton.width, doneButton.height, I18n.format("gui.add"));
 		}
 
-		addButton.xPosition = editButton.xPosition - editButton.width - 3;
+		addButton.xPosition = removeButton.xPosition - removeButton.width - 3;
 		addButton.yPosition = doneButton.yPosition;
 		addButton.visible = !editMode;
-
-		if (removeButton == null)
-		{
-			removeButton = new GuiButtonExt(4, 0, 0, addButton.width, addButton.height, I18n.format("gui.remove"));
-		}
-
-		removeButton.xPosition = addButton.xPosition;
-		removeButton.yPosition = addButton.yPosition;
-		removeButton.visible =  !editMode;
 
 		if (clearButton == null)
 		{
@@ -207,11 +207,11 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 
 		if (filterTextField == null)
 		{
-			filterTextField = new GuiTextField(fontRendererObj, 0, 0, 142, 16);
-			filterTextField.setMaxStringLength(100);
+			filterTextField = new GuiTextField(fontRendererObj, 0, 0, 122, 16);
+			filterTextField.setMaxStringLength(500);
 		}
 
-		filterTextField.xPosition = width / 2 - filterTextField.width - 40;
+		filterTextField.xPosition = width / 2 - 200;
 		filterTextField.yPosition = height - filterTextField.height - 6;
 
 		detailHoverChecker = new HoverChecker(detailInfo, 800);
@@ -355,7 +355,7 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 						int i = biomeList.contents.indexOf(biomeList.selected);
 
 						biomeList.contents.remove(i);
-						biomeList.selected = biomeList.contents.get(--i, null);
+						biomeList.selected = biomeList.contents.get(--i, biomeList.contents.get(++i, null));
 					}
 
 					break;
@@ -452,8 +452,7 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 		else
 		{
 			editButton.enabled = biomeList.selected != null;
-			addButton.visible = !editButton.enabled;
-			removeButton.visible = !addButton.visible;
+			removeButton.enabled = editButton.enabled;
 
 			filterTextField.updateCursorCounter();
 		}

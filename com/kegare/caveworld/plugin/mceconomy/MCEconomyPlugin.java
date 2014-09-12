@@ -17,6 +17,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import shift.mceconomy2.api.MCEconomyAPI;
@@ -76,11 +77,34 @@ public final class MCEconomyPlugin
 				ShopProductManager.instance().addShopProduct(new ShopProduct(new ItemStack(CaveBlocks.rope, 5), 10));
 			}
 		}
-		else for (String name : shopCfg.getCategoryNames())
+		else
 		{
-			if (NumberUtils.isNumber(name))
+			int i = 0;
+
+			for (String name : shopCfg.getCategoryNames())
 			{
-				ShopProductManager.instance().addShopProduct(null);
+				if (NumberUtils.isNumber(name))
+				{
+					ShopProductManager.instance().addShopProduct(null);
+				}
+				else ++i;
+			}
+
+			if (i > 0)
+			{
+				try
+				{
+					FileUtils.forceDelete(new File(shopCfg.toString()));
+
+					ShopProductManager.instance().clearShopProducts();
+
+					shopCfg = null;
+					syncShopCfg();
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
 			}
 		}
 
