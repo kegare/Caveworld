@@ -49,11 +49,6 @@ public class ShopEntry extends CategoryEntry
 		try
 		{
 			FileUtils.forceDelete(new File(MCEconomyPlugin.shopCfg.toString()));
-
-			ShopProductManager.instance().clearShopProducts();
-
-			MCEconomyPlugin.shopCfg = null;
-			MCEconomyPlugin.syncShopCfg();
 		}
 		catch (IOException e)
 		{
@@ -61,6 +56,11 @@ public class ShopEntry extends CategoryEntry
 
 			return;
 		}
+
+		ShopProductManager.instance().clearShopProducts();
+
+		MCEconomyPlugin.shopCfg = null;
+		MCEconomyPlugin.syncShopCfg();
 
 		if (childScreen instanceof GuiShopEntry)
 		{

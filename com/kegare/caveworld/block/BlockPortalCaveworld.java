@@ -9,6 +9,7 @@
 
 package com.kegare.caveworld.block;
 
+import java.util.Arrays;
 import java.util.Random;
 
 import net.minecraft.block.Block;
@@ -448,6 +449,11 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 		portalCoord.put(player.getUniqueID().toString(), player.dimension, new ChunkCoordinates(x, y, z));
 
 		player.displayGUIChest(this);
+	}
+
+	public void clearInventory()
+	{
+		Arrays.fill(inventoryContents, null);
 	}
 
 	public void loadInventoryFromDimData()

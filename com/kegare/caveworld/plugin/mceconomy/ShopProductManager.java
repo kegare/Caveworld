@@ -146,6 +146,19 @@ public class ShopProductManager implements IProductList
 		}
 
 		@Override
+		public boolean equals(Object obj)
+		{
+			if (obj instanceof ShopProduct)
+			{
+				ShopProduct entry = (ShopProduct)obj;
+
+				return ItemStack.areItemStacksEqual(getProductItem(), entry.getProductItem()) && getcost() == entry.getcost();
+			}
+
+			return false;
+		}
+
+		@Override
 		public int hashCode()
 		{
 			int hash = getcost();

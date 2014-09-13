@@ -23,17 +23,7 @@ public interface ICaveBiomeManager
 
 	public int getActiveBiomeCount();
 
-	/**
-	 * Returns generate weight of the biome.
-	 * @param biome The biome
-	 */
-	public int getBiomeGenWeight(BiomeGenBase biome);
-
-	/**
-	 * Returns terrain block of the biome.
-	 * @param biome The biome
-	 */
-	public BlockEntry getBiomeTerrainBlock(BiomeGenBase biome);
+	public ICaveBiome getCaveBiome(BiomeGenBase biome);
 
 	public ICaveBiome getRandomCaveBiome(Random random);
 

@@ -143,8 +143,8 @@ public class Config
 
 	public static void syncPostConfig()
 	{
-		syncVeinsCfg();
 		syncBiomesCfg();
+		syncVeinsCfg();
 	}
 
 	public static void syncGeneralCfg()
@@ -371,10 +371,8 @@ public class Config
 			CaveworldAPI.clearCaveBiomes();
 		}
 
-		String name;
-		int weight;
-		String block;
-		int metadata;
+		String name, terrainBlock, topBlock;
+		int weight, terrainMeta, topMeta;
 
 		for (BiomeGenBase biome : BiomeGenBase.getBiomeGenArray())
 		{
@@ -388,14 +386,18 @@ public class Config
 				ICaveBiome entry = CaveBiomeManager.defaultMapping.get(biome);
 
 				weight = entry.getGenWeight();
-				block = GameData.getBlockRegistry().getNameForObject(entry.getTerrainBlock().getBlock());
-				metadata = entry.getTerrainBlock().getMetadata();
+				terrainBlock = GameData.getBlockRegistry().getNameForObject(entry.getTerrainBlock().getBlock());
+				terrainMeta = entry.getTerrainBlock().getMetadata();
+				topBlock = GameData.getBlockRegistry().getNameForObject(entry.getTopBlock().getBlock());
+				topMeta = entry.getTopBlock().getMetadata();
 			}
 			else
 			{
 				weight = 0;
-				block = GameData.getBlockRegistry().getNameForObject(Blocks.stone);
-				metadata = 0;
+				terrainBlock = GameData.getBlockRegistry().getNameForObject(Blocks.stone);
+				terrainMeta = 0;
+				topBlock = terrainBlock;
+				topMeta = terrainMeta;
 			}
 
 			propOrder.clear();
@@ -406,18 +408,32 @@ public class Config
 			prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 			propOrder.add(prop.getName());
 			weight = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
-			prop = biomesCfg.get(name, "terrainBlock", block);
+			prop = biomesCfg.get(name, "terrainBlock", terrainBlock);
 			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(selectBlockEntryClass);
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 			prop.comment += " [default: " + prop.getDefault() + "]";
 			propOrder.add(prop.getName());
-			block = prop.getString();
-			prop = biomesCfg.get(name, "terrainBlockMetadata", metadata);
+			terrainBlock = prop.getString();
+			if (!GameData.getBlockRegistry().containsKey(terrainBlock)) prop.setToDefault();
+			prop = biomesCfg.get(name, "terrainBlockMetadata", terrainMeta);
 			prop.setMinValue(0).setMaxValue(15).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 			prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 			propOrder.add(prop.getName());
-			metadata = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+			terrainMeta = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+			prop = biomesCfg.get(name, "topBlock", topBlock);
+			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(selectBlockEntryClass);
+			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+			prop.comment += " [default: " + prop.getDefault() + "]";
+			propOrder.add(prop.getName());
+			topBlock = prop.getString();
+			if (!GameData.getBlockRegistry().containsKey(topBlock)) prop.setToDefault();
+			prop = biomesCfg.get(name, "topBlockMetadata", topMeta);
+			prop.setMinValue(0).setMaxValue(15).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+			prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+			propOrder.add(prop.getName());
+			topMeta = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 
 			if (BiomeDictionary.isBiomeRegistered(biome))
 			{
@@ -439,7 +455,7 @@ public class Config
 
 			if (weight > 0)
 			{
-				CaveworldAPI.addCaveBiome(new CaveBiome(biome, weight, new BlockEntry(block, metadata)));
+				CaveworldAPI.addCaveBiome(new CaveBiome(biome, weight, new BlockEntry(terrainBlock, terrainMeta), new BlockEntry(topBlock, topMeta)));
 			}
 		}
 

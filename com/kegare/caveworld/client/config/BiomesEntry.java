@@ -52,11 +52,6 @@ public class BiomesEntry extends CategoryEntry
 		try
 		{
 			FileUtils.forceDelete(new File(Config.biomesCfg.toString()));
-
-			CaveworldAPI.clearCaveBiomes();
-
-			Config.biomesCfg = null;
-			Config.syncBiomesCfg();
 		}
 		catch (IOException e)
 		{
@@ -64,6 +59,11 @@ public class BiomesEntry extends CategoryEntry
 
 			return;
 		}
+
+		CaveworldAPI.clearCaveBiomes();
+
+		Config.biomesCfg = null;
+		Config.syncBiomesCfg();
 
 		if (childScreen instanceof GuiBiomesEntry)
 		{

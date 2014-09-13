@@ -48,8 +48,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
-import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.CaveworldAPI;
+import com.kegare.caveworld.api.ICaveBiome;
 import com.kegare.caveworld.client.gui.GuiListSlot;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.util.ArrayListExtended;
@@ -282,13 +282,12 @@ public class GuiSelectBiome extends GuiScreen
 
 				if (!hoverCache.containsKey(biome))
 				{
+					ICaveBiome entry = CaveworldAPI.getCaveBiome(biome);
+
 					info = Lists.newArrayList();
-
 					info.add(EnumChatFormatting.DARK_GRAY + Integer.toString(biome.biomeID) + ": " + biome.biomeName);
-					info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "biomes.genWeight") + ": " + CaveworldAPI.getBiomeGenWeight(biome));
-
-					BlockEntry entry = CaveworldAPI.getBiomeTerrainBlock(biome);
-					info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "biomes.terrainBlock") + ": " + GameData.getBlockRegistry().getNameForObject(entry.getBlock()) + ", " + entry.getMetadata());
+					info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "biomes.genWeight") + ": " + entry.getGenWeight());
+					info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "biomes.terrainBlock") + ": " + GameData.getBlockRegistry().getNameForObject(entry.getTerrainBlock().getBlock()) + ", " + entry.getTerrainBlock().getMetadata());
 
 					Block block = biome.topBlock;
 

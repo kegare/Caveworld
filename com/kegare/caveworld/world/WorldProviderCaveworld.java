@@ -397,11 +397,6 @@ public final class WorldProviderCaveworld extends WorldProviderSurface
 
 		MapGenStructureIO.registerStructure(MapGenStrongholdCaveworld.Start.class, "Caveworld.Stronghold");
 		StructureStrongholdPiecesCaveworld.registerStrongholdPieces();
-
-		if (!worldObj.isRemote)
-		{
-			CaveBlocks.caveworld_portal.loadInventoryFromDimData();
-		}
 	}
 
 	@Override

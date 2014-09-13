@@ -31,6 +31,19 @@ public class BlockEntry
 	}
 
 	@Override
+	public boolean equals(Object obj)
+	{
+		if (obj instanceof BlockEntry)
+		{
+			BlockEntry entry = (BlockEntry)obj;
+
+			return getBlock() == entry.getBlock() && getMetadata() == entry.getMetadata();
+		}
+
+		return false;
+	}
+
+	@Override
 	public int hashCode()
 	{
 		Object[] elements = {getBlock().getUnlocalizedName(), getMetadata()};

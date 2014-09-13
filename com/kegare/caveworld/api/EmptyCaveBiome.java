@@ -5,10 +5,22 @@ import net.minecraft.world.biome.BiomeGenBase;
 
 public class EmptyCaveBiome implements ICaveBiome
 {
+	private final BiomeGenBase biome;
+
+	public EmptyCaveBiome()
+	{
+		this.biome = BiomeGenBase.plains;
+	}
+
+	public EmptyCaveBiome(BiomeGenBase biome)
+	{
+		this.biome = biome;
+	}
+
 	@Override
 	public BiomeGenBase getBiome()
 	{
-		return BiomeGenBase.plains;
+		return biome;
 	}
 
 	@Override
@@ -33,5 +45,17 @@ public class EmptyCaveBiome implements ICaveBiome
 	public BlockEntry getTerrainBlock()
 	{
 		return new BlockEntry(Blocks.stone, 0);
+	}
+
+	@Override
+	public BlockEntry setTopBlock(BlockEntry entry)
+	{
+		return getTopBlock();
+	}
+
+	@Override
+	public BlockEntry getTopBlock()
+	{
+		return getTerrainBlock();
 	}
 }

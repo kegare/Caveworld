@@ -75,19 +75,23 @@ public final class CaveworldAPI
 	}
 
 	/**
-	 * @see ICaveBiomeManager#getBiomeGenWeight(BiomeGenBase)
+	 * @see ICaveBiomeManager#getCaveBiome(BiomeGenBase)
 	 */
-	public static int getBiomeGenWeight(BiomeGenBase biome)
+	public static ICaveBiome getCaveBiome(BiomeGenBase biome)
 	{
-		return biomeManager == null ? 0 : biomeManager.getBiomeGenWeight(biome);
+		return biomeManager == null ? new EmptyCaveBiome(biome) : biomeManager.getCaveBiome(biome);
 	}
 
-	/**
-	 * @see ICaveBiomeManager#getBiomeTerrainBlock(BiomeGenBase)
-	 */
+	@Deprecated
+	public static int getBiomeGenWeight(BiomeGenBase biome)
+	{
+		return biomeManager == null ? 0 : biomeManager.getCaveBiome(biome).getGenWeight();
+	}
+
+	@Deprecated
 	public static BlockEntry getBiomeTerrainBlock(BiomeGenBase biome)
 	{
-		return biomeManager == null ? new BlockEntry(Blocks.stone, 0) : biomeManager.getBiomeTerrainBlock(biome);
+		return biomeManager == null ? new BlockEntry(Blocks.stone, 0) : biomeManager.getCaveBiome(biome).getTerrainBlock();
 	}
 
 	/**

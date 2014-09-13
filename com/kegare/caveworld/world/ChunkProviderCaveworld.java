@@ -49,6 +49,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import com.google.common.base.Strings;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.CaveworldAPI;
+import com.kegare.caveworld.api.ICaveBiome;
 import com.kegare.caveworld.api.ICaveVein;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.world.gen.MapGenCavesCaveworld;
@@ -100,9 +101,9 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		BiomeGenBase biome = worldObj.getWorldChunkManager().getBiomeGenAt(chunkX * 16, chunkZ * 16);
 		Block[] blocks = new Block[65536];
 		byte[] metadata = new byte[65536];
-		BlockEntry entry = CaveworldAPI.getBiomeTerrainBlock(biome);
-		Block block = entry.getBlock();
-		int meta = entry.getMetadata();
+		ICaveBiome entry = CaveworldAPI.getCaveBiome(biome);
+		Block block = entry.getTerrainBlock().getBlock();
+		int meta = entry.getTerrainBlock().getMetadata();
 
 		Arrays.fill(blocks, block);
 		Arrays.fill(metadata, (byte)meta);
@@ -146,6 +147,18 @@ public class ChunkProviderCaveworld implements IChunkProvider
 				blocks[i] = Blocks.bedrock;
 				blocks[i + worldHeight - 1] = Blocks.bedrock;
 				blocks[i + worldHeight - 2] = block;
+
+				if (!entry.getTerrainBlock().equals(entry.getTopBlock()))
+				{
+					for (int y = 1; y < worldHeight - 3; ++y)
+					{
+						if (blocks[i + y] != null && blocks[i + y + 1] == null)
+						{
+							blocks[i + y] = entry.getTopBlock().getBlock();
+							metadata[i + y] = (byte)entry.getTopBlock().getMetadata();
+						}
+					}
+				}
 
 				for (int y = 255; y >= worldHeight; --y)
 				{

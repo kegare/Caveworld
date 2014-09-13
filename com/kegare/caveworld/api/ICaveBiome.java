@@ -13,4 +13,8 @@ public interface ICaveBiome
 	public BlockEntry setTerrainBlock(BlockEntry entry);
 
 	public BlockEntry getTerrainBlock();
+
+	public BlockEntry setTopBlock(BlockEntry entry);
+
+	public BlockEntry getTopBlock();
 }

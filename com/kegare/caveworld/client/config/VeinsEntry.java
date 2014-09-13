@@ -52,11 +52,6 @@ public class VeinsEntry extends CategoryEntry
 		try
 		{
 			FileUtils.forceDelete(new File(Config.veinsCfg.toString()));
-
-			CaveworldAPI.clearCaveVeins();
-
-			Config.veinsCfg = null;
-			Config.syncVeinsCfg();
 		}
 		catch (IOException e)
 		{
@@ -64,6 +59,11 @@ public class VeinsEntry extends CategoryEntry
 
 			return;
 		}
+
+		CaveworldAPI.clearCaveVeins();
+
+		Config.veinsCfg = null;
+		Config.syncVeinsCfg();
 
 		if (childScreen instanceof GuiVeinsEntry)
 		{

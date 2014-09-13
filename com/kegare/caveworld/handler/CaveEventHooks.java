@@ -95,29 +95,17 @@ public class CaveEventHooks
 	{
 		if (Caveworld.MODID.equals(event.modID) && !event.isWorldRunning)
 		{
-			if (Configuration.CATEGORY_GENERAL.equals(event.configID))
+			switch (event.configID)
 			{
-				Config.syncGeneralCfg();
-			}
-			else if ("blocks".equals(event.configID))
-			{
-				Config.syncBlocksCfg();
-			}
-			else if ("dimension".equals(event.configID))
-			{
-				Config.syncDimensionCfg();
-			}
-			else if ("biomes".equals(event.configID))
-			{
-				Config.syncBiomesCfg();
-			}
-			else if ("veins".equals(event.configID))
-			{
-				Config.syncVeinsCfg();
-			}
-			else if (MCEconomyPlugin.enabled() && "shop".equals(event.configID))
-			{
-				MCEconomyPlugin.syncShopCfg();
+				case Configuration.CATEGORY_GENERAL:
+					Config.syncGeneralCfg();
+					break;
+				case "blocks":
+					Config.syncBlocksCfg();
+					break;
+				case "dimension":
+					Config.syncDimensionCfg();
+					break;
 			}
 		}
 	}
@@ -527,6 +515,17 @@ public class CaveEventHooks
 	}
 
 	@SubscribeEvent
+	public void onWorldLoad(WorldEvent.Load event)
+	{
+		World world = event.world;
+
+		if (!world.isRemote && world.provider.dimensionId == CaveworldAPI.getDimension())
+		{
+			CaveBlocks.caveworld_portal.loadInventoryFromDimData();
+		}
+	}
+
+	@SubscribeEvent
 	public void onWorldUnload(WorldEvent.Unload event)
 	{
 		World world = event.world;
@@ -534,6 +533,7 @@ public class CaveEventHooks
 		if (!world.isRemote && world.provider.dimensionId == CaveworldAPI.getDimension())
 		{
 			CaveBlocks.caveworld_portal.saveInventoryToDimData();
+			CaveBlocks.caveworld_portal.clearInventory();
 
 			WorldProviderCaveworld.saveDimData();
 		}
