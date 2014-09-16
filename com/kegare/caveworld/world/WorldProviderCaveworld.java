@@ -523,7 +523,7 @@ public final class WorldProviderCaveworld extends WorldProviderSurface
 	{
 		if (!worldObj.isRemote)
 		{
-			ambientTickCountdown = worldObj.rand.nextInt(8000) + 20000;
+			ambientTickCountdown = worldObj.rand.nextInt(4000) + 10000;
 		}
 	}
 
@@ -532,15 +532,22 @@ public final class WorldProviderCaveworld extends WorldProviderSurface
 	{
 		if (!worldObj.isRemote)
 		{
-			if (ambientTickCountdown > 0)
+			if (--ambientTickCountdown <= 0)
 			{
-				--ambientTickCountdown;
-			}
-			else
-			{
-				Caveworld.network.sendToDimension(new CaveSoundMessage(new ResourceLocation("caveworld", "ambient.cave")), dimensionId);
+				String name;
 
-				ambientTickCountdown = worldObj.rand.nextInt(8000) + 20000;
+				if (worldObj.rand.nextInt(4) == 0)
+				{
+					name = "ambient.cave";
+				}
+				else
+				{
+					name = "ambient.unrest";
+				}
+
+				Caveworld.network.sendToDimension(new CaveSoundMessage(new ResourceLocation("caveworld", name)), dimensionId);
+
+				ambientTickCountdown = worldObj.rand.nextInt(5000) + 10000;
 			}
 		}
 	}

@@ -8,6 +8,15 @@
       }
     ]
   },
+  "ambient.unrest": {
+    "category": "ambient",
+    "sounds": [
+      {
+        "name": "ambient/unrest",
+        "stream": true
+      }
+    ]
+  },
   "caveworld_portal": {
     "category": "block",
     "sounds": [

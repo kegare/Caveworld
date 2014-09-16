@@ -398,8 +398,10 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 					{
 						int i = biomeList.contents.indexOf(biomeList.selected);
 
+						Config.biomesCfg.getCategory(Integer.toString(biomeList.selected.getBiome().biomeID)).get("genWeight").set(0);
+
 						biomeList.contents.remove(i);
-						biomeList.selected = biomeList.contents.get(--i, biomeList.contents.get(++i, null));
+						biomeList.selected = biomeList.contents.get(i, biomeList.contents.get(--i, null));
 					}
 
 					break;

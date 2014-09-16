@@ -514,7 +514,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	{
 		BiomeGenBase biome = worldObj.getBiomeGenForCoords(x, z);
 
-		return biome == null ? null : biome.getSpawnableList(creature);
+		return biome == null || y >= worldObj.getActualHeight() ? null : biome.getSpawnableList(creature);
 	}
 
 	@Override

@@ -482,7 +482,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 						int i = veinList.contents.indexOf(veinList.selected);
 
 						veinList.contents.remove(i);
-						veinList.selected = veinList.contents.get(--i, veinList.contents.get(++i, null));
+						veinList.selected = veinList.contents.get(i, veinList.contents.get(--i, null));
 					}
 
 					break;

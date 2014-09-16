@@ -183,9 +183,9 @@ public class CaveBiomeManager implements ICaveBiomeManager, Function<ICaveBiome,
 		@Override
 		public boolean equals(Object obj)
 		{
-			if (obj instanceof CaveBiome)
+			if (obj instanceof ICaveBiome)
 			{
-				CaveBiome biome = (CaveBiome)obj;
+				ICaveBiome biome = (ICaveBiome)obj;
 
 				return getBiome().biomeID == biome.getBiome().biomeID &&
 					getGenWeight() == biome.getGenWeight() &&

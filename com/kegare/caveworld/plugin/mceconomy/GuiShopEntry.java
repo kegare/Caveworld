@@ -379,7 +379,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 						int i = productList.contents.indexOf(productList.selected);
 
 						productList.contents.remove(i);
-						productList.selected = productList.contents.get(--i, productList.contents.get(++i, null));
+						productList.selected = productList.contents.get(i, productList.contents.get(--i, null));
 					}
 
 					break;

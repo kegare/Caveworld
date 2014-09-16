@@ -53,7 +53,7 @@ public class GuiRegenerate extends GuiScreen
 		}
 
 		regenButton.xPosition = width / 2 - 100;
-		regenButton.yPosition = height / 4 + regenButton.height + 62;
+		regenButton.yPosition = height / 4 + regenButton.height + 65;
 
 		if (openButton == null)
 		{

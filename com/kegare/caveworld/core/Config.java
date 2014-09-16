@@ -381,6 +381,8 @@ public class Config
 				continue;
 			}
 
+			name = Integer.toString(biome.biomeID);
+
 			if (CaveBiomeManager.defaultMapping.containsKey(biome))
 			{
 				ICaveBiome entry = CaveBiomeManager.defaultMapping.get(biome);
@@ -401,7 +403,6 @@ public class Config
 			}
 
 			propOrder.clear();
-			name = Integer.toString(biome.biomeID);
 			prop = biomesCfg.get(name, "genWeight", weight);
 			prop.setMinValue(0).setMaxValue(100).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");

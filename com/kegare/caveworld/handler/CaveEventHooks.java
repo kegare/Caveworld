@@ -214,7 +214,18 @@ public class CaveEventHooks
 
 				if (!player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.caveworld) || data.getLong("Caveworld:LastTeleportTime") + 18000L < world.getTotalWorldTime())
 				{
-					Caveworld.network.sendTo(new CaveSoundMessage(new ResourceLocation("caveworld", "ambient.cave")), player);
+					String name;
+
+					if (world.rand.nextInt(3) == 0)
+					{
+						name = "ambient.cave";
+					}
+					else
+					{
+						name = "ambient.unrest";
+					}
+
+					Caveworld.network.sendTo(new CaveSoundMessage(new ResourceLocation("caveworld", name)), player);
 				}
 
 				data.setLong("Caveworld:LastTeleportTime", world.getTotalWorldTime());
