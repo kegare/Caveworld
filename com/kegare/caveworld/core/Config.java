@@ -13,17 +13,20 @@ import java.io.File;
 import java.util.List;
 import java.util.Set;
 
+import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
+import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.Level;
 
@@ -35,11 +38,14 @@ import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.api.ICaveBiome;
 import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome;
 import com.kegare.caveworld.core.CaveVeinManager.CaveVein;
+import com.kegare.caveworld.entity.EntityCaveman;
 import com.kegare.caveworld.util.CaveLog;
+import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Version;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
 
@@ -51,6 +57,7 @@ public class Config
 	public static Configuration blocksCfg;
 	public static Configuration dimensionCfg;
 	public static Configuration biomesCfg;
+	public static Configuration entitiesCfg;
 	public static Configuration veinsCfg;
 
 	public static boolean versionNotify;
@@ -65,6 +72,12 @@ public class Config
 	public static boolean caveborn;
 
 	public static boolean rope;
+
+	public static int cavemanSpawnWeight;
+	public static int cavemanSpawnMinHeight;
+	public static int cavemanSpawnMaxHeight;
+	public static int cavemanSpawnInChunks;
+	public static int[] cavemanSpawnBiomes;
 
 	public static int dimensionCaveworld;
 	public static int subsurfaceHeight;
@@ -132,19 +145,6 @@ public class Config
 		}
 
 		return null;
-	}
-
-	public static void syncConfig()
-	{
-		syncGeneralCfg();
-		syncBlocksCfg();
-		syncDimensionCfg();
-	}
-
-	public static void syncPostConfig()
-	{
-		syncBiomesCfg();
-		syncVeinsCfg();
 	}
 
 	public static void syncGeneralCfg()
@@ -268,6 +268,87 @@ public class Config
 		}
 	}
 
+	public static void syncEntitiesCfg()
+	{
+		String category = "entities";
+		Property prop;
+		List<String> propOrder = Lists.newArrayList();
+
+		if (entitiesCfg == null)
+		{
+			entitiesCfg = loadConfig(category);
+		}
+
+		category = "Caveman";
+		prop = entitiesCfg.get(category, "spawnWeight", 2);
+		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		cavemanSpawnWeight = MathHelper.clamp_int(prop.getInt(cavemanSpawnWeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		prop = entitiesCfg.get(category, "spawnMinHeight", 10);
+		prop.setMinValue(1).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		cavemanSpawnMinHeight = MathHelper.clamp_int(prop.getInt(cavemanSpawnMinHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		prop = entitiesCfg.get(category, "spawnMaxHeight", 255);
+		prop.setMinValue(1).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		cavemanSpawnMaxHeight = MathHelper.clamp_int(prop.getInt(cavemanSpawnMaxHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		prop = entitiesCfg.get(category, "spawnInChunks", 1);
+		prop.setMinValue(1).setMaxValue(500).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		cavemanSpawnInChunks = MathHelper.clamp_int(prop.getInt(cavemanSpawnInChunks), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		prop = entitiesCfg.get(category, "spawnBiomes", new int[0]);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName()).setConfigEntryClass(selectBiomeEntryClass);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		propOrder.add(prop.getName());
+		cavemanSpawnBiomes = prop.getIntList();
+
+		BiomeGenBase[] def = CaveUtils.getBiomes().toArray(new BiomeGenBase[0]);
+		BiomeGenBase[] biomes = new BiomeGenBase[0];
+		BiomeGenBase biome;
+
+		for (int i : cavemanSpawnBiomes)
+		{
+			if (i >= 0 && i < BiomeGenBase.getBiomeGenArray().length)
+			{
+				biome = BiomeGenBase.getBiome(i);
+
+				if (biome != null)
+				{
+					biomes = ArrayUtils.add(biomes, biome);
+				}
+			}
+		}
+
+		if (ArrayUtils.isEmpty(biomes))
+		{
+			biomes = def;
+		}
+
+		EntityRegistry.removeSpawn(EntityCaveman.class, EnumCreatureType.ambient, def);
+
+		if (cavemanSpawnWeight > 0)
+		{
+			EntityRegistry.addSpawn(EntityCaveman.class, cavemanSpawnWeight, 1, 2, EnumCreatureType.ambient, biomes);
+		}
+
+		entitiesCfg.addCustomCategoryComment(category, "If multiplayer, server-side only.");
+		entitiesCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
+		entitiesCfg.setCategoryPropertyOrder(category, propOrder);
+
+		if (entitiesCfg.hasChanged())
+		{
+			entitiesCfg.save();
+		}
+	}
+
 	public static void syncDimensionCfg()
 	{
 		String category = "caveworld";
@@ -287,6 +368,14 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		dimensionCaveworld = prop.getInt(dimensionCaveworld);
+
+		if (dimensionCaveworld == 0)
+		{
+			prop.set(DimensionManager.getNextFreeDimId());
+
+			dimensionCaveworld = prop.getInt();
+		}
+
 		prop = dimensionCfg.get(category, "subsurfaceHeight", 255);
 		prop.setMinValue(63).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");

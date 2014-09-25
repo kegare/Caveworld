@@ -22,6 +22,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
@@ -34,6 +35,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
@@ -43,6 +45,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
@@ -131,6 +134,21 @@ public class CaveUtils
 
 			return null;
 		}
+	}
+
+	public static Set<BiomeGenBase> getBiomes()
+	{
+		Set<BiomeGenBase> result = Sets.newHashSet();
+
+		for (BiomeGenBase biome : BiomeGenBase.getBiomeGenArray())
+		{
+			if (biome != null)
+			{
+				result.add(biome);
+			}
+		}
+
+		return result;
 	}
 
 	public static EntityPlayerMP forceTeleport(EntityPlayerMP player, int dim)
@@ -260,5 +278,19 @@ public class CaveUtils
 	public static int compareWithNull(Object o1, Object o2)
 	{
 		return (o1 == null ? 1 : 0) - (o2 == null ? 1 : 0);
+	}
+
+	public static boolean canMerge(ItemStack itemstack1, ItemStack itemstack2)
+	{
+		if (itemstack1 == null || itemstack2 == null)
+		{
+			return false;
+		}
+		else if (!itemstack1.isItemEqual(itemstack2) || !itemstack1.isStackable() || !ItemStack.areItemStackTagsEqual(itemstack1, itemstack2))
+		{
+			return false;
+		}
+
+		return true;
 	}
 }

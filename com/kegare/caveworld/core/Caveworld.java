@@ -18,6 +18,7 @@ import org.apache.logging.log4j.Level;
 
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
+import com.kegare.caveworld.entity.EntityCaveman;
 import com.kegare.caveworld.handler.CaveAPIHandler;
 import com.kegare.caveworld.handler.CaveEventHooks;
 import com.kegare.caveworld.handler.CaveFuelHandler;
@@ -45,6 +46,7 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.Side;
 
@@ -85,7 +87,8 @@ public class Caveworld
 	{
 		proxy.initializeConfigClasses();
 
-		Config.syncConfig();
+		Config.syncGeneralCfg();
+		Config.syncBlocksCfg();
 
 		CaveBlocks.registerBlocks();
 		CaveAchievementList.registerAchievements();
@@ -96,6 +99,9 @@ public class Caveworld
 	@EventHandler
 	public void init(FMLInitializationEvent event)
 	{
+		Config.syncEntitiesCfg();
+		Config.syncDimensionCfg();
+
 		int id = 0;
 
 		network.registerMessage(DimSyncMessage.class, DimSyncMessage.class, id++, Side.CLIENT);
@@ -105,6 +111,9 @@ public class Caveworld
 		network.registerMessage(RegenerateMessage.class, RegenerateMessage.class, id++, Side.SERVER);
 		network.registerMessage(RegenerateMessage.ProgressNotify.class, RegenerateMessage.ProgressNotify.class, id++, Side.CLIENT);
 		network.registerMessage(BuffMessage.class, BuffMessage.class, id++, Side.SERVER);
+
+		EntityRegistry.registerGlobalEntityID(EntityCaveman.class, "Caveman", EntityRegistry.findGlobalUniqueEntityId(), 0xAAAAAA, 0xCCCCCC);
+		EntityRegistry.registerModEntity(EntityCaveman.class, "Caveman", 0, this, 250, 1, true);
 
 		proxy.registerRenderers();
 		proxy.registerRecipes();
@@ -124,7 +133,8 @@ public class Caveworld
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent event)
 	{
-		Config.syncPostConfig();
+		Config.syncBiomesCfg();
+		Config.syncVeinsCfg();
 
 		try
 		{

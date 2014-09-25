@@ -50,6 +50,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.entity.EntityEvent.EntityConstructing;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
@@ -102,6 +103,9 @@ public class CaveEventHooks
 					break;
 				case "blocks":
 					Config.syncBlocksCfg();
+					break;
+				case "entities":
+					Config.syncEntitiesCfg();
 					break;
 				case "dimension":
 					Config.syncDimensionCfg();
@@ -164,7 +168,11 @@ public class CaveEventHooks
 
 			if (CaveworldAPI.isEntityInCaveworld(player))
 			{
-				if (player.posY >= world.getActualHeight() - 1)
+				int x = MathHelper.floor_double(player.posX);
+				int y = MathHelper.floor_double(player.posY);
+				int z = MathHelper.floor_double(player.posZ);
+
+				if (y >= world.getActualHeight() - 1 || !world.isAirBlock(x, y, z) || !world.isAirBlock(x, y + 1, z))
 				{
 					CaveUtils.forceTeleport(player, player.dimension);
 				}
@@ -450,6 +458,17 @@ public class CaveEventHooks
 			{
 				entity.getEntityData().setBoolean("Caveworld:CaveBat", true);
 			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onItemToss(ItemTossEvent event)
+	{
+		ItemStack itemstack = event.entityItem.getEntityItem();
+
+		if (itemstack != null && itemstack.getItem() != null && itemstack.stackSize > 0)
+		{
+			event.entityItem.getEntityData().setBoolean("Caveman:NoCollect", true);
 		}
 	}
 

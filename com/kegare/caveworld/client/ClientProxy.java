@@ -15,9 +15,11 @@ import net.minecraft.client.gui.GuiScreen;
 import com.kegare.caveworld.client.config.SelectBiomeEntry;
 import com.kegare.caveworld.client.config.SelectBlockEntry;
 import com.kegare.caveworld.client.config.SelectItemEntry;
+import com.kegare.caveworld.client.renderer.RenderCaveman;
 import com.kegare.caveworld.client.renderer.RenderPortalCaveworld;
 import com.kegare.caveworld.core.CommonProxy;
 import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.entity.EntityCaveman;
 
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.registry.RenderingRegistry;
@@ -39,6 +41,8 @@ public class ClientProxy extends CommonProxy
 	public void registerRenderers()
 	{
 		RenderingRegistry.registerBlockHandler(new RenderPortalCaveworld());
+
+		RenderingRegistry.registerEntityRenderingHandler(EntityCaveman.class, new RenderCaveman());
 	}
 
 	@Override
