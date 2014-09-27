@@ -12,7 +12,7 @@ package com.kegare.caveworld.network;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 
-import com.kegare.caveworld.client.gui.GuiRegenerate;
+import com.kegare.caveworld.client.gui.GuiRegeneration;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 
@@ -51,7 +51,7 @@ public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMe
 	{
 		if (ctx.side.isClient())
 		{
-			Caveworld.proxy.displayClientGuiScreen(new GuiRegenerate(message.backup));
+			Caveworld.proxy.displayClientGuiScreen(new GuiRegeneration(message.backup));
 		}
 		else
 		{
@@ -90,9 +90,9 @@ public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMe
 		{
 			Minecraft mc = FMLClientHandler.instance().getClient();
 
-			if (mc.currentScreen != null && mc.currentScreen instanceof GuiRegenerate)
+			if (mc.currentScreen != null && mc.currentScreen instanceof GuiRegeneration)
 			{
-				((GuiRegenerate)mc.currentScreen).updateProgress(message.task);
+				((GuiRegeneration)mc.currentScreen).updateProgress(message.task);
 			}
 
 			return null;

@@ -17,15 +17,17 @@ import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.passive.EntityTameable;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
+import com.kegare.caveworld.api.CaveworldAPI;
+import com.kegare.caveworld.entity.EntityCaveman;
+
 public class EntityAICollector extends EntityAIBase implements IEntitySelector
 {
-	private final EntityTameable theCollector;
+	private final EntityCaveman theCollector;
 	private final World theWorld;
 	private final double moveSpeed;
 	private final float followDist;
@@ -33,8 +35,10 @@ public class EntityAICollector extends EntityAIBase implements IEntitySelector
 
 	private EntityItem theDrop;
 	private EntityLivingBase theOwner;
+	private boolean moveSuccess;
+	private int failedCount;
 
-	public EntityAICollector(EntityTameable entity, double speed, float followDist, float collectDist)
+	public EntityAICollector(EntityCaveman entity, double speed, float followDist, float collectDist)
 	{
 		this.theCollector = entity;
 		this.theWorld = entity.worldObj;
@@ -47,7 +51,7 @@ public class EntityAICollector extends EntityAIBase implements IEntitySelector
 	@Override
 	public boolean shouldExecute()
 	{
-		List<EntityItem> list = theWorld.selectEntitiesWithinAABB(EntityItem.class, theCollector.boundingBox.expand(collectDist, collectDist / 2, collectDist), this);
+		List<EntityItem> list = theWorld.selectEntitiesWithinAABB(EntityItem.class, theCollector.boundingBox.expand(collectDist, 8.0F, collectDist), this);
 
 		for (EntityItem target : list)
 		{
@@ -72,14 +76,16 @@ public class EntityAICollector extends EntityAIBase implements IEntitySelector
 	@Override
 	public boolean continueExecuting()
 	{
+		boolean result = failedCount <= 20;
+
 		if (canMoveToEntity(theDrop))
 		{
-			return theCollector.getDistanceSqToEntity(theDrop) <= collectDist * collectDist;
+			return result && theCollector.getDistanceSqToEntity(theDrop) <= collectDist * collectDist;
 		}
 
 		if (canMoveToEntity(theOwner))
 		{
-			return !theCollector.isSitting() && theCollector.getDistanceSqToEntity(theOwner) > followDist * followDist;
+			return result && theCollector.getDistanceSqToEntity(theOwner) > followDist * followDist;
 		}
 
 		return false;
@@ -96,6 +102,9 @@ public class EntityAICollector extends EntityAIBase implements IEntitySelector
 		{
 			theDrop = null;
 		}
+
+		moveSuccess = true;
+		failedCount = 0;
 	}
 
 	@Override
@@ -103,6 +112,8 @@ public class EntityAICollector extends EntityAIBase implements IEntitySelector
 	{
 		theDrop = null;
 		theOwner = null;
+
+		failedCount = 0;
 	}
 
 	@Override
@@ -112,11 +123,7 @@ public class EntityAICollector extends EntityAIBase implements IEntitySelector
 		{
 			theCollector.getLookHelper().setLookPositionWithEntity(theDrop, 10.0F, theCollector.getVerticalFaceSpeed());
 
-			int x = MathHelper.floor_double(theDrop.posX);
-			int y = MathHelper.floor_double(theDrop.boundingBox.minY);
-			int z = MathHelper.floor_double(theDrop.posZ);
-
-			if (!theWorld.canBlockSeeTheSky(x, y, z))
+			if (theCollector.getEntitySenses().canSee(theDrop))
 			{
 				theCollector.getMoveHelper().setMoveTo(theDrop.posX, theDrop.posY, theDrop.posZ, moveSpeed);
 			}
@@ -125,30 +132,52 @@ public class EntityAICollector extends EntityAIBase implements IEntitySelector
 		{
 			theCollector.getLookHelper().setLookPositionWithEntity(theOwner, 10.0F, theCollector.getVerticalFaceSpeed());
 
-			int x = MathHelper.floor_double(theOwner.posX);
-			int y = MathHelper.floor_double(theOwner.boundingBox.minY);
-			int z = MathHelper.floor_double(theOwner.posZ);
-
-			theCollector.getMoveHelper().setMoveTo(theOwner.posX, theOwner.posY, theOwner.posZ, moveSpeed);
-
-			if (!theCollector.getLeashed() && theCollector.getDistanceSqToEntity(theOwner) >= 144.0D)
+			if (!theCollector.isSitting() && theCollector.getEntitySenses().canSee(theOwner))
 			{
-				x = MathHelper.floor_double(theOwner.posX) - 2;
-				y = MathHelper.floor_double(theOwner.boundingBox.minY);
-				z = MathHelper.floor_double(theOwner.posZ) - 2;
+				theCollector.getMoveHelper().setMoveTo(theOwner.posX, theOwner.posY, theOwner.posZ, moveSpeed);
+			}
 
-				for (int i = 0; i <= 4; ++i)
+			if (!theCollector.getLeashed() && (!theCollector.isSitting() && theCollector.getDistanceSqToEntity(theOwner) >= 144.0D ||
+				theOwner.isSwingInProgress && theCollector.isBreedingItem(theOwner.getHeldItem())))
+			{
+				int x = MathHelper.floor_double(theOwner.posX) - 2;
+				int y = MathHelper.floor_double(theOwner.boundingBox.minY);
+				int z = MathHelper.floor_double(theOwner.posZ) - 2;
+				boolean flag = false;
+
+				for (int i = 0; !flag && i <= 4; ++i)
 				{
-					for (int j = 0; j <= 4; ++j)
+					for (int j = 0; !flag && j <= 4; ++j)
 					{
-						if ((i < 1 || j < 1 || i > 3 || j > 3) && World.doesBlockHaveSolidTopSurface(theWorld, x + i, y - 1, z + j) && !theWorld.getBlock(x + i, y, z + j).isNormalCube() && !theWorld.getBlock(x + i, y + 1, z + j).isNormalCube())
+						if ((i < 1 || j < 1 || i > 3 || j > 3) && World.doesBlockHaveSolidTopSurface(theWorld, x + i, y - 1, z + j) &&
+							!theWorld.getBlock(x + i, y, z + j).isNormalCube() && !theWorld.getBlock(x + i, y + 1, z + j).isNormalCube())
 						{
 							theCollector.setLocationAndAngles(x + i + 0.5F, y, z + j + 0.5F, theCollector.rotationYaw, theCollector.rotationPitch);
 
-							return;
+							flag = true;
 						}
 					}
 				}
+			}
+		}
+
+		moveSuccess = theCollector.getStoppedTime() == 0L;
+
+		if (moveSuccess)
+		{
+			failedCount = 0;
+		}
+		else
+		{
+			++failedCount;
+
+			if (canMoveToEntity(theDrop))
+			{
+				theCollector.getNavigator().tryMoveToXYZ(theDrop.posX, theDrop.posY, theDrop.posZ, moveSpeed);
+			}
+			else if (!theCollector.getLeashed() && !theCollector.isSitting() && canMoveToEntity(theOwner))
+			{
+				theCollector.getNavigator().tryMoveToXYZ(theOwner.posX, theOwner.posY, theOwner.posZ, moveSpeed);
 			}
 		}
 	}
@@ -160,7 +189,7 @@ public class EntityAICollector extends EntityAIBase implements IEntitySelector
 			return false;
 		}
 
-		if (!theWorld.isDaytime())
+		if (!theWorld.isDaytime() || CaveworldAPI.isEntityInCaveworld(entity))
 		{
 			return true;
 		}
@@ -175,13 +204,12 @@ public class EntityAICollector extends EntityAIBase implements IEntitySelector
 	@Override
 	public boolean isEntityApplicable(Entity entity)
 	{
-		if (entity.isEntityAlive() && theCollector.getEntitySenses().canSee(entity) && canMoveToEntity(entity))
+		if (canMoveToEntity(entity))
 		{
 			ItemStack itemstack = ((EntityItem)entity).getEntityItem();
 
-			return itemstack != null && itemstack.getItem() != null && itemstack.stackSize > 0 &&
-				(!theCollector.isTamed() || !entity.getEntityData().getBoolean(EntityList.getEntityString(theCollector) + ":NoCollect")) &&
-				(!theCollector.isTamed() || theWorld.getEntitiesWithinAABB(EntityPlayer.class, entity.boundingBox.expand(1.0D, 0.0D, 1.0D)).isEmpty());
+			return itemstack != null && itemstack.getItem() != null && itemstack.stackSize > 0 && (!theCollector.isTamed() ||
+				!entity.getEntityData().getBoolean(EntityList.getEntityString(theCollector) + ":NoCollect") &&  theWorld.getEntitiesWithinAABB(EntityPlayer.class, entity.boundingBox.expand(1.0D, 0.0D, 1.0D)).isEmpty());
 		}
 
 		return false;

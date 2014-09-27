@@ -61,28 +61,13 @@ public class EntityCaveman extends EntityTameable implements IInventory
 		this.tasks.addTask(0, new EntityAISwimming(this));
 		this.tasks.addTask(1, new EntityAIRestrictSun(this));
 		this.tasks.addTask(2, new EntityAIFleeSun2(this, 1.25D));
-		this.tasks.addTask(3, new EntityAICollector(this, 1.0D, 3.0F, 16.0F));
+		this.tasks.addTask(3, new EntityAICollector(this, 1.0D, 3.0F, 20.0F));
 		this.tasks.addTask(4, new EntityAIWander(this, 0.5D)
 		{
 			@Override
 			public boolean shouldExecute()
 			{
 				return !isSitting() && getStoppedTime() > 200L && super.shouldExecute();
-			}
-
-			@Override
-			public boolean continueExecuting()
-			{
-				return !isSitting() && super.continueExecuting();
-			}
-
-			@Override
-			public void startExecuting()
-			{
-				if (!isSitting())
-				{
-					super.startExecuting();
-				}
 			}
 		});
 		this.tasks.addTask(5, new EntityAIWatchClosest(this, EntityPlayer.class, 10.0F));
@@ -117,6 +102,12 @@ public class EntityCaveman extends EntityTameable implements IInventory
 	public boolean isChild()
 	{
 		return false;
+	}
+
+	@Override
+	public float getEyeHeight()
+	{
+		return 1.1F;
 	}
 
 	public long getStoppedTime()
@@ -217,6 +208,11 @@ public class EntityCaveman extends EntityTameable implements IInventory
 
 				return false;
 			}
+		}
+
+		if (source.isFireDamage())
+		{
+			return false;
 		}
 
 		return super.attackEntityFrom(source, par2);

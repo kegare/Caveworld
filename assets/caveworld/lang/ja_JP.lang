@@ -7,6 +7,7 @@ gui.clear=クリア
 
 caveworld.version.message=%s の新しいバージョンが利用可能です
 
+caveworld.menu.title=Caveworld メニュー
 caveworld.regenerate.regenerating=Caveworld ディメンションを再生成しています...
 caveworld.regenerate.backingup=Caveworld ディメンションフォルダをバックアップしています...
 caveworld.regenerate.backedup=Caveworld ディメンションフォルダをバックアップしました

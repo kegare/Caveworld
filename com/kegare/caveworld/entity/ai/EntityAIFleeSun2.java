@@ -17,6 +17,8 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
+import com.kegare.caveworld.api.CaveworldAPI;
+
 public class EntityAIFleeSun2 extends EntityAIBase
 {
 	private final EntityCreature theCreature;
@@ -38,7 +40,7 @@ public class EntityAIFleeSun2 extends EntityAIBase
 	@Override
 	public boolean shouldExecute()
 	{
-		if (!theWorld.isDaytime())
+		if (!theWorld.isDaytime() || CaveworldAPI.isEntityInCaveworld(theCreature))
 		{
 			return false;
 		}

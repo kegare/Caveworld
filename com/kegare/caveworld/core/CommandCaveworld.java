@@ -27,6 +27,7 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 
 import com.kegare.caveworld.api.CaveworldAPI;
+import com.kegare.caveworld.network.CaveworldMenuMessage;
 import com.kegare.caveworld.network.RegenerateMessage;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
@@ -62,7 +63,17 @@ public class CommandCaveworld implements ICommand
 	@Override
 	public void processCommand(ICommandSender sender, final String[] args)
 	{
-		if (args.length <= 0 || args[0].equalsIgnoreCase("version"))
+		if (args.length <= 0 && sender instanceof EntityPlayerMP)
+		{
+			EntityPlayerMP player = (EntityPlayerMP)sender;
+			MinecraftServer server = player.mcServer;
+
+			if (server.isSinglePlayer() || server.getConfigurationManager().func_152596_g(player.getGameProfile()))
+			{
+				Caveworld.network.sendTo(new CaveworldMenuMessage(), player);
+			}
+		}
+		else if (args[0].equalsIgnoreCase("version"))
 		{
 			ClickEvent click = new ClickEvent(ClickEvent.Action.OPEN_URL, Caveworld.metadata.url);
 			IChatComponent component;

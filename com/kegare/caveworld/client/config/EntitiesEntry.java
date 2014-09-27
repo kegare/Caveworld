@@ -23,7 +23,10 @@ import com.kegare.caveworld.core.Config;
 import cpw.mods.fml.client.config.GuiConfig;
 import cpw.mods.fml.client.config.GuiConfigEntries;
 import cpw.mods.fml.client.config.IConfigElement;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
+@SideOnly(Side.CLIENT)
 public class EntitiesEntry extends CaveCategoryEntry
 {
 	public EntitiesEntry(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement prop)

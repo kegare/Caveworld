@@ -24,6 +24,7 @@ import com.kegare.caveworld.handler.CaveEventHooks;
 import com.kegare.caveworld.handler.CaveFuelHandler;
 import com.kegare.caveworld.network.BuffMessage;
 import com.kegare.caveworld.network.CaveSoundMessage;
+import com.kegare.caveworld.network.CaveworldMenuMessage;
 import com.kegare.caveworld.network.DimSyncMessage;
 import com.kegare.caveworld.network.MiningSyncMessage;
 import com.kegare.caveworld.network.RegenerateMessage;
@@ -111,6 +112,7 @@ public class Caveworld
 		network.registerMessage(RegenerateMessage.class, RegenerateMessage.class, id++, Side.SERVER);
 		network.registerMessage(RegenerateMessage.ProgressNotify.class, RegenerateMessage.ProgressNotify.class, id++, Side.CLIENT);
 		network.registerMessage(BuffMessage.class, BuffMessage.class, id++, Side.SERVER);
+		network.registerMessage(CaveworldMenuMessage.class, CaveworldMenuMessage.class, id++, Side.CLIENT);
 
 		EntityRegistry.registerGlobalEntityID(EntityCaveman.class, "Caveman", EntityRegistry.findGlobalUniqueEntityId(), 0xAAAAAA, 0xCCCCCC);
 		EntityRegistry.registerModEntity(EntityCaveman.class, "Caveman", 0, this, 250, 1, true);

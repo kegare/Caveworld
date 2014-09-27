@@ -1,5 +1,5 @@
 # Caveworld
-Minecraft mod. Adding the Caveworld dimension.
+Minecraft mod. Adds the Caveworld dimension.
 
 ----
 ## Requires

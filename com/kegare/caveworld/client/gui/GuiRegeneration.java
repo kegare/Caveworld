@@ -26,7 +26,7 @@ import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
 import cpw.mods.fml.client.config.HoverChecker;
 
-public class GuiRegenerate extends GuiScreen
+public class GuiRegeneration extends GuiScreen
 {
 	private boolean backup;
 
@@ -37,9 +37,9 @@ public class GuiRegenerate extends GuiScreen
 
 	private HoverChecker backupHoverChecker;
 
-	public GuiRegenerate() {}
+	public GuiRegeneration() {}
 
-	public GuiRegenerate(boolean backup)
+	public GuiRegeneration(boolean backup)
 	{
 		this.backup = backup;
 	}
@@ -132,6 +132,7 @@ public class GuiRegenerate extends GuiScreen
 					break;
 				case 2:
 					mc.displayGuiScreen(null);
+					mc.setIngameFocus();
 					break;
 			}
 		}
