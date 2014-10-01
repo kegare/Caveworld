@@ -59,7 +59,7 @@ public class GuiIngameCaveworldMenu extends GuiScreen
 			switch (button.id)
 			{
 				case 0:
-					mc.displayGuiScreen((GuiScreen)null);
+					mc.displayGuiScreen(null);
 					mc.setIngameFocus();
 					break;
 				case 1:
@@ -69,7 +69,7 @@ public class GuiIngameCaveworldMenu extends GuiScreen
 					mc.displayGuiScreen(new GuiVeinsEntry(this));
 					break;
 				case 3:
-					mc.displayGuiScreen(new GuiRegeneration());
+					mc.displayGuiScreen(new GuiRegeneration(true));
 					break;
 			}
 		}

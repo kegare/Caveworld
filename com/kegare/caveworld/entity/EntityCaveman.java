@@ -11,6 +11,7 @@ package com.kegare.caveworld.entity;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityAgeable;
@@ -32,16 +33,20 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
+import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraft.world.World;
+import net.minecraftforge.common.ChestGenHooks;
 
-import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.entity.ai.EntityAICollector;
 import com.kegare.caveworld.entity.ai.EntityAIFleeSun2;
+import com.kegare.caveworld.entity.ai.EntityAISoldier;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.InventoryComparator;
 
+import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -62,6 +67,7 @@ public class EntityCaveman extends EntityTameable implements IInventory
 		this.tasks.addTask(1, new EntityAIRestrictSun(this));
 		this.tasks.addTask(2, new EntityAIFleeSun2(this, 1.25D));
 		this.tasks.addTask(3, new EntityAICollector(this, 1.0D, 3.0F, 20.0F));
+		this.tasks.addTask(3, new EntityAISoldier(this));
 		this.tasks.addTask(4, new EntityAIWander(this, 0.5D)
 		{
 			@Override
@@ -74,6 +80,38 @@ public class EntityCaveman extends EntityTameable implements IInventory
 		this.tasks.addTask(5, new EntityAILookIdle(this));
 		this.setTamed(false);
 		this.setSitting(false);
+
+		Set<ItemStack> items = Sets.newHashSet();
+
+		if (rand.nextInt(3) == 0)
+		{
+			items.add(new ItemStack(Items.stone_pickaxe));
+		}
+		else
+		{
+			items.add(new ItemStack(Items.iron_pickaxe));
+		}
+
+		for (WeightedRandomChestContent content : ChestGenHooks.getItems(ChestGenHooks.DUNGEON_CHEST, rand))
+		{
+			for (ItemStack itemstack : ChestGenHooks.generateStacks(rand, content.theItemId, content.theMinimumChanceToGenerateItem, content.theMaximumChanceToGenerateItem))
+			{
+				if (rand.nextInt(3) != 0 && !GameData.getItemRegistry().getNameForObject(itemstack.getItem()).endsWith("horse_armor"))
+				{
+					items.add(itemstack);
+				}
+			}
+		}
+
+		int slot = 0;
+
+		for (ItemStack itemstack : items)
+		{
+			if (slot <= getSizeInventory())
+			{
+				setInventorySlotContents(slot++, itemstack);
+			}
+		}
 	}
 
 	@Override
@@ -107,7 +145,12 @@ public class EntityCaveman extends EntityTameable implements IInventory
 	@Override
 	public float getEyeHeight()
 	{
-		return 1.1F;
+		if (isSitting() && getStoppedTime() > 5L)
+		{
+			return 1.0F;
+		}
+
+		return 1.55F;
 	}
 
 	public long getStoppedTime()
@@ -285,16 +328,7 @@ public class EntityCaveman extends EntityTameable implements IInventory
 	@Override
 	public EntityAgeable createChild(EntityAgeable entity)
 	{
-		EntityCaveman caveman = new EntityCaveman(worldObj);
-		String name = func_152113_b();
-
-		if (!Strings.isNullOrEmpty(name))
-		{
-			caveman.func_152115_b(name);
-			caveman.setTamed(true);
-		}
-
-		return caveman;
+		return null;
 	}
 
 	@Override

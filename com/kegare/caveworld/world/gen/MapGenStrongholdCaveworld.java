@@ -122,13 +122,11 @@ public class MapGenStrongholdCaveworld extends MapGenStronghold
 			Stairs2 stairs2 = new Stairs2(0, random, chunkX * 16 + 2, chunkZ * 16 + 2);
 			this.components.add(stairs2);
 			stairs2.buildComponent(stairs2, components, random);
-			List list = stairs2.field_75026_c;
+			List list = stairs2.components;
 
 			while (!list.isEmpty())
 			{
-				StructureComponent structureComponent = (StructureComponent)list.remove(random.nextInt(list.size()));
-
-				structureComponent.buildComponent(stairs2, components, random);
+				((StructureComponent)list.remove(random.nextInt(list.size()))).buildComponent(stairs2, components, random);
 			}
 
 			this.updateBoundingBox();

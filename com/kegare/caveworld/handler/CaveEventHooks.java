@@ -487,7 +487,7 @@ public class CaveEventHooks
 				{
 					player.wakeUpPlayer(true, true, false);
 
-					player.setSpawnChunk(player.playerLocation, true, player.dimension);
+					player.setSpawnChunk(player.playerLocation, true);
 				}
 			}
 		}

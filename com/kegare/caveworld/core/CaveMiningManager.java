@@ -9,15 +9,18 @@
 
 package com.kegare.caveworld.core;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.common.IExtendedEntityProperties;
+import net.minecraftforge.oredict.OreDictionary;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
@@ -70,6 +73,25 @@ public class CaveMiningManager implements ICaveMiningManager
 	public void setMiningPointAmount(Block block, int metadata, int amount)
 	{
 		pointAmounts.put(block, metadata, amount);
+	}
+
+	@Override
+	public void setMiningPointAmount(String oredict, int amount)
+	{
+		ArrayList<ItemStack> ores = OreDictionary.getOres(oredict);
+
+		if (!ores.isEmpty())
+		{
+			for (ItemStack entry : ores)
+			{
+				Block block = Block.getBlockFromItem(entry.getItem());
+
+				if (block != null)
+				{
+					setMiningPointAmount(block, entry.getItemDamage(), amount);
+				}
+			}
+		}
 	}
 
 	@Override

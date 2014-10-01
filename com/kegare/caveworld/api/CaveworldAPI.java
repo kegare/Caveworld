@@ -269,6 +269,17 @@ public final class CaveworldAPI
 	}
 
 	/**
+	 * @see ICaveMiningManager#setMiningPointAmount(String, int)
+	 */
+	public static void setMiningPointAmount(String oredict, int amount)
+	{
+		if (miningManager != null)
+		{
+			miningManager.setMiningPointAmount(oredict, amount);
+		}
+	}
+
+	/**
 	 * @see ICaveMiningManager#saveMiningData(EntityPlayer, NBTTagCompound)
 	 */
 	public static void saveMiningData(EntityPlayer player, NBTTagCompound compound)

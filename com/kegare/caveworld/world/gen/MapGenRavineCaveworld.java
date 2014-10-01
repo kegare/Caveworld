@@ -14,11 +14,12 @@ import java.util.Random;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
+import net.minecraft.world.World;
 import net.minecraft.world.gen.MapGenRavine;
 
 public class MapGenRavineCaveworld extends MapGenRavine
 {
-	private final float[] field_75046_d = new float[1024];
+	private final float[] parabolicField = new float[1024];
 
 	@Override
 	protected void func_151540_a(long ravineSeed, int chunkX, int chunkZ, Block[] blocks, double blockX, double blockY, double blockZ, float scale, float leftRightRadian, float upDownRadian, int currentY, int targetY, double scaleHeight)
@@ -53,7 +54,7 @@ public class MapGenRavineCaveworld extends MapGenRavine
 				nextInterHeight = 1.0F + random.nextFloat() * random.nextFloat() * 1.0F;
 			}
 
-			field_75046_d[y] = nextInterHeight * nextInterHeight;
+			parabolicField[y] = nextInterHeight * nextInterHeight;
 		}
 
 		for (; currentY < targetY; ++currentY)
@@ -111,7 +112,7 @@ public class MapGenRavineCaveworld extends MapGenRavine
 								{
 									double yScale = (y + 0.5D - blockY) / roomHeight;
 
-									if ((xScale * xScale + zScale * zScale) * field_75046_d[y] + yScale * yScale / 6.0D < 1.0D)
+									if ((xScale * xScale + zScale * zScale) * parabolicField[y] + yScale * yScale / 6.0D < 1.0D)
 									{
 										digBlock(blocks, index, x, y, z, chunkX, chunkZ, false);
 									}
@@ -128,6 +129,28 @@ public class MapGenRavineCaveworld extends MapGenRavine
 					}
 				}
 			}
+		}
+	}
+
+	@Override
+	protected void func_151538_a(World world, int x, int z, int chunkX, int chunkZ, Block[] blocks)
+	{
+		if (rand.nextInt(45) == 0)
+		{
+			int worldHeight = world.getActualHeight();
+			double blockX = x * 16 + rand.nextInt(16);
+			double blockY = rand.nextInt(rand.nextInt(worldHeight / 2) + world.provider.getAverageGroundLevel() + 10);
+			double blockZ = z * 16 + rand.nextInt(16);
+			float leftRightRadian = rand.nextFloat() * (float)Math.PI * 2.0F;
+			float upDownRadian = (rand.nextFloat() - 0.5F) * 2.0F / 8.0F;
+			float scale = (rand.nextFloat() * 2.0F + rand.nextFloat()) * 2.0F;
+
+			if (blockY > worldHeight - 40)
+			{
+				blockY = world.provider.getAverageGroundLevel() + rand.nextInt(10);
+			}
+
+			func_151540_a(rand.nextLong(), chunkX, chunkZ, blocks, blockX, blockY, blockZ, scale, leftRightRadian, upDownRadian, 0, 0, 3.0D);
 		}
 	}
 

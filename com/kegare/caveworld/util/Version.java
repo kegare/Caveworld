@@ -82,7 +82,11 @@ public class Version extends RecursiveAction
 			DEV_DEBUG = true;
 		}
 
-		if (DEV_DEBUG)
+		if (Caveworld.metadata.version.endsWith("dev"))
+		{
+			DEV_DEBUG = true;
+		}
+		else if (DEV_DEBUG)
 		{
 			Caveworld.metadata.version += "-dev";
 		}

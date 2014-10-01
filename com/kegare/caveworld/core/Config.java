@@ -39,6 +39,7 @@ import com.kegare.caveworld.api.ICaveBiome;
 import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome;
 import com.kegare.caveworld.core.CaveVeinManager.CaveVein;
 import com.kegare.caveworld.entity.EntityCaveman;
+import com.kegare.caveworld.util.CaveConfiguration;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Version;
@@ -84,6 +85,7 @@ public class Config
 	public static boolean generateCaves;
 	public static boolean generateExtremeCaves;
 	public static boolean generateRavine;
+	public static boolean generateExtremeRavine;
 	public static boolean generateMineshaft;
 	public static boolean generateStronghold;
 	public static boolean generateLakes;
@@ -112,7 +114,7 @@ public class Config
 	public static Configuration loadConfig(String name)
 	{
 		File file = getConfigFile(name);
-		Configuration config = new Configuration(file, null, true);
+		Configuration config = new CaveConfiguration(file, true);
 
 		try
 		{
@@ -336,7 +338,7 @@ public class Config
 
 		if (cavemanSpawnWeight > 0)
 		{
-			EntityRegistry.addSpawn(EntityCaveman.class, cavemanSpawnWeight, 1, 2, EnumCreatureType.ambient, biomes);
+			EntityRegistry.addSpawn(EntityCaveman.class, cavemanSpawnWeight, 1, 1, EnumCreatureType.ambient, biomes);
 		}
 
 		entitiesCfg.addCustomCategoryComment(category, "If multiplayer, server-side only.");
@@ -400,6 +402,12 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		generateRavine = prop.getBoolean(generateRavine);
+		prop = dimensionCfg.get(category, "generateExtremeRavine", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		generateExtremeRavine = prop.getBoolean(generateExtremeRavine);
 		prop = dimensionCfg.get(category, "generateMineshaft", true);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -570,9 +578,9 @@ public class Config
 		{
 			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 17, 20, 0, 255));
 			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 10, 28, 0, 255));
-			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.gold_ore, 0), 8, 2, 0, 127));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.gold_ore, 0), 8, 3, 0, 127));
 			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.redstone_ore, 0), 7, 8, 0, 40));
-			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.lapis_ore, 0), 5, 1, 0, 40));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.lapis_ore, 0), 5, 2, 0, 50));
 			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.diamond_ore, 0), 8, 1, 0, 20));
 			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.emerald_ore, 0), 5, 3, 50, 255, null, Type.MOUNTAIN, Type.HILLS));
 			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.quartz_ore, 0), 10, 16, 0, 255, new BlockEntry(Blocks.netherrack, 0), Type.NETHER));

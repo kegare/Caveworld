@@ -245,7 +245,7 @@ public class StructureStrongholdPiecesCaveworld
 			if (stronghold != null)
 			{
 				list.add(stronghold);
-				stairs2.field_75026_c.add(stronghold);
+				stairs2.components.add(stronghold);
 			}
 
 			return stronghold;
@@ -258,14 +258,14 @@ public class StructureStrongholdPiecesCaveworld
 
 	public static class Stairs extends Stronghold
 	{
-		private boolean field_75024_a;
+		private boolean isSource;
 
 		public Stairs() {}
 
-		public Stairs(int type, Random random, int par3, int par4)
+		public Stairs(int type, Random random, int x, int z)
 		{
 			super(type);
-			this.field_75024_a = true;
+			this.isSource = true;
 			this.coordBaseMode = random.nextInt(4);
 			this.door = Door.OPENING;
 
@@ -273,18 +273,18 @@ public class StructureStrongholdPiecesCaveworld
 			{
 				case 0:
 				case 2:
-					this.boundingBox = new StructureBoundingBox(par3, 64, par4, par3 + 5 - 1, 74, par4 + 5 - 1);
+					this.boundingBox = new StructureBoundingBox(x, 64, z, x + 5 - 1, 74, z + 5 - 1);
 
 					break;
 				default:
-					this.boundingBox = new StructureBoundingBox(par3, 64, par4, par3 + 5 - 1, 74, par4 + 5 - 1);
+					this.boundingBox = new StructureBoundingBox(x, 64, z, x + 5 - 1, 74, z + 5 - 1);
 			}
 		}
 
 		public Stairs(int type, Random random, StructureBoundingBox structureBoundingBox, int mode)
 		{
 			super(type);
-			this.field_75024_a = false;
+			this.isSource = false;
 			this.coordBaseMode = mode;
 			this.door = getRandomDoor(random);
 			this.boundingBox = structureBoundingBox;
@@ -294,20 +294,20 @@ public class StructureStrongholdPiecesCaveworld
 		protected void func_143012_a(NBTTagCompound nbtTagCompound)
 		{
 			super.func_143012_a(nbtTagCompound);
-			nbtTagCompound.setBoolean("Source", field_75024_a);
+			nbtTagCompound.setBoolean("Source", isSource);
 		}
 
 		@Override
 		protected void func_143011_b(NBTTagCompound nbtTagCompound)
 		{
 			super.func_143011_b(nbtTagCompound);
-			field_75024_a = nbtTagCompound.getBoolean("Source");
+			isSource = nbtTagCompound.getBoolean("Source");
 		}
 
 		@Override
 		public void buildComponent(StructureComponent structureComponent, List list, Random random)
 		{
-			if (field_75024_a)
+			if (isSource)
 			{
 				strongholdComponentType = Crossing.class;
 			}
@@ -1007,7 +1007,7 @@ public class StructureStrongholdPiecesCaveworld
 	{
 		public PieceWeight strongholdPieceWeight;
 		public PortalRoom strongholdPortalRoom;
-		public List field_75026_c = Lists.newArrayList();
+		public List components = Lists.newArrayList();
 
 		public Stairs2() {}
 
@@ -1362,10 +1362,10 @@ public class StructureStrongholdPiecesCaveworld
 
 	public static class Crossing extends Stronghold
 	{
-		private boolean field_74996_b;
-		private boolean field_74997_c;
-		private boolean field_74995_d;
-		private boolean field_74999_h;
+		private boolean expandsLeftLow;
+		private boolean expandsLeftHigh;
+		private boolean expandsRightLow;
+		private boolean expandsRightHigh;
 
 		public Crossing() {}
 
@@ -1375,30 +1375,30 @@ public class StructureStrongholdPiecesCaveworld
 			this.coordBaseMode = mode;
 			this.door = getRandomDoor(random);
 			this.boundingBox = structureBoundingBox;
-			this.field_74996_b = random.nextBoolean();
-			this.field_74997_c = random.nextBoolean();
-			this.field_74995_d = random.nextBoolean();
-			this.field_74999_h = random.nextInt(3) > 0;
+			this.expandsLeftLow = random.nextBoolean();
+			this.expandsLeftHigh = random.nextBoolean();
+			this.expandsRightLow = random.nextBoolean();
+			this.expandsRightHigh = random.nextInt(3) > 0;
 		}
 
 		@Override
 		protected void func_143012_a(NBTTagCompound nbtTagCompound)
 		{
 			super.func_143012_a(nbtTagCompound);
-			nbtTagCompound.setBoolean("leftLow", field_74996_b);
-			nbtTagCompound.setBoolean("leftHigh", field_74997_c);
-			nbtTagCompound.setBoolean("rightLow", field_74995_d);
-			nbtTagCompound.setBoolean("rightHigh", field_74999_h);
+			nbtTagCompound.setBoolean("leftLow", expandsLeftLow);
+			nbtTagCompound.setBoolean("leftHigh", expandsLeftHigh);
+			nbtTagCompound.setBoolean("rightLow", expandsRightLow);
+			nbtTagCompound.setBoolean("rightHigh", expandsRightHigh);
 		}
 
 		@Override
 		protected void func_143011_b(NBTTagCompound nbtTagCompound)
 		{
 			super.func_143011_b(nbtTagCompound);
-			field_74996_b = nbtTagCompound.getBoolean("leftLow");
-			field_74997_c = nbtTagCompound.getBoolean("leftHigh");
-			field_74995_d = nbtTagCompound.getBoolean("rightLow");
-			field_74999_h = nbtTagCompound.getBoolean("rightHigh");
+			expandsLeftLow = nbtTagCompound.getBoolean("leftLow");
+			expandsLeftHigh = nbtTagCompound.getBoolean("leftHigh");
+			expandsRightLow = nbtTagCompound.getBoolean("rightLow");
+			expandsRightHigh = nbtTagCompound.getBoolean("rightHigh");
 		}
 
 		@Override
@@ -1415,22 +1415,22 @@ public class StructureStrongholdPiecesCaveworld
 
 			getNextComponentNormal((Stairs2)structureComponent, list, random, 5, 1);
 
-			if (field_74996_b)
+			if (expandsLeftLow)
 			{
 				getNextComponentX((Stairs2)structureComponent, list, random, var1, 1);
 			}
 
-			if (field_74997_c)
+			if (expandsLeftHigh)
 			{
 				getNextComponentX((Stairs2)structureComponent, list, random, var2, 7);
 			}
 
-			if (field_74995_d)
+			if (expandsRightLow)
 			{
 				getNextComponentZ((Stairs2)structureComponent, list, random, var1, 1);
 			}
 
-			if (field_74999_h)
+			if (expandsRightHigh)
 			{
 				getNextComponentZ((Stairs2)structureComponent, list, random, var2, 7);
 			}
@@ -1454,22 +1454,22 @@ public class StructureStrongholdPiecesCaveworld
 			fillWithRandomizedBlocks(world, structureBoundingBox, 0, 0, 0, 9, 8, 10, true, random, strongholdStones);
 			placeDoor(world, random, structureBoundingBox, door, 4, 3, 0);
 
-			if (field_74996_b)
+			if (expandsLeftLow)
 			{
 				fillWithBlocks(world, structureBoundingBox, 0, 3, 1, 0, 5, 3, Blocks.air, Blocks.air, false);
 			}
 
-			if (field_74995_d)
+			if (expandsRightLow)
 			{
 				fillWithBlocks(world, structureBoundingBox, 9, 3, 1, 9, 5, 3, Blocks.air, Blocks.air, false);
 			}
 
-			if (field_74997_c)
+			if (expandsLeftHigh)
 			{
 				fillWithBlocks(world, structureBoundingBox, 0, 5, 7, 0, 7, 9, Blocks.air, Blocks.air, false);
 			}
 
-			if (field_74999_h)
+			if (expandsRightHigh)
 			{
 				fillWithBlocks(world, structureBoundingBox, 9, 5, 7, 9, 7, 9, Blocks.air, Blocks.air, false);
 			}
@@ -1496,7 +1496,7 @@ public class StructureStrongholdPiecesCaveworld
 
 	public static class Corridor extends Stronghold
 	{
-		private int field_74993_a;
+		private int steps;
 
 		public Corridor() {}
 
@@ -1505,21 +1505,21 @@ public class StructureStrongholdPiecesCaveworld
 			super(type);
 			this.coordBaseMode = mode;
 			this.boundingBox = structureBoundingBox;
-			this.field_74993_a = mode != 2 && mode != 0 ? structureBoundingBox.getXSize() : structureBoundingBox.getZSize();
+			this.steps = mode != 2 && mode != 0 ? structureBoundingBox.getXSize() : structureBoundingBox.getZSize();
 		}
 
 		@Override
 		protected void func_143012_a(NBTTagCompound nbtTagCompound)
 		{
 			super.func_143012_a(nbtTagCompound);
-			nbtTagCompound.setInteger("Steps", field_74993_a);
+			nbtTagCompound.setInteger("Steps", steps);
 		}
 
 		@Override
 		protected void func_143011_b(NBTTagCompound nbtTagCompound)
 		{
 			super.func_143011_b(nbtTagCompound);
-			field_74993_a = nbtTagCompound.getInteger("Steps");
+			steps = nbtTagCompound.getInteger("Steps");
 		}
 
 		public static StructureBoundingBox func_74992_a(List list, Random random, int x, int y, int z, int mode)
@@ -1556,7 +1556,7 @@ public class StructureStrongholdPiecesCaveworld
 				return false;
 			}
 
-			for (int i = 0; i < field_74993_a; ++i)
+			for (int i = 0; i < steps; ++i)
 			{
 				placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 0, 0, i, structureBoundingBox);
 				placeBlockAtCurrentPosition(world, Blocks.stonebrick, 0, 1, 0, i, structureBoundingBox);

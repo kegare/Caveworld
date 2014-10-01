@@ -10,7 +10,10 @@
 package com.kegare.caveworld.core;
 
 import static com.kegare.caveworld.core.Caveworld.*;
-import net.minecraft.init.Blocks;
+
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveAction;
+
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 
@@ -127,9 +130,6 @@ public class Caveworld
 		FMLCommonHandler.instance().bus().register(CaveEventHooks.instance);
 
 		MinecraftForge.EVENT_BUS.register(CaveEventHooks.instance);
-
-		CaveworldAPI.setMiningPointAmount(Blocks.emerald_ore, 0, 2);
-		CaveworldAPI.setMiningPointAmount(Blocks.diamond_ore, 0, 3);
 	}
 
 	@EventHandler
@@ -173,6 +173,34 @@ public class Caveworld
 		{
 			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: " + ThaumcraftPlugin.class.getName());
 		}
+
+		new ForkJoinPool().execute(new RecursiveAction()
+		{
+			@Override
+			protected void compute()
+			{
+				CaveworldAPI.setMiningPointAmount("oreCoal", 1);
+				CaveworldAPI.setMiningPointAmount("oreIron", 1);
+				CaveworldAPI.setMiningPointAmount("oreGold", 1);
+				CaveworldAPI.setMiningPointAmount("oreRedstone", 1);
+				CaveworldAPI.setMiningPointAmount("oreLapis", 1);
+				CaveworldAPI.setMiningPointAmount("oreEmerald", 2);
+				CaveworldAPI.setMiningPointAmount("oreDiamond", 3);
+				CaveworldAPI.setMiningPointAmount("oreQuartz", 1);
+				CaveworldAPI.setMiningPointAmount("oreCopper", 1);
+				CaveworldAPI.setMiningPointAmount("oreTin", 1);
+				CaveworldAPI.setMiningPointAmount("oreLead", 1);
+				CaveworldAPI.setMiningPointAmount("oreSilver", 1);
+				CaveworldAPI.setMiningPointAmount("oreAdamantium", 1);
+				CaveworldAPI.setMiningPointAmount("oreAluminum", 1);
+				CaveworldAPI.setMiningPointAmount("oreApatite", 1);
+				CaveworldAPI.setMiningPointAmount("oreMythril", 1);
+				CaveworldAPI.setMiningPointAmount("oreOnyx", 1);
+				CaveworldAPI.setMiningPointAmount("oreUranium", 2);
+				CaveworldAPI.setMiningPointAmount("oreSapphire", 2);
+				CaveworldAPI.setMiningPointAmount("oreRuby", 2);
+			}
+		});
 	}
 
 	@EventHandler

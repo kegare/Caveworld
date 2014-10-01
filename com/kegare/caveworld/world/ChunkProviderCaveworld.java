@@ -54,6 +54,7 @@ import com.kegare.caveworld.api.ICaveVein;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.world.gen.MapGenCavesCaveworld;
 import com.kegare.caveworld.world.gen.MapGenExtremeCaves;
+import com.kegare.caveworld.world.gen.MapGenExtremeRavine;
 import com.kegare.caveworld.world.gen.MapGenRavineCaveworld;
 import com.kegare.caveworld.world.gen.MapGenStrongholdCaveworld;
 import com.kegare.caveworld.world.gen.WorldGenAnimalDungeons;
@@ -68,6 +69,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	private final MapGenBase caveGenerator = new MapGenCavesCaveworld();
 	private final MapGenBase extremeCaveGenerator = new MapGenExtremeCaves();
 	private final MapGenBase ravineGenerator = new MapGenRavineCaveworld();
+	private final MapGenBase extremeRavineGenerator = new MapGenExtremeRavine();
 	private MapGenMineshaft mineshaftGenerator = new MapGenMineshaft();
 	private MapGenStronghold strongholdGenerator = new MapGenStrongholdCaveworld();
 
@@ -121,6 +123,11 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		if (Config.generateRavine)
 		{
 			ravineGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
+		}
+
+		if (Config.generateExtremeRavine)
+		{
+			extremeRavineGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
 		}
 
 		if (generateStructures)

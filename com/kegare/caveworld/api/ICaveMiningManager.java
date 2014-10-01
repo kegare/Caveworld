@@ -41,6 +41,13 @@ public interface ICaveMiningManager
 	 */
 	public void setMiningPointAmount(Block block, int metadata, int amount);
 
+	/**
+	 * Sets mining point amount of the block and metadata with the ore dictionary registered name
+	 * @param oredict The ore dictionary registered name
+	 * @param amount The amount
+	 */
+	public void setMiningPointAmount(String oredict, int amount);
+
 	public void saveMiningData(EntityPlayer player, NBTTagCompound compound);
 
 	public void loadMiningData(EntityPlayer player, NBTTagCompound compound);
