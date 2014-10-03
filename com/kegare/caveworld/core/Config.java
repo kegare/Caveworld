@@ -79,6 +79,8 @@ public class Config
 	public static int cavemanSpawnMaxHeight;
 	public static int cavemanSpawnInChunks;
 	public static int[] cavemanSpawnBiomes;
+	public static int cavemanCreatureType;
+	public static boolean cavemanShowHealthBar;
 
 	public static int dimensionCaveworld;
 	public static int subsurfaceHeight;
@@ -311,6 +313,22 @@ public class Config
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		propOrder.add(prop.getName());
 		cavemanSpawnBiomes = prop.getIntList();
+		prop = entitiesCfg.get(category, "creatureType", 0);
+		prop.setMinValue(0).setMaxValue(1).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());;
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		cavemanCreatureType = MathHelper.clamp_int(prop.getInt(cavemanCreatureType), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+
+		if (side.isClient())
+		{
+			prop = entitiesCfg.get(category, "showHealthBar", true);
+			prop.setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+			prop.comment += " [default: " + prop.getDefault() + "]";
+			propOrder.add(prop.getName());
+			cavemanShowHealthBar = prop.getBoolean();
+		}
 
 		BiomeGenBase[] def = CaveUtils.getBiomes().toArray(new BiomeGenBase[0]);
 		BiomeGenBase[] biomes = new BiomeGenBase[0];

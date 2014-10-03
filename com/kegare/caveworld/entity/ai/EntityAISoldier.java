@@ -24,6 +24,7 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
 import com.kegare.caveworld.api.CaveworldAPI;
+import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.entity.EntityCaveman;
 
 public class EntityAISoldier extends EntityAIBase implements IEntitySelector
@@ -38,6 +39,7 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 	private final World theWorld;
 
 	private EntityLivingBase theTarget;
+	private ItemStack theWeapon;
 	private boolean moveSuccess;
 	private int failedCount;
 
@@ -63,13 +65,17 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 		if (itemstack == null || itemstack.getItem() == null || itemstack.stackSize <= 0)
 		{
 			currentType = CombatType.NONE;
+
+			return false;
+		}
+
+		if (itemstack.getItem() instanceof ItemSword)
+		{
+			currentType = CombatType.SWORD;
 		}
 		else
 		{
-			if (itemstack.getItem() instanceof ItemSword)
-			{
-				currentType = CombatType.SWORD;
-			}
+			currentType = CombatType.NONE;
 		}
 
 		switch (getCurrentType())
@@ -89,6 +95,8 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 					}
 				}
 
+				theWeapon = itemstack.copy();
+
 				return canMoveToEntity(theTarget);
 			default:
 				return false;
@@ -98,7 +106,7 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 	@Override
 	public boolean continueExecuting()
 	{
-		return failedCount <= 20 && canMoveToEntity(theTarget) && getCurrentType() != CombatType.NONE;
+		return failedCount <= 20 && getCurrentType() != CombatType.NONE && canMoveToEntity(theTarget) && theWeapon.isItemEqual(theSoldier.getHeldItem());
 	}
 
 	@Override
@@ -112,6 +120,7 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 	public void resetTask()
 	{
 		theTarget = null;
+		theWeapon = null;
 		failedCount = 0;
 	}
 
@@ -120,23 +129,17 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 	{
 		theSoldier.getLookHelper().setLookPositionWithEntity(theTarget, 10.0F, theSoldier.getVerticalFaceSpeed());
 
-		if (!theSoldier.isSitting() && theSoldier.getEntitySenses().canSee(theTarget))
-		{
-			failedCount = 0;
-		}
-		else
-		{
-			++failedCount;
-
-			return;
-		}
-
 		switch (getCurrentType())
 		{
 			case SWORD:
 				if (theSoldier.getDistanceSqToEntity(theTarget) > 3.0D)
 				{
-					theSoldier.getMoveHelper().setMoveTo(theTarget.posX, theTarget.posY, theTarget.posZ, 0.85D);
+					boolean flag = !theSoldier.isSitting() && theSoldier.getEntitySenses().canSee(theTarget);
+
+					if (flag)
+					{
+						theSoldier.getMoveHelper().setMoveTo(theTarget.posX, theTarget.posY, theTarget.posZ, 0.85D);
+					}
 
 					moveSuccess = theSoldier.getStoppedTime() == 0L;
 
@@ -148,7 +151,7 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 					{
 						++failedCount;
 
-						if (canMoveToEntity(theTarget))
+						if (flag)
 						{
 							theSoldier.getNavigator().tryMoveToXYZ(theTarget.posX, theTarget.posY, theTarget.posZ, 1.0D);
 						}
@@ -160,14 +163,13 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 
 					if (theSoldier.ticksExisted % 10 == 0)
 					{
-						ItemStack itemstack = theSoldier.getHeldItem();
-						ItemSword item = (ItemSword)itemstack.getItem();
+						ItemSword item = (ItemSword)theWeapon.getItem();
 
 						theSoldier.swingItem();
 
 						if (theTarget.attackEntityFrom(DamageSource.causeMobDamage(theSoldier), item.func_150931_i()))
 						{
-							item.hitEntity(itemstack, theTarget, theSoldier);
+							item.hitEntity(theWeapon, theTarget, theSoldier);
 						}
 					}
 				}
@@ -205,11 +207,24 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 			return false;
 		}
 
-		if (theSoldier.isTamed())
+		switch (Config.cavemanCreatureType)
 		{
-			return entity instanceof IMob;
-		}
+			case 0:
+				if (theSoldier.isTamed())
+				{
+					return entity instanceof IMob;
+				}
 
-		return entity instanceof EntityPlayer;
+				return false;
+			case 1:
+				if (theSoldier.isTamed())
+				{
+					return entity instanceof IMob;
+				}
+
+				return entity instanceof EntityPlayer;
+			default:
+				return false;
+		}
 	}
 }

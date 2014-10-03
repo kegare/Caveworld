@@ -12,7 +12,6 @@ package com.kegare.caveworld.client.renderer;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.passive.EntityTameable;
 
 import com.kegare.caveworld.entity.EntityCaveman;
 
@@ -24,7 +23,7 @@ public class ModelCaveman extends ModelBiped
 {
 	public ModelRenderer bipedBack;
 
-	final float
+	private final float
 	headPtY = -1.0F,
 	bodyPtY = 2.0F,
 	backPtY = 3.0F,
@@ -38,7 +37,7 @@ public class ModelCaveman extends ModelBiped
 		this.textureHeight = 32;
 		this.bipedHead = new ModelRenderer(this, 0, 0).setTextureSize(textureWidth, textureHeight);
 		this.bipedHead.addBox(-4.0F, -5.0F, -4.0F, 8, 8, 8);
-		this.bipedHead.setRotationPoint(0F, headPtY, 0.0F);
+		this.bipedHead.setRotationPoint(0.0F, headPtY, 0.0F);
 		this.bipedHeadwear = bipedHead;
 		this.bipedBody = new ModelRenderer(this, 0, 16).setTextureSize(textureWidth, textureHeight);
 		this.bipedBody.addBox(-4.0F, 0.0F, -2.0F, 8, 12, 4);
@@ -69,13 +68,13 @@ public class ModelCaveman extends ModelBiped
 	{
 		super.setRotationAngles(par1, par2, par3, par4, par5, par6, entity);
 
-		if (((EntityTameable)entity).isSitting() && ((EntityCaveman)entity).getStoppedTime() > 5L)
+		if (((EntityCaveman)entity).isSittingAndStopped())
 		{
 			bipedRightArm.rotateAngleX += -((float)Math.PI / 5.0F);
 			bipedLeftArm.rotateAngleX += -((float)Math.PI / 5.0F);
 			bipedRightLeg.rotateAngleX = -((float)Math.PI * 2.35F / 5.0F);
 			bipedLeftLeg.rotateAngleX = -((float)Math.PI * 2.35F / 5.0F);
-			bipedRightLeg.rotateAngleY = ((float)Math.PI / 10.0F);
+			bipedRightLeg.rotateAngleY = (float)Math.PI / 10.0F;
 			bipedLeftLeg.rotateAngleY = -((float)Math.PI / 10.0F);
 			bipedHead.rotationPointY = headPtY + sit;
 			bipedHeadwear.rotationPointY = bipedHead.rotationPointY;

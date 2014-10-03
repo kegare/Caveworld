@@ -15,6 +15,8 @@ import java.util.Set;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityAgeable;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAILookIdle;
 import net.minecraft.entity.ai.EntityAIRestrictSun;
@@ -24,6 +26,7 @@ import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.passive.EntityTameable;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
@@ -33,12 +36,11 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
-import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraft.world.World;
-import net.minecraftforge.common.ChestGenHooks;
 
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.CaveworldAPI;
+import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.entity.ai.EntityAICollector;
 import com.kegare.caveworld.entity.ai.EntityAIFleeSun2;
@@ -46,7 +48,6 @@ import com.kegare.caveworld.entity.ai.EntityAISoldier;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.InventoryComparator;
 
-import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -66,9 +67,9 @@ public class EntityCaveman extends EntityTameable implements IInventory
 		this.tasks.addTask(0, new EntityAISwimming(this));
 		this.tasks.addTask(1, new EntityAIRestrictSun(this));
 		this.tasks.addTask(2, new EntityAIFleeSun2(this, 1.25D));
-		this.tasks.addTask(3, new EntityAICollector(this, 1.0D, 3.0F, 20.0F));
-		this.tasks.addTask(3, new EntityAISoldier(this));
-		this.tasks.addTask(4, new EntityAIWander(this, 0.5D)
+		this.tasks.addTask(4, new EntityAISoldier(this));
+		this.tasks.addTask(5, new EntityAICollector(this, 1.0D, 3.0F, 20.0F));
+		this.tasks.addTask(6, new EntityAIWander(this, 0.5D)
 		{
 			@Override
 			public boolean shouldExecute()
@@ -76,42 +77,10 @@ public class EntityCaveman extends EntityTameable implements IInventory
 				return !isSitting() && getStoppedTime() > 200L && super.shouldExecute();
 			}
 		});
-		this.tasks.addTask(5, new EntityAIWatchClosest(this, EntityPlayer.class, 10.0F));
-		this.tasks.addTask(5, new EntityAILookIdle(this));
+		this.tasks.addTask(7, new EntityAIWatchClosest(this, EntityPlayer.class, 10.0F));
+		this.tasks.addTask(8, new EntityAILookIdle(this));
 		this.setTamed(false);
 		this.setSitting(false);
-
-		Set<ItemStack> items = Sets.newHashSet();
-
-		if (rand.nextInt(3) == 0)
-		{
-			items.add(new ItemStack(Items.stone_pickaxe));
-		}
-		else
-		{
-			items.add(new ItemStack(Items.iron_pickaxe));
-		}
-
-		for (WeightedRandomChestContent content : ChestGenHooks.getItems(ChestGenHooks.DUNGEON_CHEST, rand))
-		{
-			for (ItemStack itemstack : ChestGenHooks.generateStacks(rand, content.theItemId, content.theMinimumChanceToGenerateItem, content.theMaximumChanceToGenerateItem))
-			{
-				if (rand.nextInt(3) != 0 && !GameData.getItemRegistry().getNameForObject(itemstack.getItem()).endsWith("horse_armor"))
-				{
-					items.add(itemstack);
-				}
-			}
-		}
-
-		int slot = 0;
-
-		for (ItemStack itemstack : items)
-		{
-			if (slot <= getSizeInventory())
-			{
-				setInventorySlotContents(slot++, itemstack);
-			}
-		}
 	}
 
 	@Override
@@ -145,7 +114,7 @@ public class EntityCaveman extends EntityTameable implements IInventory
 	@Override
 	public float getEyeHeight()
 	{
-		if (isSitting() && getStoppedTime() > 5L)
+		if (isSittingAndStopped())
 		{
 			return 1.0F;
 		}
@@ -158,9 +127,76 @@ public class EntityCaveman extends EntityTameable implements IInventory
 		return stoppedTime;
 	}
 
+	public boolean isSittingAndStopped()
+	{
+		return isSitting() && getStoppedTime() > 5L;
+	}
+
 	public String getLocalizedName()
 	{
 		return StatCollector.translateToLocal("entity." + getEntityString() + ".name");
+	}
+
+	@Override
+	public IEntityLivingData onSpawnWithEgg(IEntityLivingData data)
+	{
+		data = super.onSpawnWithEgg(data);
+
+		if (!isTamed())
+		{
+			Set<ItemStack> items = Sets.newHashSet();
+
+			for (int i = 0; i < rand.nextInt(2) + 1; ++i)
+			{
+				if (rand.nextInt(3) == 0)
+				{
+					items.add(new ItemStack(Items.stone_pickaxe));
+				}
+				else
+				{
+					items.add(new ItemStack(Items.iron_pickaxe));
+				}
+			}
+
+			items.add(new ItemStack(Items.coal, MathHelper.getRandomIntegerInRange(rand, 16, 64)));
+			items.add(new ItemStack(Items.iron_ingot, MathHelper.getRandomIntegerInRange(rand, 8, 16)));
+			items.add(new ItemStack(Items.gold_ingot, MathHelper.getRandomIntegerInRange(rand, 2, 8)));
+			items.add(new ItemStack(Items.emerald, MathHelper.getRandomIntegerInRange(rand, 2, 5)));
+
+			if (rand.nextInt(10) == 0)
+			{
+				items.add(new ItemStack(Items.diamond));
+			}
+
+			items.add(new ItemStack(Blocks.torch, MathHelper.getRandomIntegerInRange(rand, 16, 32)));
+			items.add(new ItemStack(Items.bread, MathHelper.getRandomIntegerInRange(rand, 4, 16)));
+
+			if (Config.rope)
+			{
+				items.add(new ItemStack(CaveBlocks.rope, MathHelper.getRandomIntegerInRange(rand, 20, 64)));
+			}
+
+			int slot = 0;
+
+			for (ItemStack itemstack : items)
+			{
+				if (itemstack.stackSize > 0 && slot <= getSizeInventory())
+				{
+					setInventorySlotContents(slot++, itemstack);
+				}
+			}
+
+			if (Config.cavemanCreatureType > 0 && rand.nextInt(5) == 0)
+			{
+				setCurrentItemOrArmor(0, new ItemStack(Items.stone_sword));
+			}
+			else if (rand.nextInt(6) == 0)
+			{
+				setCurrentItemOrArmor(0, new ItemStack(Items.stone_pickaxe));
+			}
+		}
+
+		return data;
 	}
 
 	@Override
@@ -177,9 +213,9 @@ public class EntityCaveman extends EntityTameable implements IInventory
 			stoppedTime = 0;
 		}
 
-		if (isSitting() && stoppedTime % 100 == 0)
+		if (isSitting() && stoppedTime > 0 && stoppedTime % 100 == 0)
 		{
-			heal(0.5F);
+			heal(0.5F + rand.nextFloat() / 2);
 		}
 
 		if (!worldObj.isRemote && isEntityAlive())
@@ -191,6 +227,33 @@ public class EntityCaveman extends EntityTameable implements IInventory
 				onItemPickup(item, item.getEntityItem().stackSize);
 
 				item.setDead();
+			}
+
+			if (isTamed() && !getLeashed())
+			{
+				EntityLivingBase owner = getOwner();
+
+				if (owner != null && owner.isSwingInProgress && isBreedingItem(owner.getHeldItem()))
+				{
+					int x = MathHelper.floor_double(owner.posX) - 2;
+					int y = MathHelper.floor_double(owner.boundingBox.minY);
+					int z = MathHelper.floor_double(owner.posZ) - 2;
+					boolean flag = false;
+
+					for (int i = 0; !flag && i <= 4; ++i)
+					{
+						for (int j = 0; !flag && j <= 4; ++j)
+						{
+							if ((i < 1 || j < 1 || i > 3 || j > 3) && World.doesBlockHaveSolidTopSurface(worldObj, x + i, y - 1, z + j) &&
+								!worldObj.getBlock(x + i, y, z + j).isNormalCube() && !worldObj.getBlock(x + i, y + 1, z + j).isNormalCube())
+							{
+								setLocationAndAngles(x + i + 0.5F, y, z + j + 0.5F, rotationYaw, rotationPitch);
+
+								flag = true;
+							}
+						}
+					}
+				}
 			}
 		}
 

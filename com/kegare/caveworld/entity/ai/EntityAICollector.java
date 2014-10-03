@@ -137,8 +137,7 @@ public class EntityAICollector extends EntityAIBase implements IEntitySelector
 				theCollector.getMoveHelper().setMoveTo(theOwner.posX, theOwner.posY, theOwner.posZ, moveSpeed);
 			}
 
-			if (!theCollector.getLeashed() && (!theCollector.isSitting() && theCollector.getDistanceSqToEntity(theOwner) >= 144.0D ||
-				theOwner.isSwingInProgress && theCollector.isBreedingItem(theOwner.getHeldItem())))
+			if (!theCollector.getLeashed() && !theCollector.isSitting() && theCollector.getDistanceSqToEntity(theOwner) >= 144.0D)
 			{
 				int x = MathHelper.floor_double(theOwner.posX) - 2;
 				int y = MathHelper.floor_double(theOwner.boundingBox.minY);
