@@ -910,11 +910,27 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 				}
 				else if (code == Keyboard.KEY_UP)
 				{
-					veinList.scrollUp();
+					if (isCtrlKeyDown())
+					{
+						veinList.contents.swapTo(veinList.contents.indexOf(veinList.selected), -1);
+						veinList.veins.swapTo(veinList.veins.indexOf(veinList.selected), -1);
+					}
+					else
+					{
+						veinList.scrollUp();
+					}
 				}
 				else if (code == Keyboard.KEY_DOWN)
 				{
-					veinList.scrollDown();
+					if (isCtrlKeyDown())
+					{
+						veinList.contents.swapTo(veinList.contents.indexOf(veinList.selected), 1);
+						veinList.veins.swapTo(veinList.veins.indexOf(veinList.selected), 1);
+					}
+					else
+					{
+						veinList.scrollDown();
+					}
 				}
 				else if (code == Keyboard.KEY_HOME)
 				{
@@ -944,6 +960,35 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 				{
 					actionPerformed(removeButton);
 				}
+				else if (code == Keyboard.KEY_C && isCtrlKeyDown())
+				{
+					veinList.copied = veinList.selected == null ? null : new CaveVein(veinList.selected.getBlock(), veinList.selected.getGenBlockCount(), veinList.selected.getGenWeight(),
+						veinList.selected.getGenMinHeight(), veinList.selected.getGenMaxHeight(), veinList.selected.getGenTargetBlock(), veinList.selected.getGenBiomes());
+				}
+				else if (code == Keyboard.KEY_X && isCtrlKeyDown())
+				{
+					keyTyped(Character.MIN_VALUE, Keyboard.KEY_C);
+					actionPerformed(removeButton);
+				}
+				else if (code == Keyboard.KEY_V && isCtrlKeyDown() && veinList.copied != null)
+				{
+					ICaveVein entry = new CaveVein(veinList.copied.getBlock(), veinList.copied.getGenBlockCount(), veinList.copied.getGenWeight(),
+						veinList.copied.getGenMinHeight(), veinList.copied.getGenMaxHeight(), veinList.copied.getGenTargetBlock(), veinList.copied.getGenBiomes());
+
+					if (veinList.veins.addIfAbsent(entry))
+					{
+						veinList.contents.addIfAbsent(entry);
+
+						if (veinList.selected != null)
+						{
+							veinList.contents.swap(veinList.contents.indexOf(veinList.selected) + 1, veinList.contents.size() - 1);
+							veinList.veins.swap(veinList.veins.indexOf(veinList.selected) + 1, veinList.veins.size() - 1);
+						}
+
+						veinList.selected = entry;
+						veinList.scrollToSelected();
+					}
+				}
 			}
 		}
 	}
@@ -960,6 +1005,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 
 		protected int nameType;
 		protected ICaveVein selected;
+		protected ICaveVein copied;
 
 		private VeinList(GuiVeinsEntry parent)
 		{

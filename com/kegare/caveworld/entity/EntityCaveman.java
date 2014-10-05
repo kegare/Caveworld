@@ -58,9 +58,14 @@ public class EntityCaveman extends EntityTameable implements IInventory
 	private long stoppedTime;
 	private boolean needsSort;
 
+	public boolean inventoryFull;
+
 	public EntityCaveman(World world)
 	{
 		super(world);
+		this.setSize(0.45F, 1.75F);
+		this.setTamed(false);
+		this.setSitting(false);
 		this.getNavigator().setAvoidSun(true);
 		this.getNavigator().setCanSwim(true);
 		this.stepHeight = 1.0F;
@@ -79,8 +84,6 @@ public class EntityCaveman extends EntityTameable implements IInventory
 		});
 		this.tasks.addTask(7, new EntityAIWatchClosest(this, EntityPlayer.class, 10.0F));
 		this.tasks.addTask(8, new EntityAILookIdle(this));
-		this.setTamed(false);
-		this.setSitting(false);
 	}
 
 	@Override
@@ -204,6 +207,15 @@ public class EntityCaveman extends EntityTameable implements IInventory
 	{
 		super.onLivingUpdate();
 
+		if (isSittingAndStopped())
+		{
+			setSize(0.45F, 1.2F);
+		}
+		else
+		{
+			setSize(0.45F, 1.75F);
+		}
+
 		if (motionX == 0.0D && motionZ == 0.0D)
 		{
 			++stoppedTime;
@@ -225,8 +237,6 @@ public class EntityCaveman extends EntityTameable implements IInventory
 			for (EntityItem item : list)
 			{
 				onItemPickup(item, item.getEntityItem().stackSize);
-
-				item.setDead();
 			}
 
 			if (isTamed() && !getLeashed())
@@ -261,20 +271,35 @@ public class EntityCaveman extends EntityTameable implements IInventory
 		{
 			sort();
 		}
+
+		if (!worldObj.isRemote && inventoryFull && ticksExisted % 200 == 0 && getFirstEmptySlot() >= 0)
+		{
+			inventoryFull = false;
+		}
 	}
 
 	@Override
 	public void onItemPickup(Entity entity, int stackSize)
 	{
-		super.onItemPickup(entity, stackSize);
-
 		if (stackSize > 0 && entity.isEntityAlive() && entity instanceof EntityItem)
 		{
-			addItemStackToInventory(((EntityItem)entity).getEntityItem());
+			EntityItem item = (EntityItem)entity;
 
-			if (!worldObj.isRemote)
+			if (addItemStackToInventory(item.getEntityItem()))
 			{
-				worldObj.setEntityState(this, (byte)19);
+				item.setDead();
+
+				if (!worldObj.isRemote)
+				{
+					worldObj.setEntityState(this, (byte)19);
+				}
+			}
+			else
+			{
+				if (!worldObj.isRemote)
+				{
+					inventoryFull = true;
+				}
 			}
 		}
 	}
@@ -445,21 +470,6 @@ public class EntityCaveman extends EntityTameable implements IInventory
 	}
 
 	@Override
-	public void setSitting(boolean flag)
-	{
-		super.setSitting(flag);
-
-		if (flag)
-		{
-			setSize(0.45F, 1.2F);
-		}
-		else
-		{
-			setSize(0.45F, 1.75F);
-		}
-	}
-
-	@Override
 	public boolean getCanSpawnHere()
 	{
 		int y = MathHelper.floor_double(boundingBox.minY);
@@ -479,18 +489,22 @@ public class EntityCaveman extends EntityTameable implements IInventory
 	@Override
 	public void handleHealthUpdate(byte id)
 	{
-		if (id == 19)
+		switch (id)
 		{
-			 for (int i = 0; i < 3; ++i)
-			 {
-				 double d0 = this.rand.nextGaussian() * 0.02D;
-				 double d1 = this.rand.nextGaussian() * 0.02D;
-				 double d2 = this.rand.nextGaussian() * 0.02D;
+			case 19:
+				for (int i = 0; i < 3; ++i)
+				{
+					double d0 = this.rand.nextGaussian() * 0.02D;
+					double d1 = this.rand.nextGaussian() * 0.02D;
+					double d2 = this.rand.nextGaussian() * 0.02D;
 
-				 worldObj.spawnParticle("note", posX + rand.nextFloat() * width * 2.0F - width, posY + 0.5D + rand.nextFloat() * height, posZ + rand.nextFloat() * width * 2.0F - width, d0, d1, d2);
-			 }
+					worldObj.spawnParticle("note", posX + rand.nextFloat() * width * 2.0F - width, posY + 0.5D + rand.nextFloat() * height, posZ + rand.nextFloat() * width * 2.0F - width, d0, d1, d2);
+				}
+
+				break;
+			default:
+				super.handleHealthUpdate(id);
 		}
-		else super.handleHealthUpdate(id);
 	}
 
 	@Override

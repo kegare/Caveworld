@@ -106,7 +106,7 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 	@Override
 	public boolean continueExecuting()
 	{
-		return failedCount <= 20 && getCurrentType() != CombatType.NONE && canMoveToEntity(theTarget) && theWeapon.isItemEqual(theSoldier.getHeldItem());
+		return failedCount <= 20 && getCurrentType() != CombatType.NONE && canMoveToEntity(theTarget) && ItemStack.areItemStacksEqual(theWeapon, theSoldier.getHeldItem());
 	}
 
 	@Override

@@ -51,6 +51,13 @@ public class EntityAICollector extends EntityAIBase implements IEntitySelector
 	@Override
 	public boolean shouldExecute()
 	{
+		if (theCollector.inventoryFull)
+		{
+			theOwner = theCollector.getOwner();
+
+			return continueExecuting();
+		}
+
 		List<EntityItem> list = theWorld.selectEntitiesWithinAABB(EntityItem.class, theCollector.boundingBox.expand(collectDist, 8.0F, collectDist), this);
 
 		for (EntityItem target : list)
@@ -80,7 +87,7 @@ public class EntityAICollector extends EntityAIBase implements IEntitySelector
 
 		if (canMoveToEntity(theDrop))
 		{
-			return result && theCollector.getDistanceSqToEntity(theDrop) <= collectDist * collectDist;
+			return result && !theCollector.inventoryFull && theCollector.getDistanceSqToEntity(theDrop) <= collectDist * collectDist;
 		}
 
 		if (canMoveToEntity(theOwner))

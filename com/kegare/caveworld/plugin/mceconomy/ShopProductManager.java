@@ -19,7 +19,6 @@ import net.minecraftforge.common.config.Property;
 import shift.mceconomy2.api.shop.IProductItem;
 import shift.mceconomy2.api.shop.IProductList;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.kegare.caveworld.core.Caveworld;
@@ -143,33 +142,6 @@ public class ShopProductManager implements IProductList
 		{
 			this.itemstack = itemstack;
 			this.productCost = cost;
-		}
-
-		@Override
-		public boolean equals(Object obj)
-		{
-			if (obj instanceof ShopProduct)
-			{
-				ShopProduct entry = (ShopProduct)obj;
-
-				return ItemStack.areItemStacksEqual(getProductItem(), entry.getProductItem()) && getcost() == entry.getcost();
-			}
-
-			return false;
-		}
-
-		@Override
-		public int hashCode()
-		{
-			int hash = getcost();
-			ItemStack item = getProductItem();
-
-			if (item != null)
-			{
-				hash += Objects.hashCode(item.getItem(), item.stackSize, item.getItemDamage());
-			}
-
-			return hash;
 		}
 
 		public ItemStack setProductItem(ItemStack item)

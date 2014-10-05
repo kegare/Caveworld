@@ -701,11 +701,27 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 				}
 				else if (code == Keyboard.KEY_UP)
 				{
-					productList.scrollUp();
+					if (isCtrlKeyDown())
+					{
+						productList.contents.swapTo(productList.contents.indexOf(productList.selected), -1);
+						productList.products.swapTo(productList.products.indexOf(productList.selected), -1);
+					}
+					else
+					{
+						productList.scrollUp();
+					}
 				}
 				else if (code == Keyboard.KEY_DOWN)
 				{
-					productList.scrollDown();
+					if (isCtrlKeyDown())
+					{
+						productList.contents.swapTo(productList.contents.indexOf(productList.selected), 1);
+						productList.products.swapTo(productList.products.indexOf(productList.selected), 1);
+					}
+					else
+					{
+						productList.scrollDown();
+					}
 				}
 				else if (code == Keyboard.KEY_HOME)
 				{
@@ -735,6 +751,33 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 				{
 					actionPerformed(removeButton);
 				}
+				else if (code == Keyboard.KEY_C && isCtrlKeyDown())
+				{
+					productList.copied = productList.selected == null ? null : new ShopProduct(productList.selected.getProductItem(), productList.selected.getcost());
+				}
+				else if (code == Keyboard.KEY_X && isCtrlKeyDown())
+				{
+					keyTyped(Character.MIN_VALUE, Keyboard.KEY_C);
+					actionPerformed(removeButton);
+				}
+				else if (code == Keyboard.KEY_V && isCtrlKeyDown() && productList.copied != null)
+				{
+					ShopProduct entry = new ShopProduct(productList.copied.getProductItem(), productList.copied.getcost());
+
+					if (productList.products.addIfAbsent(entry))
+					{
+						productList.contents.addIfAbsent(entry);
+
+						if (productList.selected != null)
+						{
+							productList.contents.swap(productList.contents.indexOf(productList.selected) + 1, productList.contents.size() - 1);
+							productList.products.swap(productList.products.indexOf(productList.selected) + 1, productList.products.size() - 1);
+						}
+
+						productList.selected = entry;
+						productList.scrollToSelected();
+					}
+				}
 			}
 		}
 	}
@@ -751,6 +794,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 
 		protected int nameType;
 		protected ShopProduct selected;
+		protected ShopProduct copied;
 
 		private ProductList(GuiShopEntry parent)
 		{

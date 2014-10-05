@@ -9,7 +9,6 @@
 
 package com.kegare.caveworld.core;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -24,7 +23,6 @@ import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
 import net.minecraftforge.common.config.Property;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -231,37 +229,6 @@ public class CaveVeinManager implements ICaveVeinManager
 			this(block, count, weight, min, max);
 			this.genTargetBlock = target;
 			this.genBiomes = getBiomes(biomes);
-		}
-
-		@Override
-		public boolean equals(Object obj)
-		{
-			if (obj instanceof ICaveVein)
-			{
-				ICaveVein vein = (ICaveVein)obj;
-
-				return getBlock().equals(vein.getBlock()) &&
-					getGenBlockCount() == vein.getGenBlockCount() &&
-					getGenWeight() == vein.getGenWeight() &&
-					getGenMinHeight() == vein.getGenMinHeight() && getGenMaxHeight() == vein.getGenMaxHeight() &&
-					getGenTargetBlock().equals(vein.getGenTargetBlock()) &&
-					Arrays.equals(getGenBiomes(), vein.getGenBiomes());
-			}
-
-			return false;
-		}
-
-		@Override
-		public int hashCode()
-		{
-			int hash = Objects.hashCode(getBlock(), getGenBlockCount(), getGenWeight(), getGenMinHeight(), getGenMaxHeight(), getGenTargetBlock());
-
-			for (int id : getGenBiomes())
-			{
-				hash += id - 1;
-			}
-
-			return hash;
 		}
 
 		@Override

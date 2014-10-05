@@ -14,6 +14,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 
+import net.minecraft.util.MathHelper;
+
 public class ArrayListExtended<E> extends ArrayList<E>
 {
 	public ArrayListExtended()
@@ -76,5 +78,20 @@ public class ArrayListExtended<E> extends ArrayList<E>
 		Collections.sort(this, comparator);
 
 		return this;
+	}
+
+	public ArrayListExtended<E> swap(int index1, int index2)
+	{
+		if (index1 >= 0 && index1 < size() && index2 >= 0 && index2 < size())
+		{
+			Collections.swap(this, index1, index2);
+		}
+
+		return this;
+	}
+
+	public ArrayListExtended<E> swapTo(int index, int amount)
+	{
+		return swap(index, MathHelper.clamp_int(index + amount, 0, size() - 1));
 	}
 }
