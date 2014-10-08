@@ -47,7 +47,7 @@ public class MapGenCavesCaveworld extends MapGenCaves
 
 		for (boolean chance = random.nextInt(6) == 0; currentY < targetY; ++currentY)
 		{
-			double roomWidth = 1.5D + MathHelper.sin(currentY * (float)Math.PI / targetY) * scale * 1.0F;
+			double roomWidth = 1.5D + MathHelper.sin(currentY * (float)Math.PI / targetY) * scale;
 			double roomHeight = roomWidth * scaleHeight;
 			float moveHorizontal = MathHelper.cos(upDownRadian);
 			float moveVertical = MathHelper.sin(upDownRadian);
@@ -84,7 +84,7 @@ public class MapGenCavesCaveworld extends MapGenCaves
 				double distanceX = blockX - centerX;
 				double distanceZ = blockZ - centerZ;
 				double distanceY = targetY - currentY;
-				double maxDistance = scale + 2.0F + 16.0F;
+				double maxDistance = scale + 20.0F;
 
 				if (distanceX * distanceX + distanceZ * distanceZ - distanceY * distanceY > maxDistance * maxDistance)
 				{

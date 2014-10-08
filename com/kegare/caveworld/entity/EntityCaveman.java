@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import net.minecraft.command.IEntitySelector;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityAgeable;
 import net.minecraft.entity.EntityLivingBase;
@@ -43,6 +44,7 @@ import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.entity.ai.EntityAICollector;
+import com.kegare.caveworld.entity.ai.EntityAIFleeEntityLiving;
 import com.kegare.caveworld.entity.ai.EntityAIFleeSun2;
 import com.kegare.caveworld.entity.ai.EntityAISoldier;
 import com.kegare.caveworld.util.CaveUtils;
@@ -60,6 +62,27 @@ public class EntityCaveman extends EntityTameable implements IInventory
 
 	public boolean inventoryFull;
 
+	public static final IEntitySelector fleeEntitySelector = new IEntitySelector()
+	{
+		@Override
+		public boolean isEntityApplicable(Entity entity)
+		{
+			if (entity == null || entity.isDead)
+			{
+				return false;
+			}
+
+			if (entity instanceof EntityLivingBase)
+			{
+				EntityLivingBase target = (EntityLivingBase)entity;
+
+				return CaveUtils.isItemPickaxe(target.getHeldItem());
+			}
+
+			return false;
+		}
+	};
+
 	public EntityCaveman(World world)
 	{
 		super(world);
@@ -72,6 +95,7 @@ public class EntityCaveman extends EntityTameable implements IInventory
 		this.tasks.addTask(0, new EntityAISwimming(this));
 		this.tasks.addTask(1, new EntityAIRestrictSun(this));
 		this.tasks.addTask(2, new EntityAIFleeSun2(this, 1.25D));
+		this.tasks.addTask(3, new EntityAIFleeEntityLiving(this, fleeEntitySelector, 1.0D));
 		this.tasks.addTask(4, new EntityAISoldier(this));
 		this.tasks.addTask(5, new EntityAICollector(this, 1.0D, 3.0F, 20.0F));
 		this.tasks.addTask(6, new EntityAIWander(this, 0.5D)
@@ -161,9 +185,9 @@ public class EntityCaveman extends EntityTameable implements IInventory
 				}
 			}
 
-			items.add(new ItemStack(Items.coal, MathHelper.getRandomIntegerInRange(rand, 16, 64)));
-			items.add(new ItemStack(Items.iron_ingot, MathHelper.getRandomIntegerInRange(rand, 8, 16)));
-			items.add(new ItemStack(Items.gold_ingot, MathHelper.getRandomIntegerInRange(rand, 2, 8)));
+			items.add(new ItemStack(Items.coal, MathHelper.getRandomIntegerInRange(rand, 16, 48)));
+			items.add(new ItemStack(Items.iron_ingot, MathHelper.getRandomIntegerInRange(rand, 4, 10)));
+			items.add(new ItemStack(Items.gold_ingot, MathHelper.getRandomIntegerInRange(rand, 1, 3)));
 			items.add(new ItemStack(Items.emerald, MathHelper.getRandomIntegerInRange(rand, 2, 5)));
 
 			if (rand.nextInt(10) == 0)
@@ -196,6 +220,10 @@ public class EntityCaveman extends EntityTameable implements IInventory
 			else if (rand.nextInt(6) == 0)
 			{
 				setCurrentItemOrArmor(0, new ItemStack(Items.stone_pickaxe));
+			}
+			else if (rand.nextInt(5) == 0)
+			{
+				setCurrentItemOrArmor(0, new ItemStack(Items.stone_shovel));
 			}
 		}
 
@@ -327,17 +355,32 @@ public class EntityCaveman extends EntityTameable implements IInventory
 	}
 
 	@Override
-	public boolean attackEntityFrom(DamageSource source, float par2)
+	public boolean attackEntityFrom(DamageSource source, float damage)
 	{
 		Entity entity = source.getSourceOfDamage();
 
-		if (entity != null && entity instanceof EntityPlayer)
+		if (entity != null)
 		{
-			if (isTamed() && func_152113_b().equals(((EntityPlayer)entity).getUniqueID().toString()) && ((EntityPlayer)entity).isSneaking())
+			if (entity instanceof EntityPlayer && isTamed() && func_152113_b().equals(((EntityPlayer)entity).getUniqueID().toString()) && ((EntityPlayer)entity).isSneaking())
 			{
 				setSitting(!isSitting());
 
 				return false;
+			}
+
+			if (entity instanceof EntityLivingBase)
+			{
+				ItemStack itemstack = ((EntityLivingBase)entity).getHeldItem();
+
+				if (itemstack == null)
+				{
+					return super.attackEntityFrom(source, damage * 0.5F);
+				}
+
+				if (CaveUtils.isItemPickaxe(itemstack))
+				{
+					return super.attackEntityFrom(source, damage * 2.0F);
+				}
 			}
 		}
 
@@ -346,7 +389,7 @@ public class EntityCaveman extends EntityTameable implements IInventory
 			return false;
 		}
 
-		return super.attackEntityFrom(source, par2);
+		return super.attackEntityFrom(source, damage);
 	}
 
 	@Override
@@ -470,12 +513,18 @@ public class EntityCaveman extends EntityTameable implements IInventory
 	}
 
 	@Override
+	protected boolean canDespawn()
+	{
+		return !isTamed() || super.canDespawn();
+	}
+
+	@Override
 	public boolean getCanSpawnHere()
 	{
 		int y = MathHelper.floor_double(boundingBox.minY);
 
 		return CaveworldAPI.isEntityInCaveworld(this) && y >= Config.cavemanSpawnMinHeight && y <= Config.cavemanSpawnMaxHeight &&
-			worldObj.getEntitiesWithinAABB(getClass(), boundingBox.expand(16.0D, 16.0D, 16.0D)).isEmpty() &&
+			worldObj.getEntitiesWithinAABB(getClass(), boundingBox.expand(64.0D, 64.0D, 64.0D)).isEmpty() &&
 			worldObj.checkNoEntityCollision(boundingBox) && worldObj.getCollidingBoundingBoxes(this, boundingBox).isEmpty() && !worldObj.isAnyLiquid(boundingBox);
 	}
 

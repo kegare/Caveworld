@@ -27,6 +27,7 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
@@ -522,6 +523,49 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 				textField.drawTextBox();
 				drawString(fontRendererObj, editLabelList.get(i), textField.xPosition - maxLabelWidth - 10, textField.yPosition + 3, 0xBBBBBB);
 			}
+
+			if (weightHoverChecker.checkHover(mouseX, mouseY))
+			{
+				if (!hoverCache.containsKey(weightHoverChecker))
+				{
+					List<String> hover = Lists.newArrayList();
+					String key = Caveworld.CONFIG_LANG + "biomes.genWeight";
+					hover.add(EnumChatFormatting.GRAY + I18n.format(key));
+					hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
+
+					hoverCache.put(weightHoverChecker, hover);
+				}
+
+				func_146283_a(hoverCache.get(weightHoverChecker), mouseX, mouseY);
+			}
+			else if (terrainHoverChecker.checkHover(mouseX, mouseY))
+			{
+				if (!hoverCache.containsKey(terrainHoverChecker))
+				{
+					List<String> hover = Lists.newArrayList();
+					String key = Caveworld.CONFIG_LANG + "biomes.terrainBlock";
+					hover.add(EnumChatFormatting.GRAY + I18n.format(key));
+					hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
+
+					hoverCache.put(terrainHoverChecker, hover);
+				}
+
+				func_146283_a(hoverCache.get(terrainHoverChecker), mouseX, mouseY);
+			}
+			else if (topHoverChecker.checkHover(mouseX, mouseY))
+			{
+				if (!hoverCache.containsKey(topHoverChecker))
+				{
+					List<String> hover = Lists.newArrayList();
+					String key = Caveworld.CONFIG_LANG + "biomes.topBlock";
+					hover.add(EnumChatFormatting.GRAY + I18n.format(key));
+					hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
+
+					hoverCache.put(topHoverChecker, hover);
+				}
+
+				func_146283_a(hoverCache.get(topHoverChecker), mouseX, mouseY);
+			}
 		}
 		else
 		{
@@ -545,48 +589,6 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 			}
 
 			func_146283_a(hoverCache.get(instantHoverChecker), mouseX, mouseY);
-		}
-		else if (weightHoverChecker.checkHover(mouseX, mouseY))
-		{
-			if (!hoverCache.containsKey(weightHoverChecker))
-			{
-				List<String> hover = Lists.newArrayList();
-				String key = Caveworld.CONFIG_LANG + "biomes.genWeight";
-				hover.add(EnumChatFormatting.GRAY + I18n.format(key));
-				hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
-
-				hoverCache.put(weightHoverChecker, hover);
-			}
-
-			func_146283_a(hoverCache.get(weightHoverChecker), mouseX, mouseY);
-		}
-		else if (terrainHoverChecker.checkHover(mouseX, mouseY))
-		{
-			if (!hoverCache.containsKey(terrainHoverChecker))
-			{
-				List<String> hover = Lists.newArrayList();
-				String key = Caveworld.CONFIG_LANG + "biomes.terrainBlock";
-				hover.add(EnumChatFormatting.GRAY + I18n.format(key));
-				hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
-
-				hoverCache.put(terrainHoverChecker, hover);
-			}
-
-			func_146283_a(hoverCache.get(terrainHoverChecker), mouseX, mouseY);
-		}
-		else if (topHoverChecker.checkHover(mouseX, mouseY))
-		{
-			if (!hoverCache.containsKey(topHoverChecker))
-			{
-				List<String> hover = Lists.newArrayList();
-				String key = Caveworld.CONFIG_LANG + "biomes.topBlock";
-				hover.add(EnumChatFormatting.GRAY + I18n.format(key));
-				hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
-
-				hoverCache.put(topHoverChecker, hover);
-			}
-
-			func_146283_a(hoverCache.get(topHoverChecker), mouseX, mouseY);
 		}
 		else if (biomeList.func_148141_e(mouseY) && isCtrlKeyDown())
 		{
@@ -824,6 +826,12 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 		{
 			super(parent.mc, 0, 0, 0, 0, 22);
 			this.parent = parent;
+		}
+
+		@Override
+		public ResourceLocation[] getPanoramaPaths()
+		{
+			return panoramaPaths;
 		}
 
 		@Override

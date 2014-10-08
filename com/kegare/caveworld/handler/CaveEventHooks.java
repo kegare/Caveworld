@@ -11,6 +11,8 @@ package com.kegare.caveworld.handler;
 
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockBed;
@@ -54,6 +56,7 @@ import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
@@ -62,6 +65,7 @@ import net.minecraftforge.event.world.WorldEvent;
 import shift.mceconomy2.api.MCEconomyAPI;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.core.CaveAchievementList;
@@ -81,6 +85,7 @@ import cpw.mods.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
+import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ServerConnectionFromClientEvent;
 import cpw.mods.fml.relauncher.Side;
@@ -89,6 +94,8 @@ import cpw.mods.fml.relauncher.SideOnly;
 public class CaveEventHooks
 {
 	public static final CaveEventHooks instance = new CaveEventHooks();
+
+	public static final Set<UUID> firstJoinPlayers = Sets.newHashSet();
 
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
@@ -179,7 +186,7 @@ public class CaveEventHooks
 			}
 			else
 			{
-				if (Config.caveborn && world.getTotalWorldTime() < 100 && !player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.caveworld))
+				if (Config.caveborn && firstJoinPlayers.contains(player.getUniqueID()))
 				{
 					List<ItemStack> bonus = Lists.newArrayList();
 
@@ -206,6 +213,12 @@ public class CaveEventHooks
 				}
 			}
 		}
+	}
+
+	@SubscribeEvent
+	public void onPlayerLoggedOut(PlayerLoggedOutEvent event)
+	{
+		firstJoinPlayers.remove(event.player.getUniqueID());
 	}
 
 	@SubscribeEvent
@@ -245,6 +258,20 @@ public class CaveEventHooks
 				CaveUtils.respawnPlayer(player, event.fromDim);
 			}
 		}
+	}
+
+	@SubscribeEvent
+	public void onPlayerLoadFromFile(PlayerEvent.LoadFromFile event)
+	{
+		for (String str : event.playerDirectory.list())
+		{
+			if (str.startsWith(event.playerUUID))
+			{
+				return;
+			}
+		}
+
+		firstJoinPlayers.add(UUID.fromString(event.playerUUID));
 	}
 
 	@SubscribeEvent

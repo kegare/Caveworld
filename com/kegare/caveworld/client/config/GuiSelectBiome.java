@@ -28,6 +28,7 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
@@ -488,6 +489,12 @@ public class GuiSelectBiome extends GuiScreen
 					selected.add(BiomeGenBase.getBiome(Integer.parseInt(String.valueOf(obj))));
 				}
 			}
+		}
+
+		@Override
+		public ResourceLocation[] getPanoramaPaths()
+		{
+			return null;
 		}
 
 		@Override

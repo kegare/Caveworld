@@ -15,7 +15,8 @@ import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.DimensionManager;
 
 /**
- * NOTE: Do not access to this class fields.
+ * NOTE: Do NOT access to this class fields.
+ * You should use API from this class methods.
  */
 public final class CaveworldAPI
 {

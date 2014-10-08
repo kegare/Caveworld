@@ -37,6 +37,7 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 
 	private final EntityCaveman theSoldier;
 	private final World theWorld;
+	private final boolean prevTamed;
 
 	private EntityLivingBase theTarget;
 	private ItemStack theWeapon;
@@ -49,6 +50,7 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 	{
 		this.theSoldier = entity;
 		this.theWorld = entity.worldObj;
+		this.prevTamed = entity.isTamed();
 		this.setMutexBits(1);
 	}
 
@@ -106,7 +108,7 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 	@Override
 	public boolean continueExecuting()
 	{
-		return failedCount <= 20 && getCurrentType() != CombatType.NONE && canMoveToEntity(theTarget) && ItemStack.areItemStacksEqual(theWeapon, theSoldier.getHeldItem());
+		return prevTamed == theSoldier.isTamed() && failedCount <= 20 && getCurrentType() != CombatType.NONE && canMoveToEntity(theTarget) && ItemStack.areItemStacksEqual(theWeapon, theSoldier.getHeldItem());
 	}
 
 	@Override

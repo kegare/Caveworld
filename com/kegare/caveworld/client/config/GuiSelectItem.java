@@ -24,6 +24,7 @@ import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 
 import org.apache.logging.log4j.Level;
 import org.lwjgl.input.Keyboard;
@@ -306,6 +307,12 @@ public class GuiSelectItem extends GuiScreen
 			{
 				this.selected = GameData.getItemRegistry().getObject(parent.parentTextField.getText());
 			}
+		}
+
+		@Override
+		public ResourceLocation[] getPanoramaPaths()
+		{
+			return null;
 		}
 
 		@Override

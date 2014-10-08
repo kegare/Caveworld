@@ -29,6 +29,7 @@ public class EntityAICollector extends EntityAIBase implements IEntitySelector
 {
 	private final EntityCaveman theCollector;
 	private final World theWorld;
+	private final boolean prevTamed;
 	private final double moveSpeed;
 	private final float followDist;
 	private final float collectDist;
@@ -42,6 +43,7 @@ public class EntityAICollector extends EntityAIBase implements IEntitySelector
 	{
 		this.theCollector = entity;
 		this.theWorld = entity.worldObj;
+		this.prevTamed = entity.isTamed();
 		this.moveSpeed = speed;
 		this.followDist = followDist;
 		this.collectDist = collectDist;
@@ -83,7 +85,7 @@ public class EntityAICollector extends EntityAIBase implements IEntitySelector
 	@Override
 	public boolean continueExecuting()
 	{
-		boolean result = failedCount <= 20;
+		boolean result = prevTamed == theCollector.isTamed() && failedCount <= 20;
 
 		if (canMoveToEntity(theDrop))
 		{

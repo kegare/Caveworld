@@ -49,6 +49,7 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -212,5 +213,11 @@ public class Caveworld
 		{
 			event.getServer().logInfo("A new Caveworld version is available : " + Version.getLatest());
 		}
+	}
+
+	@EventHandler
+	public void serverStopping(FMLServerStoppedEvent event)
+	{
+		CaveEventHooks.firstJoinPlayers.clear();
 	}
 }

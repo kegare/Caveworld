@@ -27,6 +27,7 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.ResourceLocation;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.CharUtils;
@@ -458,6 +459,49 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 				textField.drawTextBox();
 				drawString(fontRendererObj, editLabelList.get(i), textField.xPosition - maxLabelWidth - 10, textField.yPosition + 3, 0xBBBBBB);
 			}
+
+			if (itemHoverChecker.checkHover(mouseX, mouseY))
+			{
+				if (!hoverCache.containsKey(itemHoverChecker))
+				{
+					List<String> hover = Lists.newArrayList();
+					String key = Caveworld.CONFIG_LANG + "shop.item";
+					hover.add(EnumChatFormatting.GRAY + I18n.format(key));
+					hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
+
+					hoverCache.put(itemHoverChecker, hover);
+				}
+
+				func_146283_a(hoverCache.get(itemHoverChecker), mouseX, mouseY);
+			}
+			else if (stackHoverChecker.checkHover(mouseX, mouseY))
+			{
+				if (!hoverCache.containsKey(stackHoverChecker))
+				{
+					List<String> hover = Lists.newArrayList();
+					String key = Caveworld.CONFIG_LANG + "shop.stackSize";
+					hover.add(EnumChatFormatting.GRAY + I18n.format(key));
+					hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
+
+					hoverCache.put(stackHoverChecker, hover);
+				}
+
+				func_146283_a(hoverCache.get(stackHoverChecker), mouseX, mouseY);
+			}
+			else if (costHoverChecker.checkHover(mouseX, mouseY))
+			{
+				if (!hoverCache.containsKey(costHoverChecker))
+				{
+					List<String> hover = Lists.newArrayList();
+					String key = Caveworld.CONFIG_LANG + "shop.productCost";
+					hover.add(EnumChatFormatting.GRAY + I18n.format(key));
+					hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
+
+					hoverCache.put(costHoverChecker, hover);
+				}
+
+				func_146283_a(hoverCache.get(costHoverChecker), mouseX, mouseY);
+			}
 		}
 		else
 		{
@@ -481,48 +525,6 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 			}
 
 			func_146283_a(hoverCache.get(instantHoverChecker), mouseX, mouseY);
-		}
-		else if (itemHoverChecker.checkHover(mouseX, mouseY))
-		{
-			if (!hoverCache.containsKey(itemHoverChecker))
-			{
-				List<String> hover = Lists.newArrayList();
-				String key = Caveworld.CONFIG_LANG + "shop.item";
-				hover.add(EnumChatFormatting.GRAY + I18n.format(key));
-				hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
-
-				hoverCache.put(itemHoverChecker, hover);
-			}
-
-			func_146283_a(hoverCache.get(itemHoverChecker), mouseX, mouseY);
-		}
-		else if (stackHoverChecker.checkHover(mouseX, mouseY))
-		{
-			if (!hoverCache.containsKey(stackHoverChecker))
-			{
-				List<String> hover = Lists.newArrayList();
-				String key = Caveworld.CONFIG_LANG + "shop.stackSize";
-				hover.add(EnumChatFormatting.GRAY + I18n.format(key));
-				hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
-
-				hoverCache.put(stackHoverChecker, hover);
-			}
-
-			func_146283_a(hoverCache.get(stackHoverChecker), mouseX, mouseY);
-		}
-		else if (costHoverChecker.checkHover(mouseX, mouseY))
-		{
-			if (!hoverCache.containsKey(costHoverChecker))
-			{
-				List<String> hover = Lists.newArrayList();
-				String key = Caveworld.CONFIG_LANG + "shop.productCost";
-				hover.add(EnumChatFormatting.GRAY + I18n.format(key));
-				hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
-
-				hoverCache.put(costHoverChecker, hover);
-			}
-
-			func_146283_a(hoverCache.get(costHoverChecker), mouseX, mouseY);
 		}
 		else if (productList.func_148141_e(mouseY) && isCtrlKeyDown())
 		{
@@ -705,6 +707,8 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 					{
 						productList.contents.swapTo(productList.contents.indexOf(productList.selected), -1);
 						productList.products.swapTo(productList.products.indexOf(productList.selected), -1);
+
+						productList.scrollToSelected();
 					}
 					else
 					{
@@ -717,6 +721,8 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 					{
 						productList.contents.swapTo(productList.contents.indexOf(productList.selected), 1);
 						productList.products.swapTo(productList.products.indexOf(productList.selected), 1);
+
+						productList.scrollToSelected();
 					}
 					else
 					{
@@ -800,6 +806,12 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 		{
 			super(parent.mc, 0, 0, 0, 0, 22);
 			this.parent = parent;
+		}
+
+		@Override
+		public ResourceLocation[] getPanoramaPaths()
+		{
+			return panoramaPaths;
 		}
 
 		@Override

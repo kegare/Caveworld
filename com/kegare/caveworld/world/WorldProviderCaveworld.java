@@ -50,6 +50,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Level;
 
+import com.bioxx.tfc.Core.TFC_Climate;
+import com.bioxx.tfc.Core.TFC_Core;
+import com.bioxx.tfc.WorldGen.WorldCacheManager;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.CaveworldAPI;
@@ -57,6 +60,7 @@ import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.client.renderer.EmptyRenderer;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.handler.TFCCaveEventHooks;
 import com.kegare.caveworld.network.CaveSoundMessage;
 import com.kegare.caveworld.network.RegenerateMessage;
 import com.kegare.caveworld.util.CaveLog;
@@ -65,6 +69,7 @@ import com.kegare.caveworld.world.gen.MapGenStrongholdCaveworld;
 import com.kegare.caveworld.world.gen.StructureStrongholdPiecesCaveworld;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.Optional.Method;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -395,8 +400,25 @@ public final class WorldProviderCaveworld extends WorldProviderSurface
 		dimensionId = CaveworldAPI.getDimension();
 		hasNoSky = true;
 
+		try
+		{
+			registerWorldChunkManagerTFC();
+		}
+		catch (NoSuchMethodError e) {}
+
 		MapGenStructureIO.registerStructure(MapGenStrongholdCaveworld.Start.class, "Caveworld.Stronghold");
 		StructureStrongholdPiecesCaveworld.registerStrongholdPieces();
+	}
+
+	@Method(modid = "terrafirmacraft")
+	private void registerWorldChunkManagerTFC()
+	{
+		MinecraftForge.EVENT_BUS.register(new TFCCaveEventHooks());
+
+		TFC_Climate.worldPair.put(worldObj, new WorldCacheManager(worldObj));
+		TFC_Core.addCDM(worldObj);
+
+		worldChunkMgr = new TFCWorldChunkManagerCaveworld(worldObj);
 	}
 
 	@Override

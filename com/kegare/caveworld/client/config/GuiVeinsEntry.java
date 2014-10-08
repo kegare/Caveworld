@@ -29,6 +29,7 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
@@ -561,6 +562,91 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 				textField.drawTextBox();
 				drawString(fontRendererObj, editLabelList.get(i), textField.xPosition - maxLabelWidth - 10, textField.yPosition + 3, 0xBBBBBB);
 			}
+
+			if (blockHoverChecker.checkHover(mouseX, mouseY))
+			{
+				if (!hoverCache.containsKey(blockHoverChecker))
+				{
+					List<String> hover = Lists.newArrayList();
+					String key = Caveworld.CONFIG_LANG + "veins.block";
+					hover.add(EnumChatFormatting.GRAY + I18n.format(key));
+					hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
+
+					hoverCache.put(blockHoverChecker, hover);
+				}
+
+				func_146283_a(hoverCache.get(blockHoverChecker), mouseX, mouseY);
+			}
+			else if (countHoverChecker.checkHover(mouseX, mouseY))
+			{
+				if (!hoverCache.containsKey(countHoverChecker))
+				{
+					List<String> hover = Lists.newArrayList();
+					String key = Caveworld.CONFIG_LANG + "veins.genBlockCount";
+					hover.add(EnumChatFormatting.GRAY + I18n.format(key));
+					hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
+
+					hoverCache.put(countHoverChecker, hover);
+				}
+
+				func_146283_a(hoverCache.get(countHoverChecker), mouseX, mouseY);
+			}
+			else if (weightHoverChecker.checkHover(mouseX, mouseY))
+			{
+				if (!hoverCache.containsKey(weightHoverChecker))
+				{
+					List<String> hover = Lists.newArrayList();
+					String key = Caveworld.CONFIG_LANG + "veins.genWeight";
+					hover.add(EnumChatFormatting.GRAY + I18n.format(key));
+					hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
+
+					hoverCache.put(weightHoverChecker, hover);
+				}
+
+				func_146283_a(hoverCache.get(weightHoverChecker), mouseX, mouseY);
+			}
+			else if (heightHoverChecker.checkHover(mouseX, mouseY))
+			{
+				if (!hoverCache.containsKey(heightHoverChecker))
+				{
+					List<String> hover = Lists.newArrayList();
+					String key = Caveworld.CONFIG_LANG + "veins.genHeight";
+					hover.add(EnumChatFormatting.GRAY + I18n.format(key));
+					hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
+
+					hoverCache.put(heightHoverChecker, hover);
+				}
+
+				func_146283_a(hoverCache.get(heightHoverChecker), mouseX, mouseY);
+			}
+			else if (targetHoverChecker.checkHover(mouseX, mouseY))
+			{
+				if (!hoverCache.containsKey(targetHoverChecker))
+				{
+					List<String> hover = Lists.newArrayList();
+					String key = Caveworld.CONFIG_LANG + "veins.genTargetBlock";
+					hover.add(EnumChatFormatting.GRAY + I18n.format(key));
+					hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
+
+					hoverCache.put(targetHoverChecker, hover);
+				}
+
+				func_146283_a(hoverCache.get(targetHoverChecker), mouseX, mouseY);
+			}
+			else if (biomesHoverChecker.checkHover(mouseX, mouseY))
+			{
+				if (!hoverCache.containsKey(biomesHoverChecker))
+				{
+					List<String> hover = Lists.newArrayList();
+					String key = Caveworld.CONFIG_LANG + "veins.genBiomes";
+					hover.add(EnumChatFormatting.GRAY + I18n.format(key));
+					hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
+
+					hoverCache.put(biomesHoverChecker, hover);
+				}
+
+				func_146283_a(hoverCache.get(biomesHoverChecker), mouseX, mouseY);
+			}
 		}
 		else
 		{
@@ -584,90 +670,6 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 			}
 
 			func_146283_a(hoverCache.get(instantHoverChecker), mouseX, mouseY);
-		}
-		else if (blockHoverChecker.checkHover(mouseX, mouseY))
-		{
-			if (!hoverCache.containsKey(blockHoverChecker))
-			{
-				List<String> hover = Lists.newArrayList();
-				String key = Caveworld.CONFIG_LANG + "veins.block";
-				hover.add(EnumChatFormatting.GRAY + I18n.format(key));
-				hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
-
-				hoverCache.put(blockHoverChecker, hover);
-			}
-
-			func_146283_a(hoverCache.get(blockHoverChecker), mouseX, mouseY);
-		}
-		else if (countHoverChecker.checkHover(mouseX, mouseY))
-		{
-			if (!hoverCache.containsKey(countHoverChecker))
-			{
-				List<String> hover = Lists.newArrayList();
-				String key = Caveworld.CONFIG_LANG + "veins.genBlockCount";
-				hover.add(EnumChatFormatting.GRAY + I18n.format(key));
-				hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
-
-				hoverCache.put(countHoverChecker, hover);
-			}
-
-			func_146283_a(hoverCache.get(countHoverChecker), mouseX, mouseY);
-		}
-		else if (weightHoverChecker.checkHover(mouseX, mouseY))
-		{
-			if (!hoverCache.containsKey(weightHoverChecker))
-			{
-				List<String> hover = Lists.newArrayList();
-				String key = Caveworld.CONFIG_LANG + "veins.genWeight";
-				hover.add(EnumChatFormatting.GRAY + I18n.format(key));
-				hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
-
-				hoverCache.put(weightHoverChecker, hover);
-			}
-
-			func_146283_a(hoverCache.get(weightHoverChecker), mouseX, mouseY);
-		}
-		else if (heightHoverChecker.checkHover(mouseX, mouseY))
-		{
-			if (!hoverCache.containsKey(heightHoverChecker))
-			{
-				List<String> hover = Lists.newArrayList();
-				String key = Caveworld.CONFIG_LANG + "veins.genHeight";
-				hover.add(EnumChatFormatting.GRAY + I18n.format(key));
-				hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
-
-				hoverCache.put(heightHoverChecker, hover);
-			}
-
-			func_146283_a(hoverCache.get(heightHoverChecker), mouseX, mouseY);
-		}
-		else if (targetHoverChecker.checkHover(mouseX, mouseY))
-		{
-			if (!hoverCache.containsKey(targetHoverChecker))
-			{
-				List<String> hover = Lists.newArrayList();
-				String key = Caveworld.CONFIG_LANG + "veins.genTargetBlock";
-				hover.add(EnumChatFormatting.GRAY + I18n.format(key));
-				hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
-
-				hoverCache.put(targetHoverChecker, hover);
-			}
-
-			func_146283_a(hoverCache.get(targetHoverChecker), mouseX, mouseY);
-		}
-		else if (biomesHoverChecker.checkHover(mouseX, mouseY))
-		{
-			if (!hoverCache.containsKey(biomesHoverChecker))
-			{
-				List<String> hover = Lists.newArrayList();
-				String key = Caveworld.CONFIG_LANG + "veins.genBiomes";
-				hover.add(EnumChatFormatting.GRAY + I18n.format(key));
-				hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
-
-				hoverCache.put(biomesHoverChecker, hover);
-			}
-
-			func_146283_a(hoverCache.get(biomesHoverChecker), mouseX, mouseY);
 		}
 		else if (veinList.func_148141_e(mouseY) && isCtrlKeyDown())
 		{
@@ -914,6 +916,8 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 					{
 						veinList.contents.swapTo(veinList.contents.indexOf(veinList.selected), -1);
 						veinList.veins.swapTo(veinList.veins.indexOf(veinList.selected), -1);
+
+						veinList.scrollToSelected();
 					}
 					else
 					{
@@ -926,6 +930,8 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 					{
 						veinList.contents.swapTo(veinList.contents.indexOf(veinList.selected), 1);
 						veinList.veins.swapTo(veinList.veins.indexOf(veinList.selected), 1);
+
+						veinList.scrollToSelected();
 					}
 					else
 					{
@@ -1011,6 +1017,12 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 		{
 			super(parent.mc, 0, 0, 0, 0, 22);
 			this.parent = parent;
+		}
+
+		@Override
+		public ResourceLocation[] getPanoramaPaths()
+		{
+			return panoramaPaths;
 		}
 
 		@Override
