@@ -42,6 +42,7 @@ import net.minecraft.world.World;
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
+import com.kegare.caveworld.core.CaveAchievementList;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.entity.ai.EntityAICollector;
 import com.kegare.caveworld.entity.ai.EntityAIFleeEntityLiving;
@@ -440,6 +441,8 @@ public class EntityCaveman extends EntityTameable implements IInventory
 						worldObj.setEntityState(this, (byte)7);
 
 						CaveworldAPI.addMiningPoint(player, -1000);
+
+						player.triggerAchievement(CaveAchievementList.compCaving);
 					}
 					else
 					{

@@ -818,8 +818,6 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 	@Override
 	public void onGuiClosed()
 	{
-		biomeList.scrollToTop();
-		biomeList.selected = null;
 		biomeList.currentPanoramaPaths = null;
 	}
 

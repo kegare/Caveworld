@@ -33,31 +33,44 @@ public class IC2Plugin
 	@Method(modid = MODID)
 	public static void invoke()
 	{
+		ItemStack itemstack = IC2Items.getItem("copperOre");
+		BlockEntry block = new BlockEntry(Block.getBlockFromItem(itemstack.getItem()), itemstack.getItemDamage());
+
 		if (Config.veinsAutoRegister)
 		{
-			ItemStack itemstack = IC2Items.getItem("copperOre");
-			BlockEntry block = new BlockEntry(Block.getBlockFromItem(itemstack.getItem()), itemstack.getItemDamage());
-
 			CaveworldAPI.addCaveVein(new CaveVein(block, 16, 20, 0, 255));
-			CaveworldAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 1);
-
-			itemstack = IC2Items.getItem("tinOre");
-			block = new BlockEntry(Block.getBlockFromItem(itemstack.getItem()), itemstack.getItemDamage());
-
-			CaveworldAPI.addCaveVein(new CaveVein(block, 14, 24, 0, 255));
-			CaveworldAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 1);
-
-			itemstack = IC2Items.getItem("uraniumOre");
-			block = new BlockEntry(Block.getBlockFromItem(itemstack.getItem()), itemstack.getItemDamage());
-
-			CaveworldAPI.addCaveVein(new CaveVein(block, 10, 7, 0, 50));
-			CaveworldAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 2);
-
-			itemstack = IC2Items.getItem("leadOre");
-			block = new BlockEntry(Block.getBlockFromItem(itemstack.getItem()), itemstack.getItemDamage());
-
-			CaveworldAPI.addCaveVein(new CaveVein(block, 15, 20, 0, 255));
-			CaveworldAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 1);
 		}
+
+		CaveworldAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 1);
+
+		itemstack = IC2Items.getItem("tinOre");
+		block = new BlockEntry(Block.getBlockFromItem(itemstack.getItem()), itemstack.getItemDamage());
+
+		if (Config.veinsAutoRegister)
+		{
+			CaveworldAPI.addCaveVein(new CaveVein(block, 14, 24, 0, 255));
+		}
+
+		CaveworldAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 1);
+
+		itemstack = IC2Items.getItem("uraniumOre");
+		block = new BlockEntry(Block.getBlockFromItem(itemstack.getItem()), itemstack.getItemDamage());
+
+		if (Config.veinsAutoRegister)
+		{
+			CaveworldAPI.addCaveVein(new CaveVein(block, 10, 7, 0, 50));
+		}
+
+		CaveworldAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 2);
+
+		itemstack = IC2Items.getItem("leadOre");
+		block = new BlockEntry(Block.getBlockFromItem(itemstack.getItem()), itemstack.getItemDamage());
+
+		if (Config.veinsAutoRegister)
+		{
+			CaveworldAPI.addCaveVein(new CaveVein(block, 15, 20, 0, 255));
+		}
+
+		CaveworldAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 1);
 	}
 }

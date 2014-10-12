@@ -150,6 +150,12 @@ achievement.caveworld.portal=Caveworld Portal
 achievement.caveworld.portal.desc=Create of the Caveworld Portal
 achievement.caveworld.caveworld=Caveworld
 achievement.caveworld.caveworld.desc=Visit to the Caveworld
+achievement.caveworld.theMiner=The Miner
+achievement.caveworld.theMiner.desc=Gets many Mining Points
+achievement.caveworld.caveman=Caveman
+achievement.caveworld.caveman.desc=Encounter with an untamed Caveman
+achievement.caveworld.compCaving=Companion of Caving
+achievement.caveworld.compCaving.desc=Tame a Caveman
 
 entity.Caveman.name=Caveman
 

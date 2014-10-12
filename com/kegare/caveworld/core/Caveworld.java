@@ -26,6 +26,7 @@ import com.kegare.caveworld.handler.CaveAPIHandler;
 import com.kegare.caveworld.handler.CaveEventHooks;
 import com.kegare.caveworld.handler.CaveFuelHandler;
 import com.kegare.caveworld.network.BuffMessage;
+import com.kegare.caveworld.network.CaveAchievementMessage;
 import com.kegare.caveworld.network.CaveSoundMessage;
 import com.kegare.caveworld.network.CaveworldMenuMessage;
 import com.kegare.caveworld.network.DimSyncMessage;
@@ -33,6 +34,8 @@ import com.kegare.caveworld.network.MiningSyncMessage;
 import com.kegare.caveworld.network.RegenerateMessage;
 import com.kegare.caveworld.plugin.ic2.IC2Plugin;
 import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
+import com.kegare.caveworld.plugin.miningmod.MiningmodPlugin;
+import com.kegare.caveworld.plugin.more.MOrePlugin;
 import com.kegare.caveworld.plugin.thaumcraft.ThaumcraftPlugin;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.Version;
@@ -117,6 +120,7 @@ public class Caveworld
 		network.registerMessage(RegenerateMessage.ProgressNotify.class, RegenerateMessage.ProgressNotify.class, id++, Side.CLIENT);
 		network.registerMessage(BuffMessage.class, BuffMessage.class, id++, Side.SERVER);
 		network.registerMessage(CaveworldMenuMessage.class, CaveworldMenuMessage.class, id++, Side.CLIENT);
+		network.registerMessage(CaveAchievementMessage.class, CaveAchievementMessage.class, id++, Side.SERVER);
 
 		EntityRegistry.registerGlobalEntityID(EntityCaveman.class, "Caveman", EntityRegistry.findGlobalUniqueEntityId(), 0xAAAAAA, 0xCCCCCC);
 		EntityRegistry.registerModEntity(EntityCaveman.class, "Caveman", 0, this, 128, 1, true);
@@ -139,42 +143,6 @@ public class Caveworld
 		Config.syncBiomesCfg();
 		Config.syncVeinsCfg();
 
-		try
-		{
-			if (IC2Plugin.enabled())
-			{
-				IC2Plugin.invoke();
-			}
-		}
-		catch (Exception e)
-		{
-			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: " + IC2Plugin.class.getName());
-		}
-
-		try
-		{
-			if (MCEconomyPlugin.enabled())
-			{
-				MCEconomyPlugin.invoke();
-			}
-		}
-		catch (Exception e)
-		{
-			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: " + MCEconomyPlugin.class.getName());
-		}
-
-		try
-		{
-			if (ThaumcraftPlugin.enabled())
-			{
-				ThaumcraftPlugin.invoke();
-			}
-		}
-		catch (Exception e)
-		{
-			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: " + ThaumcraftPlugin.class.getName());
-		}
-
 		new ForkJoinPool().execute(new RecursiveAction()
 		{
 			@Override
@@ -189,19 +157,99 @@ public class Caveworld
 				CaveworldAPI.setMiningPointAmount("oreDiamond", 3);
 				CaveworldAPI.setMiningPointAmount("oreQuartz", 1);
 				CaveworldAPI.setMiningPointAmount("oreCopper", 1);
+				CaveworldAPI.setMiningPointAmount("copperOre", 1);
 				CaveworldAPI.setMiningPointAmount("oreTin", 1);
+				CaveworldAPI.setMiningPointAmount("tinOre", 1);
 				CaveworldAPI.setMiningPointAmount("oreLead", 1);
+				CaveworldAPI.setMiningPointAmount("leadOre", 1);
 				CaveworldAPI.setMiningPointAmount("oreSilver", 1);
+				CaveworldAPI.setMiningPointAmount("silverOre", 1);
 				CaveworldAPI.setMiningPointAmount("oreAdamantium", 1);
+				CaveworldAPI.setMiningPointAmount("adamantiumOre", 1);
 				CaveworldAPI.setMiningPointAmount("oreAluminum", 1);
+				CaveworldAPI.setMiningPointAmount("aluminumOre", 1);
 				CaveworldAPI.setMiningPointAmount("oreApatite", 1);
+				CaveworldAPI.setMiningPointAmount("apatiteOre", 1);
 				CaveworldAPI.setMiningPointAmount("oreMythril", 1);
+				CaveworldAPI.setMiningPointAmount("mythrilOre", 1);
 				CaveworldAPI.setMiningPointAmount("oreOnyx", 1);
+				CaveworldAPI.setMiningPointAmount("onyxOre", 1);
 				CaveworldAPI.setMiningPointAmount("oreUranium", 2);
+				CaveworldAPI.setMiningPointAmount("uraniumOre", 2);
 				CaveworldAPI.setMiningPointAmount("oreSapphire", 2);
+				CaveworldAPI.setMiningPointAmount("sapphireOre", 2);
 				CaveworldAPI.setMiningPointAmount("oreRuby", 2);
+				CaveworldAPI.setMiningPointAmount("rubyOre", 2);
+				CaveworldAPI.setMiningPointAmount("oreTopaz", 2);
+				CaveworldAPI.setMiningPointAmount("topazOre", 2);
+				CaveworldAPI.setMiningPointAmount("oreChrome", 1);
+				CaveworldAPI.setMiningPointAmount("chromeOre", 1);
+				CaveworldAPI.setMiningPointAmount("orePlatinum", 1);
+				CaveworldAPI.setMiningPointAmount("platinumOre", 1);
+				CaveworldAPI.setMiningPointAmount("oreTitanium", 1);
+				CaveworldAPI.setMiningPointAmount("titaniumOre", 1);
 			}
 		});
+
+		try
+		{
+			if (IC2Plugin.enabled())
+			{
+				IC2Plugin.invoke();
+			}
+		}
+		catch (Throwable e)
+		{
+			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: IC2Plugin");
+		}
+
+		try
+		{
+			if (MCEconomyPlugin.enabled())
+			{
+				MCEconomyPlugin.invoke();
+			}
+		}
+		catch (Throwable e)
+		{
+			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: MCEconomyPlugin");
+		}
+
+		try
+		{
+			if (ThaumcraftPlugin.enabled())
+			{
+				ThaumcraftPlugin.invoke();
+			}
+		}
+		catch (Throwable e)
+		{
+			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: ThaumcraftPlugin");
+		}
+
+		try
+		{
+			if (MOrePlugin.enabled())
+			{
+				MOrePlugin.invoke();
+			}
+		}
+		catch (Throwable e)
+		{
+			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: MOrePlugin");
+		}
+
+		try
+		{
+			if (MiningmodPlugin.enabled())
+			{
+				MiningmodPlugin.invoke();
+			}
+		}
+		catch (Throwable e)
+		{
+			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: MiningmodPlugin");
+		}
 	}
 
 	@EventHandler

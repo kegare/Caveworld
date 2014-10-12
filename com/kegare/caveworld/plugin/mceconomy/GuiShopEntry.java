@@ -796,8 +796,6 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 	@Override
 	public void onGuiClosed()
 	{
-		productList.scrollToTop();
-		productList.selected = null;
 		productList.currentPanoramaPaths = null;
 	}
 

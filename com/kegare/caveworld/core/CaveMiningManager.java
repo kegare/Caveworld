@@ -21,12 +21,14 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.common.IExtendedEntityProperties;
 import net.minecraftforge.oredict.OreDictionary;
+import shift.mceconomy2.api.MCEconomyAPI;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import com.kegare.caveworld.api.ICaveMiningManager;
 import com.kegare.caveworld.network.MiningSyncMessage;
+import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 
 public class CaveMiningManager implements ICaveMiningManager
 {
@@ -182,6 +184,21 @@ public class CaveMiningManager implements ICaveMiningManager
 		public void addMiningPoint(int value)
 		{
 			setMiningPoint(point + value);
+
+			if (point > 0 && point % 100 == 0)
+			{
+				player.addExperience(player.xpBarCap() / 2);
+
+				if (MCEconomyPlugin.enabled())
+				{
+					MCEconomyAPI.addPlayerMP(player, 10 + point / 100 - 1, false);
+				}
+			}
+
+			if (point >= 1000)
+			{
+				player.triggerAchievement(CaveAchievementList.theMiner);
+			}
 		}
 
 		public void syncMiningData()

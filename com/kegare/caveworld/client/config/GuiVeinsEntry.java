@@ -1007,8 +1007,6 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 	@Override
 	public void onGuiClosed()
 	{
-		veinList.scrollToTop();
-		veinList.selected = null;
 		veinList.currentPanoramaPaths = null;
 	}
 
