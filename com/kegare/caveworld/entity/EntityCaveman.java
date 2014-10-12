@@ -515,7 +515,7 @@ public class EntityCaveman extends EntityTameable implements IInventory
 	@Override
 	protected boolean canDespawn()
 	{
-		return !isTamed() || super.canDespawn();
+		return !getLeashed() && !isTamed();
 	}
 
 	@Override

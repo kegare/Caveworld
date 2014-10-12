@@ -24,7 +24,6 @@ import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
 
 import org.apache.logging.log4j.Level;
 import org.lwjgl.input.Keyboard;
@@ -41,6 +40,7 @@ import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.util.ArrayListExtended;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.ItemComparator;
+import com.kegare.caveworld.util.PanoramaPaths;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
@@ -310,7 +310,7 @@ public class GuiSelectItem extends GuiScreen
 		}
 
 		@Override
-		public ResourceLocation[] getPanoramaPaths()
+		public PanoramaPaths getPanoramaPaths()
 		{
 			return null;
 		}

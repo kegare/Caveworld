@@ -9,7 +9,10 @@
 
 package com.kegare.caveworld.client.gui;
 
+import java.util.Random;
+
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiSlot;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
@@ -20,16 +23,27 @@ import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.Project;
 
+import com.kegare.caveworld.util.ArrayListExtended;
+import com.kegare.caveworld.util.PanoramaPaths;
+
 public abstract class GuiListSlot extends GuiSlot
 {
-	public static final ResourceLocation[] panoramaPaths = new ResourceLocation[] {
-		new ResourceLocation("caveworld", "textures/gui/panorama/panorama_0.png"),
-		new ResourceLocation("caveworld", "textures/gui/panorama/panorama_1.png"),
-		new ResourceLocation("caveworld", "textures/gui/panorama/panorama_2.png"),
-		new ResourceLocation("caveworld", "textures/gui/panorama/panorama_3.png"),
-		new ResourceLocation("caveworld", "textures/gui/panorama/panorama_4.png"),
-		new ResourceLocation("caveworld", "textures/gui/panorama/panorama_5.png")
-	};
+	public static final ArrayListExtended<PanoramaPaths> panoramaPaths = new ArrayListExtended();
+
+	static
+	{
+		for (int i = 0; i <= 2; ++i)
+		{
+			ResourceLocation[] paths = new ResourceLocation[6];
+
+			for (int j = 0; j < paths.length; ++j)
+			{
+				paths[j] = new ResourceLocation("caveworld", String.format("textures/gui/panorama/%d/%d.png", i, j));
+			}
+
+			panoramaPaths.addIfAbsent(new PanoramaPaths(paths[0], paths[1], paths[2], paths[3], paths[4], paths[5]));
+		}
+	}
 
 	protected final Minecraft mc;
 
@@ -37,7 +51,11 @@ public abstract class GuiListSlot extends GuiSlot
 	private final ResourceLocation panoramaBackground;
 	private float panoramaTicks;
 
+	public PanoramaPaths currentPanoramaPaths;
+
 	private static int panoramaTimer;
+
+	private static final Random random = new Random();
 
 	public GuiListSlot(Minecraft mc, int width, int height, int top, int bottom, int slotHeight)
 	{
@@ -47,7 +65,19 @@ public abstract class GuiListSlot extends GuiSlot
 		this.panoramaBackground = mc.getTextureManager().getDynamicTextureLocation("background", viewportTexture);
 	}
 
-	public abstract ResourceLocation[] getPanoramaPaths();
+	public PanoramaPaths getPanoramaPaths()
+	{
+		if (panoramaPaths.isEmpty())
+		{
+			currentPanoramaPaths = null;
+		}
+		else if (currentPanoramaPaths == null)
+		{
+			currentPanoramaPaths = panoramaPaths.get(random.nextInt(panoramaPaths.size()), null);
+		}
+
+		return currentPanoramaPaths;
+	}
 
 	private void drawPanorama(float ticks)
 	{
@@ -108,7 +138,7 @@ public abstract class GuiListSlot extends GuiSlot
 					GL11.glRotatef(-90.0F, 1.0F, 0.0F, 0.0F);
 				}
 
-				mc.getTextureManager().bindTexture(getPanoramaPaths()[l]);
+				mc.getTextureManager().bindTexture(getPanoramaPaths().getPath(l));
 				tessellator.startDrawingQuads();
 				tessellator.setColorRGBA_I(16777215, 255 / (k + 1));
 				float f4 = 0.0F;
@@ -206,7 +236,11 @@ public abstract class GuiListSlot extends GuiSlot
 	@Override
 	protected void drawContainerBackground(Tessellator tessellator)
 	{
-		if (getPanoramaPaths() != null)
+		if (mc.theWorld != null)
+		{
+			Gui.drawRect(left, top, right, bottom, 0x101010);
+		}
+		else if (getPanoramaPaths() != null)
 		{
 			++panoramaTimer;
 

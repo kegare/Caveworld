@@ -28,7 +28,6 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
@@ -56,6 +55,7 @@ import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.util.ArrayListExtended;
 import com.kegare.caveworld.util.BiomeComparator;
 import com.kegare.caveworld.util.CaveLog;
+import com.kegare.caveworld.util.PanoramaPaths;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
@@ -492,7 +492,7 @@ public class GuiSelectBiome extends GuiScreen
 		}
 
 		@Override
-		public ResourceLocation[] getPanoramaPaths()
+		public PanoramaPaths getPanoramaPaths()
 		{
 			return null;
 		}

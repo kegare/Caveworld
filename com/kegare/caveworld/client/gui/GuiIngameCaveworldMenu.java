@@ -16,6 +16,8 @@ import net.minecraft.client.resources.I18n;
 import com.kegare.caveworld.client.config.GuiBiomesEntry;
 import com.kegare.caveworld.client.config.GuiVeinsEntry;
 import com.kegare.caveworld.core.Caveworld;
+import com.kegare.caveworld.plugin.mceconomy.GuiShopEntry;
+import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.util.Version;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
@@ -28,6 +30,7 @@ public class GuiIngameCaveworldMenu extends GuiScreen
 	private GuiButton backButton;
 	private GuiButton biomeButton;
 	private GuiButton veinButton;
+	private GuiButton shopButton;
 	private GuiButton regenButton;
 
 	@Override
@@ -38,10 +41,23 @@ public class GuiIngameCaveworldMenu extends GuiScreen
 		veinButton = new GuiButtonExt(2, biomeButton.xPosition, biomeButton.yPosition + biomeButton.height + 5, I18n.format(Caveworld.CONFIG_LANG + "veins"));
 		regenButton = new GuiButtonExt(3, veinButton.xPosition, veinButton.yPosition + veinButton.height + 5, I18n.format("caveworld.regenerate.gui.title"));
 
+		if (MCEconomyPlugin.enabled())
+		{
+			shopButton = new GuiButtonExt(4, veinButton.xPosition, veinButton.yPosition + veinButton.height + 5, I18n.format(Caveworld.CONFIG_LANG + "shop"));
+
+			regenButton.xPosition = shopButton.xPosition;
+			regenButton.yPosition = shopButton.yPosition + shopButton.height + 5;
+		}
+
 		if (!mc.isSingleplayer())
 		{
 			biomeButton.enabled = false;
 			veinButton.enabled = false;
+
+			if (shopButton != null)
+			{
+				shopButton.enabled = false;
+			}
 		}
 
 		buttonList.clear();
@@ -49,6 +65,11 @@ public class GuiIngameCaveworldMenu extends GuiScreen
 		buttonList.add(biomeButton);
 		buttonList.add(veinButton);
 		buttonList.add(regenButton);
+
+		if (shopButton != null)
+		{
+			buttonList.add(shopButton);
+		}
 	}
 
 	@Override
@@ -71,6 +92,9 @@ public class GuiIngameCaveworldMenu extends GuiScreen
 				case 3:
 					mc.displayGuiScreen(new GuiRegeneration(true));
 					break;
+				case 4:
+					mc.displayGuiScreen(new GuiShopEntry(this));
+					break;
 			}
 		}
 	}
@@ -83,5 +107,11 @@ public class GuiIngameCaveworldMenu extends GuiScreen
 		fontRendererObj.drawString(String.format("Caveworld %s (Latest: %s)", Version.getCurrent(), Version.getLatest()), 6, height - 12, 0xBABABA);
 
 		super.drawScreen(mouseX, mouseY, ticks);
+	}
+
+	@Override
+	public boolean doesGuiPauseGame()
+	{
+		return false;
 	}
 }

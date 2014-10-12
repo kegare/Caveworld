@@ -627,7 +627,7 @@ public class Config
 			{
 				try
 				{
-					FileUtils.forceDelete(new File(Config.veinsCfg.toString()));
+					FileUtils.forceDelete(new File(veinsCfg.toString()));
 
 					CaveworldAPI.clearCaveVeins();
 

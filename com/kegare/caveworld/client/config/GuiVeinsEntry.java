@@ -29,7 +29,6 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
@@ -999,6 +998,20 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 		}
 	}
 
+	@Override
+	public boolean doesGuiPauseGame()
+	{
+		return false;
+	}
+
+	@Override
+	public void onGuiClosed()
+	{
+		veinList.scrollToTop();
+		veinList.selected = null;
+		veinList.currentPanoramaPaths = null;
+	}
+
 	protected static class VeinList extends GuiListSlot
 	{
 		protected final GuiVeinsEntry parent;
@@ -1017,12 +1030,6 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 		{
 			super(parent.mc, 0, 0, 0, 0, 22);
 			this.parent = parent;
-		}
-
-		@Override
-		public ResourceLocation[] getPanoramaPaths()
-		{
-			return panoramaPaths;
 		}
 
 		@Override
