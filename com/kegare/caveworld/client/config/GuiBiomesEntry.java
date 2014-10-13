@@ -12,7 +12,6 @@ package com.kegare.caveworld.client.config;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
@@ -34,7 +33,6 @@ import net.minecraftforge.common.config.ConfigCategory;
 
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.logging.log4j.Level;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
@@ -55,8 +53,7 @@ import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.util.ArrayListExtended;
-import com.kegare.caveworld.util.CaveBiomeComparator;
-import com.kegare.caveworld.util.CaveLog;
+import com.kegare.caveworld.util.comparator.CaveBiomeComparator;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
@@ -679,13 +676,13 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 				{
 					terrainBlockField.setFocused(false);
 
-					mc.displayGuiScreen(new GuiSelectBlock(this, terrainBlockField));
+					mc.displayGuiScreen(new GuiSelectBlock(this, terrainBlockField, terrainMetaField));
 				}
 				else if (topBlockField.isFocused())
 				{
 					topBlockField.setFocused(false);
 
-					mc.displayGuiScreen(new GuiSelectBlock(this, topBlockField));
+					mc.displayGuiScreen(new GuiSelectBlock(this, topBlockField, topMetaField));
 				}
 			}
 		}
@@ -829,7 +826,6 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 		protected final ArrayListExtended<ICaveBiome> contents = new ArrayListExtended(biomes);
 
 		private final Map<String, List<ICaveBiome>> filterCache = Maps.newHashMap();
-		private final Set<Block> ignoredRender = CaveConfigGui.getIgnoredRenderBlocks();
 
 		protected ICaveBiome selected;
 
@@ -878,48 +874,44 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 			{
 				BlockEntry block = entry.getTerrainBlock();
 
-				if (!ignoredRender.contains(block.getBlock()) && Item.getItemFromBlock(block.getBlock()) != null)
+				if (Item.getItemFromBlock(block.getBlock()) != null)
 				{
-					try
-					{
-						ItemStack itemstack = new ItemStack(block.getBlock(), 1, block.getMetadata());
+					ItemStack itemstack = new ItemStack(block.getBlock(), 1, block.getMetadata());
+					int x = width / 2 - 100;
+					int y = par3 + 1;
 
-						GL11.glEnable(GL12.GL_RESCALE_NORMAL);
-						RenderHelper.enableGUIStandardItemLighting();
-						RenderItem.getInstance().renderItemAndEffectIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, width / 2 - 100, par3 + 1);
-						RenderItem.getInstance().renderItemOverlayIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, width / 2 - 100, par3 + 1, Integer.toString(entry.getBiome().biomeID));
-						RenderHelper.disableStandardItemLighting();
-						GL11.glDisable(GL12.GL_RESCALE_NORMAL);
-					}
-					catch (Exception e)
-					{
-						CaveLog.log(Level.WARN, e, "Failed to trying render item block into gui: %s", GameData.getBlockRegistry().getNameForObject(block.getBlock()));
+					GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+					RenderHelper.enableGUIStandardItemLighting();
 
-						ignoredRender.add(block.getBlock());
+					if (!CaveConfigGui.renderIgnored.contains(itemstack.getItem()))
+					{
+						RenderItem.getInstance().renderItemAndEffectIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, x, y);
 					}
+
+					RenderItem.getInstance().renderItemOverlayIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, x, y, Integer.toString(entry.getBiome().biomeID));
+					RenderHelper.disableStandardItemLighting();
+					GL11.glDisable(GL12.GL_RESCALE_NORMAL);
 				}
 
 				block = entry.getTopBlock();
 
-				if (!ignoredRender.contains(block.getBlock()) && Item.getItemFromBlock(block.getBlock()) != null)
+				if (Item.getItemFromBlock(block.getBlock()) != null)
 				{
-					try
-					{
-						ItemStack itemstack = new ItemStack(block.getBlock(), entry.getGenWeight(), block.getMetadata());
+					ItemStack itemstack = new ItemStack(block.getBlock(), entry.getGenWeight(), block.getMetadata());
+					int x = width / 2 + 90;
+					int y = par3 + 1;
 
-						GL11.glEnable(GL12.GL_RESCALE_NORMAL);
-						RenderHelper.enableGUIStandardItemLighting();
-						RenderItem.getInstance().renderItemAndEffectIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, width / 2 + 90, par3 + 1);
-						RenderItem.getInstance().renderItemOverlayIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, width / 2 + 90, par3 + 1);
-						RenderHelper.disableStandardItemLighting();
-						GL11.glDisable(GL12.GL_RESCALE_NORMAL);
-					}
-					catch (Exception e)
-					{
-						CaveLog.log(Level.WARN, e, "Failed to trying render item block into gui: %s", GameData.getBlockRegistry().getNameForObject(block.getBlock()));
+					GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+					RenderHelper.enableGUIStandardItemLighting();
 
-						ignoredRender.add(block.getBlock());
+					if (!CaveConfigGui.renderIgnored.contains(itemstack.getItem()))
+					{
+						RenderItem.getInstance().renderItemAndEffectIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, x, y);
 					}
+
+					RenderItem.getInstance().renderItemOverlayIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, x, y);
+					RenderHelper.disableStandardItemLighting();
+					GL11.glDisable(GL12.GL_RESCALE_NORMAL);
 				}
 			}
 		}

@@ -13,7 +13,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
@@ -24,14 +23,12 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.logging.log4j.Level;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
@@ -49,7 +46,7 @@ import com.kegare.caveworld.client.gui.GuiListSlot;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.plugin.mceconomy.ShopProductManager.ShopProduct;
 import com.kegare.caveworld.util.ArrayListExtended;
-import com.kegare.caveworld.util.CaveLog;
+import com.kegare.caveworld.util.ItemEntry;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
@@ -403,11 +400,11 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 	}
 
 	@Override
-	public void onSelected(Item item)
+	public void onSelected(ItemEntry entry)
 	{
 		if (!editMode)
 		{
-			ShopProduct product = new ShopProduct(new ItemStack(item), 0);
+			ShopProduct product = new ShopProduct(entry.getItemStack(), 0);
 
 			if (productList.products.addIfAbsent(product))
 			{
@@ -612,7 +609,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 				{
 					itemField.setFocused(false);
 
-					mc.displayGuiScreen(new GuiSelectItem(this, itemField));
+					mc.displayGuiScreen(new GuiSelectItem(this, itemField, damageField));
 				}
 			}
 		}
@@ -807,7 +804,6 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 		protected final ArrayListExtended<ShopProduct> contents = new ArrayListExtended(products);
 
 		private final Map<String, List<ShopProduct>> filterCache = Maps.newHashMap();
-		private final Set<Item> ignoredRender = CaveConfigGui.getIgnoredRenderItems();
 
 		protected int nameType;
 		protected ShopProduct selected;
@@ -873,23 +869,14 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 
 			if (parent.detailInfo.isChecked())
 			{
-				if (!ignoredRender.contains(itemstack.getItem()))
+				if (!CaveConfigGui.renderIgnored.contains(itemstack.getItem()))
 				{
-					try
-					{
-						GL11.glEnable(GL12.GL_RESCALE_NORMAL);
-						RenderHelper.enableGUIStandardItemLighting();
-						RenderItem.getInstance().renderItemAndEffectIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, width / 2 - 100, par3 + 1);
-						RenderItem.getInstance().renderItemOverlayIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, width / 2 - 100, par3 + 1);
-						RenderHelper.disableStandardItemLighting();
-						GL11.glDisable(GL12.GL_RESCALE_NORMAL);
-					}
-					catch (Exception e)
-					{
-						CaveLog.log(Level.WARN, e, "Failed to trying render item into gui: %s", GameData.getBlockRegistry().getNameForObject(itemstack.getItem()));
-
-						ignoredRender.add(itemstack.getItem());
-					}
+					GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+					RenderHelper.enableGUIStandardItemLighting();
+					RenderItem.getInstance().renderItemAndEffectIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, width / 2 - 100, par3 + 1);
+					RenderItem.getInstance().renderItemOverlayIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, width / 2 - 100, par3 + 1);
+					RenderHelper.disableStandardItemLighting();
+					GL11.glDisable(GL12.GL_RESCALE_NORMAL);
 				}
 
 				name = Integer.toString(entry.getcost());

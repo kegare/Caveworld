@@ -7,9 +7,11 @@
  * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
  */
 
-package com.kegare.caveworld.util;
+package com.kegare.caveworld.util.comparator;
 
 import java.util.Comparator;
+
+import com.kegare.caveworld.util.CaveUtils;
 
 import net.minecraft.world.biome.BiomeGenBase;
 

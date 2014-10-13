@@ -7,7 +7,7 @@
  * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
  */
 
-package com.kegare.caveworld.util;
+package com.kegare.caveworld.util.comparator;
 
 import java.util.Comparator;
 import java.util.Iterator;
@@ -21,6 +21,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 
 import com.google.common.collect.Maps;
+import com.kegare.caveworld.util.CaveUtils;
 
 import cpw.mods.fml.common.registry.GameData;
 

@@ -7,18 +7,20 @@
  * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
  */
 
-package com.kegare.caveworld.util;
+package com.kegare.caveworld.util.comparator;
 
 import java.util.Comparator;
 
-import net.minecraft.item.Item;
+import com.kegare.caveworld.util.CaveUtils;
+
+import net.minecraft.block.Block;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.GameRegistry.UniqueIdentifier;
 
-public class ItemComparator implements Comparator<Item>
+public class BlockComparator implements Comparator<Block>
 {
 	@Override
-	public int compare(Item o1, Item o2)
+	public int compare(Block o1, Block o2)
 	{
 		int i = CaveUtils.compareWithNull(o1, o2);
 

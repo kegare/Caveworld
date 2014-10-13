@@ -49,7 +49,7 @@ import com.kegare.caveworld.entity.ai.EntityAIFleeEntityLiving;
 import com.kegare.caveworld.entity.ai.EntityAIFleeSun2;
 import com.kegare.caveworld.entity.ai.EntityAISoldier;
 import com.kegare.caveworld.util.CaveUtils;
-import com.kegare.caveworld.util.InventoryComparator;
+import com.kegare.caveworld.util.comparator.InventoryComparator;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -201,7 +201,7 @@ public class EntityCaveman extends EntityTameable implements IInventory
 
 			if (Config.rope)
 			{
-				items.add(new ItemStack(CaveBlocks.rope, MathHelper.getRandomIntegerInRange(rand, 20, 64)));
+				items.add(new ItemStack(CaveBlocks.rope, MathHelper.getRandomIntegerInRange(rand, 8, 24)));
 			}
 
 			int slot = 0;

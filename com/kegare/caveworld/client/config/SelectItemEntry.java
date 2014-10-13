@@ -35,7 +35,7 @@ public class SelectItemEntry extends StringEntry
 		{
 			textFieldValue.setFocused(false);
 
-			mc.displayGuiScreen(new GuiSelectItem(owningScreen, textFieldValue));
+			mc.displayGuiScreen(new GuiSelectItem(owningScreen, textFieldValue, null));
 		}
 	}
 }

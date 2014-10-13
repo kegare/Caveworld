@@ -35,7 +35,7 @@ public class SelectBlockEntry extends StringEntry
 		{
 			textFieldValue.setFocused(false);
 
-			mc.displayGuiScreen(new GuiSelectBlock(owningScreen, textFieldValue));
+			mc.displayGuiScreen(new GuiSelectBlock(owningScreen, textFieldValue, null));
 		}
 	}
 }

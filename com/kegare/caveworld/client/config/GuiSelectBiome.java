@@ -25,7 +25,6 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -33,7 +32,6 @@ import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
 
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.logging.log4j.Level;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
@@ -53,9 +51,8 @@ import com.kegare.caveworld.api.ICaveBiome;
 import com.kegare.caveworld.client.gui.GuiListSlot;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.util.ArrayListExtended;
-import com.kegare.caveworld.util.BiomeComparator;
-import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.PanoramaPaths;
+import com.kegare.caveworld.util.comparator.BiomeComparator;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
@@ -457,8 +454,6 @@ public class GuiSelectBiome extends GuiScreen
 		protected final ArrayListExtended<BiomeGenBase> contents = new ArrayListExtended(biomes);
 		protected final Set<BiomeGenBase> selected = Sets.newTreeSet(this);
 
-		private final Set<Block> ignoredRender = CaveConfigGui.getIgnoredRenderBlocks();
-
 		private BiomeList(GuiSelectBiome parent)
 		{
 			super(parent.mc, 0, 0, 0, 0, 18);
@@ -539,42 +534,36 @@ public class GuiSelectBiome extends GuiScreen
 				if (Keyboard.isKeyDown(Keyboard.KEY_TAB))
 				{
 					Block block = biome.topBlock;
+					int meta = biome.field_150604_aj;
 
-					if (block != null && !ignoredRender.contains(block) && Item.getItemFromBlock(block) != null)
+					if (block != null)
 					{
-						try
+						ItemStack itemstack = new ItemStack(block, 1, meta);
+
+						if (itemstack.getItem() != null && !CaveConfigGui.renderIgnored.contains(itemstack.getItem()))
 						{
 							GL11.glEnable(GL12.GL_RESCALE_NORMAL);
 							RenderHelper.enableGUIStandardItemLighting();
-							RenderItem.getInstance().renderItemAndEffectIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), new ItemStack(block), width / 2 + 70, par3 - 1);
+							RenderItem.getInstance().renderItemAndEffectIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, width / 2 + 70, par3 - 1);
 							RenderHelper.disableStandardItemLighting();
 							GL11.glDisable(GL12.GL_RESCALE_NORMAL);
-						}
-						catch (Exception e)
-						{
-							CaveLog.log(Level.WARN, e, "Failed to trying render item block into gui: %s", GameData.getBlockRegistry().getNameForObject(block));
-
-							ignoredRender.add(block);
 						}
 					}
 
 					block = biome.fillerBlock;
+					meta = biome.field_76754_C;
 
-					if (block != null && !ignoredRender.contains(block) && Item.getItemFromBlock(block) != null)
+					if (block != null)
 					{
-						try
+						ItemStack itemstack = new ItemStack(block, 1, meta);
+
+						if (itemstack.getItem() != null && !CaveConfigGui.renderIgnored.contains(itemstack.getItem()))
 						{
 							GL11.glEnable(GL12.GL_RESCALE_NORMAL);
 							RenderHelper.enableGUIStandardItemLighting();
-							RenderItem.getInstance().renderItemAndEffectIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), new ItemStack(block), width / 2 + 90, par3 - 1);
+							RenderItem.getInstance().renderItemAndEffectIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, width / 2 + 90, par3 - 1);
 							RenderHelper.disableStandardItemLighting();
 							GL11.glDisable(GL12.GL_RESCALE_NORMAL);
-						}
-						catch (Exception e)
-						{
-							CaveLog.log(Level.WARN, e, "Failed to trying render item block into gui: %s", GameData.getBlockRegistry().getNameForObject(block));
-
-							ignoredRender.add(block);
 						}
 					}
 				}
@@ -651,11 +640,69 @@ public class GuiSelectBiome extends GuiScreen
 		@Override
 		public boolean apply(BiomeGenBase biome)
 		{
+			if (biome.biomeID == NumberUtils.toInt(filter, -1) ||
+				biome.biomeName.toLowerCase().contains(filter.toLowerCase()))
+			{
+				return true;
+			}
+
+			Block block = biome.topBlock;
+			int meta = biome.field_150604_aj;
+
+			if (block != null)
+			{
+				if (GameData.getBlockRegistry().getNameForObject(block).toLowerCase().contains(filter.toLowerCase()))
+				{
+					return true;
+				}
+
+				ItemStack itemstack = new ItemStack(block, 1, meta);
+
+				if (itemstack.getItem() == null)
+				{
+					if (block.getUnlocalizedName().toLowerCase().contains(filter.toLowerCase()) ||
+						block.getLocalizedName().toLowerCase().contains(filter.toLowerCase()))
+					{
+						return true;
+					}
+				}
+				else if (itemstack.getUnlocalizedName().toLowerCase().contains(filter.toLowerCase()) ||
+					itemstack.getDisplayName().toLowerCase().contains(filter.toLowerCase()))
+				{
+					return true;
+				}
+			}
+
+			block = biome.fillerBlock;
+			meta = biome.field_76754_C;
+
+			if (block != null)
+			{
+				if (GameData.getBlockRegistry().getNameForObject(block).toLowerCase().contains(filter.toLowerCase()))
+				{
+					return true;
+				}
+
+				ItemStack itemstack = new ItemStack(block, 1, meta);
+
+				if (itemstack.getItem() == null)
+				{
+					if (block.getUnlocalizedName().toLowerCase().contains(filter.toLowerCase()) ||
+						block.getLocalizedName().toLowerCase().contains(filter.toLowerCase()))
+					{
+						return true;
+					}
+				}
+				else if (itemstack.getUnlocalizedName().toLowerCase().contains(filter.toLowerCase()) ||
+					itemstack.getDisplayName().toLowerCase().contains(filter.toLowerCase()))
+				{
+					return true;
+				}
+			}
+
 			try
 			{
-				if (biome.biomeID == NumberUtils.toInt(filter, -1) ||
-					biome.biomeName.toLowerCase().contains(filter.toLowerCase()) ||
-					BiomeDictionary.isBiomeOfType(biome, Type.valueOf(filter.toUpperCase())))
+				if (BiomeDictionary.isBiomeOfType(biome, Type.valueOf(filter.toUpperCase())))
 				{
 					return true;
 				}

@@ -28,7 +28,7 @@ import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.EmptyCaveBiome;
 import com.kegare.caveworld.api.ICaveBiome;
 import com.kegare.caveworld.api.ICaveBiomeManager;
-import com.kegare.caveworld.util.CaveBiomeComparator;
+import com.kegare.caveworld.util.comparator.CaveBiomeComparator;
 
 public class CaveBiomeManager implements ICaveBiomeManager, Function<ICaveBiome, BiomeGenBase>
 {
