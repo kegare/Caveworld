@@ -25,6 +25,7 @@ import com.kegare.caveworld.entity.EntityCaveman;
 import com.kegare.caveworld.handler.CaveAPIHandler;
 import com.kegare.caveworld.handler.CaveEventHooks;
 import com.kegare.caveworld.handler.CaveFuelHandler;
+import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.network.BuffMessage;
 import com.kegare.caveworld.network.CaveAchievementMessage;
 import com.kegare.caveworld.network.CaveSoundMessage;
@@ -32,6 +33,7 @@ import com.kegare.caveworld.network.CaveworldMenuMessage;
 import com.kegare.caveworld.network.DimSyncMessage;
 import com.kegare.caveworld.network.MiningSyncMessage;
 import com.kegare.caveworld.network.RegenerateMessage;
+import com.kegare.caveworld.network.SelectBreakableMessage;
 import com.kegare.caveworld.plugin.enderio.EnderIOPlugin;
 import com.kegare.caveworld.plugin.ic2.IC2Plugin;
 import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
@@ -40,6 +42,8 @@ import com.kegare.caveworld.plugin.more.MOrePlugin;
 import com.kegare.caveworld.plugin.thaumcraft.ThaumcraftPlugin;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.Version;
+import com.kegare.caveworld.util.breaker.MultiBreakExecutor;
+import com.kegare.caveworld.util.breaker.RangedBreakExecutor;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -98,9 +102,13 @@ public class Caveworld
 
 		Config.syncGeneralCfg();
 		Config.syncBlocksCfg();
+		Config.syncItemsCfg();
 
 		CaveBlocks.registerBlocks();
+		CaveItems.registerItems();
 		CaveAchievementList.registerAchievements();
+
+		proxy.registerRecipes();
 
 		GameRegistry.registerFuelHandler(new CaveFuelHandler());
 	}
@@ -122,12 +130,12 @@ public class Caveworld
 		network.registerMessage(BuffMessage.class, BuffMessage.class, id++, Side.SERVER);
 		network.registerMessage(CaveworldMenuMessage.class, CaveworldMenuMessage.class, id++, Side.CLIENT);
 		network.registerMessage(CaveAchievementMessage.class, CaveAchievementMessage.class, id++, Side.SERVER);
+		network.registerMessage(SelectBreakableMessage.class, SelectBreakableMessage.class, id++, Side.SERVER);
 
 		EntityRegistry.registerGlobalEntityID(EntityCaveman.class, "Caveman", EntityRegistry.findGlobalUniqueEntityId(), 0xAAAAAA, 0xCCCCCC);
 		EntityRegistry.registerModEntity(EntityCaveman.class, "Caveman", 0, this, 128, 1, true);
 
 		proxy.registerRenderers();
-		proxy.registerRecipes();
 
 		id = CaveworldAPI.getDimension();
 		DimensionManager.registerProviderType(id, WorldProviderCaveworld.class, true);
@@ -189,6 +197,8 @@ public class Caveworld
 				CaveworldAPI.setMiningPointAmount("platinumOre", 1);
 				CaveworldAPI.setMiningPointAmount("oreTitanium", 1);
 				CaveworldAPI.setMiningPointAmount("titaniumOre", 1);
+				CaveworldAPI.setMiningPointAmount("oreCavenium", 2);
+				CaveworldAPI.setMiningPointAmount("caveniumOre", 2);
 			}
 		});
 
@@ -280,5 +290,8 @@ public class Caveworld
 	public void serverStopping(FMLServerStoppedEvent event)
 	{
 		CaveEventHooks.firstJoinPlayers.clear();
+
+		MultiBreakExecutor.executors.clear();
+		RangedBreakExecutor.executors.clear();
 	}
 }

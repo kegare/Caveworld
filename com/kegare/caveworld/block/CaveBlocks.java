@@ -17,6 +17,7 @@ import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraftforge.common.ChestGenHooks;
 import net.minecraftforge.oredict.OreDictionary;
 
+import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.BlockPortalCaveworld.DispencePortal;
 import com.kegare.caveworld.block.BlockRope.DispenceRope;
 import com.kegare.caveworld.core.Config;
@@ -29,6 +30,7 @@ public class CaveBlocks
 {
 	public static final BlockPortalCaveworld caveworld_portal = new BlockPortalCaveworld("portalCaveworld");
 	public static final BlockRope rope = new BlockRope("rope");
+	public static final BlockCaveniumOre cavenium_ore = new BlockCaveniumOre("oreCavenium");
 
 	public static void registerBlocks()
 	{
@@ -52,6 +54,16 @@ public class CaveBlocks
 			ChestGenHooks.addItem(ChestGenHooks.PYRAMID_JUNGLE_CHEST, new WeightedRandomChestContent(item, 0, 3, 6, 10));
 
 			BlockDispenser.dispenseBehaviorRegistry.putObject(Item.getItemFromBlock(rope), new DispenceRope());
+		}
+
+		if (Config.oreCavenium)
+		{
+			GameRegistry.registerBlock(cavenium_ore, "cavenium_ore");
+
+			OreDictionary.registerOre("oreCavenium", cavenium_ore);
+			OreDictionary.registerOre("caveniumOre", cavenium_ore);
+
+			CaveworldAPI.setMiningPointAmount(cavenium_ore, 0, 2);
 		}
 	}
 }

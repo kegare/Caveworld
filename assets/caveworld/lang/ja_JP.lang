@@ -54,6 +54,14 @@ caveworld.config.blocks=ブロックの設定
 caveworld.config.blocks.tooltip=caveworld-blocks.cfg に含まれる設定を変更できます。
 caveworld.config.blocks.Rope=ロープ
 caveworld.config.blocks.Rope.tooltip=ロープを追加します。
+caveworld.config.blocks.oreCavenium=ケイブニウム鉱石
+caveworld.config.blocks.oreCavenium.tooltip=ケイブニウム鉱石を追加します。
+caveworld.config.items=アイテムの設定
+caveworld.config.items.tooltip=caveworld-items.cfg に含まれる設定を変更できます。
+caveworld.config.items.cavenium=ケイブニウム
+caveworld.config.items.cavenium.tooltip=ケイブニウムを追加します。
+caveworld.config.items.pickaxeMining=採掘ツルハシ
+caveworld.config.items.pickaxeMining.tooltip=採掘ツルハシを追加します。
 caveworld.config.entities=エンティティの設定
 caveworld.config.entities.tooltip=caveworld-entities.cfg に含まれる設定を変更できます。
 caveworld.config.entities.entry.tooltip=%sに関する設定を変更できます。
@@ -132,7 +140,9 @@ caveworld.config.veins.genTargetBlockMetadata.tooltip=この鉱脈を生成す�
 caveworld.config.veins.genBiomes=生成するバイオーム
 caveworld.config.veins.genBiomes.tooltip=この鉱脈を生成するバイオームを指定します。
 caveworld.config.select.block=ブロックを選択してください
+caveworld.config.select.block.multiple=ブロックを選択してください
 caveworld.config.select.item=アイテムを選択してください
+caveworld.config.select.item.multiple=アイテムを選択してください
 caveworld.config.select.biome=バイオームを選択してください
 caveworld.config.select.biome.selected=%dつのバイオームが選択済み
 caveworld.config.select.biome.info.topBlock=地表ブロック
@@ -143,6 +153,14 @@ caveworld.config.select.biome.info.type=タイプ
 
 tile.portalCaveworld.name=Caveworld ポータルブロック
 tile.rope.name=ロープ
+tile.oreCavenium.name=ケイブニウム鉱石
+
+item.cavenium.name=ケイブニウム
+item.pickaxeMining.name=採掘ツルハシ
+item.pickaxeMining.mode=採掘モード
+item.pickaxeMining.mode.normal=ノーマル
+item.pickaxeMining.mode.quick=一括破壊
+item.pickaxeMining.mode.ranged=範囲破壊
 
 inventory.caveworld.portal=Caveworld ポータル
 

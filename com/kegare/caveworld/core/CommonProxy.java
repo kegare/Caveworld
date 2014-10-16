@@ -13,12 +13,14 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
+import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
 
 import org.apache.logging.log4j.Level;
 
 import com.kegare.caveworld.block.CaveBlocks;
+import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.util.CaveLog;
 
 public class CommonProxy
@@ -39,6 +41,11 @@ public class CommonProxy
 		if (Config.rope)
 		{
 			addShapelessRecipe(new ItemStack(CaveBlocks.rope), Items.string, Items.string, Items.string, Items.leather);
+		}
+
+		if (Config.cavenium)
+		{
+			FurnaceRecipes.smelting().func_151393_a(CaveBlocks.cavenium_ore, new ItemStack(CaveItems.cavenium), 0.5F);
 		}
 
 		if (Config.portalCraftRecipe)

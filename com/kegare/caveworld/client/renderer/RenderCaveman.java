@@ -71,7 +71,7 @@ public class RenderCaveman extends RenderBiped
 			EntityPlayer player = mc.thePlayer;
 			EntityCaveman living = (EntityCaveman)entity;
 
-			if (living.isTamed() && player.getUniqueID().toString().equals(Strings.nullToEmpty(living.func_152113_b())) &&
+			if (living.isTamed() && player.getGameProfile().getId().toString().equals(Strings.nullToEmpty(living.func_152113_b())) &&
 				living.getEntitySenses().canSee(player) && living.getDistanceToEntity(player) <= 3.5F &&
 				mc.objectMouseOver.typeOfHit == MovingObjectType.ENTITY && mc.objectMouseOver.entityHit == living)
 			{

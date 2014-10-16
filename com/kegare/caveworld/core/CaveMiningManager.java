@@ -107,7 +107,7 @@ public class CaveMiningManager implements ICaveMiningManager
 
 			mining.saveNBTData(data);
 
-			miningData.put(player.getUniqueID().toString(), data);
+			miningData.put(player.getGameProfile().getId().toString(), data);
 		}
 		else
 		{
@@ -122,7 +122,7 @@ public class CaveMiningManager implements ICaveMiningManager
 
 		if (compound == null)
 		{
-			mining.loadNBTData(miningData.remove(player.getUniqueID().toString()));
+			mining.loadNBTData(miningData.remove(player.getGameProfile().getId().toString()));
 		}
 		else
 		{

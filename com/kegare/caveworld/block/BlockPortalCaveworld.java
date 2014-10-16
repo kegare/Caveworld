@@ -47,6 +47,7 @@ import shift.mceconomy2.api.MCEconomyAPI;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
@@ -135,8 +136,9 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 	@Override
 	public boolean func_150000_e(World world, int x, int y, int z)
 	{
-		Size size1 = new Size(world, x, y, z, 1);
-		Size size2 = new Size(world, x, y, z, 2);
+		BlockEntry frame = new BlockEntry(Blocks.mossy_cobblestone, 0);
+		Size size1 = new Size(world, x, y, z, 1, frame);
+		Size size2 = new Size(world, x, y, z, 2, frame);
 
 		if (size1.canCreatePortal() && size1.portalBlockCount == 0)
 		{
@@ -146,7 +148,22 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 		{
 			size2.setPortalBlocks();
 		}
-		else return false;
+		else
+		{
+			frame = new BlockEntry(Blocks.stonebrick, 1);
+			size1 = new Size(world, x, y, z, 1, frame);
+			size2 = new Size(world, x, y, z, 2, frame);
+
+			if (size1.canCreatePortal() && size1.portalBlockCount == 0)
+			{
+				size1.setPortalBlocks();
+			}
+			else if (size2.canCreatePortal() && size2.portalBlockCount == 0)
+			{
+				size2.setPortalBlocks();
+			}
+			else return false;
+		}
 
 		if (world.provider.dimensionId == 1)
 		{
@@ -160,8 +177,9 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 	public void onNeighborBlockChange(World world, int x, int y, int z, Block block)
 	{
 		int metadata = func_149999_b(world.getBlockMetadata(x, y, z));
-		Size size1 = new Size(world, x, y, z, 1);
-		Size size2 = new Size(world, x, y, z, 2);
+		BlockEntry frame = new BlockEntry(Blocks.mossy_cobblestone, 0);
+		Size size1 = new Size(world, x, y, z, 1, frame);
+		Size size2 = new Size(world, x, y, z, 2, frame);
 
 		if (metadata == 1 && (!size1.canCreatePortal() || size1.portalBlockCount < size1.portalWidth * size1.portalHeight))
 		{
@@ -174,6 +192,25 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 		else if (metadata == 0 && !size1.canCreatePortal() && !size2.canCreatePortal())
 		{
 			world.setBlock(x, y, z, Blocks.air);
+		}
+		else
+		{
+			frame = new BlockEntry(Blocks.stonebrick, 1);
+			size1 = new Size(world, x, y, z, 1, frame);
+			size2 = new Size(world, x, y, z, 2, frame);
+
+			if (metadata == 1 && (!size1.canCreatePortal() || size1.portalBlockCount < size1.portalWidth * size1.portalHeight))
+			{
+				world.setBlock(x, y, z, Blocks.air);
+			}
+			else if (metadata == 2 && (!size2.canCreatePortal() || size2.portalBlockCount < size2.portalWidth * size2.portalHeight))
+			{
+				world.setBlock(x, y, z, Blocks.air);
+			}
+			else if (metadata == 0 && !size1.canCreatePortal() && !size2.canCreatePortal())
+			{
+				world.setBlock(x, y, z, Blocks.air);
+			}
 		}
 	}
 
@@ -419,7 +456,7 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 	@Override
 	public boolean isUseableByPlayer(EntityPlayer player)
 	{
-		ChunkCoordinates coord = portalCoord.get(player.getUniqueID().toString(), player.dimension);
+		ChunkCoordinates coord = portalCoord.get(player.getGameProfile().getId().toString(), player.dimension);
 
 		if (coord == null)
 		{
@@ -446,7 +483,7 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 
 	public void displayInventory(EntityPlayer player, int x, int y, int z)
 	{
-		portalCoord.put(player.getUniqueID().toString(), player.dimension, new ChunkCoordinates(x, y, z));
+		portalCoord.put(player.getGameProfile().getId().toString(), player.dimension, new ChunkCoordinates(x, y, z));
 
 		player.displayGUIChest(this);
 	}
@@ -516,6 +553,7 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 	{
 		private final World worldObj;
 		private final int portalMetadata;
+		private final BlockEntry portalFrame;
 		private final int field_150863_d;
 		private final int field_150866_c;
 
@@ -525,10 +563,11 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 
 		private int portalBlockCount = 0;
 
-		public Size(World world, int x, int y, int z, int metadata)
+		public Size(World world, int x, int y, int z, int metadata, BlockEntry frame)
 		{
 			this.worldObj = world;
 			this.portalMetadata = metadata;
+			this.portalFrame = frame;
 			this.field_150863_d = BlockPortal.field_150001_a[metadata][0];
 			this.field_150866_c = BlockPortal.field_150001_a[metadata][1];
 
@@ -572,13 +611,13 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 					break;
 				}
 
-				if (worldObj.getBlock(x + var1 * i, y - 1, z + var2 * i) != Blocks.mossy_cobblestone)
+				if (worldObj.getBlock(x + var1 * i, y - 1, z + var2 * i) != portalFrame.getBlock() || worldObj.getBlockMetadata(x + var1 * i, y - 1, z + var2 * i) != portalFrame.getMetadata())
 				{
 					break;
 				}
 			}
 
-			return worldObj.getBlock(x + var1 * i, y, z + var2 * i) == Blocks.mossy_cobblestone ? i : 0;
+			return worldObj.getBlock(x + var1 * i, y, z + var2 * i) == portalFrame.getBlock() && worldObj.getBlockMetadata(x + var1 * i, y, z + var2 * i) == portalFrame.getMetadata() ? i : 0;
 		}
 
 		protected int getPortalHeight()
@@ -594,6 +633,7 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 					x = portalCoord.posX + i * Direction.offsetX[field_150866_c];
 					z = portalCoord.posZ + i * Direction.offsetZ[field_150866_c];
 					Block block = worldObj.getBlock(x, y, z);
+					int meta;
 
 					if (!isReplaceablePortal(block))
 					{
@@ -608,8 +648,9 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 					if (i == 0)
 					{
 						block = worldObj.getBlock(x + Direction.offsetX[field_150863_d], y, z + Direction.offsetZ[field_150863_d]);
+						meta = worldObj.getBlockMetadata(x + Direction.offsetX[field_150863_d], y, z + Direction.offsetZ[field_150863_d]);
 
-						if (block != Blocks.mossy_cobblestone)
+						if (block != portalFrame.getBlock() || meta != portalFrame.getMetadata())
 						{
 							break outside;
 						}
@@ -617,8 +658,9 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 					else if (i == portalWidth - 1)
 					{
 						block = worldObj.getBlock(x + Direction.offsetX[field_150866_c], y, z + Direction.offsetZ[field_150866_c]);
+						meta = worldObj.getBlockMetadata(x + Direction.offsetX[field_150866_c], y, z + Direction.offsetZ[field_150866_c]);
 
-						if (block != Blocks.mossy_cobblestone)
+						if (block != portalFrame.getBlock() || meta != portalFrame.getMetadata())
 						{
 							break outside;
 						}
@@ -632,7 +674,7 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 				x = portalCoord.posY + portalHeight;
 				z = portalCoord.posZ + y * Direction.offsetZ[field_150866_c];
 
-				if (worldObj.getBlock(i, x, z) != Blocks.mossy_cobblestone)
+				if (worldObj.getBlock(i, x, z) != portalFrame.getBlock() || worldObj.getBlockMetadata(i, x, z) != portalFrame.getMetadata())
 				{
 					portalHeight = 0;
 

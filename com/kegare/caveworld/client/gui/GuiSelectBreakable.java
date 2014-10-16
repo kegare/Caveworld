@@ -7,14 +7,17 @@
  * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
  */
 
-package com.kegare.caveworld.client.config;
+package com.kegare.caveworld.client.gui;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockOre;
+import net.minecraft.block.BlockRedstoneOre;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
@@ -22,47 +25,39 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
-import org.apache.commons.lang3.math.NumberUtils;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
-import com.google.common.base.Predicate;
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.BlockEntry;
-import com.kegare.caveworld.client.gui.GuiListSlot;
+import com.kegare.caveworld.client.config.CaveConfigGui;
+import com.kegare.caveworld.client.config.GuiSelectBlock;
+import com.kegare.caveworld.client.config.GuiSelectBlock.BlockFilter;
 import com.kegare.caveworld.core.Caveworld;
+import com.kegare.caveworld.item.CaveItems;
+import com.kegare.caveworld.item.ItemMiningPickaxe;
+import com.kegare.caveworld.network.SelectBreakableMessage;
 import com.kegare.caveworld.util.ArrayListExtended;
+import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.PanoramaPaths;
-import com.kegare.caveworld.util.comparator.BlockComparator;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
 import cpw.mods.fml.client.config.HoverChecker;
 import cpw.mods.fml.common.registry.GameData;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
-@SideOnly(Side.CLIENT)
-public class GuiSelectBlock extends GuiScreen
+public class GuiSelectBreakable extends GuiScreen
 {
-	public static final ArrayListExtended<Block> raws = new ArrayListExtended().addAllObject(GameData.getBlockRegistry()).sort(new BlockComparator());
-
-	public interface SelectListener
-	{
-		public void onSelected(BlockEntry entry);
-	}
-
-	protected final GuiScreen parentScreen;
-	protected GuiTextField parentNameField;
-	protected GuiTextField parentMetaField;
+	protected final ItemStack parentTool;
 
 	protected BlockList blockList;
 
@@ -74,16 +69,9 @@ public class GuiSelectBlock extends GuiScreen
 	protected HoverChecker detailHoverChecker;
 	protected HoverChecker instantHoverChecker;
 
-	public GuiSelectBlock(GuiScreen parent)
+	public GuiSelectBreakable(ItemStack itemstack)
 	{
-		this.parentScreen = parent;
-	}
-
-	public GuiSelectBlock(GuiScreen parent, GuiTextField nameField, GuiTextField metaField)
-	{
-		this(parent);
-		this.parentNameField = nameField;
-		this.parentMetaField = metaField;
+		this.parentTool = itemstack;
 	}
 
 	@Override
@@ -146,39 +134,19 @@ public class GuiSelectBlock extends GuiScreen
 			switch (button.id)
 			{
 				case 0:
-					if (blockList.selected != null && parentScreen instanceof SelectListener)
+					List<String> selected = Lists.newArrayList();
+
+					for (BlockEntry entry : blockList.selected)
 					{
-						((SelectListener)parentScreen).onSelected(blockList.selected);
+						selected.add(CaveUtils.toStringHelper(entry.getBlock(), entry.getMetadata()));
 					}
 
-					if (parentNameField != null)
-					{
-						if (blockList.selected == null)
-						{
-							parentNameField.setText("");
-						}
-						else
-						{
-							parentNameField.setText(GameData.getBlockRegistry().getNameForObject(blockList.selected.getBlock()));
-						}
+					String value = Joiner.on("|").join(selected);
 
-						parentNameField.setFocused(true);
-						parentNameField.setCursorPositionEnd();
-					}
+					parentTool.getTagCompound().setString("Blocks", value);
+					Caveworld.network.sendToServer(new SelectBreakableMessage(value));
 
-					if (parentMetaField != null)
-					{
-						if (blockList.selected == null)
-						{
-							parentMetaField.setText("");
-						}
-						else
-						{
-							parentMetaField.setText(Integer.toString(blockList.selected.getMetadata()));
-						}
-					}
-
-					mc.displayGuiScreen(parentScreen);
+					mc.displayGuiScreen(null);
 					break;
 				case 1:
 					CaveConfigGui.detailInfo = detailInfo.isChecked();
@@ -203,7 +171,7 @@ public class GuiSelectBlock extends GuiScreen
 	{
 		blockList.drawScreen(mouseX, mouseY, ticks);
 
-		drawCenteredString(fontRendererObj, I18n.format(Caveworld.CONFIG_LANG + "select.block"), width / 2, 15, 0xFFFFFF);
+		drawCenteredString(fontRendererObj, I18n.format(Caveworld.CONFIG_LANG + "select.block.multiple"), width / 2, 15, 0xFFFFFF);
 
 		super.drawScreen(mouseX, mouseY, ticks);
 
@@ -257,11 +225,11 @@ public class GuiSelectBlock extends GuiScreen
 		{
 			if (code == Keyboard.KEY_ESCAPE)
 			{
-				mc.displayGuiScreen(parentScreen);
+				mc.displayGuiScreen(null);
 			}
 			else if (code == Keyboard.KEY_BACK)
 			{
-				blockList.selected = null;
+				blockList.selected.clear();
 			}
 			else if (code == Keyboard.KEY_TAB)
 			{
@@ -302,7 +270,17 @@ public class GuiSelectBlock extends GuiScreen
 			{
 				filterTextField.setFocused(true);
 			}
+			else if (isCtrlKeyDown() && code == Keyboard.KEY_A)
+			{
+				blockList.selected.addAll(blockList.contents);
+			}
 		}
+	}
+
+	@Override
+	public boolean doesGuiPauseGame()
+	{
+		return false;
 	}
 
 	protected static class BlockList extends GuiListSlot
@@ -315,14 +293,25 @@ public class GuiSelectBlock extends GuiScreen
 		{
 			List list = Lists.newArrayList();
 
-			for (Block block : raws)
+			for (Block block : GuiSelectBlock.raws)
 			{
+				Item item = Item.getItemFromBlock(block);
+
+				if (item == null)
+				{
+					continue;
+				}
+
 				list.clear();
-				block.getSubBlocks(Item.getItemFromBlock(block), block.getCreativeTabToDisplayOn(), list);
+				block.getSubBlocks(item, block.getCreativeTabToDisplayOn(), list);
 
 				if (list.isEmpty())
 				{
-					blocks.addIfAbsent(new BlockEntry(block, 0));
+					if (Strings.nullToEmpty(block.getHarvestTool(0)).equalsIgnoreCase("pickaxe") || CaveItems.mining_pickaxe.func_150897_b(block) ||
+						block instanceof BlockOre || block instanceof BlockRedstoneOre)
+					{
+						blocks.addIfAbsent(new BlockEntry(block, 0));
+					}
 				}
 				else for (Object obj : list)
 				{
@@ -331,23 +320,25 @@ public class GuiSelectBlock extends GuiScreen
 					if (itemstack != null && itemstack.getItem() != null)
 					{
 						Block sub = Block.getBlockFromItem(itemstack.getItem());
+						int meta = itemstack.getItemDamage();
 
-						if (sub != Blocks.air)
+						if (Strings.nullToEmpty(sub.getHarvestTool(meta)).equalsIgnoreCase("pickaxe") ||
+							CaveItems.mining_pickaxe.func_150897_b(sub) || block instanceof BlockOre || block instanceof BlockRedstoneOre)
 						{
-							blocks.addIfAbsent(new BlockEntry(sub, itemstack.getItemDamage()));
+							blocks.addIfAbsent(new BlockEntry(sub, meta));
 						}
 					}
 				}
 			}
 		}
 
-		protected final GuiSelectBlock parent;
+		protected final GuiSelectBreakable parent;
 		protected final ArrayListExtended<BlockEntry> contents = new ArrayListExtended(blocks);
 
 		protected int nameType;
-		protected BlockEntry selected = null;
+		protected final Set<BlockEntry> selected = Sets.newHashSet();
 
-		private BlockList(final GuiSelectBlock parent)
+		private BlockList(final GuiSelectBreakable parent)
 		{
 			super(parent.mc, 0, 0, 0, 0, 18);
 			this.parent = parent;
@@ -357,20 +348,13 @@ public class GuiSelectBlock extends GuiScreen
 				@Override
 				protected void compute()
 				{
-					if (parent.parentNameField != null)
+					if (parent.parentTool.getItem() instanceof ItemMiningPickaxe)
 					{
-						int meta = 0;
-
-						if (parent.parentMetaField != null)
-						{
-							meta = NumberUtils.toInt(parent.parentMetaField.getText());
-						}
-
 						for (BlockEntry entry : blocks)
 						{
-							if (GameData.getBlockRegistry().getNameForObject(entry.getBlock()).equals(parent.parentNameField.getText()) && entry.getMetadata() == meta)
+							if (((ItemMiningPickaxe)parent.parentTool.getItem()).canBreak(parent.parentTool, entry.getBlock(), entry.getMetadata()))
 							{
-								selected = entry;
+								selected.add(entry);
 							}
 						}
 					}
@@ -389,9 +373,9 @@ public class GuiSelectBlock extends GuiScreen
 		{
 			scrollToTop();
 
-			if (selected != null)
+			if (!selected.isEmpty())
 			{
-				scrollBy(contents.indexOf(selected) * getSlotHeight());
+				scrollBy(contents.indexOf(selected.iterator().next()) * getSlotHeight());
 			}
 		}
 
@@ -469,13 +453,20 @@ public class GuiSelectBlock extends GuiScreen
 		@Override
 		protected void elementClicked(int index, boolean flag, int mouseX, int mouseY)
 		{
-			selected = isSelected(index) ? null : contents.get(index, null);
+			BlockEntry entry = contents.get(index, null);
+
+			if (entry != null && !selected.add(entry))
+			{
+				selected.remove(entry);
+			}
 		}
 
 		@Override
 		protected boolean isSelected(int index)
 		{
-			return selected == contents.get(index, null);
+			BlockEntry entry = contents.get(index, null);
+
+			return entry != null && selected.contains(entry);
 		}
 
 		protected void setFilter(final String filter)
@@ -508,45 +499,6 @@ public class GuiSelectBlock extends GuiScreen
 					}
 				}
 			});
-		}
-	}
-
-	public static class BlockFilter implements Predicate<BlockEntry>
-	{
-		private final String filter;
-
-		public BlockFilter(String filter)
-		{
-			this.filter = filter;
-		}
-
-		@Override
-		public boolean apply(BlockEntry entry)
-		{
-			Block block = entry.getBlock();
-
-			if (GameData.getBlockRegistry().getNameForObject(block).toLowerCase().contains(filter.toLowerCase()))
-			{
-				return true;
-			}
-
-			ItemStack itemstack = new ItemStack(block, 1, entry.getMetadata());
-
-			if (itemstack.getItem() == null)
-			{
-				if (block.getUnlocalizedName().toLowerCase().contains(filter.toLowerCase()) ||
-					block.getLocalizedName().toLowerCase().contains(filter.toLowerCase()))
-				{
-					return true;
-				}
-			}
-			else if (itemstack.getUnlocalizedName().toLowerCase().contains(filter.toLowerCase()) ||
-				itemstack.getDisplayName().toLowerCase().contains(filter.toLowerCase()))
-			{
-				return true;
-			}
-
-			return false;
 		}
 	}
 }

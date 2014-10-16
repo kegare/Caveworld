@@ -48,6 +48,7 @@ import com.kegare.caveworld.entity.ai.EntityAICollector;
 import com.kegare.caveworld.entity.ai.EntityAIFleeEntityLiving;
 import com.kegare.caveworld.entity.ai.EntityAIFleeSun2;
 import com.kegare.caveworld.entity.ai.EntityAISoldier;
+import com.kegare.caveworld.item.ItemCavenium;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.comparator.InventoryComparator;
 
@@ -130,7 +131,7 @@ public class EntityCaveman extends EntityTameable implements IInventory
 	@Override
 	public boolean isBreedingItem(ItemStack itemstack)
 	{
-		return itemstack != null && itemstack.getItem() == Items.emerald;
+		return itemstack != null && itemstack.getItem() != null && itemstack.getItem() instanceof ItemCavenium;
 	}
 
 	@Override
@@ -362,7 +363,7 @@ public class EntityCaveman extends EntityTameable implements IInventory
 
 		if (entity != null)
 		{
-			if (entity instanceof EntityPlayer && isTamed() && func_152113_b().equals(((EntityPlayer)entity).getUniqueID().toString()) && ((EntityPlayer)entity).isSneaking())
+			if (entity instanceof EntityPlayer && isTamed() && func_152113_b().equals(((EntityPlayer)entity).getGameProfile().getId().toString()) && ((EntityPlayer)entity).isSneaking())
 			{
 				setSitting(!isSitting());
 
@@ -411,7 +412,7 @@ public class EntityCaveman extends EntityTameable implements IInventory
 
 				setCurrentItemOrArmor(0, itemstack);
 			}
-			else if (!worldObj.isRemote && func_152113_b().equals(player.getUniqueID().toString()))
+			else if (!worldObj.isRemote && func_152113_b().equals(player.getGameProfile().getId().toString()))
 			{
 				player.displayGUIChest(this);
 			}
@@ -436,7 +437,7 @@ public class EntityCaveman extends EntityTameable implements IInventory
 						setTamed(true);
 						setPathToEntity(null);
 						setAttackTarget(null);
-						func_152115_b(player.getUniqueID().toString());
+						func_152115_b(player.getGameProfile().getId().toString());
 						playTameEffect(true);
 						worldObj.setEntityState(this, (byte)7);
 

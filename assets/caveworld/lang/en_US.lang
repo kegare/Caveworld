@@ -54,6 +54,14 @@ caveworld.config.blocks=Block Settings
 caveworld.config.blocks.tooltip=Change the settings contained in caveworld-blocks.cfg
 caveworld.config.blocks.Rope=Rope
 caveworld.config.blocks.Rope.tooltip=Whether or not to add Rope.
+caveworld.config.blocks.oreCavenium=Cavenium Ore
+caveworld.config.blocks.oreCavenium.tooltip=Whether or not to add Cavenium Ore.
+caveworld.config.items=Item Settings
+caveworld.config.items.tooltip=Change the settings contained in caveworld-items.cfg
+caveworld.config.items.cavenium=Cavenium
+caveworld.config.items.cavenium.tooltip=Whether or not to add Cavenium.
+caveworld.config.items.pickaxeMining=Mining Pickaxe
+caveworld.config.items.pickaxeMining.tooltip=Whether or not to add Mining Pickaxe.
 caveworld.config.entities=Entity Settings
 caveworld.config.entities.tooltip=Change the settings contained in caveworld-entities.cfg
 caveworld.config.entities.entry.tooltip=Change the settings of %s
@@ -132,7 +140,9 @@ caveworld.config.veins.genTargetBlockMetadata.tooltip=Specify the generate targe
 caveworld.config.veins.genBiomes=Generate Biomes
 caveworld.config.veins.genBiomes.tooltip=Specify the generate biomes of this vein.
 caveworld.config.select.block=Select a block
+caveworld.config.select.block.multiple=Select blocks
 caveworld.config.select.item=Select a item
+caveworld.config.select.item.multiple=Select items
 caveworld.config.select.biome=Select the biomes
 caveworld.config.select.biome.selected=%d biomes selected
 caveworld.config.select.biome.info.topBlock=Top Block
@@ -143,6 +153,14 @@ caveworld.config.select.biome.info.type=Type
 
 tile.portalCaveworld.name=Caveworld Portal Block
 tile.rope.name=Rope
+tile.oreCavenium.name=Cavenium Ore
+
+item.cavenium.name=Cavenium
+item.pickaxeMining.name=Mining Pickaxe
+item.pickaxeMining.mode=Mining Mode
+item.pickaxeMining.mode.normal=NORMAL
+item.pickaxeMining.mode.quick=QUICK
+item.pickaxeMining.mode.ranged=RANGED
 
 inventory.caveworld.portal=Caveworld Portal
 

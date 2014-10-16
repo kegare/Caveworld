@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -39,6 +40,7 @@ import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.oredict.OreDictionary;
 
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
@@ -54,6 +56,7 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
+import cpw.mods.fml.common.registry.GameData;
 
 public class CaveUtils
 {
@@ -292,5 +295,17 @@ public class CaveUtils
 		}
 
 		return true;
+	}
+
+	public static String toStringHelper(Block block, int metadata)
+	{
+		String name = GameData.getBlockRegistry().getNameForObject(block);
+
+		if (metadata == OreDictionary.WILDCARD_VALUE)
+		{
+			return name;
+		}
+
+		return name + "@" + metadata;
 	}
 }

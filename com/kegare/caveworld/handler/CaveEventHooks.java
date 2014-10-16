@@ -9,16 +9,19 @@
 
 package com.kegare.caveworld.handler;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.UUID;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockBed;
 import net.minecraft.block.BlockOre;
 import net.minecraft.block.BlockRedstoneOre;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiIngame;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
@@ -43,7 +46,6 @@ import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MathHelper;
-import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
@@ -58,21 +60,28 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent;
 import net.minecraftforge.event.world.WorldEvent;
+
+import org.lwjgl.opengl.GL11;
+
 import shift.mceconomy2.api.MCEconomyAPI;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Table.Cell;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.core.CaveAchievementList;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.entity.EntityCaveman;
+import com.kegare.caveworld.item.ItemMiningPickaxe;
+import com.kegare.caveworld.item.ItemMiningPickaxe.BreakMode;
 import com.kegare.caveworld.network.BuffMessage;
 import com.kegare.caveworld.network.CaveAchievementMessage;
 import com.kegare.caveworld.network.CaveSoundMessage;
@@ -81,16 +90,22 @@ import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.util.Version.Status;
+import com.kegare.caveworld.util.breaker.BreakPos;
+import com.kegare.caveworld.util.breaker.IBreakExecutor;
+import com.kegare.caveworld.util.breaker.MultiBreakExecutor;
+import com.kegare.caveworld.util.breaker.RangedBreakExecutor;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
+import cpw.mods.fml.common.ObfuscationReflectionHelper;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
 import cpw.mods.fml.common.gameevent.TickEvent.ClientTickEvent;
 import cpw.mods.fml.common.gameevent.TickEvent.Phase;
+import cpw.mods.fml.common.gameevent.TickEvent.RenderTickEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ServerConnectionFromClientEvent;
 import cpw.mods.fml.relauncher.Side;
@@ -100,7 +115,12 @@ public class CaveEventHooks
 {
 	public static final CaveEventHooks instance = new CaveEventHooks();
 
-	public static final Set<UUID> firstJoinPlayers = Sets.newHashSet();
+	public static final Set<String> firstJoinPlayers = Sets.newHashSet();
+
+	@SideOnly(Side.CLIENT)
+	private BreakPos breakingPos;
+	@SideOnly(Side.CLIENT)
+	private long triggerTime;
 
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
@@ -115,6 +135,9 @@ public class CaveEventHooks
 					break;
 				case "blocks":
 					Config.syncBlocksCfg();
+					break;
+				case "items":
+					Config.syncItemsCfg();
 					break;
 				case "entities":
 					Config.syncEntitiesCfg();
@@ -137,15 +160,134 @@ public class CaveEventHooks
 
 		Minecraft mc = FMLClientHandler.instance().getClient();
 
-		if (mc.thePlayer != null && mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == MovingObjectType.ENTITY)
+		if (mc.thePlayer != null && mc.objectMouseOver != null)
 		{
-			Entity entity = mc.objectMouseOver.entityHit;
-
-			if (CaveworldAPI.isEntityInCaveworld(entity) && entity instanceof EntityCaveman && !((EntityCaveman)entity).isTamed())
+			switch (mc.objectMouseOver.typeOfHit)
 			{
-				if (!mc.thePlayer.getStatFileWriter().hasAchievementUnlocked(CaveAchievementList.caveman))
+				case BLOCK:
+					ItemStack current = mc.thePlayer.getCurrentEquippedItem();
+
+					if (current != null && current.getItem() != null && current.getItem() instanceof ItemMiningPickaxe)
+					{
+						if (mc.thePlayer.capabilities.isCreativeMode)
+						{
+							return;
+						}
+
+						int x = mc.objectMouseOver.blockX;
+						int y = mc.objectMouseOver.blockY;
+						int z = mc.objectMouseOver.blockZ;
+						ItemMiningPickaxe pickaxe = (ItemMiningPickaxe)current.getItem();
+
+						if (mc.thePlayer.isSwingInProgress && (breakingPos == null || breakingPos.x != x || breakingPos.y != y || breakingPos.z != z))
+						{
+							breakingPos = null;
+							triggerTime = 0;
+
+							Block block = mc.theWorld.getBlock(x, y, z);
+							int meta = mc.theWorld.getBlockMetadata(x, y, z);
+
+							if (pickaxe.canBreak(current, block, meta))
+							{
+								switch (pickaxe.getMode(current))
+								{
+									case QUICK:
+										MultiBreakExecutor.getExecutor(mc.theWorld, mc.thePlayer).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
+										return;
+									case RANGED:
+										RangedBreakExecutor.getExecutor(mc.theWorld, mc.thePlayer).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
+										return;
+									default:
+								}
+
+								breakingPos = new BreakPos(mc.theWorld, x, y, z);
+								triggerTime = System.nanoTime();
+							}
+							else
+							{
+								MultiBreakExecutor.getExecutor(mc.theWorld, mc.thePlayer).clear();
+								RangedBreakExecutor.getExecutor(mc.theWorld, mc.thePlayer).clear();
+
+								breakingPos = null;
+								triggerTime = 0;
+							}
+						}
+
+						if (breakingPos != null)
+						{
+							Block block = breakingPos.getCurrentBlock();
+
+							if (block == null || breakingPos.isPlaced() || block.isAir(mc.theWorld, x, y, z))
+							{
+								breakingPos = null;
+								triggerTime = 0;
+							}
+						}
+					}
+
+					if (System.nanoTime() - triggerTime >= 10000000000L)
+					{
+						breakingPos = null;
+						triggerTime = 0;
+					}
+
+					break;
+				case ENTITY:
+					Entity entity = mc.objectMouseOver.entityHit;
+
+					if (CaveworldAPI.isEntityInCaveworld(entity) && entity instanceof EntityCaveman && !((EntityCaveman)entity).isTamed())
+					{
+						if (!mc.thePlayer.getStatFileWriter().hasAchievementUnlocked(CaveAchievementList.caveman))
+						{
+							Caveworld.network.sendToServer(new CaveAchievementMessage(CaveAchievementList.caveman));
+						}
+					}
+
+					break;
+				default:
+			}
+		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
+	public void onRenderTick(RenderTickEvent event)
+	{
+		if (event.phase != Phase.END)
+		{
+			return;
+		}
+
+		Minecraft mc = FMLClientHandler.instance().getClient();
+		ScaledResolution resolution = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
+
+		if (mc.thePlayer != null)
+		{
+			ItemStack current = mc.thePlayer.getCurrentEquippedItem();
+
+			if (current != null && current.getItem() != null && current.getItem() instanceof ItemMiningPickaxe)
+			{
+				ItemMiningPickaxe item = (ItemMiningPickaxe)current.getItem();
+
+				if (item.highlightTicks > 0)
 				{
-					Caveworld.network.sendToServer(new CaveAchievementMessage(CaveAchievementList.caveman));
+					GL11.glPushMatrix();
+					GL11.glEnable(GL11.GL_BLEND);
+					OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+					mc.fontRenderer.drawStringWithShadow(item.getModeInfomation(current), 18, resolution.getScaledHeight() - 20, 0xEEEEEE);
+					GL11.glDisable(GL11.GL_BLEND);
+					GL11.glPopMatrix();
+
+					--item.highlightTicks;
+				}
+				else
+				{
+					int highlight = ObfuscationReflectionHelper.getPrivateValue(GuiIngame.class, mc.ingameGUI, "remainingHighlightTicks", "field_92017_k");
+
+					if (highlight == 40)
+					{
+						item.highlightTicks = 800;
+					}
 				}
 			}
 		}
@@ -216,7 +358,7 @@ public class CaveEventHooks
 			}
 			else
 			{
-				if (Config.caveborn && firstJoinPlayers.contains(player.getUniqueID()))
+				if (Config.caveborn && firstJoinPlayers.contains(player.getGameProfile().getId().toString()))
 				{
 					List<ItemStack> bonus = Lists.newArrayList();
 
@@ -248,7 +390,26 @@ public class CaveEventHooks
 	@SubscribeEvent
 	public void onPlayerLoggedOut(PlayerLoggedOutEvent event)
 	{
-		firstJoinPlayers.remove(event.player.getUniqueID());
+		EntityPlayer player = event.player;
+		String key = player.getGameProfile().getId().toString();
+
+		firstJoinPlayers.remove(key);
+
+		for (Iterator<Cell<World, EntityPlayer, MultiBreakExecutor>> iterator = MultiBreakExecutor.executors.cellSet().iterator(); iterator.hasNext();)
+		{
+			if (iterator.next().getColumnKey().getGameProfile().getId().toString().equals(key))
+			{
+				iterator.remove();
+			}
+		}
+
+		for (Iterator<Cell<World, EntityPlayer, RangedBreakExecutor>> iterator = RangedBreakExecutor.executors.cellSet().iterator(); iterator.hasNext();)
+		{
+			if (iterator.next().getColumnKey().getGameProfile().getId().toString().equals(key))
+			{
+				iterator.remove();
+			}
+		}
 	}
 
 	@SubscribeEvent
@@ -301,7 +462,7 @@ public class CaveEventHooks
 			}
 		}
 
-		firstJoinPlayers.add(UUID.fromString(event.playerUUID));
+		firstJoinPlayers.add(event.playerUUID);
 	}
 
 	@SubscribeEvent
@@ -341,7 +502,7 @@ public class CaveEventHooks
 	@SubscribeEvent
 	public void onPlayerInteract(PlayerInteractEvent event)
 	{
-		if (event.entityPlayer instanceof EntityPlayerMP && event.action == Action.RIGHT_CLICK_BLOCK)
+		if (event.entityPlayer instanceof EntityPlayerMP)
 		{
 			EntityPlayerMP player = (EntityPlayerMP)event.entityPlayer;
 			ItemStack current = player.getCurrentEquippedItem();
@@ -351,106 +512,170 @@ public class CaveEventHooks
 			int z = event.z;
 			int face = event.face;
 
-			if (!player.isSneaking() && current != null && current.getItem() == Item.getItemFromBlock(Blocks.ender_chest))
+			if (event.action == Action.LEFT_CLICK_BLOCK)
 			{
-				if (face == 0)
+				if (current != null && current.getItem() != null && current.getItem() instanceof ItemMiningPickaxe)
 				{
-					--y;
-				}
-				else if (face == 1)
-				{
-					++y;
-				}
-				else if (face == 2)
-				{
-					--z;
-				}
-				else if (face == 3)
-				{
-					++z;
-				}
-				else if (face == 4)
-				{
-					--x;
-				}
-				else if (face == 5)
-				{
-					++x;
-				}
+					ItemMiningPickaxe pickaxe = (ItemMiningPickaxe)current.getItem();
+					Block block = world.getBlock(x, y, z);
+					int meta = world.getBlockMetadata(x, y, z);
 
-				if (CaveBlocks.caveworld_portal.func_150000_e(world, x, y, z))
-				{
-					world.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, CaveBlocks.caveworld_portal.stepSound.func_150496_b(), 1.0F, 2.0F);
-
-					if (!player.capabilities.isCreativeMode && --current.stackSize <= 0)
+					if (pickaxe.canBreak(current, block, meta))
 					{
-						player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
+						switch (pickaxe.getMode(current))
+						{
+							case QUICK:
+								MultiBreakExecutor.getExecutor(world, player).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
+								return;
+							case RANGED:
+								RangedBreakExecutor.getExecutor(world, player).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
+								return;
+							default:
+						}
+					}
+					else
+					{
+						MultiBreakExecutor.getExecutor(world, player).clear();
+						RangedBreakExecutor.getExecutor(world, player).clear();
+					}
+				}
+			}
+			else if (event.action == Action.RIGHT_CLICK_BLOCK)
+			{
+				if (!player.isSneaking() && current != null && current.getItem() == Item.getItemFromBlock(Blocks.ender_chest))
+				{
+					if (face == 0)
+					{
+						--y;
+					}
+					else if (face == 1)
+					{
+						++y;
+					}
+					else if (face == 2)
+					{
+						--z;
+					}
+					else if (face == 3)
+					{
+						++z;
+					}
+					else if (face == 4)
+					{
+						--x;
+					}
+					else if (face == 5)
+					{
+						++x;
 					}
 
-					player.triggerAchievement(CaveAchievementList.portal);
+					if (CaveBlocks.caveworld_portal.func_150000_e(world, x, y, z))
+					{
+						world.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, CaveBlocks.caveworld_portal.stepSound.func_150496_b(), 1.0F, 2.0F);
+
+						if (!player.capabilities.isCreativeMode && --current.stackSize <= 0)
+						{
+							player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
+						}
+
+						player.triggerAchievement(CaveAchievementList.portal);
+
+						event.setCanceled(true);
+					}
+				}
+				else if (CaveworldAPI.isEntityInCaveworld(player) && world.getBlock(x, y, z).isBed(world, x, y, z, player))
+				{
+					int metadata = world.getBlockMetadata(x, y, z);
+
+					if (!BlockBed.isBlockHeadOfBed(metadata))
+					{
+						int var1 = BlockBed.getDirection(metadata);
+						x += BlockBed.field_149981_a[var1][0];
+						z += BlockBed.field_149981_a[var1][1];
+
+						if (!world.getBlock(x, y, z).isBed(world, x, y, z, player))
+						{
+							return;
+						}
+
+						metadata = world.getBlockMetadata(x, y, z);
+					}
+
+					if (BlockBed.func_149976_c(metadata))
+					{
+						for (Object obj : world.playerEntities)
+						{
+							EntityPlayer target = (EntityPlayer)obj;
+
+							if (target.isPlayerSleeping())
+							{
+								ChunkCoordinates coord = target.playerLocation;
+
+								if (coord.posX == x && coord.posY == y && coord.posZ == z)
+								{
+									player.addChatComponentMessage(new ChatComponentTranslation("tile.bed.occupied"));
+
+									return;
+								}
+							}
+						}
+
+						BlockBed.func_149979_a(world, x, y, z, false);
+					}
+
+					EnumStatus status = player.sleepInBedAt(x, y, z);
+
+					if (status == EnumStatus.OK)
+					{
+						BlockBed.func_149979_a(world, x, y, z, true);
+					}
+					else
+					{
+						if (status == EnumStatus.NOT_POSSIBLE_NOW)
+						{
+							player.addChatComponentMessage(new ChatComponentTranslation("tile.bed.noSleep"));
+						}
+						else if (status == EnumStatus.NOT_SAFE)
+						{
+							player.addChatComponentMessage(new ChatComponentTranslation("tile.bed.notSafe"));
+						}
+					}
 
 					event.setCanceled(true);
 				}
 			}
-			else if (CaveworldAPI.isEntityInCaveworld(player) && world.getBlock(x, y, z).isBed(world, x, y, z, player))
+		}
+	}
+
+	@SubscribeEvent
+	public void onBreakSpeed(BreakSpeed event)
+	{
+		EntityPlayer player = event.entityPlayer;
+		ItemStack current = player.getCurrentEquippedItem();
+
+		if (current != null && current.getItem() != null && current.getItem() instanceof ItemMiningPickaxe)
+		{
+			BreakMode mode = ((ItemMiningPickaxe)current.getItem()).getMode(current);
+			IBreakExecutor executor;
+
+			switch (mode)
 			{
-				int metadata = world.getBlockMetadata(x, y, z);
+				case QUICK:
+					executor = MultiBreakExecutor.getExecutor(player.worldObj, player);
+					break;
+				case RANGED:
+					executor = RangedBreakExecutor.getExecutor(player.worldObj, player);
+					break;
+				default:
+					executor = null;
+					break;
+			}
 
-				if (!BlockBed.isBlockHeadOfBed(metadata))
-				{
-					int var1 = BlockBed.getDirection(metadata);
-					x += BlockBed.field_149981_a[var1][0];
-					z += BlockBed.field_149981_a[var1][1];
+			if (executor != null && !executor.getBreakPositions().isEmpty())
+			{
+				int count = executor.getBreakPositions().size();
 
-					if (!world.getBlock(x, y, z).isBed(world, x, y, z, player))
-					{
-						return;
-					}
-
-					metadata = world.getBlockMetadata(x, y, z);
-				}
-
-				if (BlockBed.func_149976_c(metadata))
-				{
-					for (Object obj : world.playerEntities)
-					{
-						EntityPlayer target = (EntityPlayer)obj;
-
-						if (target.isPlayerSleeping())
-						{
-							ChunkCoordinates coord = target.playerLocation;
-
-							if (coord.posX == x && coord.posY == y && coord.posZ == z)
-							{
-								player.addChatComponentMessage(new ChatComponentTranslation("tile.bed.occupied"));
-
-								return;
-							}
-						}
-					}
-
-					BlockBed.func_149979_a(world, x, y, z, false);
-				}
-
-				EnumStatus status = player.sleepInBedAt(x, y, z);
-
-				if (status == EnumStatus.OK)
-				{
-					BlockBed.func_149979_a(world, x, y, z, true);
-				}
-				else
-				{
-					if (status == EnumStatus.NOT_POSSIBLE_NOW)
-					{
-						player.addChatComponentMessage(new ChatComponentTranslation("tile.bed.noSleep"));
-					}
-					else if (status == EnumStatus.NOT_SAFE)
-					{
-						player.addChatComponentMessage(new ChatComponentTranslation("tile.bed.notSafe"));
-					}
-				}
-
-				event.setCanceled(true);
+				event.newSpeed = event.originalSpeed / (count * 0.5F);
 			}
 		}
 	}
@@ -616,13 +841,30 @@ public class CaveEventHooks
 	public void onWorldUnload(WorldEvent.Unload event)
 	{
 		World world = event.world;
+		int dim = world.provider.dimensionId;
 
-		if (!world.isRemote && world.provider.dimensionId == CaveworldAPI.getDimension())
+		if (!world.isRemote && dim == CaveworldAPI.getDimension())
 		{
 			CaveBlocks.caveworld_portal.saveInventoryToDimData();
 			CaveBlocks.caveworld_portal.clearInventory();
 
 			WorldProviderCaveworld.saveDimData();
+		}
+
+		for (Iterator<Cell<World, EntityPlayer, MultiBreakExecutor>> iterator = MultiBreakExecutor.executors.cellSet().iterator(); iterator.hasNext();)
+		{
+			if (iterator.next().getRowKey().provider.dimensionId == dim)
+			{
+				iterator.remove();
+			}
+		}
+
+		for (Iterator<Cell<World, EntityPlayer, RangedBreakExecutor>> iterator = RangedBreakExecutor.executors.cellSet().iterator(); iterator.hasNext();)
+		{
+			if (iterator.next().getRowKey().provider.dimensionId == dim)
+			{
+				iterator.remove();
+			}
 		}
 	}
 

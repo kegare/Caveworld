@@ -36,6 +36,7 @@ import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.api.ICaveBiome;
+import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome;
 import com.kegare.caveworld.core.CaveVeinManager.CaveVein;
 import com.kegare.caveworld.entity.EntityCaveman;
@@ -56,6 +57,7 @@ public class Config
 
 	public static Configuration generalCfg;
 	public static Configuration blocksCfg;
+	public static Configuration itemsCfg;
 	public static Configuration dimensionCfg;
 	public static Configuration biomesCfg;
 	public static Configuration entitiesCfg;
@@ -72,6 +74,10 @@ public class Config
 	public static boolean caveborn;
 
 	public static boolean rope;
+	public static boolean oreCavenium;
+
+	public static boolean cavenium;
+	public static boolean pickaxeMining;
 
 	public static int cavemanSpawnWeight;
 	public static int cavemanSpawnMinHeight;
@@ -250,6 +256,12 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		rope = prop.getBoolean(rope);
+		prop = blocksCfg.get(category, "oreCavenium", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		oreCavenium = prop.getBoolean(oreCavenium);
 
 		blocksCfg.setCategoryPropertyOrder(category, propOrder);
 		blocksCfg.setCategoryRequiresMcRestart(category, true);
@@ -257,6 +269,41 @@ public class Config
 		if (blocksCfg.hasChanged())
 		{
 			blocksCfg.save();
+		}
+	}
+
+	public static void syncItemsCfg()
+	{
+		String category = "items";
+		Property prop;
+		List<String> propOrder = Lists.newArrayList();
+
+		if (itemsCfg == null)
+		{
+			itemsCfg = loadConfig(category);
+		}
+
+		itemsCfg.addCustomCategoryComment(category, "If multiplayer, values must match on client-side and server-side.");
+
+		prop = itemsCfg.get(category, "cavenium", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		cavenium = prop.getBoolean(cavenium);
+		prop = itemsCfg.get(category, "pickaxeMining", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		pickaxeMining = prop.getBoolean(pickaxeMining);
+
+		itemsCfg.setCategoryPropertyOrder(category, propOrder);
+		itemsCfg.setCategoryRequiresMcRestart(category, true);
+
+		if (itemsCfg.hasChanged())
+		{
+			itemsCfg.save();
 		}
 	}
 
@@ -582,6 +629,7 @@ public class Config
 
 		if (veinsCfg.getCategoryNames().isEmpty())
 		{
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 0), 3, 6, 128, 255));
 			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 17, 20, 0, 255));
 			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 10, 28, 0, 255));
 			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.gold_ore, 0), 8, 3, 0, 127));
