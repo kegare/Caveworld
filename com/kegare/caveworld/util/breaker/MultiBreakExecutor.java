@@ -65,8 +65,6 @@ public class MultiBreakExecutor implements IBreakExecutor
 		originPos = new BreakPos(world, x, y, z);
 		currentPos = originPos;
 
-		breakPositions.add(originPos);
-
 		return this;
 	}
 
@@ -196,8 +194,14 @@ public class MultiBreakExecutor implements IBreakExecutor
 		{
 			ItemStack current = player.getCurrentEquippedItem();
 
-			if (current == null || current.isItemStackDamageable() && current.getItemDamage() == current.getMaxDamage() || pos.isPlaced() || pos.doBreak(player))
+			if (current == null || current.isItemStackDamageable() && current.getItemDamage() >= current.getMaxDamage() || pos.isPlaced())
 			{
+				remove.add(pos);
+			}
+			else
+			{
+				pos.doBreak(player);
+
 				remove.add(pos);
 			}
 		}

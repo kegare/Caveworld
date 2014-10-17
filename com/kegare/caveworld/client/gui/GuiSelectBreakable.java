@@ -25,6 +25,7 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
@@ -321,6 +322,11 @@ public class GuiSelectBreakable extends GuiScreen
 					{
 						Block sub = Block.getBlockFromItem(itemstack.getItem());
 						int meta = itemstack.getItemDamage();
+
+						if (meta < 0 || meta >= 16 || sub == Blocks.air)
+						{
+							continue;
+						}
 
 						if (Strings.nullToEmpty(sub.getHarvestTool(meta)).equalsIgnoreCase("pickaxe") ||
 							CaveItems.mining_pickaxe.func_150897_b(sub) || block instanceof BlockOre || block instanceof BlockRedstoneOre)

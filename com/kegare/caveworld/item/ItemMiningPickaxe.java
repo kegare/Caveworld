@@ -18,7 +18,6 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.ItemPickaxe;
@@ -226,9 +225,9 @@ public class ItemMiningPickaxe extends ItemPickaxe
 	@Override
 	public boolean onBlockDestroyed(ItemStack itemstack, World world, Block block, int x, int y, int z, EntityLivingBase entity)
 	{
-		if (entity instanceof EntityPlayerMP)
+		if (entity instanceof EntityPlayer)
 		{
-			EntityPlayerMP player = (EntityPlayerMP)entity;
+			EntityPlayer player = (EntityPlayer)entity;
 			IBreakExecutor executor;
 
 			switch (getMode(itemstack))
@@ -251,6 +250,8 @@ public class ItemMiningPickaxe extends ItemPickaxe
 				if (origin != null && x == origin.x && y == origin.y && z == origin.z)
 				{
 					executor.breakAll();
+
+					return true;
 				}
 			}
 		}

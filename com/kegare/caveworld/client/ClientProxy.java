@@ -11,6 +11,7 @@ package com.kegare.caveworld.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.network.play.client.C07PacketPlayerDigging;
 
 import com.kegare.caveworld.client.config.SelectBiomeEntry;
 import com.kegare.caveworld.client.config.SelectBlockEntry;
@@ -60,5 +61,16 @@ public class ClientProxy extends CommonProxy
 		{
 			mc.displayGuiScreen((GuiScreen)obj);
 		}
+	}
+
+	@Override
+	public void destoryClientBlock(int x, int y, int z)
+	{
+		Minecraft mc = FMLClientHandler.instance().getClient();
+		int sideHit = mc.objectMouseOver.sideHit;
+
+		mc.playerController.onPlayerDestroyBlock(x, y, z, sideHit);
+
+		mc.getNetHandler().addToSendQueue(new C07PacketPlayerDigging(2, x, y, z, sideHit));
 	}
 }

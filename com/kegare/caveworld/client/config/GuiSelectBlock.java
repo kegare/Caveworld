@@ -53,7 +53,12 @@ import cpw.mods.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class GuiSelectBlock extends GuiScreen
 {
-	public static final ArrayListExtended<Block> raws = new ArrayListExtended().addAllObject(GameData.getBlockRegistry()).sort(new BlockComparator());
+	public static final ArrayListExtended<Block> raws = new ArrayListExtended().addAllObject(GameData.getBlockRegistry());
+
+	static
+	{
+		raws.sort(new BlockComparator());
+	}
 
 	public interface SelectListener
 	{
@@ -331,11 +336,14 @@ public class GuiSelectBlock extends GuiScreen
 					if (itemstack != null && itemstack.getItem() != null)
 					{
 						Block sub = Block.getBlockFromItem(itemstack.getItem());
+						int meta = itemstack.getItemDamage();
 
-						if (sub != Blocks.air)
+						if (meta < 0 || meta >= 16 || sub == Blocks.air)
 						{
-							blocks.addIfAbsent(new BlockEntry(sub, itemstack.getItemDamage()));
+							continue;
 						}
+
+						blocks.addIfAbsent(new BlockEntry(sub, meta));
 					}
 				}
 			}

@@ -11,11 +11,14 @@ package com.kegare.caveworld.util.breaker;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.network.play.server.S23PacketBlockChange;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 
 import com.google.common.base.Objects;
+import com.kegare.caveworld.core.Caveworld;
 
 public class BreakPos
 {
@@ -41,33 +44,60 @@ public class BreakPos
 		return getCurrentBlock() != prevBlock || getCurrentMetadata() != prevMeta;
 	}
 
-	public boolean doBreak(EntityPlayer player)
+	public void doBreak(EntityPlayer player)
 	{
 		Block block = getCurrentBlock();
 		int meta = getCurrentMetadata();
 
-		if (world.setBlockToAir(x, y, z))
+		if (player.capabilities.isCreativeMode)
 		{
-			if (player.capabilities.isCreativeMode)
+			block.onBlockHarvested(world, x, y, z, meta, player);
+
+			if (block.removedByPlayer(world, player, x, y, z, false))
 			{
-				return true;
+				block.onBlockDestroyedByPlayer(world, x, y, z, meta);
 			}
 
-			block.harvestBlock(world, player, x, y, z, meta);
-
-			BreakEvent event = new BreakEvent(x, y, z, world, block, meta, player);
-
-			if (MinecraftForge.EVENT_BUS.post(event))
+			if (!world.isRemote)
 			{
-				block.dropXpOnBlockBreak(world, x, y, z, event.getExpToDrop());
+				((EntityPlayerMP)player).playerNetServerHandler.sendPacket(new S23PacketBlockChange(x, y, z, world));
 			}
 
-			player.getCurrentEquippedItem().damageItem(1, player);
-
-			return true;
+			return;
 		}
 
-		return false;
+		if (!world.isRemote)
+		{
+			block.onBlockHarvested(world, x, y, z, meta, player);
+
+			if (block.removedByPlayer(world, player, x, y, z, true))
+			{
+				block.onBlockDestroyedByPlayer(world, x, y, z, meta);
+				block.harvestBlock(world, player, x, y, z, meta);
+
+				BreakEvent event = new BreakEvent(x, y, z, world, block, meta, player);
+
+				if (MinecraftForge.EVENT_BUS.post(event))
+				{
+					block.dropXpOnBlockBreak(world, x, y, z, event.getExpToDrop());
+				}
+
+				player.getCurrentEquippedItem().damageItem(1, player);
+			}
+
+			((EntityPlayerMP)player).playerNetServerHandler.sendPacket(new S23PacketBlockChange(x, y, z, world));
+		}
+		else
+		{
+			world.playAuxSFX(2001, x, y, z, Block.getIdFromBlock(block) + (meta << 12));
+
+			if (block.removedByPlayer(world, player, x, y, z, true))
+			{
+				block.onBlockDestroyedByPlayer(world, x, y, z, meta);
+			}
+
+			Caveworld.proxy.destoryClientBlock(x, y, z);
+		}
 	}
 
 	public Block getCurrentBlock()

@@ -18,6 +18,7 @@ import net.minecraft.stats.Achievement;
 import net.minecraftforge.common.AchievementPage;
 
 import com.kegare.caveworld.block.CaveBlocks;
+import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.util.ArrayListExtended;
 
 public class CaveAchievementList
@@ -26,6 +27,7 @@ public class CaveAchievementList
 
 	public static final Achievement portal = new CaveAchievement("portal", -3, -1, Blocks.mossy_cobblestone, null).initIndependentStat().registerStat();
 	public static final Achievement caveworld = new CaveAchievement("caveworld", -1, -1, CaveBlocks.caveworld_portal, null).initIndependentStat().registerStat();
+	public static final Achievement cavenium = new CaveAchievement("cavenium", -3, 2, CaveItems.cavenium, caveworld).registerStat();
 	public static final Achievement theMiner = new CaveAchievement("theMiner", 1, 2, Items.iron_pickaxe, caveworld).registerStat();
 	public static final Achievement caveman = new CaveAchievement("caveman", 5, 2, Blocks.stone, caveworld).registerStat();
 	public static final Achievement compCaving = new CaveAchievement("compCaving", 5, 5, Items.egg, caveman).setSpecial().registerStat();

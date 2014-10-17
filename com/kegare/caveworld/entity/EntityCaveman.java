@@ -131,7 +131,17 @@ public class EntityCaveman extends EntityTameable implements IInventory
 	@Override
 	public boolean isBreedingItem(ItemStack itemstack)
 	{
-		return itemstack != null && itemstack.getItem() != null && itemstack.getItem() instanceof ItemCavenium;
+		if (itemstack != null && itemstack.getItem() != null)
+		{
+			if (Config.cavenium)
+			{
+				return itemstack.getItem() instanceof ItemCavenium;
+			}
+
+			return itemstack.getItem() == Items.emerald;
+		}
+
+		return false;
 	}
 
 	@Override

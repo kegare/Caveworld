@@ -12,7 +12,6 @@ package com.kegare.caveworld.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 
 import net.minecraft.util.MathHelper;
 
@@ -71,13 +70,6 @@ public class ArrayListExtended<E> extends ArrayList<E>
 	public E get(int index, E value)
 	{
 		return index < 0 || index >= size() || get(index) == null ? value : get(index);
-	}
-
-	public ArrayListExtended<E> sort(Comparator<? super E> comparator)
-	{
-		Collections.sort(this, comparator);
-
-		return this;
 	}
 
 	public ArrayListExtended<E> swap(int index1, int index2)

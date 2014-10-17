@@ -298,13 +298,15 @@ public class GuiSelectItem extends GuiScreen
 
 	protected static class ItemList extends GuiListSlot
 	{
-		protected static final ArrayListExtended<Item> raws = new ArrayListExtended().addAllObject(GameData.getItemRegistry()).sort(new ItemComparator());
+		protected static final ArrayListExtended<Item> raws = new ArrayListExtended().addAllObject(GameData.getItemRegistry());
 		protected static final ArrayListExtended<ItemEntry> items = new ArrayListExtended();
 
 		private static final Map<String, List<ItemEntry>> filterCache = Maps.newHashMap();
 
 		static
 		{
+			raws.sort(new ItemComparator());
+
 			List list = Lists.newArrayList();
 
 			for (Item item : raws)

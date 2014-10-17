@@ -80,6 +80,7 @@ import com.kegare.caveworld.core.CaveAchievementList;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.entity.EntityCaveman;
+import com.kegare.caveworld.item.ItemCavenium;
 import com.kegare.caveworld.item.ItemMiningPickaxe;
 import com.kegare.caveworld.item.ItemMiningPickaxe.BreakMode;
 import com.kegare.caveworld.network.BuffMessage;
@@ -100,6 +101,7 @@ import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
 import cpw.mods.fml.common.ObfuscationReflectionHelper;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
@@ -447,6 +449,29 @@ public class CaveEventHooks
 			else if (Config.hardcore && event.fromDim == CaveworldAPI.getDimension())
 			{
 				CaveUtils.respawnPlayer(player, event.fromDim);
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onItemPickup(ItemPickupEvent event)
+	{
+		EntityPlayer player = event.player;
+		EntityItem entity = event.pickedUp;
+		World world = entity.worldObj;
+		ItemStack itemstack = entity.getEntityItem();
+		EntityPlayer thrower = null;
+
+		if (entity.func_145800_j() != null)
+		{
+			thrower = world.getPlayerEntityByName(entity.func_145800_j());
+		}
+
+		if (itemstack.getItem() instanceof ItemCavenium)
+		{
+			if (thrower == null)
+			{
+				player.triggerAchievement(CaveAchievementList.cavenium);
 			}
 		}
 	}
