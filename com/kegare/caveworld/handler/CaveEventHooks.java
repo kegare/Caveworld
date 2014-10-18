@@ -82,7 +82,6 @@ import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.entity.EntityCaveman;
 import com.kegare.caveworld.item.ItemCavenium;
 import com.kegare.caveworld.item.ItemMiningPickaxe;
-import com.kegare.caveworld.item.ItemMiningPickaxe.BreakMode;
 import com.kegare.caveworld.network.BuffMessage;
 import com.kegare.caveworld.network.CaveAchievementMessage;
 import com.kegare.caveworld.network.CaveSoundMessage;
@@ -109,6 +108,7 @@ import cpw.mods.fml.common.gameevent.TickEvent.ClientTickEvent;
 import cpw.mods.fml.common.gameevent.TickEvent.Phase;
 import cpw.mods.fml.common.gameevent.TickEvent.RenderTickEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
+import cpw.mods.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ServerConnectionFromClientEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -331,6 +331,13 @@ public class CaveEventHooks
 
 			event.handler.handleChat(new S02PacketChat(component));
 		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
+	public void onClientDisconnected(ClientDisconnectionFromServerEvent event)
+	{
+		Caveworld.tabCaveworld.tabIconItem = null;
 	}
 
 	@SubscribeEvent
@@ -680,10 +687,10 @@ public class CaveEventHooks
 
 		if (current != null && current.getItem() != null && current.getItem() instanceof ItemMiningPickaxe)
 		{
-			BreakMode mode = ((ItemMiningPickaxe)current.getItem()).getMode(current);
+			ItemMiningPickaxe pickaxe = (ItemMiningPickaxe)current.getItem();
 			IBreakExecutor executor;
 
-			switch (mode)
+			switch (pickaxe.getMode(current))
 			{
 				case QUICK:
 					executor = MultiBreakExecutor.getExecutor(player.worldObj, player);
@@ -699,8 +706,9 @@ public class CaveEventHooks
 			if (executor != null && !executor.getBreakPositions().isEmpty())
 			{
 				int count = executor.getBreakPositions().size();
+				float refined = pickaxe.getRefined(current) * 0.1F;
 
-				event.newSpeed = event.originalSpeed / (count * 0.5F);
+				event.newSpeed = event.originalSpeed / (count * (0.5F - refined));
 			}
 		}
 	}

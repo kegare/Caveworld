@@ -439,7 +439,7 @@ public class GuiSelectBiome extends GuiScreen
 
 		if (BiomeList.biomes.addAll(hiddenBiomes))
 		{
-			BiomeList.biomes.sort(new BiomeComparator());
+			Collections.sort(BiomeList.biomes, new BiomeComparator());
 		}
 	}
 

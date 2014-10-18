@@ -16,6 +16,7 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
@@ -87,10 +88,11 @@ public class CaveMiningManager implements ICaveMiningManager
 			for (ItemStack entry : ores)
 			{
 				Block block = Block.getBlockFromItem(entry.getItem());
+				int meta = entry.getItemDamage();
 
-				if (block != null)
+				if (block != Blocks.air && !pointAmounts.contains(block, meta))
 				{
-					setMiningPointAmount(block, entry.getItemDamage(), amount);
+					setMiningPointAmount(block, meta, amount);
 				}
 			}
 		}

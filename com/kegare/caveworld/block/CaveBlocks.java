@@ -21,6 +21,7 @@ import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.BlockPortalCaveworld.DispencePortal;
 import com.kegare.caveworld.block.BlockRope.DispenceRope;
 import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.item.ItemCaveniumOre;
 import com.kegare.caveworld.item.ItemPortalCaveworld;
 import com.kegare.caveworld.item.ItemRope;
 
@@ -58,12 +59,22 @@ public class CaveBlocks
 
 		if (Config.oreCavenium)
 		{
-			GameRegistry.registerBlock(cavenium_ore, "cavenium_ore");
+			GameRegistry.registerBlock(cavenium_ore, ItemCaveniumOre.class, "cavenium_ore");
 
-			OreDictionary.registerOre("oreCavenium", cavenium_ore);
-			OreDictionary.registerOre("caveniumOre", cavenium_ore);
+			ItemStack item = new ItemStack(cavenium_ore, 1, 0);
+			OreDictionary.registerOre("oreCavenium", item);
+			OreDictionary.registerOre("caveniumOre", item);
+			item = new ItemStack(cavenium_ore, 1, 1);
+			OreDictionary.registerOre("oreRefinedCavenium", item);
+			OreDictionary.registerOre("refinedCaveniumOre", item);
+
+			item = new ItemStack(cavenium_ore, 1, 2);
+			OreDictionary.registerOre("blockCavenium", item);
+			item = new ItemStack(cavenium_ore, 1, 3);
+			OreDictionary.registerOre("blockRefinedCavenium", item);
 
 			CaveworldAPI.setMiningPointAmount(cavenium_ore, 0, 2);
+			CaveworldAPI.setMiningPointAmount(cavenium_ore, 1, 3);
 		}
 	}
 }

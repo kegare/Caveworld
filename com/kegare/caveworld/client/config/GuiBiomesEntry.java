@@ -9,6 +9,7 @@
 
 package com.kegare.caveworld.client.config;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -472,8 +473,9 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 
 				Comparator<ICaveBiome> comparator = new CaveBiomeComparator();
 
-				biomeList.contents.sort(comparator);
-				biomeList.biomes.sort(comparator);
+				Collections.sort(biomeList.contents, comparator);
+				Collections.sort(biomeList.biomes, comparator);
+
 				biomeList.scrollToSelected();
 			}
 		});

@@ -154,8 +154,12 @@ caveworld.config.select.biome.info.type=Type
 tile.portalCaveworld.name=Caveworld Portal Block
 tile.rope.name=Rope
 tile.oreCavenium.name=Cavenium Ore
+tile.oreCavenium.refined.name=Refined Cavenium Ore
+tile.blockCavenium.name=Block of Cavenium
+tile.blockCavenium.refined.name=Block of Refined Cavenium
 
 item.cavenium.name=Cavenium
+item.cavenium.refined.name=Refined Cavenium
 item.pickaxeMining.name=Mining Pickaxe
 item.pickaxeMining.mode=Mining Mode
 item.pickaxeMining.mode.normal=NORMAL

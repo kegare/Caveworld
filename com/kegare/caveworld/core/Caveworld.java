@@ -34,11 +34,13 @@ import com.kegare.caveworld.network.DimSyncMessage;
 import com.kegare.caveworld.network.MiningSyncMessage;
 import com.kegare.caveworld.network.RegenerateMessage;
 import com.kegare.caveworld.network.SelectBreakableMessage;
+import com.kegare.caveworld.plugin.craftguide.CraftGuidePlugin;
 import com.kegare.caveworld.plugin.enderio.EnderIOPlugin;
 import com.kegare.caveworld.plugin.ic2.IC2Plugin;
 import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.plugin.miningmod.MiningmodPlugin;
 import com.kegare.caveworld.plugin.more.MOrePlugin;
+import com.kegare.caveworld.plugin.nei.NEIPlugin;
 import com.kegare.caveworld.plugin.thaumcraft.ThaumcraftPlugin;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.Version;
@@ -83,6 +85,8 @@ public class Caveworld
 	public static CommonProxy proxy;
 
 	public static final SimpleNetworkWrapper network = new SimpleNetworkWrapper(MODID);
+
+	public static final CreativeTabCaveworld tabCaveworld = new CreativeTabCaveworld();
 
 	@EventHandler
 	public void construct(FMLConstructionEvent event)
@@ -201,6 +205,30 @@ public class Caveworld
 				CaveworldAPI.setMiningPointAmount("caveniumOre", 2);
 			}
 		});
+
+		try
+		{
+			if (CraftGuidePlugin.enabled())
+			{
+				CraftGuidePlugin.invoke();
+			}
+		}
+		catch (Throwable e)
+		{
+			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: CraftGuidePlugin");
+		}
+
+		try
+		{
+			if (event.getSide().isClient() && NEIPlugin.enabled())
+			{
+				NEIPlugin.invoke();
+			}
+		}
+		catch (Throwable e)
+		{
+			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: NEIPlugin");
+		}
 
 		try
 		{

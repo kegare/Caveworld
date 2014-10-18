@@ -9,6 +9,7 @@
 
 package com.kegare.caveworld.util.breaker;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -186,7 +187,7 @@ public class MultiBreakExecutor implements IBreakExecutor
 	@Override
 	public void breakAll()
 	{
-		breakPositions.sort(new BreakPosComparator(originPos));
+		Collections.sort(breakPositions, new BreakPosComparator(originPos));
 
 		Set<BreakPos> remove = Sets.newHashSet();
 

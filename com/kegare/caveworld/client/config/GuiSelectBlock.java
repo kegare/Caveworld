@@ -9,6 +9,7 @@
 
 package com.kegare.caveworld.client.config;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
@@ -57,7 +58,7 @@ public class GuiSelectBlock extends GuiScreen
 
 	static
 	{
-		raws.sort(new BlockComparator());
+		Collections.sort(raws, new BlockComparator());
 	}
 
 	public interface SelectListener

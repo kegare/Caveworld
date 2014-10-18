@@ -629,7 +629,8 @@ public class Config
 
 		if (veinsCfg.getCategoryNames().isEmpty())
 		{
-			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 0), 3, 6, 128, 255));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 0), 4, 7, 128, 255));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 1), 1, 3, 150, 255));
 			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 17, 20, 0, 255));
 			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 10, 28, 0, 255));
 			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.gold_ore, 0), 8, 3, 0, 127));

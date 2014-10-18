@@ -9,7 +9,11 @@
 
 package com.kegare.caveworld.recipe;
 
+import java.util.Set;
+
 import net.minecraft.inventory.InventoryCrafting;
+import net.minecraft.item.EnumRarity;
+import net.minecraft.item.Item;
 import net.minecraft.item.Item.ToolMaterial;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
@@ -17,12 +21,17 @@ import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
+import com.google.common.collect.Sets;
 import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.item.ItemCavenium;
 import com.kegare.caveworld.item.ItemMiningPickaxe;
 
+import cpw.mods.fml.common.registry.GameData;
+
 public class RecipeMiningPickaxe implements IRecipe
 {
+	public static final RecipeMiningPickaxe instance = new RecipeMiningPickaxe();
+
 	@Override
 	public boolean matches(InventoryCrafting crafting, World world)
 	{
@@ -70,11 +79,26 @@ public class RecipeMiningPickaxe implements IRecipe
 	public ItemStack getCraftingResult(InventoryCrafting crafting)
 	{
 		ItemStack result = getRecipeOutput();
-		ItemStack itemstack = crafting.getStackInRowAndColumn(1, 1);
+		ItemStack center = crafting.getStackInRowAndColumn(1, 1);
+		int rare = 0;
 
-		if (itemstack.getItem() instanceof ItemMiningPickaxe)
+		for (int row = 0; row < 3; ++row)
 		{
-			result.setTagCompound(itemstack.getTagCompound());
+			for (int column = 0; column < 3; ++column)
+			{
+				if (row != 1 && column == 1 || row == 1 && column != 1)
+				{
+					if (crafting.getStackInRowAndColumn(row, column).getRarity() == EnumRarity.rare)
+					{
+						++rare;
+					}
+				}
+			}
+		}
+
+		if (center.getItem() instanceof ItemMiningPickaxe)
+		{
+			result.setTagCompound(center.getTagCompound());
 		}
 		else
 		{
@@ -84,11 +108,13 @@ public class RecipeMiningPickaxe implements IRecipe
 			}
 
 			NBTTagCompound data = result.getTagCompound();
-			ToolMaterial material = ((ItemPickaxe)itemstack.getItem()).func_150913_i();
+			ToolMaterial material = ((ItemPickaxe)center.getItem()).func_150913_i();
 
 			data.setInteger("MaxUses", material.getMaxUses());
 			data.setFloat("Efficiency", material.getEfficiencyOnProperMaterial());
 		}
+
+		result.getTagCompound().setInteger("Refined", rare);
 
 		return result;
 	}
@@ -103,5 +129,27 @@ public class RecipeMiningPickaxe implements IRecipe
 	public ItemStack getRecipeOutput()
 	{
 		return new ItemStack(CaveItems.mining_pickaxe);
+	}
+
+	public Set<ItemStack> getCenterItems()
+	{
+		Set<String> set = GameData.getItemRegistry().getKeys();
+		Set<ItemStack> result = Sets.newHashSet();
+
+		for (String key : set)
+		{
+			Item item = GameData.getItemRegistry().getObject(key);
+
+			if (item == null)
+			{
+				continue;
+			}
+			else if (item instanceof ItemPickaxe && ((ItemPickaxe)item).func_150913_i().getHarvestLevel() >= 2)
+			{
+				result.add(new ItemStack(item));
+			}
+		}
+
+		return result;
 	}
 }

@@ -21,7 +21,10 @@ import org.apache.logging.log4j.Level;
 
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.item.CaveItems;
+import com.kegare.caveworld.recipe.RecipeMiningPickaxe;
 import com.kegare.caveworld.util.CaveLog;
+
+import cpw.mods.fml.common.registry.GameRegistry;
 
 public class CommonProxy
 {
@@ -45,9 +48,28 @@ public class CommonProxy
 			addShapelessRecipe(new ItemStack(CaveBlocks.rope), Items.string, Items.string, Items.string, Items.leather);
 		}
 
+		if (Config.oreCavenium)
+		{
+			addShapelessRecipe(new ItemStack(CaveItems.cavenium, 9, 0), new ItemStack(CaveBlocks.cavenium_ore, 1, 2));
+			addShapelessRecipe(new ItemStack(CaveItems.cavenium, 9, 1), new ItemStack(CaveBlocks.cavenium_ore, 1, 3));
+		}
+
 		if (Config.cavenium)
 		{
-			FurnaceRecipes.smelting().func_151393_a(CaveBlocks.cavenium_ore, new ItemStack(CaveItems.cavenium), 0.5F);
+			FurnaceRecipes.smelting().func_151394_a(new ItemStack(CaveBlocks.cavenium_ore, 1, 0), new ItemStack(CaveItems.cavenium, 1, 0), 0.5F);
+			FurnaceRecipes.smelting().func_151394_a(new ItemStack(CaveBlocks.cavenium_ore, 1, 1), new ItemStack(CaveItems.cavenium, 1, 1), 0.75F);
+
+			addShapedRecipe(new ItemStack(CaveBlocks.cavenium_ore, 1, 2),
+				"CCC", "CCC", "CCC",
+				'C', new ItemStack(CaveItems.cavenium, 1, 0));
+			addShapedRecipe(new ItemStack(CaveBlocks.cavenium_ore, 1, 3),
+				"CCC", "CCC", "CCC",
+				'C', new ItemStack(CaveItems.cavenium, 1, 1));
+		}
+
+		if (Config.pickaxeMining)
+		{
+			GameRegistry.addRecipe(RecipeMiningPickaxe.instance);
 		}
 
 		if (Config.portalCraftRecipe)

@@ -17,7 +17,6 @@ import net.minecraft.block.BlockDispenser;
 import net.minecraft.block.BlockPortal;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.dispenser.BehaviorDefaultDispenseItem;
 import net.minecraft.dispenser.IBlockSource;
 import net.minecraft.entity.Entity;
@@ -49,6 +48,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.CaveworldAPI;
+import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.util.CaveUtils;
@@ -79,7 +79,7 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 		this.setLightLevel(0.6F);
 		this.setStepSound(soundTypeGlass);
 		this.disableStats();
-		this.setCreativeTab(CreativeTabs.tabDecorations);
+		this.setCreativeTab(Caveworld.tabCaveworld);
 	}
 
 	@SideOnly(Side.CLIENT)

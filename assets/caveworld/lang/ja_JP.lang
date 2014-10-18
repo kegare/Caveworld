@@ -154,8 +154,12 @@ caveworld.config.select.biome.info.type=タイプ
 tile.portalCaveworld.name=Caveworld ポータルブロック
 tile.rope.name=ロープ
 tile.oreCavenium.name=ケイブニウム鉱石
+tile.oreCavenium.refined.name=上質なケイブニウム鉱石
+tile.blockCavenium.name=ケイブニウムブロック
+tile.blockCavenium.refined.name=上質なケイブニウムブロック
 
 item.cavenium.name=ケイブニウム
+item.cavenium.refined.name=上質なケイブニウム
 item.pickaxeMining.name=採掘ツルハシ
 item.pickaxeMining.mode=採掘モード
 item.pickaxeMining.mode.normal=ノーマル

@@ -15,11 +15,13 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockOre;
 import net.minecraft.block.BlockRedstoneOre;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.EnumRarity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -62,6 +64,7 @@ public class ItemMiningPickaxe extends ItemPickaxe
 		super(MINING);
 		this.setUnlocalizedName(name);
 		this.setTextureName("caveworld:mining_pickaxe");
+		this.setCreativeTab(Caveworld.tabCaveworld);
 	}
 
 	protected void initializeItemStackNBT(ItemStack itemstack)
@@ -83,6 +86,7 @@ public class ItemMiningPickaxe extends ItemPickaxe
 			List<String> list = Lists.newArrayList();
 
 			list.add(CaveUtils.toStringHelper(CaveBlocks.cavenium_ore, 0));
+			list.add(CaveUtils.toStringHelper(CaveBlocks.cavenium_ore, 1));
 			list.add(CaveUtils.toStringHelper(Blocks.coal_ore, 0));
 			list.add(CaveUtils.toStringHelper(Blocks.iron_ore, 0));
 			list.add(CaveUtils.toStringHelper(Blocks.gold_ore, 0));
@@ -118,6 +122,16 @@ public class ItemMiningPickaxe extends ItemPickaxe
 		initializeItemStackNBT(itemstack);
 	}
 
+	public int getRefined(ItemStack itemstack)
+	{
+		if (itemstack.getItem() != this || itemstack.getTagCompound() == null)
+		{
+			return 0;
+		}
+
+		return itemstack.getTagCompound().getInteger("Refined");
+	}
+
 	public boolean canBreak(ItemStack itemstack, Block block, int metadata)
 	{
 		if (itemstack.getItem() != this || itemstack.getTagCompound() == null)
@@ -143,6 +157,24 @@ public class ItemMiningPickaxe extends ItemPickaxe
 				return BreakMode.RANGED;
 			default:
 				return BreakMode.NORMAL;
+		}
+	}
+
+	@Override
+	public String getItemStackDisplayName(ItemStack itemstack)
+	{
+		switch (getRefined(itemstack))
+		{
+			case 1:
+				return super.getItemStackDisplayName(itemstack) + " I";
+			case 2:
+				return super.getItemStackDisplayName(itemstack) + " II";
+			case 3:
+				return super.getItemStackDisplayName(itemstack) + " III";
+			case 4:
+				return super.getItemStackDisplayName(itemstack) + " IV";
+			default:
+				return super.getItemStackDisplayName(itemstack);
 		}
 	}
 
@@ -204,7 +236,7 @@ public class ItemMiningPickaxe extends ItemPickaxe
 		{
 			int i = itemstack.getTagCompound().getInteger("Mode");
 
-			if (++i > BreakMode.values().length - 1)
+			if (++i > BreakMode.values().length - 1 || i > getRefined(itemstack) + 1)
 			{
 				i = 0;
 			}
@@ -288,5 +320,20 @@ public class ItemMiningPickaxe extends ItemPickaxe
 		list.add(getModeInfomation(itemstack));
 
 		super.addInformation(itemstack, player, list, advanced);
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
+	public void getSubItems(Item item, CreativeTabs tab, List list)
+	{
+		for (int i = 0; i <= 4; ++i)
+		{
+			ItemStack itemstack = new ItemStack(item, 1, 0);
+			NBTTagCompound data = new NBTTagCompound();
+			data.setInteger("Refined", i);
+			itemstack.setTagCompound(data);
+
+			list.add(itemstack);
+		}
 	}
 }

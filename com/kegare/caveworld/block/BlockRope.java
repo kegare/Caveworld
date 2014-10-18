@@ -17,7 +17,6 @@ import net.minecraft.block.BlockDispenser;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.material.MaterialLogic;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.dispenser.BehaviorDefaultDispenseItem;
 import net.minecraft.dispenser.IBlockSource;
 import net.minecraft.entity.Entity;
@@ -29,6 +28,9 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+
+import com.kegare.caveworld.core.Caveworld;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -69,7 +71,7 @@ public class BlockRope extends Block
 		this.setStepSound(soundTypeCloth);
 		this.setHardness(0.25F);
 		this.setBlockBounds(0.435F, 0.0F, 0.435F, 0.565F, 1.0F, 0.565F);
-		this.setCreativeTab(CreativeTabs.tabTools);
+		this.setCreativeTab(Caveworld.tabCaveworld);
 	}
 
 	@SideOnly(Side.CLIENT)
