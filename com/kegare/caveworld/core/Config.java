@@ -88,9 +88,12 @@ public class Config
 	public static boolean cavemanShowHealthBar;
 
 	public static int dimensionCaveworld;
+	public static int dimensionDeepCaveworld;
 	public static int subsurfaceHeight;
 	public static boolean generateCaves;
 	public static boolean generateExtremeCaves;
+	public static boolean generateDeepCaves;
+	public static boolean generateUnderCaves;
 	public static boolean generateRavine;
 	public static boolean generateExtremeRavine;
 	public static boolean generateMineshaft;
@@ -431,6 +434,20 @@ public class Config
 			dimensionCaveworld = prop.getInt();
 		}
 
+		prop = dimensionCfg.get(category, "dimensionDeepCaveworld", -6);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		dimensionDeepCaveworld = prop.getInt(dimensionDeepCaveworld);
+
+		if (dimensionDeepCaveworld == 0)
+		{
+			prop.set(DimensionManager.getNextFreeDimId());
+
+			dimensionDeepCaveworld = prop.getInt();
+		}
+
 		prop = dimensionCfg.get(category, "subsurfaceHeight", 255);
 		prop.setMinValue(63).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -449,6 +466,18 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		generateExtremeCaves = prop.getBoolean(generateExtremeCaves);
+		prop = dimensionCfg.get(category, "generateDeepCaves", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		generateDeepCaves = prop.getBoolean(generateDeepCaves);
+		prop = dimensionCfg.get(category, "generateUnderCaves", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		generateUnderCaves = prop.getBoolean(generateUnderCaves);
 		prop = dimensionCfg.get(category, "generateRavine", true);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");

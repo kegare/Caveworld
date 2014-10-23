@@ -31,6 +31,7 @@ import com.kegare.caveworld.network.CaveworldMenuMessage;
 import com.kegare.caveworld.network.RegenerateMessage;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
+import com.kegare.caveworld.world.WorldProviderDeepCaveworld;
 
 import cpw.mods.fml.common.Loader;
 
@@ -154,6 +155,7 @@ public class CommandCaveworld implements ICommand
 			else
 			{
 				WorldProviderCaveworld.regenerate(backup);
+				WorldProviderDeepCaveworld.regenerate(backup);
 			}
 		}
 		else if (args[0].equalsIgnoreCase("mp") && args.length > 1 && sender instanceof EntityPlayerMP)

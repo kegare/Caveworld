@@ -55,7 +55,6 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.entity.EntityEvent.EntityConstructing;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
@@ -306,7 +305,14 @@ public class CaveEventHooks
 		{
 			if (mc.gameSettings.showDebugInfo)
 			{
-				event.left.add("dim: Caveworld");
+				if (player.dimension == CaveworldAPI.getDimension())
+				{
+					event.left.add("dim: Caveworld");
+				}
+				else if (player.dimension == CaveworldAPI.getDeepDimension())
+				{
+					event.left.add("dim: Deep Caveworld");
+				}
 			}
 			else if (mc.gameSettings.advancedItemTooltips || CaveUtils.isItemPickaxe(player.getHeldItem()))
 			{
@@ -429,7 +435,7 @@ public class CaveEventHooks
 			EntityPlayerMP player = (EntityPlayerMP)event.player;
 			WorldServer world = player.getServerForPlayer();
 
-			if (event.toDim == CaveworldAPI.getDimension())
+			if (event.toDim == CaveworldAPI.getDimension() || event.toDim == CaveworldAPI.getDeepDimension())
 			{
 				NBTTagCompound data = player.getEntityData();
 
@@ -453,9 +459,38 @@ public class CaveEventHooks
 
 				player.triggerAchievement(CaveAchievementList.caveworld);
 			}
-			else if (Config.hardcore && event.fromDim == CaveworldAPI.getDimension())
+
+			int point = CaveworldAPI.getMiningPoint(player);
+
+			if (event.toDim == CaveworldAPI.getDeepDimension())
 			{
-				CaveUtils.respawnPlayer(player, event.fromDim);
+				if (point < 100)
+				{
+					CaveUtils.forceTeleport(player, event.fromDim);
+				}
+				else
+				{
+					CaveworldAPI.addMiningPoint(player, -100);
+				}
+			}
+			else if (event.fromDim == CaveworldAPI.getDeepDimension())
+			{
+				if (point < 10000)
+				{
+					CaveUtils.forceTeleport(player, event.fromDim);
+				}
+				else
+				{
+					CaveworldAPI.addMiningPoint(player, -10000);
+				}
+			}
+
+			if (Config.hardcore)
+			{
+				if (event.toDim != CaveworldAPI.getDimension() && event.toDim != CaveworldAPI.getDeepDimension())
+				{
+					CaveUtils.forceTeleport(player, event.fromDim);
+				}
 			}
 		}
 	}
@@ -615,7 +650,7 @@ public class CaveEventHooks
 						event.setCanceled(true);
 					}
 				}
-				else if (CaveworldAPI.isEntityInCaveworld(player) && world.getBlock(x, y, z).isBed(world, x, y, z, player))
+				else if (player.dimension == CaveworldAPI.getDimension() && world.getBlock(x, y, z).isBed(world, x, y, z, player))
 				{
 					int metadata = world.getBlockMetadata(x, y, z);
 
@@ -706,9 +741,9 @@ public class CaveEventHooks
 			if (executor != null && !executor.getBreakPositions().isEmpty())
 			{
 				int count = executor.getBreakPositions().size();
-				float refined = pickaxe.getRefined(current) * 0.1F;
+				float refined = pickaxe.getRefined(current) * 0.12F;
 
-				event.newSpeed = event.originalSpeed / (count * (0.5F - refined));
+				event.newSpeed = Math.min(event.originalSpeed / (count * (0.5F - refined)), pickaxe.getDigSpeed(current, event.block, event.metadata));
 			}
 		}
 	}
@@ -777,32 +812,50 @@ public class CaveEventHooks
 	}
 
 	@SubscribeEvent
-	public void onItemToss(ItemTossEvent event)
-	{
-		ItemStack itemstack = event.entityItem.getEntityItem();
-
-		if (itemstack != null && itemstack.getItem() != null && itemstack.stackSize > 0)
-		{
-			event.entityItem.getEntityData().setBoolean("Caveman:NoCollect", true);
-		}
-	}
-
-	@SubscribeEvent
 	public void onLivingUpdate(LivingUpdateEvent event)
 	{
 		EntityLivingBase living = event.entityLiving;
 
-		if (CaveworldAPI.isEntityInCaveworld(living) && living.ticksExisted % 20 == 0)
+		if (CaveworldAPI.isEntityInCaveworld(living) && living instanceof EntityPlayerMP)
 		{
-			if (living instanceof EntityPlayerMP)
+			EntityPlayerMP player = (EntityPlayerMP)living;
+
+			if (player.dimension == CaveworldAPI.getDeepDimension())
 			{
-				EntityPlayerMP player = (EntityPlayerMP)living;
-
-				if (player.isPlayerSleeping() && player.getSleepTimer() >= 80)
+				if (player.boundingBox.maxY >= player.worldObj.provider.getActualHeight())
 				{
-					player.wakeUpPlayer(true, true, false);
+					if (CaveworldAPI.getMiningPoint(player) >= 10000)
+					{
+						CaveUtils.forceTeleport(player, CaveworldAPI.getDimension());
+					}
+					else
+					{
+						CaveUtils.forceTeleport(player, player.dimension);
+					}
+				}
+			}
+			else
+			{
+				if (player.boundingBox.minY <= 0)
+				{
+					if (CaveworldAPI.getMiningPoint(player) >= 100)
+					{
+						CaveUtils.forceTeleport(player, CaveworldAPI.getDeepDimension());
+					}
+					else
+					{
+						CaveUtils.forceTeleport(player, player.dimension);
+					}
+				}
 
-					player.setSpawnChunk(player.playerLocation, true);
+				if (player.ticksExisted % 20 == 0)
+				{
+					if (player.isPlayerSleeping() && player.getSleepTimer() >= 80)
+					{
+						player.wakeUpPlayer(true, true, false);
+
+						player.setSpawnChunk(player.playerLocation, true);
+					}
 				}
 			}
 		}

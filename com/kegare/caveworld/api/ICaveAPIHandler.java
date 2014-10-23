@@ -15,6 +15,11 @@ public interface ICaveAPIHandler
 	public int getDimension();
 
 	/**
+	 * Returns dimension id of the Deep Caveworld dimension.
+	 */
+	public int getDeepDimension();
+
+	/**
 	 * Checks if entity is in Caveworld.
 	 * @param entity The entity
 	 * @return <tt>true</tt> if the entity is in the Caveworld dimension.

@@ -15,6 +15,7 @@ import net.minecraft.client.Minecraft;
 import com.kegare.caveworld.client.gui.GuiRegeneration;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
+import com.kegare.caveworld.world.WorldProviderDeepCaveworld;
 
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
@@ -56,6 +57,7 @@ public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMe
 		else
 		{
 			WorldProviderCaveworld.regenerate(message.backup);
+			WorldProviderDeepCaveworld.regenerate(message.backup);
 		}
 
 		return null;

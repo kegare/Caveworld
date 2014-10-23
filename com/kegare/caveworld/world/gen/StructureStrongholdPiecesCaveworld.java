@@ -1382,23 +1382,25 @@ public class StructureStrongholdPiecesCaveworld
 		}
 
 		@Override
-		protected void func_143012_a(NBTTagCompound nbtTagCompound)
+		protected void func_143012_a(NBTTagCompound nbt)
 		{
-			super.func_143012_a(nbtTagCompound);
-			nbtTagCompound.setBoolean("leftLow", expandsLeftLow);
-			nbtTagCompound.setBoolean("leftHigh", expandsLeftHigh);
-			nbtTagCompound.setBoolean("rightLow", expandsRightLow);
-			nbtTagCompound.setBoolean("rightHigh", expandsRightHigh);
+			super.func_143012_a(nbt);
+
+			nbt.setBoolean("leftLow", expandsLeftLow);
+			nbt.setBoolean("leftHigh", expandsLeftHigh);
+			nbt.setBoolean("rightLow", expandsRightLow);
+			nbt.setBoolean("rightHigh", expandsRightHigh);
 		}
 
 		@Override
-		protected void func_143011_b(NBTTagCompound nbtTagCompound)
+		protected void func_143011_b(NBTTagCompound nbt)
 		{
-			super.func_143011_b(nbtTagCompound);
-			expandsLeftLow = nbtTagCompound.getBoolean("leftLow");
-			expandsLeftHigh = nbtTagCompound.getBoolean("leftHigh");
-			expandsRightLow = nbtTagCompound.getBoolean("rightLow");
-			expandsRightHigh = nbtTagCompound.getBoolean("rightHigh");
+			super.func_143011_b(nbt);
+
+			expandsLeftLow = nbt.getBoolean("leftLow");
+			expandsLeftHigh = nbt.getBoolean("leftHigh");
+			expandsRightLow = nbt.getBoolean("rightLow");
+			expandsRightHigh = nbt.getBoolean("rightHigh");
 		}
 
 		@Override

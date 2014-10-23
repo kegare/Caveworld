@@ -37,12 +37,12 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 
 	private final EntityCaveman theSoldier;
 	private final World theWorld;
-	private final boolean prevTamed;
 
 	private EntityLivingBase theTarget;
+	private EntityLivingBase theOwner;
 	private ItemStack theWeapon;
-	private boolean moveSuccess;
-	private int failedCount;
+
+	private int tickCounter;
 
 	private CombatType currentType = CombatType.NONE;
 
@@ -50,7 +50,6 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 	{
 		this.theSoldier = entity;
 		this.theWorld = entity.worldObj;
-		this.prevTamed = entity.isTamed();
 		this.setMutexBits(1);
 	}
 
@@ -62,14 +61,17 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 	@Override
 	public boolean shouldExecute()
 	{
-		ItemStack itemstack = theSoldier.getHeldItem();
+		ItemStack itemstack = getHeldWeapon();
 
-		if (itemstack == null || itemstack.getItem() == null || itemstack.stackSize <= 0)
+		if (itemstack == null)
 		{
 			currentType = CombatType.NONE;
 
 			return false;
 		}
+
+		theWeapon = itemstack.copy();
+		theOwner = theSoldier.getOwner();
 
 		if (itemstack.getItem() instanceof ItemSword)
 		{
@@ -84,22 +86,28 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 		{
 			case SWORD:
 				List<EntityLivingBase> list = theWorld.selectEntitiesWithinAABB(EntityLivingBase.class, theSoldier.boundingBox.expand(10.0D, 4.0D, 10.0D), this);
+				EntityLivingBase target = null;
 
-				for (EntityLivingBase target : list)
+				for (EntityLivingBase entity : list)
 				{
-					if (theTarget == null)
+					if (target == null)
 					{
-						theTarget = target;
+						target = entity;
 					}
-					else if (target.getDistanceSqToEntity(theSoldier) < theTarget.getDistanceSqToEntity(theSoldier))
+					else if (entity.getDistanceSqToEntity(theSoldier) < target.getDistanceSqToEntity(theSoldier))
 					{
-						theTarget = target;
+						target = entity;
 					}
 				}
 
-				theWeapon = itemstack.copy();
+				if (!canMoveToEntity(target) || theSoldier.isSitting())
+				{
+					return false;
+				}
 
-				return canMoveToEntity(theTarget);
+				theTarget = target;
+
+				return true;
 			default:
 				return false;
 		}
@@ -108,14 +116,20 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 	@Override
 	public boolean continueExecuting()
 	{
-		return prevTamed == theSoldier.isTamed() && failedCount <= 20 && getCurrentType() != CombatType.NONE && canMoveToEntity(theTarget) && ItemStack.areItemStacksEqual(theWeapon, theSoldier.getHeldItem());
+		if (tickCounter > 60 || theOwner != theSoldier.getOwner() || getHeldWeapon() == null)
+		{
+			return false;
+		}
+
+		return !theSoldier.isSitting() && getCurrentType() != CombatType.NONE && canMoveToEntity(theTarget) &&
+			ItemStack.areItemStacksEqual(theWeapon, theSoldier.getHeldItem());
 	}
 
 	@Override
 	public void startExecuting()
 	{
-		moveSuccess = true;
-		failedCount = 0;
+		theSoldier.getNavigator().clearPathEntity();
+		tickCounter = 0;
 	}
 
 	@Override
@@ -123,7 +137,8 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 	{
 		theTarget = null;
 		theWeapon = null;
-		failedCount = 0;
+		theSoldier.getNavigator().clearPathEntity();
+		tickCounter = 0;
 	}
 
 	@Override
@@ -131,48 +146,43 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 	{
 		theSoldier.getLookHelper().setLookPositionWithEntity(theTarget, 10.0F, theSoldier.getVerticalFaceSpeed());
 
+		ItemStack current = getHeldWeapon();
+
 		switch (getCurrentType())
 		{
 			case SWORD:
 				if (theSoldier.getDistanceSqToEntity(theTarget) > 3.0D)
 				{
-					boolean flag = !theSoldier.isSitting() && theSoldier.getEntitySenses().canSee(theTarget);
-
-					if (flag)
+					if (theSoldier.getEntitySenses().canSee(theTarget))
 					{
 						theSoldier.getMoveHelper().setMoveTo(theTarget.posX, theTarget.posY, theTarget.posZ, 0.85D);
+						theSoldier.getNavigator().tryMoveToEntityLiving(theTarget, 0.85D);
 					}
+				}
+				else if (theSoldier.ticksExisted % 10 == 0)
+				{
+					ItemSword item = (ItemSword)theWeapon.getItem();
 
-					moveSuccess = theSoldier.getStoppedTime() == 0L;
+					theSoldier.swingItem();
 
-					if (moveSuccess)
+					if (theOwner != null)
 					{
-						failedCount = 0;
+						if (theOwner instanceof EntityPlayer)
+						{
+							theTarget.attackEntityFrom(DamageSource.causePlayerDamage((EntityPlayer)theOwner), item.func_150931_i());
+						}
+						else
+						{
+							theTarget.attackEntityFrom(DamageSource.causeMobDamage(theOwner), item.func_150931_i());
+						}
+
+						theWeapon.getItem().hitEntity(current, theTarget, theOwner);
 					}
 					else
 					{
-						++failedCount;
+						theTarget.attackEntityFrom(DamageSource.causeMobDamage(theSoldier), item.func_150931_i());
 
-						if (flag)
-						{
-							theSoldier.getNavigator().tryMoveToXYZ(theTarget.posX, theTarget.posY, theTarget.posZ, 1.0D);
-						}
-					}
-				}
-				else
-				{
-					theSoldier.getMoveHelper().setMoveTo(theSoldier.posX, theSoldier.posY, theSoldier.posZ, 1.0D);
-
-					if (theSoldier.ticksExisted % 10 == 0)
-					{
-						ItemSword item = (ItemSword)theWeapon.getItem();
-
-						theSoldier.swingItem();
-
-						if (theTarget.attackEntityFrom(DamageSource.causeMobDamage(theSoldier), item.func_150931_i()))
-						{
-							item.hitEntity(theWeapon, theTarget, theSoldier);
-						}
+						theWeapon.getItem().hitEntity(current, theTarget, theSoldier);
 					}
 				}
 
@@ -180,6 +190,21 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 			default:
 				break;
 		}
+
+		++tickCounter;
+	}
+
+	public ItemStack getHeldWeapon()
+	{
+		ItemStack item = theSoldier.getHeldItem();
+
+		if (item == null || item.getItem() == null || item.stackSize <= 0 ||
+			item.isItemStackDamageable() && item.getItemDamage() >= item.getMaxDamage())
+		{
+			return null;
+		}
+
+		return item;
 	}
 
 	public boolean canMoveToEntity(Entity entity)

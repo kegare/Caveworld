@@ -44,6 +44,14 @@ public final class CaveworldAPI
 	}
 
 	/**
+	 * @see ICaveAPIHandler#getDeepDimension()
+	 */
+	public static int getDeepDimension()
+	{
+		return apiHandler == null ? DimensionManager.getNextFreeDimId() : apiHandler.getDeepDimension();
+	}
+
+	/**
 	 * @see ICaveAPIHandler#isEntityInCaveworld(Entity)
 	 */
 	public static boolean isEntityInCaveworld(Entity entity)

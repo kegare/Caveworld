@@ -14,9 +14,8 @@ import java.util.Random;
 import net.minecraft.block.Block;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
-import net.minecraft.world.gen.MapGenCaves;
 
-public class MapGenCavesCaveworld extends MapGenCaves
+public class MapGenUnderCaves extends MapGenDeepCaves
 {
 	@Override
 	protected void func_151541_a(long caveSeed, int chunkX, int chunkZ, Block[] blocks, double blockX, double blockY, double blockZ, float scale, float leftRightRadian, float upDownRadian, int currentY, int targetY, double scaleHeight)
@@ -46,8 +45,9 @@ public class MapGenCavesCaveworld extends MapGenCaves
 
 		for (boolean chance = random.nextInt(6) == 0; currentY < targetY; ++currentY)
 		{
-			double roomWidth = 1.5D + MathHelper.sin(currentY * (float)Math.PI / targetY) * scale;
-			double roomHeight = roomWidth * scaleHeight;
+			double roomBase = MathHelper.sin(currentY * (float)Math.PI / targetY) * scale;
+			double roomWidth = 5.0D + roomBase;
+			double roomHeight = 3.75D + roomBase * scaleHeight;
 			float moveHorizontal = MathHelper.cos(upDownRadian);
 			float moveVertical = MathHelper.sin(upDownRadian);
 			blockX += MathHelper.cos(leftRightRadian) * moveHorizontal;
@@ -83,7 +83,7 @@ public class MapGenCavesCaveworld extends MapGenCaves
 				double distanceX = blockX - centerX;
 				double distanceZ = blockZ - centerZ;
 				double distanceY = targetY - currentY;
-				double maxDistance = scale + 20.0F;
+				double maxDistance = scale + 2.0F + 16.0F;
 
 				if (distanceX * distanceX + distanceZ * distanceZ - distanceY * distanceY > maxDistance * maxDistance)
 				{
@@ -95,7 +95,7 @@ public class MapGenCavesCaveworld extends MapGenCaves
 					int xLow = Math.max(MathHelper.floor_double(blockX - roomWidth) - chunkX * 16 - 1, 0);
 					int xHigh = Math.min(MathHelper.floor_double(blockX + roomWidth) - chunkX * 16 + 1, 16);
 					int yLow = Math.max(MathHelper.floor_double(blockY - roomHeight) - 1, 1);
-					int yHigh = Math.min(MathHelper.floor_double(blockY + roomHeight) + 1, worldHeight - 4);
+					int yHigh = Math.min(MathHelper.floor_double(blockY + roomHeight) + 1, worldHeight - 1);
 					int zLow = Math.max(MathHelper.floor_double(blockZ - roomWidth) - chunkZ * 16 - 1, 0);
 					int zHigh = Math.min(MathHelper.floor_double(blockZ + roomWidth) - chunkZ * 16 + 1, 16);
 
@@ -137,10 +137,9 @@ public class MapGenCavesCaveworld extends MapGenCaves
 	@Override
 	protected void func_151538_a(World world, int x, int z, int chunkX, int chunkZ, Block[] blocks)
 	{
-		int worldHeight = world.provider.getActualHeight();
-		int chance = rand.nextInt(rand.nextInt(rand.nextInt(15) + 1) + 1);
+		int chance = rand.nextInt(rand.nextInt(rand.nextInt(20) + 1) + 1);
 
-		if (rand.nextInt(6) != 0)
+		if (rand.nextInt(3) != 0)
 		{
 			chance = 0;
 		}
@@ -148,7 +147,7 @@ public class MapGenCavesCaveworld extends MapGenCaves
 		for (int i = 0; i < chance; ++i)
 		{
 			double blockX = x * 16 + rand.nextInt(16);
-			double blockY = rand.nextInt(rand.nextInt(worldHeight - 8) + 8);
+			double blockY = world.provider.getAverageGroundLevel() + rand.nextInt(5);
 			double blockZ = z * 16 + rand.nextInt(16);
 			int count = 1;
 
@@ -156,28 +155,22 @@ public class MapGenCavesCaveworld extends MapGenCaves
 			{
 				func_151542_a(rand.nextLong(), chunkX, chunkZ, blocks, blockX, blockY, blockZ);
 
-				count += rand.nextInt(4);
+				count += rand.nextInt(5);
 			}
 
 			for (int j = 0; j < count; ++j)
 			{
 				float leftRightRadian = rand.nextFloat() * (float)Math.PI * 2.0F;
 				float upDownRadian = (rand.nextFloat() - 0.5F) * 2.0F / 8.0F;
-				float scale = rand.nextFloat() * 2.5F + rand.nextFloat();
+				float scale = rand.nextFloat() * 3.5F + rand.nextFloat();
 
-				if (rand.nextInt(10) == 0)
+				if (rand.nextInt(5) == 0)
 				{
 					scale *= rand.nextFloat() * rand.nextFloat() * 3.5F + 1.0F;
 				}
 
-				func_151541_a(rand.nextLong(), chunkX, chunkZ, blocks, blockX, blockY, blockZ, scale, leftRightRadian, upDownRadian, 0, 0, 1.0D);
+				func_151541_a(rand.nextLong(), chunkX, chunkZ, blocks, blockX, blockY, blockZ, scale, leftRightRadian, upDownRadian, 0, 0, 1.25D);
 			}
 		}
-	}
-
-	@Override
-	protected void digBlock(Block[] blocks, int index, int x, int y, int z, int chunkX, int chunkZ, boolean foundTop)
-	{
-		blocks[index] = null;
 	}
 }

@@ -47,6 +47,7 @@ import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.entity.ai.EntityAICollector;
 import com.kegare.caveworld.entity.ai.EntityAIFleeEntityLiving;
 import com.kegare.caveworld.entity.ai.EntityAIFleeSun2;
+import com.kegare.caveworld.entity.ai.EntityAIFollower;
 import com.kegare.caveworld.entity.ai.EntityAISoldier;
 import com.kegare.caveworld.item.ItemCavenium;
 import com.kegare.caveworld.util.CaveUtils;
@@ -62,6 +63,7 @@ public class EntityCaveman extends EntityTameable implements IInventory
 	private long stoppedTime;
 	private boolean needsSort;
 
+	public boolean isCollecting;
 	public boolean inventoryFull;
 
 	public static final IEntitySelector fleeEntitySelector = new IEntitySelector()
@@ -99,8 +101,9 @@ public class EntityCaveman extends EntityTameable implements IInventory
 		this.tasks.addTask(2, new EntityAIFleeSun2(this, 1.25D));
 		this.tasks.addTask(3, new EntityAIFleeEntityLiving(this, fleeEntitySelector, 1.0D));
 		this.tasks.addTask(4, new EntityAISoldier(this));
-		this.tasks.addTask(5, new EntityAICollector(this, 1.0D, 3.0F, 20.0F));
-		this.tasks.addTask(6, new EntityAIWander(this, 0.5D)
+		this.tasks.addTask(5, new EntityAICollector(this, 1.0D, 20.0F));
+		this.tasks.addTask(6, new EntityAIFollower(this, 1.0D));
+		this.tasks.addTask(7, new EntityAIWander(this, 0.5D)
 		{
 			@Override
 			public boolean shouldExecute()
@@ -108,8 +111,8 @@ public class EntityCaveman extends EntityTameable implements IInventory
 				return !isSitting() && getStoppedTime() > 200L && super.shouldExecute();
 			}
 		});
-		this.tasks.addTask(7, new EntityAIWatchClosest(this, EntityPlayer.class, 10.0F));
-		this.tasks.addTask(8, new EntityAILookIdle(this));
+		this.tasks.addTask(8, new EntityAIWatchClosest(this, EntityPlayer.class, 10.0F));
+		this.tasks.addTask(9, new EntityAILookIdle(this));
 	}
 
 	@Override
@@ -183,6 +186,19 @@ public class EntityCaveman extends EntityTameable implements IInventory
 
 		if (!isTamed())
 		{
+			if (Config.cavemanCreatureType > 0 && rand.nextInt(5) == 0)
+			{
+				setCurrentItemOrArmor(0, new ItemStack(Items.stone_sword));
+			}
+			else if (rand.nextInt(5) == 0)
+			{
+				setCurrentItemOrArmor(0, new ItemStack(Items.stone_shovel));
+			}
+			else if (rand.nextInt(6) == 0)
+			{
+				setCurrentItemOrArmor(0, new ItemStack(Items.stone_pickaxe));
+			}
+
 			Set<ItemStack> items = Sets.newHashSet();
 
 			for (int i = 0; i < rand.nextInt(2) + 1; ++i)
@@ -223,19 +239,6 @@ public class EntityCaveman extends EntityTameable implements IInventory
 				{
 					setInventorySlotContents(slot++, itemstack);
 				}
-			}
-
-			if (Config.cavemanCreatureType > 0 && rand.nextInt(5) == 0)
-			{
-				setCurrentItemOrArmor(0, new ItemStack(Items.stone_sword));
-			}
-			else if (rand.nextInt(6) == 0)
-			{
-				setCurrentItemOrArmor(0, new ItemStack(Items.stone_pickaxe));
-			}
-			else if (rand.nextInt(5) == 0)
-			{
-				setCurrentItemOrArmor(0, new ItemStack(Items.stone_shovel));
 			}
 		}
 

@@ -47,6 +47,7 @@ import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.util.breaker.MultiBreakExecutor;
 import com.kegare.caveworld.util.breaker.RangedBreakExecutor;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
+import com.kegare.caveworld.world.WorldProviderDeepCaveworld;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
@@ -143,6 +144,9 @@ public class Caveworld
 
 		id = CaveworldAPI.getDimension();
 		DimensionManager.registerProviderType(id, WorldProviderCaveworld.class, true);
+		DimensionManager.registerDimension(id, id);
+		id = CaveworldAPI.getDeepDimension();
+		DimensionManager.registerProviderType(id, WorldProviderDeepCaveworld.class, true);
 		DimensionManager.registerDimension(id, id);
 
 		FMLCommonHandler.instance().bus().register(CaveEventHooks.instance);

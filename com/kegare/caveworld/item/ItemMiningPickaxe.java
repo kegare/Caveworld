@@ -188,16 +188,7 @@ public class ItemMiningPickaxe extends ItemPickaxe
 			return super.getMaxDamage(itemstack);
 		}
 
-		int maxUses = data.getInteger("MaxUses");
-
-		if (maxUses <= 0)
-		{
-			maxUses = MINING.getMaxUses();
-
-			data.setInteger("MaxUses", maxUses);
-		}
-
-		return maxUses;
+		return data.getInteger("MaxUses");
 	}
 
 	@Override
@@ -210,16 +201,7 @@ public class ItemMiningPickaxe extends ItemPickaxe
 			return super.getDigSpeed(itemstack, block, metadata);
 		}
 
-		float efficiency = data.getFloat("Efficiency");
-
-		if (efficiency <= 0.0F)
-		{
-			efficiency = MINING.getDamageVsEntity();
-
-			data.setFloat("Efficiency", efficiency);
-		}
-
-		return ForgeHooks.isToolEffective(itemstack, block, metadata) || func_150897_b(block) || block instanceof BlockOre || block instanceof BlockRedstoneOre ? efficiency : 1.0F;
+		return ForgeHooks.isToolEffective(itemstack, block, metadata) || func_150897_b(block) || block instanceof BlockOre || block instanceof BlockRedstoneOre ? data.getFloat("Efficiency") : 1.0F;
 	}
 
 	@Override

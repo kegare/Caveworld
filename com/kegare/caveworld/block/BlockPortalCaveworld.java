@@ -240,7 +240,7 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 	@Override
 	public void onEntityCollidedWithBlock(World world, int x, int y, int z, Entity entity)
 	{
-		if (!world.isRemote && !portalDisabled && entity.isEntityAlive() && (!CaveworldAPI.isEntityInCaveworld(entity) || !Config.hardcore))
+		if (!world.isRemote && !portalDisabled && entity.isEntityAlive() && entity.dimension != CaveworldAPI.getDeepDimension() && (!CaveworldAPI.isEntityInCaveworld(entity) || !Config.hardcore))
 		{
 			if (entity.timeUntilPortal <= 0)
 			{
