@@ -10,10 +10,9 @@
 package com.kegare.caveworld.item;
 
 import java.util.List;
+import java.util.Set;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockOre;
-import net.minecraft.block.BlockRedstoneOre;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
@@ -24,10 +23,10 @@ import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemTool;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
-import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.util.EnumHelper;
 
 import com.google.common.base.Joiner;
@@ -42,6 +41,7 @@ import com.kegare.caveworld.util.breaker.IBreakExecutor;
 import com.kegare.caveworld.util.breaker.MultiBreakExecutor;
 import com.kegare.caveworld.util.breaker.RangedBreakExecutor;
 
+import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -98,16 +98,6 @@ public class ItemMiningPickaxe extends ItemPickaxe
 
 			data.setString("Blocks", Joiner.on("|").join(list));
 		}
-
-		if (!data.hasKey("MaxUses") || data.getInteger("MaxUses") <= 0)
-		{
-			data.setInteger("MaxUses", MINING.getMaxUses());
-		}
-
-		if (!data.hasKey("Efficiency") || data.getFloat("Efficiency") <= 0.0F)
-		{
-			data.setFloat("Efficiency", MINING.getEfficiencyOnProperMaterial());
-		}
 	}
 
 	@Override
@@ -160,6 +150,32 @@ public class ItemMiningPickaxe extends ItemPickaxe
 		}
 	}
 
+	public ItemTool getBaseTool(ItemStack itemstack)
+	{
+		NBTTagCompound data = itemstack.getTagCompound();
+
+		if (data == null)
+		{
+			return this;
+		}
+
+		String name = data.getString("BaseName");
+
+		if (Strings.isNullOrEmpty(name))
+		{
+			return this;
+		}
+
+		Item item = GameData.getItemRegistry().getObject(name);
+
+		if (item == null || !(item instanceof ItemTool))
+		{
+			return this;
+		}
+
+		return (ItemTool)item;
+	}
+
 	@Override
 	public String getItemStackDisplayName(ItemStack itemstack)
 	{
@@ -179,29 +195,81 @@ public class ItemMiningPickaxe extends ItemPickaxe
 	}
 
 	@Override
-	public int getMaxDamage(ItemStack itemstack)
+	public Set<String> getToolClasses(ItemStack itemstack)
 	{
-		NBTTagCompound data = itemstack.getTagCompound();
+		ItemTool item = getBaseTool(itemstack);
 
-		if (data == null)
+		if (item != this)
 		{
-			return super.getMaxDamage(itemstack);
+			return item.getToolClasses(itemstack);
 		}
 
-		return data.getInteger("MaxUses");
+		return super.getToolClasses(itemstack);
+	}
+
+	@Override
+	public int getHarvestLevel(ItemStack itemstack, String toolClass)
+	{
+		ItemTool item = getBaseTool(itemstack);
+
+		if (item != this)
+		{
+			return item.getHarvestLevel(itemstack, toolClass);
+		}
+
+		return super.getHarvestLevel(itemstack, toolClass);
+	}
+
+	@Override
+	public boolean canHarvestBlock(Block block, ItemStack itemstack)
+	{
+		ItemTool item = getBaseTool(itemstack);
+
+		if (item != this)
+		{
+			return item.canHarvestBlock(block, itemstack);
+		}
+
+		return super.canHarvestBlock(block, itemstack);
+	}
+
+	@Override
+	public int getMaxDamage(ItemStack itemstack)
+	{
+		ItemTool item = getBaseTool(itemstack);
+
+		if (item != this)
+		{
+			return item.getMaxDamage(itemstack);
+		}
+
+		return super.getMaxDamage(itemstack);
 	}
 
 	@Override
 	public float getDigSpeed(ItemStack itemstack, Block block, int metadata)
 	{
-		NBTTagCompound data = itemstack.getTagCompound();
+		ItemTool item = getBaseTool(itemstack);
 
-		if (data == null)
+		if (item != this)
 		{
-			return super.getDigSpeed(itemstack, block, metadata);
+			return item.getDigSpeed(itemstack, block, metadata);
 		}
 
-		return ForgeHooks.isToolEffective(itemstack, block, metadata) || func_150897_b(block) || block instanceof BlockOre || block instanceof BlockRedstoneOre ? data.getFloat("Efficiency") : 1.0F;
+		return super.getDigSpeed(itemstack, block, metadata);
+	}
+
+	@Override
+	public int getItemEnchantability(ItemStack itemstack)
+	{
+		ItemTool item = getBaseTool(itemstack);
+
+		if (item != this)
+		{
+			return item.getItemEnchantability(itemstack);
+		}
+
+		return super.getItemEnchantability(itemstack);
 	}
 
 	@Override
@@ -300,6 +368,7 @@ public class ItemMiningPickaxe extends ItemPickaxe
 	public void addInformation(ItemStack itemstack, EntityPlayer player, List list, boolean advanced)
 	{
 		list.add(getModeInfomation(itemstack));
+		list.add(I18n.format(getUnlocalizedName() + ".base") + ": " + getBaseTool(itemstack).getItemStackDisplayName(itemstack));
 
 		super.addInformation(itemstack, player, list, advanced);
 	}

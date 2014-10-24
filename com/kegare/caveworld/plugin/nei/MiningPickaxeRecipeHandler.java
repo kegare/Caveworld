@@ -19,6 +19,8 @@ import com.google.common.collect.Lists;
 import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.recipe.RecipeMiningPickaxe;
 
+import cpw.mods.fml.common.registry.GameData;
+
 public class MiningPickaxeRecipeHandler extends ShapedRecipeHandler
 {
 	private final List<CachedShapedRecipe> recipes = Lists.newArrayList();
@@ -62,6 +64,7 @@ public class MiningPickaxeRecipeHandler extends ShapedRecipeHandler
 								result.setTagCompound(new NBTTagCompound());
 							}
 
+							result.getTagCompound().setString("BaseName", GameData.getItemRegistry().getNameForObject(item.getItem()));
 							result.getTagCompound().setInteger("Refined", i);
 
 							items[slot] = result;

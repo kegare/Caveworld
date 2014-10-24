@@ -30,7 +30,10 @@ public class CaveAchievementList
 	public static final Achievement cavenium = new CaveAchievement("cavenium", -3, 2, CaveItems.cavenium, caveworld).registerStat();
 	public static final Achievement theMiner = new CaveAchievement("theMiner", 1, 2, Items.iron_pickaxe, caveworld).registerStat();
 	public static final Achievement caveman = new CaveAchievement("caveman", 5, 2, Blocks.stone, caveworld).registerStat();
-	public static final Achievement compCaving = new CaveAchievement("compCaving", 5, 5, Items.egg, caveman).setSpecial().registerStat();
+	public static final Achievement compCaving = new CaveAchievement("compCaving", 5, 5, Items.egg, caveman).registerStat();
+	public static final Achievement deepCaves = new CaveAchievement("deepCaves", -1, 10, new ItemStack(Blocks.stonebrick, 1, 1), caveworld).registerStat();
+	public static final Achievement underCaves = new CaveAchievement("underCaves", -1, 15, Blocks.water, deepCaves).registerStat();
+	public static final Achievement backFromDeep = new CaveAchievement("backFromDeep", -5, 6, new ItemStack(CaveItems.cavenium, 1, 1), deepCaves).setSpecial().registerStat();
 
 	public static void registerAchievements()
 	{

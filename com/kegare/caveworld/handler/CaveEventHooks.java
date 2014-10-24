@@ -46,6 +46,8 @@ import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
@@ -471,17 +473,28 @@ public class CaveEventHooks
 				else
 				{
 					CaveworldAPI.addMiningPoint(player, -100);
+
+					player.triggerAchievement(CaveAchievementList.deepCaves);
 				}
 			}
 			else if (event.fromDim == CaveworldAPI.getDeepDimension())
 			{
-				if (point < 10000)
+				int req = 10000;
+
+				if (player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.backFromDeep))
+				{
+					req /= 2;
+				}
+
+				if (point < req)
 				{
 					CaveUtils.forceTeleport(player, event.fromDim);
 				}
 				else
 				{
-					CaveworldAPI.addMiningPoint(player, -10000);
+					CaveworldAPI.addMiningPoint(player, -req);
+
+					player.triggerAchievement(CaveAchievementList.backFromDeep);
 				}
 			}
 
@@ -589,15 +602,22 @@ public class CaveEventHooks
 
 					if (pickaxe.canBreak(current, block, meta))
 					{
+						IBreakExecutor executor = null;
+
 						switch (pickaxe.getMode(current))
 						{
 							case QUICK:
-								MultiBreakExecutor.getExecutor(world, player).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
-								return;
+								executor = MultiBreakExecutor.getExecutor(world, player).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
+								break;
 							case RANGED:
-								RangedBreakExecutor.getExecutor(world, player).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
-								return;
+								executor = RangedBreakExecutor.getExecutor(world, player).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
+								break;
 							default:
+						}
+
+						if (player.capabilities.isCreativeMode && executor != null)
+						{
+							executor.breakAll();
 						}
 					}
 					else
@@ -746,6 +766,14 @@ public class CaveEventHooks
 				event.newSpeed = Math.min(event.originalSpeed / (count * (0.5F - refined)), pickaxe.getDigSpeed(current, event.block, event.metadata));
 			}
 		}
+
+		if (CaveworldAPI.isEntityInCaveworld(player))
+		{
+			if (event.y <= 0 || event.y >= player.worldObj.getActualHeight() - 1)
+			{
+				event.newSpeed /= 15.0F;
+			}
+		}
 	}
 
 	@SubscribeEvent
@@ -831,6 +859,30 @@ public class CaveEventHooks
 					else
 					{
 						CaveUtils.forceTeleport(player, player.dimension);
+					}
+				}
+				else if (player.posY <= 30.0D && player.func_147099_x().canUnlockAchievement(CaveAchievementList.underCaves) && !player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.underCaves))
+				{
+					MovingObjectPosition pos = CaveUtils.rayTrace(player, 64.0D);
+
+					if (pos == null || pos.typeOfHit != MovingObjectType.BLOCK)
+					{
+						return;
+					}
+
+					WorldServer world = player.getServerForPlayer();
+					int x = pos.blockX;
+					int y = pos.blockY;
+					int z = pos.blockZ;
+
+					while (!world.isAirBlock(x, ++y, z) && world.getBlock(x, y, z).getMaterial().isLiquid())
+					{
+						;
+					}
+
+					if (world.getBlock(x, --y, z) == Blocks.water && y <= 16)
+					{
+						player.triggerAchievement(CaveAchievementList.underCaves);
 					}
 				}
 			}

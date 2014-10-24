@@ -47,10 +47,6 @@ public class CaveItems
 		if (Config.pickaxeMining)
 		{
 			GameRegistry.registerItem(mining_pickaxe, "mining_pickaxe");
-
-			ItemStack item = new ItemStack(mining_pickaxe);
-			mining_pickaxe.initializeItemStackNBT(item);
-			GameRegistry.registerCustomItemStack("mining_pickaxe", item);
 		}
 	}
 }

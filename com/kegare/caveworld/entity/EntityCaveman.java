@@ -30,6 +30,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -445,7 +446,7 @@ public class EntityCaveman extends EntityTameable implements IInventory
 
 				if (point >= 1000)
 				{
-					if (worldObj.rand.nextInt(5) == 0)
+					if (itemstack.getRarity() != EnumRarity.common || worldObj.rand.nextInt(4) == 0)
 					{
 						setTamed(true);
 						setPathToEntity(null);

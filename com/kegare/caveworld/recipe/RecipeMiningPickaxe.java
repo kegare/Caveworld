@@ -14,9 +14,9 @@ import java.util.Set;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
-import net.minecraft.item.Item.ToolMaterial;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemTool;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
@@ -31,6 +31,8 @@ import cpw.mods.fml.common.registry.GameData;
 public class RecipeMiningPickaxe implements IRecipe
 {
 	public static final RecipeMiningPickaxe instance = new RecipeMiningPickaxe();
+
+	public static final Set<Item> pickaxeWhitelist = Sets.newHashSet();
 
 	@Override
 	public boolean matches(InventoryCrafting crafting, World world)
@@ -55,15 +57,16 @@ public class RecipeMiningPickaxe implements IRecipe
 				{
 					ItemStack itemstack = crafting.getStackInRowAndColumn(row, column);
 
-					if (itemstack != null && itemstack.getItem() != null && itemstack.getItem() instanceof ItemPickaxe)
+					if (itemstack != null && itemstack.getItem() != null && (pickaxeWhitelist.contains(itemstack.getItem()) ||
+						itemstack.getItem() instanceof ItemPickaxe || itemstack.getItem() instanceof ItemTool && itemstack.getItem().getToolClasses(itemstack).contains("pickaxe")))
 					{
-						ItemPickaxe pickaxe = (ItemPickaxe)itemstack.getItem();
+						ItemTool item = (ItemTool)itemstack.getItem();
 
-						if (pickaxe instanceof ItemMiningPickaxe)
+						if (item instanceof ItemMiningPickaxe)
 						{
 							flag = true;
 						}
-						else if (itemstack.getItemDamage() == 0 && (pickaxe.func_150913_i().getHarvestLevel() >= 2 || pickaxe.getHarvestLevel(itemstack, "pickaxe") >= 2))
+						else if (!itemstack.isItemStackDamageable() || itemstack.getItemDamage() == 0)
 						{
 							flag = true;
 						}
@@ -88,7 +91,7 @@ public class RecipeMiningPickaxe implements IRecipe
 			{
 				if (row != 1 && column == 1 || row == 1 && column != 1)
 				{
-					if (crafting.getStackInRowAndColumn(row, column).getRarity() == EnumRarity.rare)
+					if (crafting.getStackInRowAndColumn(row, column).getRarity() != EnumRarity.common)
 					{
 						++rare;
 					}
@@ -107,11 +110,7 @@ public class RecipeMiningPickaxe implements IRecipe
 				result.setTagCompound(new NBTTagCompound());
 			}
 
-			NBTTagCompound data = result.getTagCompound();
-			ToolMaterial material = ((ItemPickaxe)center.getItem()).func_150913_i();
-
-			data.setInteger("MaxUses", material.getMaxUses());
-			data.setFloat("Efficiency", material.getEfficiencyOnProperMaterial());
+			result.getTagCompound().setString("BaseName", GameData.getItemRegistry().getNameForObject(center.getItem()));
 		}
 
 		result.getTagCompound().setInteger("Refined", rare);
@@ -144,9 +143,12 @@ public class RecipeMiningPickaxe implements IRecipe
 			{
 				continue;
 			}
-			else if (item instanceof ItemPickaxe && ((ItemPickaxe)item).func_150913_i().getHarvestLevel() >= 2)
+
+			ItemStack itemstack = new ItemStack(item);
+
+			if (pickaxeWhitelist.contains(item) || item instanceof ItemPickaxe || item instanceof ItemTool && item.getToolClasses(itemstack).contains("pickaxe"))
 			{
-				result.add(new ItemStack(item));
+				result.add(itemstack);
 			}
 		}
 

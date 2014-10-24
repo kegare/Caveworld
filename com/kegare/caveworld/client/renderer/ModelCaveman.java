@@ -101,9 +101,42 @@ public class ModelCaveman extends ModelBiped
 	@Override
 	public void render(Entity entity, float par2, float par3, float par4, float par5, float par6, float par7)
 	{
-		super.render(entity, par2, par3, par4, par5, par6, par7);
+		setRotationAngles(par2, par3, par4, par5, par6, par7, entity);
 
-		bipedBack.render(par7);
+		if (bipedHead != null)
+		{
+			bipedHead.render(par7);
+		}
+
+		if (bipedBody != null)
+		{
+			bipedBody.render(par7);
+		}
+
+		if (bipedRightArm != null)
+		{
+			bipedRightArm.render(par7);
+		}
+
+		if (bipedLeftArm != null)
+		{
+			bipedLeftArm.render(par7);
+		}
+
+		if (bipedRightLeg != null)
+		{
+			bipedRightLeg.render(par7);
+		}
+
+		if (bipedLeftLeg != null)
+		{
+			bipedLeftLeg.render(par7);
+		}
+
+		if (bipedBack != null)
+		{
+			bipedBack.render(par7);
+		}
 	}
 
 	@Override

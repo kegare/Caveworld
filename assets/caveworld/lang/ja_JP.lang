@@ -171,6 +171,7 @@ item.pickaxeMining.mode=採掘モード
 item.pickaxeMining.mode.normal=ノーマル
 item.pickaxeMining.mode.quick=一括破壊
 item.pickaxeMining.mode.ranged=範囲破壊
+item.pickaxeMining.base=基体ツール
 
 inventory.caveworld.portal=Caveworld ポータル
 
@@ -186,6 +187,12 @@ achievement.caveworld.caveman=ケイブマン
 achievement.caveworld.caveman.desc=野生のケイブマンと遭遇する
 achievement.caveworld.compCaving=洞窟探索のお供
 achievement.caveworld.compCaving.desc=ケイブマンを手懐ける
+achievement.caveworld.deepCaves=深き洞窟
+achievement.caveworld.deepCaves.desc=Deep Caveworldへ行く
+achievement.caveworld.underCaves=深淵なる洞窟
+achievement.caveworld.underCaves.desc=Deep Caveworldの深淵部の湖へ到達する
+achievement.caveworld.backFromDeep=帰還！
+achievement.caveworld.backFromDeep.desc=Deep Caveworldから戻る
 
 entity.Caveman.name=ケイブマン
 

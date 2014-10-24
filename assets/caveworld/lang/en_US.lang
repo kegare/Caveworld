@@ -171,6 +171,7 @@ item.pickaxeMining.mode=Mining Mode
 item.pickaxeMining.mode.normal=NORMAL
 item.pickaxeMining.mode.quick=QUICK
 item.pickaxeMining.mode.ranged=RANGED
+item.pickaxeMining.base=Base Tool
 
 inventory.caveworld.portal=Caveworld Portal
 
@@ -186,6 +187,12 @@ achievement.caveworld.caveman=Caveman
 achievement.caveworld.caveman.desc=Encounter with an untamed Caveman
 achievement.caveworld.compCaving=Companion of Caving
 achievement.caveworld.compCaving.desc=Tame a Caveman
+achievement.caveworld.deepCaves=Deep Caves
+achievement.caveworld.deepCaves.desc=Visit to the Deep Caveworld
+achievement.caveworld.underCaves=Under Caves
+achievement.caveworld.underCaves.desc=Arrives at the under caves
+achievement.caveworld.backFromDeep=I'm back!
+achievement.caveworld.backFromDeep.desc=Returns from the Deep Caveworld
 
 entity.Caveman.name=Caveman
 

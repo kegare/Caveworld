@@ -22,6 +22,8 @@ import uristqwerty.CraftGuide.api.SlotType;
 import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.recipe.RecipeMiningPickaxe;
 
+import cpw.mods.fml.common.registry.GameData;
+
 public class MiningPickaxeRecipeProvider extends CraftGuideAPIObject implements RecipeProvider
 {
 	private final Slot[] slots;
@@ -83,6 +85,7 @@ public class MiningPickaxeRecipeProvider extends CraftGuideAPIObject implements 
 							result.setTagCompound(new NBTTagCompound());
 						}
 
+						result.getTagCompound().setString("BaseName", GameData.getItemRegistry().getNameForObject(item.getItem()));
 						result.getTagCompound().setInteger("Refined", i);
 
 						items[slot] = result;
