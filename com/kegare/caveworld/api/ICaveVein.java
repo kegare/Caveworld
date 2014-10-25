@@ -14,6 +14,10 @@ public interface ICaveVein
 
 	public int getGenWeight();
 
+	public int setGenRate(int rate);
+
+	public int getGenRate();
+
 	public int setGenMinHeight(int height);
 
 	public int getGenMinHeight();

@@ -38,7 +38,7 @@ public class MiningmodPlugin
 		{
 			if (Config.veinsAutoRegister)
 			{
-				 CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(block, 0), 6, 12, 12, 64));
+				 CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(block, 0), 6, 12, 100, 12, 64));
 			}
 
 			CaveworldAPI.setMiningPointAmount(block, 0, 1);
@@ -50,7 +50,7 @@ public class MiningmodPlugin
 		{
 			if (Config.veinsAutoRegister)
 			{
-				 CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(block, 0), 8, 10, 0, 255));
+				 CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(block, 0), 8, 10, 100, 0, 255));
 			}
 
 			CaveworldAPI.setMiningPointAmount(block, 0, 1);
@@ -62,7 +62,7 @@ public class MiningmodPlugin
 		{
 			if (Config.veinsAutoRegister)
 			{
-				 CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(block, 0), 6, 12, 0, 255));
+				 CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(block, 0), 6, 12, 100, 0, 255));
 			}
 
 			CaveworldAPI.setMiningPointAmount(block, 0, 1);
@@ -74,7 +74,7 @@ public class MiningmodPlugin
 		{
 			if (Config.veinsAutoRegister)
 			{
-				 CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(block, 0), 6, 5, 10, 64));
+				 CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(block, 0), 6, 5, 100, 10, 64));
 			}
 
 			CaveworldAPI.setMiningPointAmount(block, 0, 2);
@@ -86,7 +86,7 @@ public class MiningmodPlugin
 		{
 			if (Config.veinsAutoRegister)
 			{
-				 CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(block, 0), 6, 5, 5, 64));
+				 CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(block, 0), 6, 5, 100, 5, 64));
 			}
 
 			CaveworldAPI.setMiningPointAmount(block, 0, 2);
@@ -98,7 +98,7 @@ public class MiningmodPlugin
 		{
 			if (Config.veinsAutoRegister)
 			{
-				 CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(block, 0), 8, 6, 0, 255));
+				 CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(block, 0), 8, 6, 100, 0, 255));
 			}
 
 			CaveworldAPI.setMiningPointAmount(block, 0, 1);
@@ -110,7 +110,7 @@ public class MiningmodPlugin
 		{
 			if (Config.veinsAutoRegister)
 			{
-				 CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(block, 0), 5, 5, 0, 50));
+				 CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(block, 0), 5, 5, 100, 0, 50));
 			}
 
 			CaveworldAPI.setMiningPointAmount(block, 0, 1);

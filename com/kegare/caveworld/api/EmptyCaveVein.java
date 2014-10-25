@@ -41,6 +41,18 @@ public class EmptyCaveVein implements ICaveVein
 	}
 
 	@Override
+	public int setGenRate(int rate)
+	{
+		return getGenRate();
+	}
+
+	@Override
+	public int getGenRate()
+	{
+		return 0;
+	}
+
+	@Override
 	public int setGenMinHeight(int height)
 	{
 		return getGenMinHeight();

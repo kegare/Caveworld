@@ -36,7 +36,6 @@ import com.kegare.caveworld.network.RegenerateMessage;
 import com.kegare.caveworld.network.SelectBreakableMessage;
 import com.kegare.caveworld.plugin.advancedtools.AdvancedToolsPlugin;
 import com.kegare.caveworld.plugin.craftguide.CraftGuidePlugin;
-import com.kegare.caveworld.plugin.enderio.EnderIOPlugin;
 import com.kegare.caveworld.plugin.ic2.IC2Plugin;
 import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.plugin.miningmod.MiningmodPlugin;
@@ -293,18 +292,6 @@ public class Caveworld
 		catch (Throwable e)
 		{
 			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: MiningmodPlugin");
-		}
-
-		try
-		{
-			if (EnderIOPlugin.enabled())
-			{
-				EnderIOPlugin.invoke();
-			}
-		}
-		catch (Throwable e)
-		{
-			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: EnderIOPlugin");
 		}
 
 		try

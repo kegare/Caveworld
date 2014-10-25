@@ -25,6 +25,10 @@ import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
@@ -40,10 +44,15 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraftforge.client.IItemRenderer.ItemRenderType;
+import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.oredict.OreDictionary;
+
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
@@ -60,6 +69,8 @@ import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 import cpw.mods.fml.common.registry.GameData;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class CaveUtils
 {
@@ -320,5 +331,64 @@ public class CaveUtils
 		}
 
 		return name + "@" + metadata;
+	}
+
+	@SideOnly(Side.CLIENT)
+	public static boolean renderItemStack(Minecraft mc, ItemStack itemstack, int x, int y, boolean overlay, String txt)
+	{
+		GL11.glColor3f(1.0F, 1.0F, 1.0F);
+
+		boolean isLightingEnabled = GL11.glIsEnabled(GL11.GL_LIGHTING);
+		boolean rc = false;
+
+		if (itemstack != null && itemstack.getItem() != null)
+		{
+			if (Block.getBlockFromItem(itemstack.getItem()).hasTileEntity(itemstack.getItemDamage()) ||
+				MinecraftForgeClient.getItemRenderer(itemstack, ItemRenderType.INVENTORY) != null)
+			{
+				return false;
+			}
+
+			rc = true;
+			boolean isRescaleNormalEnabled = GL11.glIsEnabled(GL12.GL_RESCALE_NORMAL);
+			GL11.glPushMatrix();
+			GL11.glTranslatef(0.0F, 0.0F, 32.0F);
+			GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+			GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+			GL11.glEnable(GL11.GL_LIGHTING);
+			short short1 = 240;
+			short short2 = 240;
+			RenderHelper.enableGUIStandardItemLighting();
+			OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, short1 / 1.0F, short2 / 1.0F);
+			RenderItem itemRender = RenderItem.getInstance();
+			itemRender.renderItemAndEffectIntoGUI(mc.fontRenderer, mc.getTextureManager(), itemstack, x, y);
+
+			if (overlay)
+			{
+				itemRender.renderItemOverlayIntoGUI(mc.fontRenderer, mc.getTextureManager(), itemstack, x, y, txt);
+			}
+
+			GL11.glPopMatrix();
+
+			if (isRescaleNormalEnabled)
+			{
+				GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+			}
+			else
+			{
+				GL11.glDisable(GL12.GL_RESCALE_NORMAL);
+			}
+		}
+
+		if (isLightingEnabled)
+		{
+			GL11.glEnable(GL11.GL_LIGHTING);
+		}
+		else
+		{
+			GL11.glDisable(GL11.GL_LIGHTING);
+		}
+
+		return rc;
 	}
 }

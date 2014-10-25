@@ -19,9 +19,7 @@ import java.util.concurrent.RecursiveAction;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
-import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
@@ -31,8 +29,6 @@ import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -46,6 +42,7 @@ import com.kegare.caveworld.client.gui.GuiListSlot;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.plugin.mceconomy.ShopProductManager.ShopProduct;
 import com.kegare.caveworld.util.ArrayListExtended;
+import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.ItemEntry;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
@@ -869,15 +866,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 
 			if (parent.detailInfo.isChecked())
 			{
-				if (!CaveConfigGui.renderIgnored.contains(itemstack.getItem()))
-				{
-					GL11.glEnable(GL12.GL_RESCALE_NORMAL);
-					RenderHelper.enableGUIStandardItemLighting();
-					RenderItem.getInstance().renderItemAndEffectIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, width / 2 - 100, par3 + 1);
-					RenderItem.getInstance().renderItemOverlayIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, width / 2 - 100, par3 + 1);
-					RenderHelper.disableStandardItemLighting();
-					GL11.glDisable(GL12.GL_RESCALE_NORMAL);
-				}
+				CaveUtils.renderItemStack(mc, itemstack, width / 2 - 100, par3 + 1, true, null);
 
 				name = Integer.toString(entry.getcost());
 				parent.drawString(parent.fontRendererObj, name, width / 2 + 107 - parent.fontRendererObj.getStringWidth(name), par3 + 8, 0xD0D0D0);

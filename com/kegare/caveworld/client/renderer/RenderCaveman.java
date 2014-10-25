@@ -10,6 +10,7 @@
 package com.kegare.caveworld.client.renderer;
 
 import java.awt.Color;
+import java.util.Calendar;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
@@ -37,10 +38,13 @@ public class RenderCaveman extends RenderBiped
 {
 	private static final ResourceLocation cavemanTextures = new ResourceLocation("caveworld", "textures/entity/caveman.png");
 	private static final ResourceLocation keimanTextures = new ResourceLocation("caveworld", "textures/entity/keiman.png");
+	private static final ResourceLocation halloweenTextures = new ResourceLocation("caveworld", "textures/entity/caveman_hw.png");
 
 	private final ModelCaveman cavemanModel;
 
 	private double renderHealth = -1.0D;
+
+	private Calendar calendar = Calendar.getInstance();
 
 	public RenderCaveman()
 	{
@@ -52,6 +56,14 @@ public class RenderCaveman extends RenderBiped
 	@Override
 	protected ResourceLocation getEntityTexture(Entity entity)
 	{
+		int month = calendar.get(Calendar.MONTH) + 1;
+		int date = calendar.get(Calendar.DATE);
+
+		if (month == 10 && date == 31)
+		{
+			return halloweenTextures;
+		}
+
 		if (entity instanceof EntityLiving && ((EntityLiving)entity).hasCustomNameTag() && ((EntityLiving)entity).getCustomNameTag().equals("kei"))
 		{
 			return keimanTextures;

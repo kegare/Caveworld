@@ -21,10 +21,9 @@ import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
-import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -34,7 +33,6 @@ import net.minecraftforge.common.BiomeDictionary.Type;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -51,6 +49,7 @@ import com.kegare.caveworld.api.ICaveBiome;
 import com.kegare.caveworld.client.gui.GuiListSlot;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.util.ArrayListExtended;
+import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.PanoramaPaths;
 import com.kegare.caveworld.util.comparator.BiomeComparator;
 
@@ -536,35 +535,17 @@ public class GuiSelectBiome extends GuiScreen
 					Block block = biome.topBlock;
 					int meta = biome.field_150604_aj;
 
-					if (block != null)
+					if (block != null && Item.getItemFromBlock(block) != null)
 					{
-						ItemStack itemstack = new ItemStack(block, 1, meta);
-
-						if (itemstack.getItem() != null && !CaveConfigGui.renderIgnored.contains(itemstack.getItem()))
-						{
-							GL11.glEnable(GL12.GL_RESCALE_NORMAL);
-							RenderHelper.enableGUIStandardItemLighting();
-							RenderItem.getInstance().renderItemAndEffectIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, width / 2 + 70, par3 - 1);
-							RenderHelper.disableStandardItemLighting();
-							GL11.glDisable(GL12.GL_RESCALE_NORMAL);
-						}
+						CaveUtils.renderItemStack(mc, new ItemStack(block, 1, meta), width / 2 + 70, par3 - 1, false, null);
 					}
 
 					block = biome.fillerBlock;
 					meta = biome.field_76754_C;
 
-					if (block != null)
+					if (block != null && Item.getItemFromBlock(block) != null)
 					{
-						ItemStack itemstack = new ItemStack(block, 1, meta);
-
-						if (itemstack.getItem() != null && !CaveConfigGui.renderIgnored.contains(itemstack.getItem()))
-						{
-							GL11.glEnable(GL12.GL_RESCALE_NORMAL);
-							RenderHelper.enableGUIStandardItemLighting();
-							RenderItem.getInstance().renderItemAndEffectIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, width / 2 + 90, par3 - 1);
-							RenderHelper.disableStandardItemLighting();
-							GL11.glDisable(GL12.GL_RESCALE_NORMAL);
-						}
+						CaveUtils.renderItemStack(mc, new ItemStack(block, 1, meta), width / 2 + 90, par3 - 1, false, null);
 					}
 				}
 			}

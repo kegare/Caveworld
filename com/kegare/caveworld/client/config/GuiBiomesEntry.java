@@ -20,9 +20,7 @@ import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
-import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -36,8 +34,6 @@ import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -54,6 +50,7 @@ import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.util.ArrayListExtended;
+import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.comparator.CaveBiomeComparator;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
@@ -878,42 +875,14 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 
 				if (Item.getItemFromBlock(block.getBlock()) != null)
 				{
-					ItemStack itemstack = new ItemStack(block.getBlock(), 1, block.getMetadata());
-					int x = width / 2 - 100;
-					int y = par3 + 1;
-
-					GL11.glEnable(GL12.GL_RESCALE_NORMAL);
-					RenderHelper.enableGUIStandardItemLighting();
-
-					if (!CaveConfigGui.renderIgnored.contains(itemstack.getItem()))
-					{
-						RenderItem.getInstance().renderItemAndEffectIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, x, y);
-					}
-
-					RenderItem.getInstance().renderItemOverlayIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, x, y, Integer.toString(entry.getBiome().biomeID));
-					RenderHelper.disableStandardItemLighting();
-					GL11.glDisable(GL12.GL_RESCALE_NORMAL);
+					CaveUtils.renderItemStack(mc, new ItemStack(block.getBlock(), 1, block.getMetadata()), width / 2 - 100, par3 + 1, true, Integer.toString(entry.getBiome().biomeID));
 				}
 
 				block = entry.getTopBlock();
 
 				if (Item.getItemFromBlock(block.getBlock()) != null)
 				{
-					ItemStack itemstack = new ItemStack(block.getBlock(), entry.getGenWeight(), block.getMetadata());
-					int x = width / 2 + 90;
-					int y = par3 + 1;
-
-					GL11.glEnable(GL12.GL_RESCALE_NORMAL);
-					RenderHelper.enableGUIStandardItemLighting();
-
-					if (!CaveConfigGui.renderIgnored.contains(itemstack.getItem()))
-					{
-						RenderItem.getInstance().renderItemAndEffectIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, x, y);
-					}
-
-					RenderItem.getInstance().renderItemOverlayIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, x, y);
-					RenderHelper.disableStandardItemLighting();
-					GL11.glDisable(GL12.GL_RESCALE_NORMAL);
+					CaveUtils.renderItemStack(mc, new ItemStack(block.getBlock(), entry.getGenWeight(), block.getMetadata()), width / 2 + 90, par3 + 1, true, null);
 				}
 			}
 		}

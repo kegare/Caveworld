@@ -658,23 +658,31 @@ public class Config
 
 		if (veinsCfg.getCategoryNames().isEmpty())
 		{
-			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 0), 4, 7, 128, 255));
-			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 1), 1, 3, 150, 255));
-			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 17, 20, 0, 255));
-			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 10, 28, 0, 255));
-			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.gold_ore, 0), 8, 3, 0, 127));
-			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.redstone_ore, 0), 7, 8, 0, 40));
-			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.lapis_ore, 0), 5, 2, 0, 50));
-			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.diamond_ore, 0), 8, 1, 0, 20));
-			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.emerald_ore, 0), 5, 3, 50, 255, null, Type.MOUNTAIN, Type.HILLS));
-			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.quartz_ore, 0), 10, 16, 0, 255, new BlockEntry(Blocks.netherrack, 0), Type.NETHER));
-			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.dirt, 0), 25, 20, 0, 255));
-			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.gravel, 0), 20, 6, 0, 255));
-			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.sand, 0), 20, 8, 0, 255, null, Type.SANDY));
-			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.sand, 0), 20, 8, 0, 20, new BlockEntry(Blocks.gravel, 0), Type.SANDY));
-			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.soul_sand, 0), 20, 10, 0, 255, new BlockEntry(Blocks.netherrack, 0), Type.NETHER));
-			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.hardened_clay, 1), 24, 20, 0, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
-			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.hardened_clay, 12), 24, 14, 0, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 0), 4, 7, 100, 128, 255));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 0), 20, 1, 8, 128, 255));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 1), 1, 3, 100, 150, 255));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 17, 20, 100, 0, 255));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 85, 1, 10, 0, 255));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 10, 28, 100, 0, 255));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 50, 1, 10, 0, 255));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.gold_ore, 0), 8, 3, 100, 0, 127));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.gold_ore, 0), 24, 1, 8, 0, 127));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.redstone_ore, 0), 7, 8, 100, 0, 40));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.redstone_ore, 0), 30, 1, 8, 0, 40));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.lapis_ore, 0), 5, 2, 100, 0, 50));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.lapis_ore, 0), 18, 1, 8, 0, 50));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.diamond_ore, 0), 8, 1, 100, 0, 20));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.diamond_ore, 0), 15, 1, 5, 0, 20));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.emerald_ore, 0), 5, 3, 100, 50, 255, null, Type.MOUNTAIN, Type.HILLS));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.emerald_ore, 0), 16, 1, 6, 50, 255, null, Type.MOUNTAIN, Type.HILLS));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.quartz_ore, 0), 10, 16, 100, 0, 255, new BlockEntry(Blocks.netherrack, 0), Type.NETHER));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.dirt, 0), 25, 20, 100, 0, 255));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.gravel, 0), 20, 6, 100, 0, 255));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.sand, 0), 20, 8, 100, 0, 255, null, Type.SANDY));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.sand, 0), 20, 8, 100, 0, 20, new BlockEntry(Blocks.gravel, 0), Type.SANDY));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.soul_sand, 0), 20, 10, 100, 0, 255, new BlockEntry(Blocks.netherrack, 0), Type.NETHER));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.hardened_clay, 1), 24, 20, 100, 0, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.hardened_clay, 12), 24, 14, 100, 0, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
 		}
 		else
 		{

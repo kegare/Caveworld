@@ -437,6 +437,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		BlockEntry block = vein.getBlock();
 		int count = vein.getGenBlockCount();
 		int weight = vein.getGenWeight();
+		int rate = vein.getGenRate();
 		int min = vein.getGenMinHeight();
 		int max = vein.getGenMaxHeight();
 		BlockEntry target = vein.getGenTargetBlock();
@@ -446,6 +447,11 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		{
 			for (int i = 0; i < weight; ++i)
 			{
+				if (random.nextInt(100) + 1 > rate)
+				{
+					continue;
+				}
+
 				int x = worldX + random.nextInt(16);
 				int y = random.nextInt(Math.min(max, worldHeight - 1) - min) + min;
 				int z = worldZ + random.nextInt(16);
@@ -456,8 +462,9 @@ public class ChunkProviderCaveworld implements IChunkProvider
 				double var5 = z + 8 - MathHelper.cos(var1) * count / 8.0F;
 				double var6 = y + random.nextInt(3) - 2;
 				double var7 = y + random.nextInt(3) - 2;
+				int gen = 0;
 
-				for (int j = 0; j <= count; ++j)
+				for (int j = 0; gen <= count && j <= count; ++j)
 				{
 					double var8 = var2 + (var3 - var2) * j / count;
 					double var9 = var6 + (var7 - var6) * j / count;
@@ -466,19 +473,19 @@ public class ChunkProviderCaveworld implements IChunkProvider
 					double var12 = (MathHelper.sin(j * (float)Math.PI / count) + 1.0F) * var11 + 1.0D;
 					double var13 = (MathHelper.sin(j * (float)Math.PI / count) + 1.0F) * var11 + 1.0D;
 
-					for (x = MathHelper.floor_double(var8 - var12 / 2.0D); x <= MathHelper.floor_double(var8 + var12 / 2.0D); ++x)
+					for (x = MathHelper.floor_double(var8 - var12 / 2.0D); gen <= count && x <= MathHelper.floor_double(var8 + var12 / 2.0D); ++x)
 					{
 						double xScale = (x + 0.5D - var8) / (var12 / 2.0D);
 
 						if (xScale * xScale < 1.0D)
 						{
-							for (y = MathHelper.floor_double(var9 - var13 / 2.0D); y <= MathHelper.floor_double(var9 + var13 / 2.0D); ++y)
+							for (y = MathHelper.floor_double(var9 - var13 / 2.0D); gen <= count && y <= MathHelper.floor_double(var9 + var13 / 2.0D); ++y)
 							{
 								double yScale = (y + 0.5D - var9) / (var13 / 2.0D);
 
 								if (xScale * xScale + yScale * yScale < 1.0D)
 								{
-									for (z = MathHelper.floor_double(var10 - var12 / 2.0D); z <= MathHelper.floor_double(var10 + var12 / 2.0D); ++z)
+									for (z = MathHelper.floor_double(var10 - var12 / 2.0D); gen < count && z <= MathHelper.floor_double(var10 + var12 / 2.0D); ++z)
 									{
 										double zScale = (z + 0.5D - var10) / (var12 / 2.0D);
 
@@ -498,7 +505,10 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 											if (biomes == null || biomes.length <= 0 || ArrayUtils.contains(biomes, worldObj.getBiomeGenForCoords(x, z).biomeID))
 											{
-												worldObj.setBlock(x, y, z, block.getBlock(), block.getMetadata(), 2);
+												if (worldObj.setBlock(x, y, z, block.getBlock(), block.getMetadata(), 2))
+												{
+													++gen;
+												}
 											}
 										}
 									}

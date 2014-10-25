@@ -10,15 +10,12 @@
 package com.kegare.caveworld.client.config;
 
 import java.util.List;
-import java.util.Set;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.item.Item;
 import net.minecraftforge.common.config.Configuration;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.plugin.mceconomy.ShopEntry;
@@ -34,8 +31,6 @@ public class CaveConfigGui extends GuiConfig
 {
 	public static boolean detailInfo = true;
 	public static boolean instantFilter = true;
-
-	public static final Set<Item> renderIgnored = Sets.newHashSet();
 
 	public CaveConfigGui(GuiScreen parent)
 	{

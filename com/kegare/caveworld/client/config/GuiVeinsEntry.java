@@ -21,9 +21,7 @@ import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
-import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -37,8 +35,6 @@ import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
@@ -56,6 +52,7 @@ import com.kegare.caveworld.core.CaveVeinManager.CaveVein;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.util.ArrayListExtended;
+import com.kegare.caveworld.util.CaveUtils;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
@@ -89,6 +86,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 	protected GuiTextField blockMetaField;
 	protected GuiTextField countField;
 	protected GuiTextField weightField;
+	protected GuiTextField rateField;
 	protected GuiTextField minHeightField;
 	protected GuiTextField maxHeightField;
 	protected GuiTextField targetField;
@@ -98,6 +96,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 	protected HoverChecker blockHoverChecker;
 	protected HoverChecker countHoverChecker;
 	protected HoverChecker weightHoverChecker;
+	protected HoverChecker rateHoverChecker;
 	protected HoverChecker heightHoverChecker;
 	protected HoverChecker targetHoverChecker;
 	protected HoverChecker biomesHoverChecker;
@@ -124,7 +123,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 			veinList = new VeinList(this);
 		}
 
-		veinList.func_148122_a(width, height, 32, height - (editMode ? 150 : 28));
+		veinList.func_148122_a(width, height, 32, height - (editMode ? 170 : 28));
 
 		if (doneButton == null)
 		{
@@ -232,6 +231,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 		editLabelList.add("");
 		editLabelList.add(I18n.format(Caveworld.CONFIG_LANG  + "veins.genBlockCount"));
 		editLabelList.add(I18n.format(Caveworld.CONFIG_LANG  + "veins.genWeight"));
+		editLabelList.add(I18n.format(Caveworld.CONFIG_LANG  + "veins.genRate"));
 		editLabelList.add(I18n.format(Caveworld.CONFIG_LANG  + "veins.genHeight"));
 		editLabelList.add("");
 		editLabelList.add(I18n.format(Caveworld.CONFIG_LANG  + "veins.genTargetBlock"));
@@ -285,14 +285,24 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 		weightField.yPosition = countField.yPosition + countField.height + 5;
 		weightField.width = fieldWidth;
 
+		if (rateField == null)
+		{
+			rateField = new GuiTextField(fontRendererObj, 0, 0, 0, blockField.height);
+			rateField.setMaxStringLength(3);
+		}
+
+		rateField.xPosition = weightField.xPosition;
+		rateField.yPosition = weightField.yPosition + weightField.height + 5;
+		rateField.width = weightField.width;
+
 		if (minHeightField == null)
 		{
 			minHeightField = new GuiTextField(fontRendererObj, 0, 0, 0, blockField.height);
 			minHeightField.setMaxStringLength(3);
 		}
 
-		minHeightField.xPosition = weightField.xPosition;
-		minHeightField.yPosition = weightField.yPosition + weightField.height + 5;
+		minHeightField.xPosition = rateField.xPosition;
+		minHeightField.yPosition = rateField.yPosition + rateField.height + 5;
 		minHeightField.width = fieldWidth / 2 - 1;
 
 		if (maxHeightField == null)
@@ -343,6 +353,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 			editFieldList.add(blockMetaField);
 			editFieldList.add(countField);
 			editFieldList.add(weightField);
+			editFieldList.add(rateField);
 			editFieldList.add(minHeightField);
 			editFieldList.add(maxHeightField);
 			editFieldList.add(targetField);
@@ -353,6 +364,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 		blockHoverChecker = new HoverChecker(blockField.yPosition - 1, blockField.yPosition + blockField.height, blockField.xPosition - maxLabelWidth - 12, blockField.xPosition - 10, 800);
 		countHoverChecker = new HoverChecker(countField.yPosition - 1, countField.yPosition + countField.height, countField.xPosition - maxLabelWidth - 12, countField.xPosition - 10, 800);
 		weightHoverChecker = new HoverChecker(weightField.yPosition - 1, weightField.yPosition + weightField.height, weightField.xPosition - maxLabelWidth - 12, weightField.xPosition - 10, 800);
+		rateHoverChecker = new HoverChecker(rateField.yPosition - 1, rateField.yPosition + rateField.height, rateField.xPosition - maxLabelWidth - 12, rateField.xPosition - 10, 800);
 		heightHoverChecker = new HoverChecker(minHeightField.yPosition - 1, minHeightField.yPosition + minHeightField.height, minHeightField.xPosition - maxLabelWidth - 12, minHeightField.xPosition - 10, 800);
 		targetHoverChecker = new HoverChecker(targetField.yPosition - 1, targetField.yPosition + targetField.height, targetField.xPosition - maxLabelWidth - 12, targetField.xPosition - 10, 800);
 		biomesHoverChecker = new HoverChecker(biomesField.yPosition - 1, biomesField.yPosition + biomesField.height, biomesField.xPosition - maxLabelWidth - 12, biomesField.xPosition - 10, 800);
@@ -368,7 +380,8 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 				case 0:
 					if (editMode)
 					{
-						if (Strings.isNullOrEmpty(blockField.getText()) || NumberUtils.toInt(countField.getText()) <= 0 || NumberUtils.toInt(weightField.getText()) <= 0)
+						if (Strings.isNullOrEmpty(blockField.getText()) || NumberUtils.toInt(countField.getText()) <= 0 ||
+							NumberUtils.toInt(weightField.getText()) <= 0 || NumberUtils.toInt(rateField.getText()) <= 0)
 						{
 							return;
 						}
@@ -376,6 +389,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 						veinList.selected.setBlock(new BlockEntry(blockField.getText(), NumberUtils.toInt(blockMetaField.getText())));
 						veinList.selected.setGenBlockCount(NumberUtils.toInt(countField.getText(), veinList.selected.getGenBlockCount()));
 						veinList.selected.setGenWeight(NumberUtils.toInt(weightField.getText(), veinList.selected.getGenWeight()));
+						veinList.selected.setGenRate(NumberUtils.toInt(rateField.getText(), veinList.selected.getGenRate()));
 						veinList.selected.setGenMinHeight(NumberUtils.toInt(minHeightField.getText(), veinList.selected.getGenMinHeight()));
 						veinList.selected.setGenMaxHeight(NumberUtils.toInt(maxHeightField.getText(), veinList.selected.getGenMaxHeight()));
 						veinList.selected.setGenTargetBlock(new BlockEntry(targetField.getText(), NumberUtils.toInt(targetMetaField.getText())));
@@ -450,6 +464,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 						blockMetaField.setText(Integer.toString(veinList.selected.getBlock().getMetadata()));
 						countField.setText(Integer.toString(veinList.selected.getGenBlockCount()));
 						weightField.setText(Integer.toString(veinList.selected.getGenWeight()));
+						rateField.setText(Integer.toString(veinList.selected.getGenRate()));
 						minHeightField.setText(Integer.toString(veinList.selected.getGenMinHeight()));
 						maxHeightField.setText(Integer.toString(veinList.selected.getGenMaxHeight()));
 						targetField.setText(GameData.getBlockRegistry().getNameForObject(veinList.selected.getGenTargetBlock().getBlock()));
@@ -507,7 +522,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 	{
 		if (!editMode)
 		{
-			ICaveVein entry = new CaveVein(blockEntry, 1, 1, 0, 255);
+			ICaveVein entry = new CaveVein(blockEntry, 1, 1, 100, 0, 255);
 
 			if (veinList.veins.addIfAbsent(entry))
 			{
@@ -601,6 +616,20 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 
 				func_146283_a(hoverCache.get(weightHoverChecker), mouseX, mouseY);
 			}
+			else if (rateHoverChecker.checkHover(mouseX, mouseY))
+			{
+				if (!hoverCache.containsKey(rateHoverChecker))
+				{
+					List<String> hover = Lists.newArrayList();
+					String key = Caveworld.CONFIG_LANG + "veins.genRate";
+					hover.add(EnumChatFormatting.GRAY + I18n.format(key));
+					hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
+
+					hoverCache.put(rateHoverChecker, hover);
+				}
+
+				func_146283_a(hoverCache.get(rateHoverChecker), mouseX, mouseY);
+			}
 			else if (heightHoverChecker.checkHover(mouseX, mouseY))
 			{
 				if (!hoverCache.containsKey(heightHoverChecker))
@@ -681,6 +710,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 						GameData.getBlockRegistry().getNameForObject(entry.getBlock().getBlock()) + ", " + entry.getBlock().getMetadata());
 					info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "veins.genBlockCount") + ": " + entry.getGenBlockCount());
 					info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "veins.genWeight") + ": " + entry.getGenWeight());
+					info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "veins.genRate") + ": " + entry.getGenRate());
 					info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "veins.genHeight") + ": " + entry.getGenMinHeight() + ", " + entry.getGenMaxHeight());
 					info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "veins.genTargetBlock") + ": " +
 						GameData.getBlockRegistry().getNameForObject(entry.getGenTargetBlock().getBlock()) + ", " + entry.getGenTargetBlock().getMetadata());
@@ -727,11 +757,11 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 
 			if (i < 0)
 			{
-				countField.setText(Integer.toString(Math.max(NumberUtils.toInt(countField.getText()) - 1, 0)));
+				countField.setText(Integer.toString(Math.max(NumberUtils.toInt(countField.getText()) - 1, 1)));
 			}
 			else if (i > 0)
 			{
-				countField.setText(Integer.toString(Math.min(NumberUtils.toInt(countField.getText()) + 1, 100)));
+				countField.setText(Integer.toString(Math.min(NumberUtils.toInt(countField.getText()) + 1, 500)));
 			}
 		}
 		else if (weightField.isFocused())
@@ -740,11 +770,24 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 
 			if (i < 0)
 			{
-				weightField.setText(Integer.toString(Math.max(NumberUtils.toInt(weightField.getText()) - 1, 0)));
+				weightField.setText(Integer.toString(Math.max(NumberUtils.toInt(weightField.getText()) - 1, 1)));
 			}
 			else if (i > 0)
 			{
 				weightField.setText(Integer.toString(Math.min(NumberUtils.toInt(weightField.getText()) + 1, 100)));
+			}
+		}
+		else if (rateField.isFocused())
+		{
+			int i = Mouse.getDWheel();
+
+			if (i < 0)
+			{
+				rateField.setText(Integer.toString(Math.max(NumberUtils.toInt(rateField.getText()) - 1, 1)));
+			}
+			else if (i > 0)
+			{
+				rateField.setText(Integer.toString(Math.min(NumberUtils.toInt(rateField.getText()) + 1, 100)));
 			}
 		}
 		else if (minHeightField.isFocused())
@@ -964,7 +1007,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 				}
 				else if (code == Keyboard.KEY_C && isCtrlKeyDown())
 				{
-					veinList.copied = veinList.selected == null ? null : new CaveVein(veinList.selected.getBlock(), veinList.selected.getGenBlockCount(), veinList.selected.getGenWeight(),
+					veinList.copied = veinList.selected == null ? null : new CaveVein(veinList.selected.getBlock(), veinList.selected.getGenBlockCount(), veinList.selected.getGenWeight(), veinList.selected.getGenRate(),
 						veinList.selected.getGenMinHeight(), veinList.selected.getGenMaxHeight(), veinList.selected.getGenTargetBlock(), veinList.selected.getGenBiomes());
 				}
 				else if (code == Keyboard.KEY_X && isCtrlKeyDown())
@@ -974,7 +1017,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 				}
 				else if (code == Keyboard.KEY_V && isCtrlKeyDown() && veinList.copied != null)
 				{
-					ICaveVein entry = new CaveVein(veinList.copied.getBlock(), veinList.copied.getGenBlockCount(), veinList.copied.getGenWeight(),
+					ICaveVein entry = new CaveVein(veinList.copied.getBlock(), veinList.copied.getGenBlockCount(), veinList.copied.getGenWeight(), veinList.selected.getGenRate(),
 						veinList.copied.getGenMinHeight(), veinList.copied.getGenMaxHeight(), veinList.copied.getGenTargetBlock(), veinList.copied.getGenBiomes());
 
 					if (veinList.veins.addIfAbsent(entry))
@@ -1082,31 +1125,17 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 			{
 				Item item = Item.getItemFromBlock(block.getBlock());
 
-				if (item != null && !CaveConfigGui.renderIgnored.contains(item))
+				if (item != null)
 				{
-					ItemStack itemstack = new ItemStack(block.getBlock(), entry.getGenBlockCount(), block.getMetadata());
-
-					GL11.glEnable(GL12.GL_RESCALE_NORMAL);
-					RenderHelper.enableGUIStandardItemLighting();
-					RenderItem.getInstance().renderItemAndEffectIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, width / 2 - 100, par3 + 1);
-					RenderItem.getInstance().renderItemOverlayIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, width / 2 - 100, par3 + 1);
-					RenderHelper.disableStandardItemLighting();
-					GL11.glDisable(GL12.GL_RESCALE_NORMAL);
+					CaveUtils.renderItemStack(mc, new ItemStack(block.getBlock(), entry.getGenBlockCount(), block.getMetadata()), width / 2 - 100, par3 + 1, true, null);
 				}
 
 				block = entry.getGenTargetBlock();
 				item = Item.getItemFromBlock(block.getBlock());
 
-				if (item != null && !CaveConfigGui.renderIgnored.contains(item))
+				if (item != null)
 				{
-					ItemStack itemstack = new ItemStack(block.getBlock(), entry.getGenWeight(), block.getMetadata());
-
-					GL11.glEnable(GL12.GL_RESCALE_NORMAL);
-					RenderHelper.enableGUIStandardItemLighting();
-					RenderItem.getInstance().renderItemAndEffectIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, width / 2 + 90, par3 + 1);
-					RenderItem.getInstance().renderItemOverlayIntoGUI(parent.fontRendererObj, parent.mc.getTextureManager(), itemstack, width / 2 + 90, par3 + 1);
-					RenderHelper.disableStandardItemLighting();
-					GL11.glDisable(GL12.GL_RESCALE_NORMAL);
+					CaveUtils.renderItemStack(mc, new ItemStack(block.getBlock(), entry.getGenWeight(), block.getMetadata()), width / 2 + 90, par3 + 1, true, null);
 				}
 			}
 		}
