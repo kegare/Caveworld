@@ -9,8 +9,6 @@
 
 package com.kegare.caveworld.client.config;
 
-import org.lwjgl.input.Keyboard;
-
 import cpw.mods.fml.client.config.GuiConfig;
 import cpw.mods.fml.client.config.GuiConfigEntries;
 import cpw.mods.fml.client.config.GuiConfigEntries.ArrayEntry;
@@ -29,18 +27,15 @@ public class SelectBiomeEntry extends ArrayEntry
 	@Override
 	public void valueButtonPressed(int index)
 	{
-		if (Keyboard.isKeyDown(Keyboard.KEY_RSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_LSHIFT))
+		if (GuiConfig.isShiftKeyDown())
 		{
 			super.valueButtonPressed(index);
 		}
-		else
+		else if (btnValue.enabled)
 		{
-			if (btnValue.enabled)
-			{
-				btnValue.func_146113_a(mc.getSoundHandler());
+			btnValue.func_146113_a(mc.getSoundHandler());
 
-				mc.displayGuiScreen(new GuiSelectBiome(owningScreen, this));
-			}
+			mc.displayGuiScreen(new GuiSelectBiome(owningScreen, this));
 		}
 	}
 }

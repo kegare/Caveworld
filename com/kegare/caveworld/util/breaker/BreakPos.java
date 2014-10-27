@@ -36,7 +36,7 @@ public class BreakPos
 		this.y = y;
 		this.z = z;
 		this.prevBlock = getCurrentBlock();
-		this.prevMeta = world.getBlockMetadata(x, y, z);
+		this.prevMeta = getCurrentMetadata();
 	}
 
 	public boolean isPlaced()

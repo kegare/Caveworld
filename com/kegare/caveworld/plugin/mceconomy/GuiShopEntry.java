@@ -47,6 +47,7 @@ import com.kegare.caveworld.util.ItemEntry;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
+import cpw.mods.fml.client.config.GuiConfig;
 import cpw.mods.fml.client.config.HoverChecker;
 import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
@@ -621,7 +622,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 	{
 		super.handleKeyboardInput();
 
-		if (Keyboard.getEventKey() == Keyboard.KEY_LSHIFT || Keyboard.getEventKey() == Keyboard.KEY_RSHIFT)
+		if (GuiConfig.isShiftKeyDown())
 		{
 			clearButton.visible = !editMode && Keyboard.getEventKeyState();
 		}
@@ -848,21 +849,28 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 			ItemStack itemstack = entry.getProductItem();
 			String name = null;
 
-			switch (nameType)
+			try
 			{
-				case 1:
-					name = GameData.getItemRegistry().getNameForObject(itemstack.getItem());
-					break;
-				case 2:
-					name = itemstack.getUnlocalizedName();
-					name = name.substring(name.indexOf(".") + 1);
-					break;
-				default:
-					name = itemstack.getDisplayName();
-					break;
+				switch (nameType)
+				{
+					case 1:
+						name = GameData.getItemRegistry().getNameForObject(itemstack.getItem());
+						break;
+					case 2:
+						name = itemstack.getUnlocalizedName();
+						name = name.substring(name.indexOf(".") + 1);
+						break;
+					default:
+						name = itemstack.getDisplayName();
+						break;
+				}
 			}
+			catch (Throwable e) {}
 
-			parent.drawCenteredString(parent.fontRendererObj, name, width / 2, par3 + 3, 0xFFFFFF);
+			if (!Strings.isNullOrEmpty(name))
+			{
+				parent.drawCenteredString(parent.fontRendererObj, name, width / 2, par3 + 3, 0xFFFFFF);
+			}
 
 			if (parent.detailInfo.isChecked())
 			{
@@ -933,18 +941,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 		@Override
 		public boolean apply(ShopProduct product)
 		{
-			ItemStack itemstack = product.getProductItem();
-
-			if (GameData.getItemRegistry().getNameForObject(itemstack.getItem()).toLowerCase().contains(filter.toLowerCase()) ||
-				itemstack.getUnlocalizedName().toLowerCase().contains(filter.toLowerCase()) ||
-				itemstack.getDisplayName().toLowerCase().contains(filter.toLowerCase()) ||
-				itemstack.getItem().getToolClasses(itemstack).contains(filter) ||
-				product.getcost() == NumberUtils.toInt(filter, -1))
-			{
-				return true;
-			}
-
-			return false;
+			return CaveUtils.itemFilter(product.getProductItem(), filter) || product.getcost() == NumberUtils.toInt(filter, -1);
 		}
 	}
 }

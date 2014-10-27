@@ -9,6 +9,7 @@
 
 package com.kegare.caveworld.item;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -35,11 +36,15 @@ import com.google.common.collect.Lists;
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.client.gui.GuiSelectBreakable;
 import com.kegare.caveworld.core.Caveworld;
+import com.kegare.caveworld.recipe.RecipeMiningPickaxe;
 import com.kegare.caveworld.util.CaveUtils;
+import com.kegare.caveworld.util.Roman;
+import com.kegare.caveworld.util.breaker.AditBreakExecutor;
 import com.kegare.caveworld.util.breaker.BreakPos;
 import com.kegare.caveworld.util.breaker.IBreakExecutor;
 import com.kegare.caveworld.util.breaker.MultiBreakExecutor;
 import com.kegare.caveworld.util.breaker.RangedBreakExecutor;
+import com.kegare.caveworld.util.comparator.ItemStackComparator;
 
 import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
@@ -51,6 +56,7 @@ public class ItemMiningPickaxe extends ItemPickaxe
 	{
 		NORMAL,
 		QUICK,
+		ADIT,
 		RANGED
 	}
 
@@ -144,6 +150,8 @@ public class ItemMiningPickaxe extends ItemPickaxe
 			case 1:
 				return BreakMode.QUICK;
 			case 2:
+				return BreakMode.ADIT;
+			case 3:
 				return BreakMode.RANGED;
 			default:
 				return BreakMode.NORMAL;
@@ -179,19 +187,14 @@ public class ItemMiningPickaxe extends ItemPickaxe
 	@Override
 	public String getItemStackDisplayName(ItemStack itemstack)
 	{
-		switch (getRefined(itemstack))
+		int refined = getRefined(itemstack);
+
+		if (refined > 0)
 		{
-			case 1:
-				return super.getItemStackDisplayName(itemstack) + " I";
-			case 2:
-				return super.getItemStackDisplayName(itemstack) + " II";
-			case 3:
-				return super.getItemStackDisplayName(itemstack) + " III";
-			case 4:
-				return super.getItemStackDisplayName(itemstack) + " IV";
-			default:
-				return super.getItemStackDisplayName(itemstack);
+			return super.getItemStackDisplayName(itemstack) + " " + Roman.toRoman(getRefined(itemstack));
 		}
+
+		return super.getItemStackDisplayName(itemstack);
 	}
 
 	@Override
@@ -277,6 +280,11 @@ public class ItemMiningPickaxe extends ItemPickaxe
 	{
 		if (player.isSneaking())
 		{
+			if (getMode(itemstack) == BreakMode.NORMAL)
+			{
+				return getBaseTool(itemstack).onItemRightClick(itemstack, world, player);
+			}
+
 			if (world.isRemote)
 			{
 				Caveworld.proxy.displayClientGuiScreen(new GuiSelectBreakable(itemstack));
@@ -286,7 +294,7 @@ public class ItemMiningPickaxe extends ItemPickaxe
 		{
 			int i = itemstack.getTagCompound().getInteger("Mode");
 
-			if (++i > BreakMode.values().length - 1 || i > getRefined(itemstack) + 1)
+			if (++i > BreakMode.values().length - 1 || i > getRefined(itemstack) + 2)
 			{
 				i = 0;
 			}
@@ -307,15 +315,25 @@ public class ItemMiningPickaxe extends ItemPickaxe
 	@Override
 	public boolean onBlockDestroyed(ItemStack itemstack, World world, Block block, int x, int y, int z, EntityLivingBase entity)
 	{
+		BreakMode mode = getMode(itemstack);
+
+		if (entity.isSneaking() && mode == BreakMode.NORMAL)
+		{
+			return getBaseTool(itemstack).onBlockDestroyed(itemstack, world, block, x, y, z, entity);
+		}
+
 		if (entity instanceof EntityPlayer)
 		{
 			EntityPlayer player = (EntityPlayer)entity;
 			IBreakExecutor executor;
 
-			switch (getMode(itemstack))
+			switch (mode)
 			{
 				case QUICK:
 					executor = MultiBreakExecutor.getExecutor(world, player);
+					break;
+				case ADIT:
+					executor = AditBreakExecutor.getExecutor(world, player);
 					break;
 				case RANGED:
 					executor = RangedBreakExecutor.getExecutor(world, player);
@@ -356,6 +374,8 @@ public class ItemMiningPickaxe extends ItemPickaxe
 		{
 			case QUICK:
 				return mode + ": " + I18n.format(getUnlocalizedName() + ".mode.quick");
+			case ADIT:
+				return mode + ": " + I18n.format(getUnlocalizedName() + ".mode.adit");
 			case RANGED:
 				return mode + ": " + I18n.format(getUnlocalizedName() + ".mode.ranged");
 			default:
@@ -368,7 +388,13 @@ public class ItemMiningPickaxe extends ItemPickaxe
 	public void addInformation(ItemStack itemstack, EntityPlayer player, List list, boolean advanced)
 	{
 		list.add(getModeInfomation(itemstack));
-		list.add(I18n.format(getUnlocalizedName() + ".base") + ": " + getBaseTool(itemstack).getItemStackDisplayName(itemstack));
+
+		Item item = getBaseTool(itemstack);
+
+		if (item != this)
+		{
+			list.add(I18n.format(getUnlocalizedName() + ".base") + ": " + item.getItemStackDisplayName(itemstack));
+		}
 
 		super.addInformation(itemstack, player, list, advanced);
 	}
@@ -377,14 +403,24 @@ public class ItemMiningPickaxe extends ItemPickaxe
 	@Override
 	public void getSubItems(Item item, CreativeTabs tab, List list)
 	{
-		for (int i = 0; i <= 4; ++i)
-		{
-			ItemStack itemstack = new ItemStack(item, 1, 0);
-			NBTTagCompound data = new NBTTagCompound();
-			data.setInteger("Refined", i);
-			itemstack.setTagCompound(data);
+		List<ItemStack> items = Lists.newArrayList(RecipeMiningPickaxe.instance.getCenterItems());
 
-			list.add(itemstack);
+		Collections.sort(items, new ItemStackComparator());
+
+		for (ItemStack center : items)
+		{
+			for (int i = 0; i <= 4; ++i)
+			{
+				ItemStack itemstack = new ItemStack(item, 1, 0);
+				NBTTagCompound data = new NBTTagCompound();
+
+				data.setString("BaseName", GameData.getItemRegistry().getNameForObject(center.getItem()));
+				data.setInteger("Refined", i);
+
+				itemstack.setTagCompound(data);
+
+				list.add(itemstack);
+			}
 		}
 	}
 }

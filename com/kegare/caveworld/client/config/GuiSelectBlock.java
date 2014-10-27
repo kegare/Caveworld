@@ -430,40 +430,47 @@ public class GuiSelectBlock extends GuiScreen
 			ItemStack itemstack = new ItemStack(block, 1, entry.getMetadata());
 			String name = null;
 
-			if (itemstack.getItem() == null)
+			try
 			{
-				switch (nameType)
+				if (itemstack.getItem() == null)
 				{
-					case 1:
-						name = GameData.getBlockRegistry().getNameForObject(block);
-						break;
-					case 2:
-						name = block.getUnlocalizedName();
-						name = name.substring(name.indexOf(".") + 1);
-						break;
-					default:
-						name = block.getLocalizedName();
-						break;
+					switch (nameType)
+					{
+						case 1:
+							name = GameData.getBlockRegistry().getNameForObject(block);
+							break;
+						case 2:
+							name = block.getUnlocalizedName();
+							name = name.substring(name.indexOf(".") + 1);
+							break;
+						default:
+							name = block.getLocalizedName();
+							break;
+					}
+				}
+				else
+				{
+					switch (nameType)
+					{
+						case 1:
+							name = GameData.getBlockRegistry().getNameForObject(block) + ", " + itemstack.getItemDamage();
+							break;
+						case 2:
+							name = itemstack.getUnlocalizedName();
+							name = name.substring(name.indexOf(".") + 1);
+							break;
+						default:
+							name = itemstack.getDisplayName();
+							break;
+					}
 				}
 			}
-			else
-			{
-				switch (nameType)
-				{
-					case 1:
-						name = GameData.getBlockRegistry().getNameForObject(block) + ", " + itemstack.getItemDamage();
-						break;
-					case 2:
-						name = itemstack.getUnlocalizedName();
-						name = name.substring(name.indexOf(".") + 1);
-						break;
-					default:
-						name = itemstack.getDisplayName();
-						break;
-				}
-			}
+			catch (Throwable e) {}
 
-			parent.drawCenteredString(parent.fontRendererObj, name, width / 2, par3 + 1, 0xFFFFFF);
+			if (!Strings.isNullOrEmpty(name))
+			{
+				parent.drawCenteredString(parent.fontRendererObj, name, width / 2, par3 + 1, 0xFFFFFF);
+			}
 
 			if (parent.detailInfo.isChecked() && itemstack.getItem() != null)
 			{
@@ -528,30 +535,7 @@ public class GuiSelectBlock extends GuiScreen
 		@Override
 		public boolean apply(BlockEntry entry)
 		{
-			Block block = entry.getBlock();
-
-			if (GameData.getBlockRegistry().getNameForObject(block).toLowerCase().contains(filter.toLowerCase()))
-			{
-				return true;
-			}
-
-			ItemStack itemstack = new ItemStack(block, 1, entry.getMetadata());
-
-			if (itemstack.getItem() == null)
-			{
-				if (block.getUnlocalizedName().toLowerCase().contains(filter.toLowerCase()) ||
-					block.getLocalizedName().toLowerCase().contains(filter.toLowerCase()))
-				{
-					return true;
-				}
-			}
-			else if (itemstack.getUnlocalizedName().toLowerCase().contains(filter.toLowerCase()) ||
-				itemstack.getDisplayName().toLowerCase().contains(filter.toLowerCase()))
-			{
-				return true;
-			}
-
-			return false;
+			return CaveUtils.blockFilter(entry, filter);
 		}
 	}
 }

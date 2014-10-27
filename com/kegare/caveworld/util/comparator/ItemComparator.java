@@ -11,9 +11,10 @@ package com.kegare.caveworld.util.comparator;
 
 import java.util.Comparator;
 
+import net.minecraft.item.Item;
+
 import com.kegare.caveworld.util.CaveUtils;
 
-import net.minecraft.item.Item;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.GameRegistry.UniqueIdentifier;
 

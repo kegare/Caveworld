@@ -23,10 +23,12 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.entity.Entity;
@@ -44,13 +46,18 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.BiomeGenBase;
-import net.minecraftforge.client.IItemRenderer.ItemRenderType;
-import net.minecraftforge.client.MinecraftForgeClient;
+import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.common.BiomeDictionary;
+import net.minecraftforge.common.BiomeDictionary.Type;
+import net.minecraftforge.common.BiomeManager;
+import net.minecraftforge.common.BiomeManager.BiomeEntry;
+import net.minecraftforge.common.BiomeManager.BiomeType;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.oredict.OreDictionary;
 
+import org.apache.commons.lang3.math.NumberUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
@@ -60,6 +67,7 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
@@ -69,6 +77,7 @@ import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 import cpw.mods.fml.common.registry.GameData;
+import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -343,8 +352,9 @@ public class CaveUtils
 
 		if (itemstack != null && itemstack.getItem() != null)
 		{
-			if (Block.getBlockFromItem(itemstack.getItem()).hasTileEntity(itemstack.getItemDamage()) ||
-				MinecraftForgeClient.getItemRenderer(itemstack, ItemRenderType.INVENTORY) != null)
+			Block block = Block.getBlockFromItem(itemstack.getItem());
+
+			if (GameRegistry.findUniqueIdentifierFor(block).modId.equals("EnderIO") && !block.renderAsNormalBlock())
 			{
 				return false;
 			}
@@ -361,12 +371,38 @@ public class CaveUtils
 			RenderHelper.enableGUIStandardItemLighting();
 			OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, short1 / 1.0F, short2 / 1.0F);
 			RenderItem itemRender = RenderItem.getInstance();
-			itemRender.renderItemAndEffectIntoGUI(mc.fontRenderer, mc.getTextureManager(), itemstack, x, y);
+
+			itemRender.zLevel += 100.0F;
+			boolean rendered;
+
+			try
+			{
+				rendered = ForgeHooksClient.renderInventoryItem(RenderBlocks.getInstance(), mc.getTextureManager(), itemstack, itemRender.renderWithColor, itemRender.zLevel, x, y);
+			}
+			catch (Throwable e)
+			{
+				rendered = false;
+			}
+
+			if (!rendered)
+			{
+				try
+				{
+					itemRender.renderItemIntoGUI(mc.fontRenderer, mc.getTextureManager(), itemstack, x, y, true);
+				}
+				catch (Throwable e) {}
+			}
 
 			if (overlay)
 			{
-				itemRender.renderItemOverlayIntoGUI(mc.fontRenderer, mc.getTextureManager(), itemstack, x, y, txt);
+				try
+				{
+					itemRender.renderItemOverlayIntoGUI(mc.fontRenderer, mc.getTextureManager(), itemstack, x, y, txt);
+				}
+				catch (Throwable e) {}
 			}
+
+			itemRender.zLevel -= 100.0F;
 
 			GL11.glPopMatrix();
 
@@ -390,5 +426,241 @@ public class CaveUtils
 		}
 
 		return rc;
+	}
+
+	public static boolean containsIgnoreCase(String s1, String s2)
+	{
+		if (Strings.isNullOrEmpty(s1) || Strings.isNullOrEmpty(s2))
+		{
+			return false;
+		}
+
+		return Pattern.compile(Pattern.quote(s2), Pattern.CASE_INSENSITIVE).matcher(s1).find();
+	}
+
+	public static boolean blockFilter(BlockEntry entry, String filter)
+	{
+		if (entry == null || Strings.isNullOrEmpty(filter))
+		{
+			return false;
+		}
+
+		Block block = entry.getBlock();
+
+		try
+		{
+			if (containsIgnoreCase(GameData.getBlockRegistry().getNameForObject(block), filter))
+			{
+				return true;
+			}
+		}
+		catch (Throwable e) {}
+
+		ItemStack itemstack = new ItemStack(block, 1, entry.getMetadata());
+
+		if (itemstack.getItem() == null)
+		{
+			try
+			{
+				if (containsIgnoreCase(block.getUnlocalizedName(), filter))
+				{
+					return true;
+				}
+			}
+			catch (Throwable e) {}
+
+			try
+			{
+				if (containsIgnoreCase(block.getLocalizedName(), filter))
+				{
+					return true;
+				}
+			}
+			catch (Throwable e) {}
+		}
+		else
+		{
+			try
+			{
+				if (containsIgnoreCase(itemstack.getUnlocalizedName(), filter))
+				{
+					return true;
+				}
+			}
+			catch (Throwable e) {}
+
+			try
+			{
+				if (containsIgnoreCase(itemstack.getDisplayName(), filter))
+				{
+					return true;
+				}
+			}
+			catch (Throwable e) {}
+
+			try
+			{
+				if (itemstack.getItem().getToolClasses(itemstack).contains(filter))
+				{
+					return true;
+				}
+			}
+			catch (Throwable e) {}
+		}
+
+		return false;
+	}
+
+	public static boolean itemFilter(ItemEntry entry, String filter)
+	{
+		if (entry == null || Strings.isNullOrEmpty(filter))
+		{
+			return false;
+		}
+
+		try
+		{
+			if (containsIgnoreCase(GameData.getItemRegistry().getNameForObject(entry.item), filter))
+			{
+				return true;
+			}
+		}
+		catch (Throwable e) {}
+
+		ItemStack itemstack = entry.getItemStack();
+
+		try
+		{
+			if (containsIgnoreCase(itemstack.getUnlocalizedName(), filter))
+			{
+				return true;
+			}
+		}
+		catch (Throwable e) {}
+
+		try
+		{
+			if (containsIgnoreCase(itemstack.getDisplayName(), filter))
+			{
+				return true;
+			}
+		}
+		catch (Throwable e) {}
+
+		try
+		{
+			if (itemstack.getItem().getToolClasses(itemstack).contains(filter))
+			{
+				return true;
+			}
+		}
+		catch (Throwable e) {}
+
+		return false;
+	}
+
+	public static boolean itemFilter(ItemStack itemstack, String filter)
+	{
+		if (itemstack == null || itemstack.getItem() == null || Strings.isNullOrEmpty(filter))
+		{
+			return false;
+		}
+
+		try
+		{
+			if (containsIgnoreCase(GameData.getItemRegistry().getNameForObject(itemstack.getItem()), filter))
+			{
+				return true;
+			}
+		}
+		catch (Throwable e) {}
+
+		try
+		{
+			if (containsIgnoreCase(itemstack.getUnlocalizedName(), filter))
+			{
+				return true;
+			}
+		}
+		catch (Throwable e) {}
+
+		try
+		{
+			if (containsIgnoreCase(itemstack.getDisplayName(), filter))
+			{
+				return true;
+			}
+		}
+		catch (Throwable e) {}
+
+		try
+		{
+			if (itemstack.getItem().getToolClasses(itemstack).contains(filter))
+			{
+				return true;
+			}
+		}
+		catch (Throwable e) {}
+
+		return false;
+	}
+
+	public static boolean biomeFilter(BiomeGenBase biome, String filter)
+	{
+		if (biome == null || Strings.isNullOrEmpty(filter))
+		{
+			return false;
+		}
+
+		if (biome.biomeID == NumberUtils.toInt(filter, -1) || containsIgnoreCase(biome.biomeName, filter))
+		{
+			return true;
+		}
+
+		try
+		{
+			if (BiomeDictionary.isBiomeOfType(biome, Type.valueOf(filter.toUpperCase())))
+			{
+				return true;
+			}
+		}
+		catch (Throwable e) {}
+
+		try
+		{
+			if (blockFilter(new BlockEntry(biome.topBlock, biome.field_150604_aj), filter))
+			{
+				return true;
+			}
+		}
+		catch (Throwable e) {}
+
+		try
+		{
+			if (blockFilter(new BlockEntry(biome.fillerBlock, biome.field_76754_C), filter))
+			{
+				return true;
+			}
+		}
+		catch (Throwable e) {}
+
+		try
+		{
+			BiomeType type = BiomeType.valueOf(filter.toUpperCase());
+
+			if (type != null)
+			{
+				for (BiomeEntry entry : BiomeManager.getBiomes(type))
+				{
+					if (entry.biome.biomeID == biome.biomeID)
+					{
+						return true;
+					}
+				}
+			}
+		}
+		catch (Throwable e) {}
+
+		return false;
 	}
 }

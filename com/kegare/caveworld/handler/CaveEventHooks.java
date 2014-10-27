@@ -23,6 +23,8 @@ import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
@@ -91,6 +93,7 @@ import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.util.Version.Status;
+import com.kegare.caveworld.util.breaker.AditBreakExecutor;
 import com.kegare.caveworld.util.breaker.BreakPos;
 import com.kegare.caveworld.util.breaker.IBreakExecutor;
 import com.kegare.caveworld.util.breaker.MultiBreakExecutor;
@@ -196,6 +199,9 @@ public class CaveEventHooks
 								{
 									case QUICK:
 										MultiBreakExecutor.getExecutor(mc.theWorld, mc.thePlayer).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
+										return;
+									case ADIT:
+										AditBreakExecutor.getExecutor(mc.theWorld, mc.thePlayer).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
 										return;
 									case RANGED:
 										RangedBreakExecutor.getExecutor(mc.theWorld, mc.thePlayer).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
@@ -420,6 +426,14 @@ public class CaveEventHooks
 			}
 		}
 
+		for (Iterator<Cell<World, EntityPlayer, AditBreakExecutor>> iterator = AditBreakExecutor.executors.cellSet().iterator(); iterator.hasNext();)
+		{
+			if (iterator.next().getColumnKey().getGameProfile().getId().toString().equals(key))
+			{
+				iterator.remove();
+			}
+		}
+
 		for (Iterator<Cell<World, EntityPlayer, RangedBreakExecutor>> iterator = RangedBreakExecutor.executors.cellSet().iterator(); iterator.hasNext();)
 		{
 			if (iterator.next().getColumnKey().getGameProfile().getId().toString().equals(key))
@@ -609,6 +623,9 @@ public class CaveEventHooks
 							case QUICK:
 								executor = MultiBreakExecutor.getExecutor(world, player).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
 								break;
+							case ADIT:
+								executor = AditBreakExecutor.getExecutor(world, player).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
+								break;
 							case RANGED:
 								executor = RangedBreakExecutor.getExecutor(world, player).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
 								break;
@@ -750,6 +767,9 @@ public class CaveEventHooks
 				case QUICK:
 					executor = MultiBreakExecutor.getExecutor(player.worldObj, player);
 					break;
+				case ADIT:
+					executor = AditBreakExecutor.getExecutor(player.worldObj, player);
+					break;
 				case RANGED:
 					executor = RangedBreakExecutor.getExecutor(player.worldObj, player);
 					break;
@@ -761,7 +781,14 @@ public class CaveEventHooks
 			if (executor != null && !executor.getBreakPositions().isEmpty())
 			{
 				int count = executor.getBreakPositions().size();
-				float refined = pickaxe.getRefined(current) * 0.12F;
+				int raw = pickaxe.getRefined(current);
+
+				if (raw >= 4 || pickaxe.getHarvestLevel(current, "pickaxe") >= 3 && EnchantmentHelper.getEnchantmentLevel(Enchantment.efficiency.effectId, current) >= 4)
+				{
+					return;
+				}
+
+				float refined = raw * 0.1245F;
 
 				event.newSpeed = Math.min(event.originalSpeed / (count * (0.5F - refined)), pickaxe.getDigSpeed(current, event.block, event.metadata));
 			}
@@ -771,7 +798,7 @@ public class CaveEventHooks
 		{
 			if (event.y <= 0 || event.y >= player.worldObj.getActualHeight() - 1)
 			{
-				event.newSpeed /= 15.0F;
+				event.newSpeed /= 20.0F;
 			}
 		}
 	}
@@ -990,6 +1017,14 @@ public class CaveEventHooks
 		}
 
 		for (Iterator<Cell<World, EntityPlayer, MultiBreakExecutor>> iterator = MultiBreakExecutor.executors.cellSet().iterator(); iterator.hasNext();)
+		{
+			if (iterator.next().getRowKey().provider.dimensionId == dim)
+			{
+				iterator.remove();
+			}
+		}
+
+		for (Iterator<Cell<World, EntityPlayer, AditBreakExecutor>> iterator = AditBreakExecutor.executors.cellSet().iterator(); iterator.hasNext();)
 		{
 			if (iterator.next().getRowKey().provider.dimensionId == dim)
 			{

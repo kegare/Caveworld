@@ -181,7 +181,7 @@ public class RangedBreakExecutor implements IBreakExecutor
 
 	private boolean offer(int x, int y, int z)
 	{
-		if (canBreak(x, y, z) && originPos.getDistance(x, y, z) <= 32.0D && breakPositions.size() < 500)
+		if (canBreak(x, y, z))
 		{
 			currentPos = new BreakPos(world, x, y, z);
 

@@ -51,6 +51,11 @@ public class GuiSelectItem extends GuiScreen
 {
 	public static final ArrayListExtended<Item> raws = new ArrayListExtended().addAllObject(GameData.getItemRegistry());
 
+	static
+	{
+		Collections.sort(raws, new ItemComparator());
+	}
+
 	public interface SelectListener
 	{
 		public void onSelected(ItemEntry entry);
@@ -226,8 +231,13 @@ public class GuiSelectItem extends GuiScreen
 	@Override
 	protected void keyTyped(char c, int code)
 	{
-		if (filterTextField.isFocused() && code != 1)
+		if (filterTextField.isFocused())
 		{
+			if (code == Keyboard.KEY_ESCAPE)
+			{
+				filterTextField.setFocused(false);
+			}
+
 			String prev = filterTextField.getText();
 
 			filterTextField.textboxKeyTyped(c, code);
@@ -237,7 +247,7 @@ public class GuiSelectItem extends GuiScreen
 
 			if (Strings.isNullOrEmpty(text) && changed)
 			{
-				itemList.setFilter("");
+				itemList.setFilter(null);
 			}
 			else if (instantFilter.isChecked() && changed || code == Keyboard.KEY_RETURN)
 			{
@@ -304,8 +314,6 @@ public class GuiSelectItem extends GuiScreen
 
 		static
 		{
-			Collections.sort(raws, new ItemComparator());
-
 			List list = Lists.newArrayList();
 
 			for (Item item : raws)
@@ -400,7 +408,7 @@ public class GuiSelectItem extends GuiScreen
 		{
 			ItemEntry entry = contents.get(index, null);
 
-			if (entry == null || entry.item == null)
+			if (entry == null)
 			{
 				return;
 			}
@@ -408,21 +416,28 @@ public class GuiSelectItem extends GuiScreen
 			ItemStack itemstack = entry.getItemStack();
 			String name = null;
 
-			switch (nameType)
+			try
 			{
-				case 1:
-					name = GameData.getItemRegistry().getNameForObject(itemstack.getItem());
-					break;
-				case 2:
-					name = itemstack.getUnlocalizedName();
-					name = name.substring(name.indexOf(".") + 1);
-					break;
-				default:
-					name = itemstack.getDisplayName();
-					break;
+				switch (nameType)
+				{
+					case 1:
+						name = GameData.getItemRegistry().getNameForObject(itemstack.getItem());
+						break;
+					case 2:
+						name = itemstack.getUnlocalizedName();
+						name = name.substring(name.indexOf(".") + 1);
+						break;
+					default:
+						name = itemstack.getDisplayName();
+						break;
+				}
 			}
+			catch (Throwable e) {}
 
-			parent.drawCenteredString(parent.fontRendererObj, name, width / 2, par3 + 1, 0xFFFFFF);
+			if (!Strings.isNullOrEmpty(name))
+			{
+				parent.drawCenteredString(parent.fontRendererObj, name, width / 2, par3 + 1, 0xFFFFFF);
+			}
 
 			if (parent.detailInfo.isChecked())
 			{
@@ -487,17 +502,7 @@ public class GuiSelectItem extends GuiScreen
 		@Override
 		public boolean apply(ItemEntry entry)
 		{
-			ItemStack itemstack = entry.getItemStack();
-
-			if (itemstack.getItem() == null)
-			{
-				return false;
-			}
-
-			return GameData.getItemRegistry().getNameForObject(itemstack.getItem()).toLowerCase().contains(filter.toLowerCase()) ||
-				itemstack.getUnlocalizedName().toLowerCase().contains(filter.toLowerCase()) ||
-				itemstack.getDisplayName().toLowerCase().contains(filter.toLowerCase()) ||
-				itemstack.getItem().getToolClasses(itemstack).contains(filter);
+			return CaveUtils.itemFilter(entry, filter);
 		}
 	}
 }

@@ -9,8 +9,6 @@
 
 package com.kegare.caveworld.client.config;
 
-import org.lwjgl.input.Keyboard;
-
 import cpw.mods.fml.client.config.GuiConfig;
 import cpw.mods.fml.client.config.GuiConfigEntries;
 import cpw.mods.fml.client.config.GuiConfigEntries.StringEntry;
@@ -29,9 +27,11 @@ public class SelectBlockEntry extends StringEntry
 	@Override
 	public void mouseClicked(int x, int y, int mouseEvent)
 	{
-		super.mouseClicked(x, y, mouseEvent);
-
-		if (!Keyboard.isKeyDown(Keyboard.KEY_RSHIFT) && !Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && textFieldValue.isFocused())
+		if (GuiConfig.isShiftKeyDown())
+		{
+			super.mouseClicked(x, y, mouseEvent);
+		}
+		else if (textFieldValue.isFocused())
 		{
 			textFieldValue.setFocused(false);
 

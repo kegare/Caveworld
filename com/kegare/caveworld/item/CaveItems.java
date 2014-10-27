@@ -22,6 +22,7 @@ public class CaveItems
 {
 	public static final ItemCavenium cavenium = new ItemCavenium("cavenium");
 	public static final ItemMiningPickaxe mining_pickaxe = new ItemMiningPickaxe("pickaxeMining");
+	public static final ItemOreCompass ore_compass = new ItemOreCompass("oreCompass");
 
 	public static void registerItems()
 	{
@@ -47,6 +48,16 @@ public class CaveItems
 		if (Config.pickaxeMining)
 		{
 			GameRegistry.registerItem(mining_pickaxe, "mining_pickaxe");
+
+			OreDictionary.registerOre("pickaxeMining", mining_pickaxe);
+			OreDictionary.registerOre("miningPickaxe", mining_pickaxe);
+		}
+
+		if (Config.oreCompass)
+		{
+			GameRegistry.registerItem(ore_compass, "ore_compass");
+
+			OreDictionary.registerOre("compassOre", ore_compass);
 		}
 	}
 }

@@ -70,6 +70,7 @@ public class CaveVeinManager implements ICaveVeinManager
 		propOrder.add(prop.getName());
 		block = prop.getString();
 		if (!GameData.getBlockRegistry().containsKey(Strings.nullToEmpty(block))) return false;
+
 		prop = Config.veinsCfg.get(name, "blockMetadata", 0);
 		prop.setMinValue(0).setMaxValue(15).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -77,6 +78,7 @@ public class CaveVeinManager implements ICaveVeinManager
 		if (blockMetadata >= 0) prop.set(MathHelper.clamp_int(blockMetadata, Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue())));
 		propOrder.add(prop.getName());
 		blockMetadata = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+
 		prop = Config.veinsCfg.get(name, "genBlockCount", 1);
 		prop.setMinValue(1).setMaxValue(500).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -84,18 +86,23 @@ public class CaveVeinManager implements ICaveVeinManager
 		if (count >= 0) prop.set(MathHelper.clamp_int(count, Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue())));
 		propOrder.add(prop.getName());
 		count = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+
 		prop = Config.veinsCfg.get(name, "genWeight", 1);
 		prop.setMinValue(1).setMaxValue(100).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		if (weight >= 0) prop.set(MathHelper.clamp_int(weight, Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue())));
+		propOrder.add(prop.getName());
+		weight = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+
 		prop = Config.veinsCfg.get(name, "genRate", 100);
 		prop.setMinValue(1).setMaxValue(100).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		if (rate >= 0) prop.set(MathHelper.clamp_int(rate, Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue())));
 		propOrder.add(prop.getName());
-		weight = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		rate = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+
 		prop = Config.veinsCfg.get(name, "genMinHeight", 0);
 		prop.setMinValue(0).setMaxValue(254).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -103,6 +110,7 @@ public class CaveVeinManager implements ICaveVeinManager
 		if (min >= 0) prop.set(MathHelper.clamp_int(min, Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue())));
 		propOrder.add(prop.getName());
 		min = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+
 		prop = Config.veinsCfg.get(name, "genMaxHeight", 255);
 		prop.setMinValue(1).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -110,6 +118,7 @@ public class CaveVeinManager implements ICaveVeinManager
 		if (max >= 0) prop.set(MathHelper.clamp_int(max, min + 1, Integer.parseInt(prop.getMaxValue())));
 		propOrder.add(prop.getName());
 		max = MathHelper.clamp_int(prop.getInt(), min + 1, Integer.parseInt(prop.getMaxValue()));
+
 		prop = Config.veinsCfg.get(name, "genTargetBlock", GameData.getBlockRegistry().getNameForObject(Blocks.stone));
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -118,6 +127,7 @@ public class CaveVeinManager implements ICaveVeinManager
 		if (!GameData.getBlockRegistry().containsKey(prop.getString())) prop.setToDefault();
 		propOrder.add(prop.getName());
 		target = prop.getString();
+
 		prop = Config.veinsCfg.get(name, "genTargetBlockMetadata", 0);
 		prop.setMinValue(0).setMaxValue(15).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -125,6 +135,7 @@ public class CaveVeinManager implements ICaveVeinManager
 		if (targetMetadata >= 0) prop.set(MathHelper.clamp_int(targetMetadata, Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue())));
 		propOrder.add(prop.getName());
 		targetMetadata = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+
 		prop = Config.veinsCfg.get(name, "genBiomes", new int[0]);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");

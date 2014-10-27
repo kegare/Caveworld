@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
@@ -26,8 +25,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.biome.BiomeGenBase;
-import net.minecraftforge.common.BiomeDictionary;
-import net.minecraftforge.common.BiomeDictionary.Type;
 import net.minecraftforge.common.config.ConfigCategory;
 
 import org.apache.commons.lang3.CharUtils;
@@ -55,6 +52,7 @@ import com.kegare.caveworld.util.comparator.CaveBiomeComparator;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
+import cpw.mods.fml.client.config.GuiConfig;
 import cpw.mods.fml.client.config.HoverChecker;
 import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
@@ -696,7 +694,7 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 	{
 		super.handleKeyboardInput();
 
-		if (Keyboard.getEventKey() == Keyboard.KEY_LSHIFT || Keyboard.getEventKey() == Keyboard.KEY_RSHIFT)
+		if (GuiConfig.isShiftKeyDown())
 		{
 			clearButton.visible = !editMode && Keyboard.getEventKeyState();
 		}
@@ -947,43 +945,8 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 		@Override
 		public boolean apply(ICaveBiome entry)
 		{
-			try
-			{
-				BiomeGenBase biome = entry.getBiome();
-
-				if (biome.biomeID == NumberUtils.toInt(filter, -1) ||
-					biome.biomeName.toLowerCase().contains(filter.toLowerCase()) ||
-					BiomeDictionary.isBiomeOfType(biome, Type.valueOf(filter.toUpperCase())))
-				{
-					return true;
-				}
-			}
-			catch (Exception e) {}
-
-			if (entry.getGenWeight() == NumberUtils.toInt(filter, -1))
-			{
-				return true;
-			}
-
-			Block block = entry.getTerrainBlock().getBlock();
-
-			if (GameData.getBlockRegistry().getNameForObject(block).toLowerCase().contains(filter.toLowerCase()) ||
-				block.getUnlocalizedName().toLowerCase().contains(filter.toLowerCase()) ||
-				block.getLocalizedName().toLowerCase().contains(filter.toLowerCase()))
-			{
-				return true;
-			}
-
-			block = entry.getTopBlock().getBlock();
-
-			if (GameData.getBlockRegistry().getNameForObject(block).toLowerCase().contains(filter.toLowerCase()) ||
-				block.getUnlocalizedName().toLowerCase().contains(filter.toLowerCase()) ||
-				block.getLocalizedName().toLowerCase().contains(filter.toLowerCase()))
-			{
-				return true;
-			}
-
-			return false;
+			return CaveUtils.biomeFilter(entry.getBiome(), filter) || entry.getGenWeight() == NumberUtils.toInt(filter, -1) ||
+				CaveUtils.blockFilter(entry.getTerrainBlock(), filter) || CaveUtils.blockFilter(entry.getTopBlock(), filter);
 		}
 	}
 }

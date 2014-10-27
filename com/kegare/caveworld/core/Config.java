@@ -78,6 +78,7 @@ public class Config
 
 	public static boolean cavenium;
 	public static boolean pickaxeMining;
+	public static boolean oreCompass;
 
 	public static int cavemanSpawnWeight;
 	public static int cavemanSpawnMinHeight;
@@ -300,6 +301,12 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		pickaxeMining = prop.getBoolean(pickaxeMining);
+		prop = itemsCfg.get(category, "oreCompass", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		oreCompass = prop.getBoolean(oreCompass);
 
 		itemsCfg.setCategoryPropertyOrder(category, propOrder);
 		itemsCfg.setCategoryRequiresMcRestart(category, true);

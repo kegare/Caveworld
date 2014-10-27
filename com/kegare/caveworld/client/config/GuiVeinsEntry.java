@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
@@ -27,8 +26,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.biome.BiomeGenBase;
-import net.minecraftforge.common.BiomeDictionary;
-import net.minecraftforge.common.BiomeDictionary.Type;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.CharUtils;
@@ -56,6 +53,7 @@ import com.kegare.caveworld.util.CaveUtils;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
+import cpw.mods.fml.client.config.GuiConfig;
 import cpw.mods.fml.client.config.HoverChecker;
 import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
@@ -876,7 +874,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 	{
 		super.handleKeyboardInput();
 
-		if (Keyboard.getEventKey() == Keyboard.KEY_LSHIFT || Keyboard.getEventKey() == Keyboard.KEY_RSHIFT)
+		if (GuiConfig.isShiftKeyDown())
 		{
 			clearButton.visible = !editMode && Keyboard.getEventKeyState();
 		}
@@ -1105,21 +1103,28 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 			BlockEntry block = entry.getBlock();
 			String name = null;
 
-			switch (nameType)
+			try
 			{
-				case 1:
-					name = GameData.getBlockRegistry().getNameForObject(block.getBlock());
-					break;
-				case 2:
-					name = block.getBlock().getUnlocalizedName();
-					name = name.substring(name.indexOf(".") + 1);
-					break;
-				default:
-					name = block.getBlock().getLocalizedName();
-					break;
+				switch (nameType)
+				{
+					case 1:
+						name = GameData.getBlockRegistry().getNameForObject(block.getBlock());
+						break;
+					case 2:
+						name = block.getBlock().getUnlocalizedName();
+						name = name.substring(name.indexOf(".") + 1);
+						break;
+					default:
+						name = block.getBlock().getLocalizedName();
+						break;
+				}
 			}
+			catch (Throwable e) {}
 
-			parent.drawCenteredString(parent.fontRendererObj, name, width / 2, par3 + 3, 0xFFFFFF);
+			if (!Strings.isNullOrEmpty(name))
+			{
+				parent.drawCenteredString(parent.fontRendererObj, name, width / 2, par3 + 3, 0xFFFFFF);
+			}
 
 			if (parent.detailInfo.isChecked())
 			{
@@ -1200,44 +1205,16 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 		@Override
 		public boolean apply(ICaveVein vein)
 		{
-			Block block = vein.getBlock().getBlock();
-
-			if (GameData.getBlockRegistry().getNameForObject(block).toLowerCase().contains(filter.toLowerCase()) ||
-				block.getUnlocalizedName().toLowerCase().contains(filter.toLowerCase()) ||
-				block.getLocalizedName().toLowerCase().contains(filter.toLowerCase()))
-			{
-				return true;
-			}
-
-			block = vein.getGenTargetBlock().getBlock();
-
-			if (GameData.getBlockRegistry().getNameForObject(block).toLowerCase().contains(filter.toLowerCase()) ||
-				block.getUnlocalizedName().toLowerCase().contains(filter.toLowerCase()) ||
-				block.getLocalizedName().toLowerCase().contains(filter.toLowerCase()))
+			if (CaveUtils.blockFilter(vein.getBlock(), filter) || CaveUtils.blockFilter(vein.getGenTargetBlock(), filter))
 			{
 				return true;
 			}
 
 			for (int id : vein.getGenBiomes())
 			{
-				try
+				if (CaveUtils.biomeFilter(BiomeGenBase.getBiome(id), filter))
 				{
-					BiomeGenBase biome = BiomeGenBase.getBiome(id);
-
-					if (biome == null)
-					{
-						continue;
-					}
-					else if (biome.biomeID == NumberUtils.toInt(filter, -1) ||
-						biome.biomeName.toLowerCase().contains(filter.toLowerCase()) ||
-						BiomeDictionary.isBiomeOfType(biome, Type.valueOf(filter.toUpperCase())))
-					{
-						return true;
-					}
-				}
-				catch (Exception e)
-				{
-					continue;
+					return true;
 				}
 			}
 

@@ -19,6 +19,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemTool;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
 import com.google.common.collect.Sets;
@@ -99,21 +100,31 @@ public class RecipeMiningPickaxe implements IRecipe
 			}
 		}
 
+		if (center.getTagCompound() != null)
+		{
+			result.setTagCompound((NBTTagCompound)center.getTagCompound().copy());
+		}
+
+		NBTTagCompound data = result.getTagCompound();
+
+		if (data == null)
+		{
+			data = new NBTTagCompound();
+
+			result.setTagCompound(data);
+		}
+
 		if (center.getItem() instanceof ItemMiningPickaxe)
 		{
-			result.setTagCompound(center.getTagCompound());
+			int refined = ((ItemMiningPickaxe)center.getItem()).getRefined(center);
+
+			data.setInteger("Refined", MathHelper.clamp_int(refined + rare, 0, 4));
 		}
 		else
 		{
-			if (result.getTagCompound() == null)
-			{
-				result.setTagCompound(new NBTTagCompound());
-			}
-
-			result.getTagCompound().setString("BaseName", GameData.getItemRegistry().getNameForObject(center.getItem()));
+			data.setString("BaseName", GameData.getItemRegistry().getNameForObject(center.getItem()));
+			data.setInteger("Refined", rare);
 		}
-
-		result.getTagCompound().setInteger("Refined", rare);
 
 		return result;
 	}

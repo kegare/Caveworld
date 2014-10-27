@@ -72,6 +72,14 @@ public class CommonProxy
 			GameRegistry.addRecipe(RecipeMiningPickaxe.instance);
 		}
 
+		if (Config.oreCompass)
+		{
+			addShapedRecipe(new ItemStack(CaveItems.ore_compass),
+				" C ", "CXC", " C ",
+				'C', new ItemStack(CaveItems.cavenium, 1, 1),
+				'X', Items.compass);
+		}
+
 		if (Config.portalCraftRecipe)
 		{
 			addShapedRecipe(new ItemStack(CaveBlocks.caveworld_portal),

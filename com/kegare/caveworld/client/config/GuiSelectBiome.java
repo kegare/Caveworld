@@ -621,76 +621,7 @@ public class GuiSelectBiome extends GuiScreen
 		@Override
 		public boolean apply(BiomeGenBase biome)
 		{
-			if (biome.biomeID == NumberUtils.toInt(filter, -1) ||
-				biome.biomeName.toLowerCase().contains(filter.toLowerCase()))
-			{
-				return true;
-			}
-
-			Block block = biome.topBlock;
-			int meta = biome.field_150604_aj;
-
-			if (block != null)
-			{
-				if (GameData.getBlockRegistry().getNameForObject(block).toLowerCase().contains(filter.toLowerCase()))
-				{
-					return true;
-				}
-
-				ItemStack itemstack = new ItemStack(block, 1, meta);
-
-				if (itemstack.getItem() == null)
-				{
-					if (block.getUnlocalizedName().toLowerCase().contains(filter.toLowerCase()) ||
-						block.getLocalizedName().toLowerCase().contains(filter.toLowerCase()))
-					{
-						return true;
-					}
-				}
-				else if (itemstack.getUnlocalizedName().toLowerCase().contains(filter.toLowerCase()) ||
-					itemstack.getDisplayName().toLowerCase().contains(filter.toLowerCase()))
-				{
-					return true;
-				}
-			}
-
-			block = biome.fillerBlock;
-			meta = biome.field_76754_C;
-
-			if (block != null)
-			{
-				if (GameData.getBlockRegistry().getNameForObject(block).toLowerCase().contains(filter.toLowerCase()))
-				{
-					return true;
-				}
-
-				ItemStack itemstack = new ItemStack(block, 1, meta);
-
-				if (itemstack.getItem() == null)
-				{
-					if (block.getUnlocalizedName().toLowerCase().contains(filter.toLowerCase()) ||
-						block.getLocalizedName().toLowerCase().contains(filter.toLowerCase()))
-					{
-						return true;
-					}
-				}
-				else if (itemstack.getUnlocalizedName().toLowerCase().contains(filter.toLowerCase()) ||
-					itemstack.getDisplayName().toLowerCase().contains(filter.toLowerCase()))
-				{
-					return true;
-				}
-			}
-
-			try
-			{
-				if (BiomeDictionary.isBiomeOfType(biome, Type.valueOf(filter.toUpperCase())))
-				{
-					return true;
-				}
-			}
-			catch (Exception e) {}
-
-			return false;
+			return CaveUtils.biomeFilter(biome, filter);
 		}
 	}
 }

@@ -44,6 +44,7 @@ import com.kegare.caveworld.plugin.nei.NEIPlugin;
 import com.kegare.caveworld.plugin.thaumcraft.ThaumcraftPlugin;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.Version;
+import com.kegare.caveworld.util.breaker.AditBreakExecutor;
 import com.kegare.caveworld.util.breaker.MultiBreakExecutor;
 import com.kegare.caveworld.util.breaker.RangedBreakExecutor;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
@@ -324,6 +325,7 @@ public class Caveworld
 		CaveEventHooks.firstJoinPlayers.clear();
 
 		MultiBreakExecutor.executors.clear();
+		AditBreakExecutor.executors.clear();
 		RangedBreakExecutor.executors.clear();
 	}
 }

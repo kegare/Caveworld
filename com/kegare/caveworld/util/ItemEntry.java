@@ -20,13 +20,13 @@ public class ItemEntry
 {
 	public Item item;
 	public int damage;
-
 	private ItemStack itemstack;
 
 	public ItemEntry(Item item, int damage)
 	{
 		this.item = item;
 		this.damage = damage;
+		this.itemstack = new ItemStack(item, 1, damage);
 	}
 
 	public ItemEntry(String name, int damage)

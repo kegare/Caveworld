@@ -24,6 +24,7 @@ import com.kegare.caveworld.world.WorldProviderCaveworld;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
+import cpw.mods.fml.client.config.GuiConfig;
 import cpw.mods.fml.client.config.HoverChecker;
 
 public class GuiRegeneration extends GuiScreen
@@ -93,7 +94,7 @@ public class GuiRegeneration extends GuiScreen
 	{
 		super.handleKeyboardInput();
 
-		if (Keyboard.getEventKey() == Keyboard.KEY_LSHIFT || Keyboard.getEventKey() == Keyboard.KEY_RSHIFT)
+		if (GuiConfig.isShiftKeyDown())
 		{
 			openButton.visible = Keyboard.getEventKeyState();
 			regenButton.visible = !openButton.visible;
