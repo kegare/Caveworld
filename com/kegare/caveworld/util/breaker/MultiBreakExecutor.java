@@ -24,7 +24,7 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.util.ArrayListExtended;
-import com.kegare.caveworld.util.comparator.BreakPosComparator;
+import com.kegare.caveworld.util.breaker.BreakPos.NearestBreakPosComparator;
 
 public class MultiBreakExecutor implements IBreakExecutor
 {
@@ -187,7 +187,7 @@ public class MultiBreakExecutor implements IBreakExecutor
 	@Override
 	public void breakAll()
 	{
-		Collections.sort(breakPositions, new BreakPosComparator(originPos));
+		Collections.sort(breakPositions, new NearestBreakPosComparator(originPos));
 
 		Set<BreakPos> remove = Sets.newHashSet();
 

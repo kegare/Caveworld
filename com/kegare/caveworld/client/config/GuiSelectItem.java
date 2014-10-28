@@ -10,8 +10,10 @@
 package com.kegare.caveworld.client.config;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
@@ -31,13 +33,13 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.kegare.caveworld.client.gui.GuiListSlot;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.util.ArrayListExtended;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.ItemEntry;
 import com.kegare.caveworld.util.PanoramaPaths;
-import com.kegare.caveworld.util.comparator.ItemComparator;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
@@ -53,12 +55,12 @@ public class GuiSelectItem extends GuiScreen
 
 	static
 	{
-		Collections.sort(raws, new ItemComparator());
+		Collections.sort(raws, CaveUtils.itemComparator);
 	}
 
 	public interface SelectListener
 	{
-		public void onSelected(ItemEntry entry);
+		public void onSelected(Set<ItemEntry> result);
 	}
 
 	protected final GuiScreen parentScreen;
@@ -147,36 +149,42 @@ public class GuiSelectItem extends GuiScreen
 			switch (button.id)
 			{
 				case 0:
-					if (itemList.selected != null && parentScreen instanceof SelectListener)
+					if (itemList.selected.isEmpty())
 					{
-						((SelectListener)parentScreen).onSelected(itemList.selected);
+						if (parentNameField != null)
+						{
+							parentNameField.setText("");
+						}
+
+						if (parentDamageField != null)
+						{
+							parentDamageField.setText("");
+						}
+					}
+					else
+					{
+						if (parentScreen != null && parentScreen instanceof SelectListener)
+						{
+							((SelectListener)parentScreen).onSelected(Sets.newHashSet(itemList.selected));
+						}
+
+						ItemEntry item = itemList.selected.iterator().next();
+
+						if (parentNameField != null)
+						{
+							parentNameField.setText(GameData.getItemRegistry().getNameForObject(item.item));
+						}
+
+						if (parentDamageField != null)
+						{
+							parentDamageField.setText(Integer.toString(item.damage));
+						}
 					}
 
 					if (parentNameField != null)
 					{
-						if (itemList.selected == null)
-						{
-							parentNameField.setText("");
-						}
-						else
-						{
-							parentNameField.setText(GameData.getItemRegistry().getNameForObject(itemList.selected.item));
-						}
-
 						parentNameField.setFocused(true);
 						parentNameField.setCursorPositionEnd();
-					}
-
-					if (parentDamageField != null)
-					{
-						if (itemList.selected == null)
-						{
-							parentDamageField.setText("");
-						}
-						else
-						{
-							parentDamageField.setText(Integer.toString(itemList.selected.damage));
-						}
 					}
 
 					mc.displayGuiScreen(parentScreen);
@@ -204,7 +212,21 @@ public class GuiSelectItem extends GuiScreen
 	{
 		itemList.drawScreen(mouseX, mouseY, ticks);
 
-		drawCenteredString(fontRendererObj, I18n.format(Caveworld.CONFIG_LANG + "select.item"), width / 2, 15, 0xFFFFFF);
+		String name = null;
+
+		if (parentNameField != null || parentDamageField != null)
+		{
+			name = I18n.format(Caveworld.CONFIG_LANG + "select.item");
+		}
+		else
+		{
+			name = I18n.format(Caveworld.CONFIG_LANG + "select.item.multiple");
+		}
+
+		if (!Strings.isNullOrEmpty(name))
+		{
+			drawCenteredString(fontRendererObj, name, width / 2, 15, 0xFFFFFF);
+		}
 
 		super.drawScreen(mouseX, mouseY, ticks);
 
@@ -262,7 +284,7 @@ public class GuiSelectItem extends GuiScreen
 			}
 			else if (code == Keyboard.KEY_BACK)
 			{
-				itemList.selected = null;
+				itemList.selected.clear();
 			}
 			else if (code == Keyboard.KEY_TAB)
 			{
@@ -339,9 +361,9 @@ public class GuiSelectItem extends GuiScreen
 
 		protected final GuiSelectItem parent;
 		protected final ArrayListExtended<ItemEntry> contents = new ArrayListExtended(items);
+		protected final Set<ItemEntry> selected = Sets.newHashSet();
 
 		protected int nameType;
-		protected ItemEntry selected = null;
 
 		private ItemList(final GuiSelectItem parent)
 		{
@@ -366,7 +388,7 @@ public class GuiSelectItem extends GuiScreen
 						{
 							if (GameData.getItemRegistry().getNameForObject(entry.item).equals(parent.parentNameField.getText()) && entry.damage == damage)
 							{
-								selected = entry;
+								selected.add(entry);
 							}
 						}
 					}
@@ -383,11 +405,22 @@ public class GuiSelectItem extends GuiScreen
 		@Override
 		public void scrollToSelected()
 		{
-			scrollToTop();
-
-			if (selected != null)
+			if (!selected.isEmpty())
 			{
-				scrollBy(contents.indexOf(selected) * getSlotHeight());
+				int amount = 0;
+
+				for (Iterator<ItemEntry> iterator = selected.iterator(); iterator.hasNext();)
+				{
+					amount = contents.indexOf(iterator.next()) * getSlotHeight();
+
+					if (getAmountScrolled() != amount)
+					{
+						break;
+					}
+				}
+
+				scrollToTop();
+				scrollBy(amount);
 			}
 		}
 
@@ -448,13 +481,25 @@ public class GuiSelectItem extends GuiScreen
 		@Override
 		protected void elementClicked(int index, boolean flag, int mouseX, int mouseY)
 		{
-			selected = isSelected(index) ? null : contents.get(index, null);
+			ItemEntry entry = contents.get(index, null);
+
+			if (entry != null && !selected.remove(entry))
+			{
+				if (parent.parentNameField != null || parent.parentDamageField != null)
+				{
+					selected.clear();
+				}
+
+				selected.add(entry);
+			}
 		}
 
 		@Override
 		protected boolean isSelected(int index)
 		{
-			return selected == contents.get(index, null);
+			ItemEntry entry = contents.get(index, null);
+
+			return entry != null && selected.contains(entry);
 		}
 
 		protected void setFilter(final String filter)

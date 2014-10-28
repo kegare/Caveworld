@@ -52,7 +52,6 @@ import com.kegare.caveworld.entity.ai.EntityAIFollower;
 import com.kegare.caveworld.entity.ai.EntityAISoldier;
 import com.kegare.caveworld.item.ItemCavenium;
 import com.kegare.caveworld.util.CaveUtils;
-import com.kegare.caveworld.util.comparator.InventoryComparator;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -828,7 +827,7 @@ public class EntityCaveman extends EntityTameable implements IInventory
 	{
 		ItemStack[] contents = Arrays.copyOf(inventoryContents, inventoryContents.length);
 
-		Arrays.sort(contents, new InventoryComparator());
+		Arrays.sort(contents, CaveUtils.itemStackComparator);
 		contents = compact(contents);
 
 		for (int i = 0; i < contents.length; ++i)

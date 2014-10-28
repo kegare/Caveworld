@@ -11,8 +11,10 @@ package com.kegare.caveworld.client.config;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
@@ -32,11 +34,13 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.api.ICaveBiome;
@@ -48,11 +52,9 @@ import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.util.ArrayListExtended;
 import com.kegare.caveworld.util.CaveUtils;
-import com.kegare.caveworld.util.comparator.CaveBiomeComparator;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
-import cpw.mods.fml.client.config.GuiConfig;
 import cpw.mods.fml.client.config.HoverChecker;
 import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
@@ -302,19 +304,29 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 				case 0:
 					if (editMode)
 					{
-						if (NumberUtils.toInt(weightField.getText()) <= 0)
+						for (ICaveBiome entry : biomeList.selected)
 						{
-							return;
+							if (!Strings.isNullOrEmpty(weightField.getText()))
+							{
+								entry.setGenWeight(NumberUtils.toInt(weightField.getText(), entry.getGenWeight()));
+							}
+
+							if (!Strings.isNullOrEmpty(terrainBlockField.getText()))
+							{
+								entry.setTerrainBlock(new BlockEntry(terrainBlockField.getText(), NumberUtils.toInt(terrainMetaField.getText())));
+							}
+
+							if (!Strings.isNullOrEmpty(topBlockField.getText()))
+							{
+								entry.setTopBlock(new BlockEntry(topBlockField.getText(), NumberUtils.toInt(topMetaField.getText())));
+							}
+
+							hoverCache.remove(entry);
 						}
-
-						biomeList.selected.setGenWeight(NumberUtils.toInt(weightField.getText(), biomeList.selected.getGenWeight()));
-						biomeList.selected.setTerrainBlock(new BlockEntry(terrainBlockField.getText(), NumberUtils.toInt(terrainMetaField.getText())));
-						biomeList.selected.setTopBlock(new BlockEntry(topBlockField.getText(), NumberUtils.toInt(topMetaField.getText())));
-
-						hoverCache.remove(biomeList.selected);
 
 						actionPerformed(cancelButton);
 
+						biomeList.scrollToTop();
 						biomeList.scrollToSelected();
 					}
 					else
@@ -354,13 +366,27 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 						editMode = true;
 						initGui();
 
+						biomeList.scrollToTop();
 						biomeList.scrollToSelected();
 
-						weightField.setText(Integer.toString(biomeList.selected.getGenWeight()));
-						terrainBlockField.setText(GameData.getBlockRegistry().getNameForObject(biomeList.selected.getTerrainBlock().getBlock()));
-						terrainMetaField.setText(Integer.toString(biomeList.selected.getTerrainBlock().getMetadata()));
-						topBlockField.setText(GameData.getBlockRegistry().getNameForObject(biomeList.selected.getTopBlock().getBlock()));
-						topMetaField.setText(Integer.toString(biomeList.selected.getTopBlock().getMetadata()));
+						if (biomeList.selected.size() == 1)
+						{
+							ICaveBiome entry = biomeList.selected.iterator().next();
+
+							weightField.setText(Integer.toString(entry.getGenWeight()));
+							terrainBlockField.setText(GameData.getBlockRegistry().getNameForObject(entry.getTerrainBlock().getBlock()));
+							terrainMetaField.setText(Integer.toString(entry.getTerrainBlock().getMetadata()));
+							topBlockField.setText(GameData.getBlockRegistry().getNameForObject(entry.getTopBlock().getBlock()));
+							topMetaField.setText(Integer.toString(entry.getTopBlock().getMetadata()));
+						}
+						else
+						{
+							weightField.setText("");
+							terrainBlockField.setText("");
+							terrainMetaField.setText("");
+							topBlockField.setText("");
+							topMetaField.setText("");
+						}
 					}
 
 					break;
@@ -387,25 +413,22 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 					mc.displayGuiScreen(new GuiSelectBiome(this).setHiddenBiomes(biomes));
 					break;
 				case 4:
-					if (biomeList.biomes.remove(biomeList.selected))
+					for (ICaveBiome entry : biomeList.selected)
 					{
-						int i = biomeList.contents.indexOf(biomeList.selected);
+						if (biomeList.biomes.remove(entry))
+						{
+							Config.biomesCfg.getCategory(Integer.toString(entry.getBiome().biomeID)).get("genWeight").set(0);
 
-						Config.biomesCfg.getCategory(Integer.toString(biomeList.selected.getBiome().biomeID)).get("genWeight").set(0);
-
-						biomeList.contents.remove(i);
-						biomeList.selected = biomeList.contents.get(i, biomeList.contents.get(--i, null));
+							biomeList.contents.remove(entry);
+						}
 					}
 
+					biomeList.selected.clear();
 					break;
 				case 5:
-					for (Object entry : biomeList.biomes.toArray())
-					{
-						biomeList.selected = (ICaveBiome)entry;
+					biomeList.selected.addAll(biomeList.biomes);
 
-						actionPerformed(removeButton);
-					}
-
+					actionPerformed(removeButton);
 					break;
 				case 6:
 					CaveConfigGui.detailInfo = detailInfo.isChecked();
@@ -418,59 +441,61 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 	}
 
 	@Override
-	public void setResult(final List<Integer> result)
+	public void setResult(final Set<BiomeGenBase> result)
 	{
+		if (editMode)
+		{
+			return;
+		}
+
 		new ForkJoinPool().execute(new RecursiveAction()
 		{
 			@Override
 			protected void compute()
 			{
-				BiomeGenBase biome;
-				ICaveBiome entry;
+				ICaveBiome entry = null;
 
-				for (Integer id : result)
+				biomeList.selected.clear();
+
+				for (BiomeGenBase biome : result)
 				{
-					biome = BiomeGenBase.getBiome(id);
-
-					if (biome != null)
+					for (ICaveBiome cave : biomeList.biomes)
 					{
-						for (ICaveBiome cave : biomeList.biomes)
+						if (cave.getBiome() == biome)
 						{
-							if (cave.getBiome() == biome)
-							{
-								biome = null;
-								biomeList.selected = cave;
-								break;
-							}
-						}
-
-						if (biome == null)
-						{
-							continue;
-						}
-
-						if (CaveBiomeManager.defaultMapping.containsKey(biome))
-						{
-							entry = CaveBiomeManager.defaultMapping.get(biome);
-						}
-						else
-						{
-							entry = new CaveBiome(biome, 10);
-						}
-
-						if (biomeList.biomes.addIfAbsent(entry))
-						{
-							biomeList.contents.addIfAbsent(entry);
-							biomeList.selected = entry;
+							entry = cave;
+							biomeList.selected.add(cave);
+							break;
 						}
 					}
+
+					if (entry != null)
+					{
+						break;
+					}
+
+					if (CaveBiomeManager.defaultMapping.containsKey(biome))
+					{
+						entry = CaveBiomeManager.defaultMapping.get(biome);
+					}
+					else
+					{
+						entry = new CaveBiome(biome, 10);
+					}
+
+					if (biomeList.biomes.addIfAbsent(entry))
+					{
+						biomeList.contents.addIfAbsent(entry);
+						biomeList.selected.add(entry);
+					}
+
+					entry = null;
 				}
 
-				Comparator<ICaveBiome> comparator = new CaveBiomeComparator();
+				Collections.sort(biomeList.contents, CaveBiome.caveBiomeComparator);
+				Collections.sort(biomeList.biomes, CaveBiome.caveBiomeComparator);
 
-				Collections.sort(biomeList.contents, comparator);
-				Collections.sort(biomeList.biomes, comparator);
-
+				biomeList.scrollToTop();
 				biomeList.scrollToSelected();
 			}
 		});
@@ -488,7 +513,7 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 		}
 		else
 		{
-			editButton.enabled = biomeList.selected != null;
+			editButton.enabled = !biomeList.selected.isEmpty();
 			removeButton.enabled = editButton.enabled;
 
 			filterTextField.updateCursorCounter();
@@ -506,7 +531,14 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 
 		if (editMode)
 		{
-			drawCenteredString(fontRendererObj, biomeList.selected.getBiome().biomeName, width / 2, biomeList.bottom + 6, 0xFFFFFF);
+			List<String> names = Lists.newArrayList();
+
+			for (ICaveBiome entry : biomeList.selected)
+			{
+				names.add(entry.getBiome().biomeName);
+			}
+
+			drawCenteredString(fontRendererObj, Joiner.on(", ").skipNulls().join(names), width / 2, biomeList.bottom + 6, 0xFFFFFF);
 
 			GuiTextField textField;
 
@@ -694,7 +726,7 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 	{
 		super.handleKeyboardInput();
 
-		if (GuiConfig.isShiftKeyDown())
+		if (Keyboard.getEventKey() == Keyboard.KEY_LSHIFT || Keyboard.getEventKey() == Keyboard.KEY_RSHIFT)
 		{
 			clearButton.visible = !editMode && Keyboard.getEventKeyState();
 		}
@@ -761,7 +793,7 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 				}
 				else if (code == Keyboard.KEY_BACK)
 				{
-					biomeList.selected = null;
+					biomeList.selected.clear();
 				}
 				else if (code == Keyboard.KEY_UP)
 				{
@@ -815,16 +847,15 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 		biomeList.currentPanoramaPaths = null;
 	}
 
-	protected static class BiomeList extends GuiListSlot
+	protected static class BiomeList extends GuiListSlot implements Comparator<ICaveBiome>
 	{
 		protected final GuiBiomesEntry parent;
 
 		protected final ArrayListExtended<ICaveBiome> biomes = new ArrayListExtended(CaveworldAPI.getCaveBiomes());
 		protected final ArrayListExtended<ICaveBiome> contents = new ArrayListExtended(biomes);
+		protected final Set<ICaveBiome> selected = Sets.newTreeSet(this);
 
 		private final Map<String, List<ICaveBiome>> filterCache = Maps.newHashMap();
-
-		protected ICaveBiome selected;
 
 		private BiomeList(GuiBiomesEntry parent)
 		{
@@ -835,11 +866,22 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 		@Override
 		public void scrollToSelected()
 		{
-			scrollToTop();
-
-			if (selected != null)
+			if (!selected.isEmpty())
 			{
-				scrollBy(contents.indexOf(selected) * getSlotHeight());
+				int amount = 0;
+
+				for (Iterator<ICaveBiome> iterator = selected.iterator(); iterator.hasNext();)
+				{
+					amount = contents.indexOf(iterator.next()) * getSlotHeight();
+
+					if (getAmountScrolled() != amount)
+					{
+						break;
+					}
+				}
+
+				scrollToTop();
+				scrollBy(amount);
 			}
 		}
 
@@ -888,16 +930,30 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 		@Override
 		protected void elementClicked(int index, boolean flag, int mouseX, int mouseY)
 		{
-			if (!parent.editMode)
+			if (parent.editMode)
 			{
-				selected = isSelected(index) ? null : contents.get(index, null);
+				return;
+			}
+
+			ICaveBiome entry = contents.get(index, null);
+
+			if (entry != null && !selected.remove(entry))
+			{
+				if (!isCtrlKeyDown())
+				{
+					selected.clear();
+				}
+
+				selected.add(entry);
 			}
 		}
 
 		@Override
 		protected boolean isSelected(int index)
 		{
-			return selected == contents.get(index, null);
+			ICaveBiome entry = contents.get(index, null);
+
+			return entry != null && selected.contains(entry);
 		}
 
 		protected void setFilter(final String filter)
@@ -930,6 +986,19 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 					}
 				}
 			});
+		}
+
+		@Override
+		public int compare(ICaveBiome o1, ICaveBiome o2)
+		{
+			int i = CaveUtils.compareWithNull(o1, o2);
+
+			if (i == 0 && o1 != null && o2 != null)
+			{
+				i = Integer.compare(biomes.indexOf(o1), biomes.indexOf(o2));
+			}
+
+			return i;
 		}
 	}
 

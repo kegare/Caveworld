@@ -44,7 +44,6 @@ import com.kegare.caveworld.util.breaker.BreakPos;
 import com.kegare.caveworld.util.breaker.IBreakExecutor;
 import com.kegare.caveworld.util.breaker.MultiBreakExecutor;
 import com.kegare.caveworld.util.breaker.RangedBreakExecutor;
-import com.kegare.caveworld.util.comparator.ItemStackComparator;
 
 import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
@@ -405,7 +404,7 @@ public class ItemMiningPickaxe extends ItemPickaxe
 	{
 		List<ItemStack> items = Lists.newArrayList(RecipeMiningPickaxe.instance.getCenterItems());
 
-		Collections.sort(items, new ItemStackComparator());
+		Collections.sort(items, CaveUtils.itemStackComparator);
 
 		for (ItemStack center : items)
 		{

@@ -9,18 +9,22 @@
 
 package com.kegare.caveworld.util.breaker;
 
+import java.util.Comparator;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.play.server.S23PacketBlockChange;
+import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 
 import com.google.common.base.Objects;
 import com.kegare.caveworld.core.Caveworld;
+import com.kegare.caveworld.util.CaveUtils;
 
-public class BreakPos
+public class BreakPos implements Comparable
 {
 	public final World world;
 	public int x;
@@ -129,6 +133,43 @@ public class BreakPos
 		return Objects.hashCode(world.provider.dimensionId, x, y, z);
 	}
 
+	@Override
+	public int compareTo(Object obj)
+	{
+		BreakPos pos = (BreakPos)obj;
+		int i = Integer.compare(world.provider.dimensionId, pos.world.provider.dimensionId);
+
+		if (i == 0)
+		{
+			ChunkCoordinates coord1 = new ChunkCoordinates(x, y, z);
+			ChunkCoordinates coord2 = new ChunkCoordinates(pos.x, pos.y, pos.z);
+
+			i = coord1.compareTo(coord2);
+
+			if (i == 0)
+			{
+				i = CaveUtils.blockComparator.compare(prevBlock, pos.prevBlock);
+
+				if (i == 0)
+				{
+					i = Integer.compare(prevMeta, pos.prevMeta);
+				}
+			}
+		}
+
+		return i;
+	}
+
+	public int compareWithOrigin(BreakPos pos, BreakPos origin)
+	{
+		if (pos == null || origin == null)
+		{
+			return 1;
+		}
+
+		return Integer.compare(Math.abs(origin.getDistanceSq(this)), Math.abs(origin.getDistanceSq(pos)));
+	}
+
 	public double getDistance(int x, int y, int z)
 	{
 		return Math.sqrt(getDistanceSq(x, y, z));
@@ -151,5 +192,28 @@ public class BreakPos
 	public int getDistanceSq(BreakPos pos)
 	{
 		return getDistanceSq(pos.x, pos.y, pos.z);
+	}
+
+	public static class NearestBreakPosComparator implements Comparator<BreakPos>
+	{
+		private final BreakPos originPos;
+
+		public NearestBreakPosComparator(BreakPos origin)
+		{
+			this.originPos = origin;
+		}
+
+		@Override
+		public int compare(BreakPos o1, BreakPos o2)
+		{
+			int i = o1.compareWithOrigin(o2, originPos);
+
+			if (i == 0)
+			{
+				i = o1.compareTo(o2);
+			}
+
+			return i;
+		}
 	}
 }

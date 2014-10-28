@@ -249,6 +249,11 @@ public class CaveVeinManager implements ICaveVeinManager
 			this.genBiomes = getBiomes(biomes);
 		}
 
+		public CaveVein(ICaveVein vein)
+		{
+			this(vein.getBlock(), vein.getGenBlockCount(), vein.getGenWeight(), vein.getGenRate(), vein.getGenMinHeight(), vein.getGenMaxHeight(), vein.getGenTargetBlock(), vein.getGenBiomes());
+		}
+
 		@Override
 		public BlockEntry setBlock(BlockEntry entry)
 		{

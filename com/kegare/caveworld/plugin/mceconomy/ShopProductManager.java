@@ -144,6 +144,11 @@ public class ShopProductManager implements IProductList
 			this.productCost = cost;
 		}
 
+		public ShopProduct(ShopProduct product)
+		{
+			this(product.getProductItem(), product.getcost());
+		}
+
 		public ItemStack setProductItem(ItemStack item)
 		{
 			return itemstack = item;

@@ -11,8 +11,11 @@ package com.kegare.caveworld.plugin.mceconomy;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
@@ -35,6 +38,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.kegare.caveworld.client.config.CaveConfigGui;
 import com.kegare.caveworld.client.config.GuiSelectItem;
 import com.kegare.caveworld.client.config.GuiSelectItem.SelectListener;
@@ -47,7 +51,6 @@ import com.kegare.caveworld.util.ItemEntry;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
-import cpw.mods.fml.client.config.GuiConfig;
 import cpw.mods.fml.client.config.HoverChecker;
 import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
@@ -285,16 +288,21 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 				case 0:
 					if (editMode)
 					{
-						if (Strings.isNullOrEmpty(itemField.getText()) || !GameData.getItemRegistry().containsKey(itemField.getText()) || NumberUtils.toInt(stackField.getText()) <= 0)
+						for (ShopProduct entry : productList.selected)
 						{
-							return;
+							if (!Strings.isNullOrEmpty(itemField.getText()))
+							{
+								entry.setProductItem(new ItemStack(GameData.getItemRegistry().getObject(itemField.getText()),
+									NumberUtils.toInt(stackField.getText(), 1), NumberUtils.toInt(damageField.getText())));
+							}
+
+							if (!Strings.isNullOrEmpty(costField.getText()))
+							{
+								entry.setCost(NumberUtils.toInt(costField.getText()));
+							}
+
+							hoverCache.remove(entry);
 						}
-
-						productList.selected.setProductItem(new ItemStack(GameData.getItemRegistry().getObject(itemField.getText()),
-							NumberUtils.toInt(stackField.getText()), NumberUtils.toInt(damageField.getText())));
-						productList.selected.setCost(NumberUtils.toInt(costField.getText()));
-
-						hoverCache.remove(productList.selected);
 
 						actionPerformed(cancelButton);
 
@@ -344,12 +352,25 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 						editMode = true;
 						initGui();
 
+						productList.scrollToTop();
 						productList.scrollToSelected();
 
-						itemField.setText(GameData.getItemRegistry().getNameForObject(productList.selected.getProductItem().getItem()));
-						damageField.setText(Integer.toString(productList.selected.getProductItem().getItemDamage()));
-						stackField.setText(Integer.toString(productList.selected.getProductItem().stackSize));
-						costField.setText(Integer.toString(productList.selected.getcost()));
+						if (productList.selected.size() == 1)
+						{
+							ShopProduct entry = productList.selected.iterator().next();
+
+							itemField.setText(GameData.getItemRegistry().getNameForObject(entry.getProductItem().getItem()));
+							damageField.setText(Integer.toString(entry.getProductItem().getItemDamage()));
+							stackField.setText(Integer.toString(entry.getProductItem().stackSize));
+							costField.setText(Integer.toString(entry.getcost()));
+						}
+						else
+						{
+							itemField.setText("");
+							damageField.setText("");
+							stackField.setText("");
+							costField.setText("");
+						}
 					}
 
 					break;
@@ -369,22 +390,18 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 					mc.displayGuiScreen(new GuiSelectItem(this));
 					break;
 				case 4:
-					if (productList.products.remove(productList.selected))
+					for (ShopProduct entry : productList.selected)
 					{
-						int i = productList.contents.indexOf(productList.selected);
-
-						productList.contents.remove(i);
-						productList.selected = productList.contents.get(i, productList.contents.get(--i, null));
+						if (productList.products.remove(entry))
+						{
+							productList.contents.remove(entry);
+						}
 					}
 
+					productList.selected.clear();
 					break;
 				case 5:
-					for (Object obj : productList.products.toArray())
-					{
-						productList.selected = (ShopProduct)obj;
-
-						actionPerformed(removeButton);
-					}
+					productList.selected.addAll(productList.products);
 
 					break;
 				case 6:
@@ -398,21 +415,35 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 	}
 
 	@Override
-	public void onSelected(ItemEntry entry)
+	public void onSelected(final Set<ItemEntry> result)
 	{
-		if (!editMode)
+		if (editMode)
 		{
-			ShopProduct product = new ShopProduct(entry.getItemStack(), 0);
-
-			if (productList.products.addIfAbsent(product))
-			{
-				productList.contents.addIfAbsent(product);
-				productList.selected = product;
-
-				editButton.enabled = true;
-				actionPerformed(editButton);
-			}
+			return;
 		}
+
+		new ForkJoinPool().execute(new RecursiveAction()
+		{
+			@Override
+			protected void compute()
+			{
+				productList.selected.clear();
+
+				for (ItemEntry item : result)
+				{
+					ShopProduct product = new ShopProduct(item.getItemStack(), 0);
+
+					if (productList.products.addIfAbsent(product))
+					{
+						productList.contents.addIfAbsent(product);
+						productList.selected.add(product);
+					}
+				}
+
+				productList.scrollToTop();
+				productList.scrollToSelected();
+			}
+		});
 	}
 
 	@Override
@@ -622,7 +653,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 	{
 		super.handleKeyboardInput();
 
-		if (GuiConfig.isShiftKeyDown())
+		if (Keyboard.getEventKey() == Keyboard.KEY_LSHIFT || Keyboard.getEventKey() == Keyboard.KEY_RSHIFT)
 		{
 			clearButton.visible = !editMode && Keyboard.getEventKeyState();
 		}
@@ -686,7 +717,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 				}
 				else if (code == Keyboard.KEY_BACK)
 				{
-					productList.selected = null;
+					productList.selected.clear();
 				}
 				else if (code == Keyboard.KEY_TAB)
 				{
@@ -753,30 +784,33 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 				}
 				else if (code == Keyboard.KEY_C && isCtrlKeyDown())
 				{
-					productList.copied = productList.selected == null ? null : new ShopProduct(productList.selected.getProductItem(), productList.selected.getcost());
+					productList.copied.clear();
+
+					for (ShopProduct entry : productList.selected)
+					{
+						productList.copied.add(new ShopProduct(entry));
+					}
 				}
 				else if (code == Keyboard.KEY_X && isCtrlKeyDown())
 				{
 					keyTyped(Character.MIN_VALUE, Keyboard.KEY_C);
+
 					actionPerformed(removeButton);
 				}
 				else if (code == Keyboard.KEY_V && isCtrlKeyDown() && productList.copied != null)
 				{
-					ShopProduct entry = new ShopProduct(productList.copied.getProductItem(), productList.copied.getcost());
-
-					if (productList.products.addIfAbsent(entry))
+					for (ShopProduct product : productList.copied)
 					{
-						productList.contents.addIfAbsent(entry);
+						ShopProduct entry = new ShopProduct(product);
 
-						if (productList.selected != null)
+						if (productList.products.addIfAbsent(entry))
 						{
-							productList.contents.swap(productList.contents.indexOf(productList.selected) + 1, productList.contents.size() - 1);
-							productList.products.swap(productList.products.indexOf(productList.selected) + 1, productList.products.size() - 1);
+							productList.contents.addIfAbsent(entry);
 						}
-
-						productList.selected = entry;
-						productList.scrollToSelected();
 					}
+
+					productList.scrollToTop();
+					productList.scrollToSelected();
 				}
 			}
 		}
@@ -794,18 +828,18 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 		productList.currentPanoramaPaths = null;
 	}
 
-	protected static class ProductList extends GuiListSlot
+	protected static class ProductList extends GuiListSlot implements Comparator<ShopProduct>
 	{
 		protected final GuiShopEntry parent;
 
 		protected final ArrayListExtended<ShopProduct> products = new ArrayListExtended(ShopProductManager.instance().getShopProducts());
 		protected final ArrayListExtended<ShopProduct> contents = new ArrayListExtended(products);
+		protected final Set<ShopProduct> selected = Sets.newTreeSet(this);
+		protected final Set<ShopProduct> copied = Sets.newTreeSet(this);
 
 		private final Map<String, List<ShopProduct>> filterCache = Maps.newHashMap();
 
 		protected int nameType;
-		protected ShopProduct selected;
-		protected ShopProduct copied;
 
 		private ProductList(GuiShopEntry parent)
 		{
@@ -816,11 +850,22 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 		@Override
 		public void scrollToSelected()
 		{
-			scrollToTop();
-
-			if (selected != null)
+			if (!selected.isEmpty())
 			{
-				scrollBy(contents.indexOf(selected) * getSlotHeight());
+				int amount = 0;
+
+				for (Iterator<ShopProduct> iterator = selected.iterator(); iterator.hasNext();)
+				{
+					amount = contents.indexOf(iterator.next()) * getSlotHeight();
+
+					if (getAmountScrolled() != amount)
+					{
+						break;
+					}
+				}
+
+				scrollToTop();
+				scrollBy(amount);
 			}
 		}
 
@@ -884,16 +929,30 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 		@Override
 		protected void elementClicked(int index, boolean flag, int mouseX, int mouseY)
 		{
-			if (!parent.editMode)
+			if (parent.editMode)
 			{
-				selected = isSelected(index) ? null : contents.get(index, null);
+				return;
+			}
+
+			ShopProduct entry = contents.get(index, null);
+
+			if (entry != null && !selected.remove(entry))
+			{
+				if (!isCtrlKeyDown())
+				{
+					selected.clear();
+				}
+
+				selected.add(entry);
 			}
 		}
 
 		@Override
 		protected boolean isSelected(int index)
 		{
-			return selected == contents.get(index, null);
+			ShopProduct entry = contents.get(index, null);
+
+			return entry != null && selected.contains(entry);
 		}
 
 		protected void setFilter(final String filter)
@@ -926,6 +985,19 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 					}
 				}
 			});
+		}
+
+		@Override
+		public int compare(ShopProduct o1, ShopProduct o2)
+		{
+			int i = CaveUtils.compareWithNull(o1, o2);
+
+			if (i == 0 && o1 != null && o2 != null)
+			{
+				i = Integer.compare(products.indexOf(o1), products.indexOf(o2));
+			}
+
+			return i;
 		}
 	}
 

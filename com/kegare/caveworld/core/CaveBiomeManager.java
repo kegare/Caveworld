@@ -9,6 +9,7 @@
 
 package com.kegare.caveworld.core;
 
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -28,11 +29,11 @@ import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.EmptyCaveBiome;
 import com.kegare.caveworld.api.ICaveBiome;
 import com.kegare.caveworld.api.ICaveBiomeManager;
-import com.kegare.caveworld.util.comparator.CaveBiomeComparator;
+import com.kegare.caveworld.util.CaveUtils;
 
 public class CaveBiomeManager implements ICaveBiomeManager, Function<ICaveBiome, BiomeGenBase>
 {
-	private final Set<ICaveBiome> CAVE_BIOMES = Sets.newTreeSet(new CaveBiomeComparator());
+	private final Set<ICaveBiome> CAVE_BIOMES = Sets.newTreeSet(CaveBiome.caveBiomeComparator);
 
 	private final Map<BiomeGenBase, ICaveBiome> entriesCache = Maps.newHashMap();
 
@@ -161,8 +162,60 @@ public class CaveBiomeManager implements ICaveBiomeManager, Function<ICaveBiome,
 		return input.getBiome();
 	}
 
-	public static class CaveBiome extends WeightedRandom.Item implements ICaveBiome
+	public static class CaveBiome extends WeightedRandom.Item implements ICaveBiome, Comparable
 	{
+		public static final Comparator<ICaveBiome> caveBiomeComparator = new Comparator<ICaveBiome>()
+		{
+			@Override
+			public int compare(ICaveBiome o1, ICaveBiome o2)
+			{
+				int i = CaveUtils.compareWithNull(o1, o2);
+
+				if (i == 0 && o1 != null && o2 != null)
+				{
+					i = CaveUtils.biomeComparator.compare(o1.getBiome(), o2.getBiome());
+
+					if (i == 0)
+					{
+						BlockEntry block1 = o1.getTerrainBlock();
+						BlockEntry block2 = o2.getTerrainBlock();
+
+						i = CaveUtils.compareWithNull(block1, block2);
+
+						if (i == 0 && block1 != null && block2 != null)
+						{
+							i = CaveUtils.blockComparator.compare(block1.getBlock(), block2.getBlock());
+
+							if (i == 0)
+							{
+								i = Integer.compare(block1.getMetadata(), block2.getMetadata());
+
+								if (i == 0)
+								{
+									block1 = o1.getTopBlock();
+									block2 = o2.getTopBlock();
+
+									i = CaveUtils.compareWithNull(block1, block2);
+
+									if (i == 0 && block1 != null && block2 != null)
+									{
+										i = CaveUtils.blockComparator.compare(block1.getBlock(), block2.getBlock());
+
+										if (i == 0)
+										{
+											i = Integer.compare(block1.getMetadata(), block2.getMetadata());
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+
+				return i;
+			}
+		};
+
 		private BiomeGenBase biome;
 		private BlockEntry terrainBlock;
 		private BlockEntry topBlock;
@@ -200,6 +253,12 @@ public class CaveBiomeManager implements ICaveBiomeManager, Function<ICaveBiome,
 		public int hashCode()
 		{
 			return Objects.hashCode(getBiome().biomeID, getGenWeight(), getTerrainBlock());
+		}
+
+		@Override
+		public int compareTo(Object obj)
+		{
+			return caveBiomeComparator.compare(this, (ICaveBiome)obj);
 		}
 
 		@Override

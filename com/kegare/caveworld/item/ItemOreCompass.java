@@ -31,7 +31,7 @@ import com.google.common.collect.Lists;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.util.breaker.BreakPos;
-import com.kegare.caveworld.util.comparator.BreakPosComparator;
+import com.kegare.caveworld.util.breaker.BreakPos.NearestBreakPosComparator;
 
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.relauncher.Side;
@@ -236,7 +236,7 @@ public class ItemOreCompass extends Item
 
 				if (!result.isEmpty())
 				{
-					Collections.sort(result, new BreakPosComparator(new BreakPos(mc.theWorld, originX, originY, originZ)));
+					Collections.sort(result, new NearestBreakPosComparator(new BreakPos(mc.theWorld, originX, originY, originZ)));
 
 					return result.get(0);
 				}

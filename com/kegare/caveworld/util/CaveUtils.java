@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,6 +40,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.MovingObjectPosition;
@@ -78,12 +80,166 @@ import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.common.registry.GameRegistry;
+import cpw.mods.fml.common.registry.GameRegistry.UniqueIdentifier;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 public class CaveUtils
 {
 	public static boolean mcpc = FMLCommonHandler.instance().getModName().contains("mcpc");
+
+	public static final Comparator<Block> blockComparator = new Comparator<Block>()
+	{
+		@Override
+		public int compare(Block o1, Block o2)
+		{
+			int i = compareWithNull(o1, o2);
+
+			if (i == 0 && o1 != null && o2 != null)
+			{
+				UniqueIdentifier unique1 = GameRegistry.findUniqueIdentifierFor(o1);
+				UniqueIdentifier unique2 = GameRegistry.findUniqueIdentifierFor(o2);
+
+				i = compareWithNull(unique1, unique2);
+
+				if (i == 0 && unique1 != null && unique2 != null)
+				{
+					i = unique1.modId.compareTo(unique2.modId);
+
+					if (i == 0)
+					{
+						i = unique1.name.compareTo(unique1.name);
+					}
+				}
+			}
+
+			return i;
+		}
+	};
+
+	public static final Comparator<Item> itemComparator = new Comparator<Item>()
+	{
+		@Override
+		public int compare(Item o1, Item o2)
+		{
+			int i = compareWithNull(o1, o2);
+
+			if (i == 0 && o1 != null && o2 != null)
+			{
+				UniqueIdentifier unique1 = GameRegistry.findUniqueIdentifierFor(o1);
+				UniqueIdentifier unique2 = GameRegistry.findUniqueIdentifierFor(o2);
+
+				i = compareWithNull(unique1, unique2);
+
+				if (i == 0 && unique1 != null && unique2 != null)
+				{
+					i = unique1.modId.compareTo(unique2.modId);
+
+					if (i == 0)
+					{
+						i = unique1.name.compareTo(unique1.name);
+					}
+				}
+			}
+
+			return i;
+		}
+	};
+
+	public static final Comparator<ItemStack> itemStackComparator = new Comparator<ItemStack>()
+	{
+		@Override
+		public int compare(ItemStack o1, ItemStack o2)
+		{
+			int i = compareWithNull(o1, o2);
+
+			if (i == 0 && o1 != null && o2 != null)
+			{
+				i = itemComparator.compare(o1.getItem(), o2.getItem());
+
+				if (i == 0)
+				{
+					i = Integer.compare(o1.getItemDamage(), o2.getItemDamage());
+
+					if (i == 0)
+					{
+						i = Integer.compare(o1.stackSize, o2.stackSize);
+
+						if (i == 0)
+						{
+							NBTTagCompound nbt1 = o1.getTagCompound();
+							NBTTagCompound nbt2 = o2.getTagCompound();
+
+							i = compareWithNull(nbt1, nbt2);
+
+							if (i == 0 && nbt1 != null && nbt2 != null)
+							{
+								i = Byte.compare(nbt1.getId(), nbt2.getId());
+							}
+						}
+					}
+				}
+			}
+
+			return i;
+		}
+	};
+
+	public static final Comparator<BiomeGenBase> biomeComparator = new Comparator<BiomeGenBase>()
+	{
+		@Override
+		public int compare(BiomeGenBase o1, BiomeGenBase o2)
+		{
+			int i = compareWithNull(o1, o2);
+
+			if (i == 0 && o1 != null && o2 != null)
+			{
+				i = Integer.compare(o1.biomeID, o2.biomeID);
+
+				if (i == 0)
+				{
+					i = compareWithNull(o1.biomeName, o2.biomeName);
+
+					if (i == 0 && o1.biomeName != null && o2.biomeName != null)
+					{
+						i = o1.biomeName.compareTo(o2.biomeName);
+
+						if (i == 0)
+						{
+							i = Float.compare(o1.temperature, o2.temperature);
+
+							if (i == 0)
+							{
+								i = Float.compare(o1.rainfall, o2.rainfall);
+
+								if (i == 0)
+								{
+									i = blockComparator.compare(o1.topBlock, o2.topBlock);
+
+									if (i == 0)
+									{
+										i = Integer.compare(o1.field_150604_aj, o2.field_150604_aj);
+
+										if (i == 0)
+										{
+											i = blockComparator.compare(o1.fillerBlock, o2.fillerBlock);
+
+											if (i == 0)
+											{
+												i = Integer.compare(o1.field_76754_C, o2.field_76754_C);
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			return i;
+		}
+	};
 
 	public static List<ConfigCategory> getConfigCategories(final Configuration config)
 	{

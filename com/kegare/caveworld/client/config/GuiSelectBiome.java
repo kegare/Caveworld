@@ -10,7 +10,7 @@
 package com.kegare.caveworld.client.config;
 
 import java.util.Collections;
-import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,7 +51,6 @@ import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.util.ArrayListExtended;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.PanoramaPaths;
-import com.kegare.caveworld.util.comparator.BiomeComparator;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
@@ -64,9 +63,11 @@ import cpw.mods.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class GuiSelectBiome extends GuiScreen
 {
+	protected static final ArrayListExtended<BiomeGenBase> biomes = new ArrayListExtended<BiomeGenBase>().addAllObject(BiomeGenBase.getBiomeGenArray());
+
 	public interface SelectListener
 	{
-		public void setResult(List<Integer> result);
+		public void setResult(Set<BiomeGenBase> result);
 	}
 
 	protected final GuiScreen parentScreen;
@@ -104,11 +105,11 @@ public class GuiSelectBiome extends GuiScreen
 		this.parentElement = entry;
 	}
 
-	public GuiSelectBiome setHiddenBiomes(BiomeGenBase... biomes)
+	public GuiSelectBiome setHiddenBiomes(BiomeGenBase... hidden)
 	{
 		hiddenBiomes.clear();
 
-		for (BiomeGenBase biome : biomes)
+		for (BiomeGenBase biome : hidden)
 		{
 			if (biome != null)
 			{
@@ -116,7 +117,7 @@ public class GuiSelectBiome extends GuiScreen
 			}
 		}
 
-		BiomeList.biomes.removeAll(hiddenBiomes);
+		biomes.removeAll(hiddenBiomes);
 
 		return this;
 	}
@@ -196,6 +197,11 @@ public class GuiSelectBiome extends GuiScreen
 					}
 					else
 					{
+						if (parentScreen != null && parentScreen instanceof SelectListener)
+						{
+							((SelectListener)parentScreen).setResult(Sets.newHashSet(biomeList.selected));
+						}
+
 						List<Integer> result = Lists.newArrayList(Collections2.transform(biomeList.selected, new Function<BiomeGenBase, Integer>()
 						{
 							@Override
@@ -206,11 +212,6 @@ public class GuiSelectBiome extends GuiScreen
 						}));
 
 						Collections.sort(result);
-
-						if (parentScreen instanceof SelectListener)
-						{
-							((SelectListener)parentScreen).setResult(result);
-						}
 
 						if (parentTextField != null)
 						{
@@ -436,22 +437,20 @@ public class GuiSelectBiome extends GuiScreen
 	{
 		super.onGuiClosed();
 
-		if (BiomeList.biomes.addAll(hiddenBiomes))
+		if (biomes.addAll(hiddenBiomes))
 		{
-			Collections.sort(BiomeList.biomes, new BiomeComparator());
+			Collections.sort(biomes, CaveUtils.biomeComparator);
 		}
 	}
 
-	protected static class BiomeList extends GuiListSlot implements Comparator<BiomeGenBase>
+	protected static class BiomeList extends GuiListSlot
 	{
-		protected static final ArrayListExtended<BiomeGenBase> biomes = new ArrayListExtended<BiomeGenBase>().addAllObject(BiomeGenBase.getBiomeGenArray());
-
 		private static final Map<String, List<BiomeGenBase>> filterCache = Maps.newHashMap();
 
 		protected final GuiSelectBiome parent;
 
 		protected final ArrayListExtended<BiomeGenBase> contents = new ArrayListExtended(biomes);
-		protected final Set<BiomeGenBase> selected = Sets.newTreeSet(this);
+		protected final Set<BiomeGenBase> selected = Sets.newTreeSet(CaveUtils.biomeComparator);
 
 		private BiomeList(GuiSelectBiome parent)
 		{
@@ -494,11 +493,22 @@ public class GuiSelectBiome extends GuiScreen
 		@Override
 		public void scrollToSelected()
 		{
-			scrollToTop();
-
 			if (!selected.isEmpty())
 			{
-				scrollBy(contents.indexOf(selected.iterator().next()) * getSlotHeight());
+				int amount = 0;
+
+				for (Iterator<BiomeGenBase> iterator = selected.iterator(); iterator.hasNext();)
+				{
+					amount = contents.indexOf(iterator.next()) * getSlotHeight();
+
+					if (getAmountScrolled() != amount)
+					{
+						break;
+					}
+				}
+
+				scrollToTop();
+				scrollBy(amount);
 			}
 		}
 
@@ -568,12 +578,6 @@ public class GuiSelectBiome extends GuiScreen
 			BiomeGenBase biome = contents.get(index, null);
 
 			return biome != null && selected.contains(biome);
-		}
-
-		@Override
-		public int compare(BiomeGenBase o1, BiomeGenBase o2)
-		{
-			return Integer.compare(o1.biomeID, o2.biomeID);
 		}
 
 		protected void setFilter(final String filter)
