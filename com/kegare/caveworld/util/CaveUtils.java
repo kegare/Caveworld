@@ -333,7 +333,7 @@ public class CaveUtils
 		return result;
 	}
 
-	public static EntityPlayerMP forceTeleport(EntityPlayerMP player, int dim)
+	public static EntityPlayerMP forceTeleport(EntityPlayerMP player, int dim, boolean changed)
 	{
 		MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
 		int dimOld = player.dimension;
@@ -343,7 +343,10 @@ public class CaveUtils
 		{
 			player = respawnPlayer(player, dim);
 
-			FMLCommonHandler.instance().bus().post(new PlayerChangedDimensionEvent(player, dimOld, dim));
+			if (changed)
+			{
+				FMLCommonHandler.instance().bus().post(new PlayerChangedDimensionEvent(player, dimOld, dim));
+			}
 		}
 
 		ChunkCoordinates spawn = world.getSpawnPoint();

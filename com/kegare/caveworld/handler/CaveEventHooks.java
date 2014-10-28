@@ -114,6 +114,8 @@ import cpw.mods.fml.common.gameevent.TickEvent.RenderTickEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ServerConnectionFromClientEvent;
+import cpw.mods.fml.common.registry.GameRegistry;
+import cpw.mods.fml.common.registry.GameRegistry.UniqueIdentifier;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -173,7 +175,7 @@ public class CaveEventHooks
 				case BLOCK:
 					ItemStack current = mc.thePlayer.getCurrentEquippedItem();
 
-					if (current != null && current.getItem() != null && current.getItem() instanceof ItemMiningPickaxe)
+					if (current != null && current.getItem() != null && current.getItem() instanceof ItemMiningPickaxe && current.getItemDamage() < current.getMaxDamage())
 					{
 						if (mc.thePlayer.capabilities.isCreativeMode)
 						{
@@ -376,7 +378,7 @@ public class CaveEventHooks
 
 				if (y >= world.getActualHeight() - 1 || !world.isAirBlock(x, y, z) || !world.isAirBlock(x, y + 1, z))
 				{
-					CaveUtils.forceTeleport(player, player.dimension);
+					CaveUtils.forceTeleport(player, player.dimension, false);
 				}
 			}
 			else
@@ -404,7 +406,7 @@ public class CaveEventHooks
 						player.inventory.addItemStackToInventory(stack);
 					}
 
-					CaveUtils.forceTeleport(player, CaveworldAPI.getDimension());
+					CaveUtils.forceTeleport(player, CaveworldAPI.getDimension(), false);
 				}
 			}
 		}
@@ -482,7 +484,7 @@ public class CaveEventHooks
 			{
 				if (point < 100)
 				{
-					CaveUtils.forceTeleport(player, event.fromDim);
+					CaveUtils.forceTeleport(player, event.fromDim, false);
 				}
 				else
 				{
@@ -493,6 +495,18 @@ public class CaveEventHooks
 			}
 			else if (event.fromDim == CaveworldAPI.getDeepDimension())
 			{
+				ItemStack current = player.getCurrentEquippedItem();
+
+				if (current != null && current.getItem() != null)
+				{
+					UniqueIdentifier unique = GameRegistry.findUniqueIdentifierFor(current.getItem());
+
+					if (unique.modId.equals("Wa") && unique.name.equals("magatama"))
+					{
+						return;
+					}
+				}
+
 				int req = 10000;
 
 				if (player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.backFromDeep))
@@ -502,7 +516,7 @@ public class CaveEventHooks
 
 				if (point < req)
 				{
-					CaveUtils.forceTeleport(player, event.fromDim);
+					CaveUtils.forceTeleport(player, event.fromDim, false);
 				}
 				else
 				{
@@ -516,7 +530,7 @@ public class CaveEventHooks
 			{
 				if (event.toDim != CaveworldAPI.getDimension() && event.toDim != CaveworldAPI.getDeepDimension())
 				{
-					CaveUtils.forceTeleport(player, event.fromDim);
+					CaveUtils.forceTeleport(player, event.fromDim, false);
 				}
 			}
 		}
@@ -608,7 +622,7 @@ public class CaveEventHooks
 
 			if (event.action == Action.LEFT_CLICK_BLOCK)
 			{
-				if (current != null && current.getItem() != null && current.getItem() instanceof ItemMiningPickaxe)
+				if (current != null && current.getItem() != null && current.getItem() instanceof ItemMiningPickaxe && current.getItemDamage() < current.getMaxDamage())
 				{
 					ItemMiningPickaxe pickaxe = (ItemMiningPickaxe)current.getItem();
 					Block block = world.getBlock(x, y, z);
@@ -881,11 +895,11 @@ public class CaveEventHooks
 				{
 					if (CaveworldAPI.getMiningPoint(player) >= 10000)
 					{
-						CaveUtils.forceTeleport(player, CaveworldAPI.getDimension());
+						CaveUtils.forceTeleport(player, CaveworldAPI.getDimension(), true);
 					}
 					else
 					{
-						CaveUtils.forceTeleport(player, player.dimension);
+						CaveUtils.forceTeleport(player, player.dimension, false);
 					}
 				}
 				else if (player.posY <= 30.0D && player.func_147099_x().canUnlockAchievement(CaveAchievementList.underCaves) && !player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.underCaves))
@@ -919,11 +933,11 @@ public class CaveEventHooks
 				{
 					if (CaveworldAPI.getMiningPoint(player) >= 100)
 					{
-						CaveUtils.forceTeleport(player, CaveworldAPI.getDeepDimension());
+						CaveUtils.forceTeleport(player, CaveworldAPI.getDeepDimension(), true);
 					}
 					else
 					{
-						CaveUtils.forceTeleport(player, player.dimension);
+						CaveUtils.forceTeleport(player, player.dimension, false);
 					}
 				}
 
@@ -945,9 +959,16 @@ public class CaveEventHooks
 	{
 		if (event.entityLiving instanceof EntityPlayerMP)
 		{
+			EntityPlayerMP player = (EntityPlayerMP)event.entityLiving;
+
 			if (!Config.deathLoseMiningPoint)
 			{
-				CaveworldAPI.saveMiningData((EntityPlayerMP)event.entityLiving, null);
+				CaveworldAPI.saveMiningData(player, null);
+			}
+
+			if (player.dimension == CaveworldAPI.getDeepDimension() && player.posY < 16.0D && player.isInWater())
+			{
+				CaveUtils.forceTeleport(player, CaveworldAPI.getDimension(), false);
 			}
 		}
 	}

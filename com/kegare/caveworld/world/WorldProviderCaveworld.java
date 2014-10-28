@@ -386,7 +386,7 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 			{
 				if (!CaveworldAPI.isEntityInCaveworld(player))
 				{
-					CaveUtils.forceTeleport(player, CaveworldAPI.getDimension());
+					CaveUtils.forceTeleport(player, CaveworldAPI.getDimension(), false);
 				}
 			}
 		}

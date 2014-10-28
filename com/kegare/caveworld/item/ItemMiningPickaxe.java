@@ -62,6 +62,11 @@ public class ItemMiningPickaxe extends ItemPickaxe
 	public static final ToolMaterial MINING = EnumHelper.addToolMaterial("MINING", 3, 300, 5.0F, 1.5F, 10);
 	public static final EnumRarity mining = EnumHelper.addRarity("mining", EnumChatFormatting.DARK_GRAY, "Mining");
 
+	static
+	{
+		MINING.customCraftingMaterial = CaveItems.cavenium;
+	}
+
 	public int highlightTicks;
 
 	public ItemMiningPickaxe(String name)

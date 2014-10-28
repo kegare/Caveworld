@@ -244,7 +244,7 @@ public class WorldProviderDeepCaveworld extends WorldProviderCaveworld
 			{
 				if (!CaveworldAPI.isEntityInCaveworld(player))
 				{
-					CaveUtils.forceTeleport(player, CaveworldAPI.getDeepDimension());
+					CaveUtils.forceTeleport(player, CaveworldAPI.getDeepDimension(), false);
 				}
 			}
 		}
