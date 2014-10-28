@@ -18,8 +18,8 @@ import net.minecraft.block.BlockPistonBase;
 import net.minecraft.block.BlockRedstoneOre;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
-import codechicken.lib.math.MathHelper;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Sets;
