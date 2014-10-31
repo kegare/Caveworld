@@ -26,7 +26,6 @@ import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemTool;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.EnumHelper;
 
@@ -41,8 +40,8 @@ import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Roman;
 import com.kegare.caveworld.util.breaker.AditBreakExecutor;
 import com.kegare.caveworld.util.breaker.BreakPos;
-import com.kegare.caveworld.util.breaker.IBreakExecutor;
 import com.kegare.caveworld.util.breaker.MultiBreakExecutor;
+import com.kegare.caveworld.util.breaker.QuickBreakExecutor;
 import com.kegare.caveworld.util.breaker.RangedBreakExecutor;
 
 import cpw.mods.fml.common.registry.GameData;
@@ -60,7 +59,6 @@ public class ItemMiningPickaxe extends ItemPickaxe
 	}
 
 	public static final ToolMaterial MINING = EnumHelper.addToolMaterial("MINING", 3, 300, 5.0F, 1.5F, 10);
-	public static final EnumRarity mining = EnumHelper.addRarity("mining", EnumChatFormatting.DARK_GRAY, "Mining");
 
 	static
 	{
@@ -329,12 +327,12 @@ public class ItemMiningPickaxe extends ItemPickaxe
 		if (entity instanceof EntityPlayer)
 		{
 			EntityPlayer player = (EntityPlayer)entity;
-			IBreakExecutor executor;
+			MultiBreakExecutor executor;
 
 			switch (mode)
 			{
 				case QUICK:
-					executor = MultiBreakExecutor.getExecutor(world, player);
+					executor = QuickBreakExecutor.getExecutor(world, player);
 					break;
 				case ADIT:
 					executor = AditBreakExecutor.getExecutor(world, player);
@@ -366,7 +364,7 @@ public class ItemMiningPickaxe extends ItemPickaxe
 	@Override
 	public EnumRarity getRarity(ItemStack itemstack)
 	{
-		return mining;
+		return ItemCavenium.cavenium;
 	}
 
 	@SideOnly(Side.CLIENT)

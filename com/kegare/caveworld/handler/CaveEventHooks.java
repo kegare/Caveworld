@@ -93,10 +93,10 @@ import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.util.Version.Status;
+import com.kegare.caveworld.util.breaker.MultiBreakExecutor;
 import com.kegare.caveworld.util.breaker.AditBreakExecutor;
 import com.kegare.caveworld.util.breaker.BreakPos;
-import com.kegare.caveworld.util.breaker.IBreakExecutor;
-import com.kegare.caveworld.util.breaker.MultiBreakExecutor;
+import com.kegare.caveworld.util.breaker.QuickBreakExecutor;
 import com.kegare.caveworld.util.breaker.RangedBreakExecutor;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 
@@ -200,7 +200,7 @@ public class CaveEventHooks
 								switch (pickaxe.getMode(current))
 								{
 									case QUICK:
-										MultiBreakExecutor.getExecutor(mc.theWorld, mc.thePlayer).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
+										QuickBreakExecutor.getExecutor(mc.theWorld, mc.thePlayer).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
 										return;
 									case ADIT:
 										AditBreakExecutor.getExecutor(mc.theWorld, mc.thePlayer).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
@@ -216,7 +216,7 @@ public class CaveEventHooks
 							}
 							else
 							{
-								MultiBreakExecutor.getExecutor(mc.theWorld, mc.thePlayer).clear();
+								QuickBreakExecutor.getExecutor(mc.theWorld, mc.thePlayer).clear();
 								RangedBreakExecutor.getExecutor(mc.theWorld, mc.thePlayer).clear();
 
 								breakingPos = null;
@@ -372,11 +372,7 @@ public class CaveEventHooks
 
 			if (CaveworldAPI.isEntityInCaveworld(player))
 			{
-				int x = MathHelper.floor_double(player.posX);
-				int y = MathHelper.floor_double(player.posY);
-				int z = MathHelper.floor_double(player.posZ);
-
-				if (y >= world.getActualHeight() - 1 || !world.isAirBlock(x, y, z) || !world.isAirBlock(x, y + 1, z))
+				if (MathHelper.floor_double(player.posY) >= world.getActualHeight() - 1)
 				{
 					CaveUtils.forceTeleport(player, player.dimension, false);
 				}
@@ -420,7 +416,7 @@ public class CaveEventHooks
 
 		firstJoinPlayers.remove(key);
 
-		for (Iterator<Cell<World, EntityPlayer, MultiBreakExecutor>> iterator = MultiBreakExecutor.executors.cellSet().iterator(); iterator.hasNext();)
+		for (Iterator<Cell<World, EntityPlayer, QuickBreakExecutor>> iterator = QuickBreakExecutor.executors.cellSet().iterator(); iterator.hasNext();)
 		{
 			if (iterator.next().getColumnKey().getGameProfile().getId().toString().equals(key))
 			{
@@ -630,12 +626,12 @@ public class CaveEventHooks
 
 					if (pickaxe.canBreak(current, block, meta))
 					{
-						IBreakExecutor executor = null;
+						MultiBreakExecutor executor = null;
 
 						switch (pickaxe.getMode(current))
 						{
 							case QUICK:
-								executor = MultiBreakExecutor.getExecutor(world, player).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
+								executor = QuickBreakExecutor.getExecutor(world, player).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
 								break;
 							case ADIT:
 								executor = AditBreakExecutor.getExecutor(world, player).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
@@ -653,7 +649,7 @@ public class CaveEventHooks
 					}
 					else
 					{
-						MultiBreakExecutor.getExecutor(world, player).clear();
+						QuickBreakExecutor.getExecutor(world, player).clear();
 						RangedBreakExecutor.getExecutor(world, player).clear();
 					}
 				}
@@ -774,12 +770,12 @@ public class CaveEventHooks
 		if (current != null && current.getItem() != null && current.getItem() instanceof ItemMiningPickaxe)
 		{
 			ItemMiningPickaxe pickaxe = (ItemMiningPickaxe)current.getItem();
-			IBreakExecutor executor;
+			MultiBreakExecutor executor;
 
 			switch (pickaxe.getMode(current))
 			{
 				case QUICK:
-					executor = MultiBreakExecutor.getExecutor(player.worldObj, player);
+					executor = QuickBreakExecutor.getExecutor(player.worldObj, player);
 					break;
 				case ADIT:
 					executor = AditBreakExecutor.getExecutor(player.worldObj, player);
@@ -1037,7 +1033,7 @@ public class CaveEventHooks
 			WorldProviderCaveworld.saveDimData();
 		}
 
-		for (Iterator<Cell<World, EntityPlayer, MultiBreakExecutor>> iterator = MultiBreakExecutor.executors.cellSet().iterator(); iterator.hasNext();)
+		for (Iterator<Cell<World, EntityPlayer, QuickBreakExecutor>> iterator = QuickBreakExecutor.executors.cellSet().iterator(); iterator.hasNext();)
 		{
 			if (iterator.next().getRowKey().provider.dimensionId == dim)
 			{

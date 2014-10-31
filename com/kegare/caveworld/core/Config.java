@@ -75,6 +75,7 @@ public class Config
 
 	public static boolean rope;
 	public static boolean oreCavenium;
+	public static boolean universalChest;
 
 	public static boolean cavenium;
 	public static boolean pickaxeMining;
@@ -91,6 +92,7 @@ public class Config
 	public static int dimensionCaveworld;
 	public static int dimensionDeepCaveworld;
 	public static int subsurfaceHeight;
+	public static int biomeSize;
 	public static boolean generateCaves;
 	public static boolean generateExtremeCaves;
 	public static boolean generateDeepCaves;
@@ -105,14 +107,20 @@ public class Config
 	public static boolean decorateVines;
 
 	public static final int RENDER_TYPE_PORTAL = Caveworld.proxy.getUniqueRenderType();
+	public static final int RENDER_TYPE_CHEST = Caveworld.proxy.getUniqueRenderType();
 
 	public static Class selectBlockEntryClass;
 	public static Class selectItemEntryClass;
 	public static Class selectBiomeEntryClass;
 
+	public static File getConfigDir()
+	{
+		return new File(Loader.instance().getConfigDir(), "caveworld");
+	}
+
 	public static File getConfigFile(String name)
 	{
-		File dir = new File(Loader.instance().getConfigDir(), "caveworld");
+		File dir = getConfigDir();
 
 		if (!dir.exists())
 		{
@@ -266,6 +274,12 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		oreCavenium = prop.getBoolean(oreCavenium);
+		prop = blocksCfg.get(category, "universalChest", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		universalChest = prop.getBoolean(universalChest);
 
 		blocksCfg.setCategoryPropertyOrder(category, propOrder);
 		blocksCfg.setCategoryRequiresMcRestart(category, true);
@@ -461,6 +475,12 @@ public class Config
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		subsurfaceHeight = MathHelper.clamp_int(prop.getInt(subsurfaceHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		prop = dimensionCfg.get(category, "biomeSize", 1);
+		prop.setMinValue(1).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		biomeSize = MathHelper.clamp_int(prop.getInt(biomeSize), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 		prop = dimensionCfg.get(category, "generateCaves", true);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");

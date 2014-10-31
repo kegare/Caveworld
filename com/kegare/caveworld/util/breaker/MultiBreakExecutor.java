@@ -19,46 +19,27 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Table;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.util.ArrayListExtended;
 import com.kegare.caveworld.util.breaker.BreakPos.NearestBreakPosComparator;
 
-public class MultiBreakExecutor implements IBreakExecutor
+public abstract class MultiBreakExecutor
 {
-	public static final Table<World, EntityPlayer, MultiBreakExecutor> executors = HashBasedTable.create();
-
-	private final World world;
-	private final EntityPlayer player;
+	protected final World world;
+	protected final EntityPlayer player;
 
 	protected final ArrayListExtended<BreakPos> breakPositions = new ArrayListExtended();
 	protected BlockEntry breakableBlock;
 	protected BreakPos originPos;
 	protected BreakPos currentPos;
 
-	private MultiBreakExecutor(World world, EntityPlayer player)
+	public MultiBreakExecutor(World world, EntityPlayer player)
 	{
 		this.world = world;
 		this.player = player;
 	}
 
-	public static MultiBreakExecutor getExecutor(World world, EntityPlayer player)
-	{
-		MultiBreakExecutor executor = executors.get(world, player);
-
-		if (executor == null)
-		{
-			executor = new MultiBreakExecutor(world, player);
-
-			executors.put(world, player, executor);
-		}
-
-		return executor;
-	}
-
-	@Override
 	public MultiBreakExecutor setOriginPos(int x, int y, int z)
 	{
 		breakPositions.clear();
@@ -69,13 +50,11 @@ public class MultiBreakExecutor implements IBreakExecutor
 		return this;
 	}
 
-	@Override
 	public BreakPos getOriginPos()
 	{
 		return originPos;
 	}
 
-	@Override
 	public MultiBreakExecutor setBreakable(Block block, int metadata)
 	{
 		breakableBlock = new BlockEntry(block, metadata);
@@ -83,7 +62,6 @@ public class MultiBreakExecutor implements IBreakExecutor
 		return this;
 	}
 
-	@Override
 	public BlockEntry getBreakable()
 	{
 		if (breakableBlock == null)
@@ -94,7 +72,6 @@ public class MultiBreakExecutor implements IBreakExecutor
 		return breakableBlock;
 	}
 
-	@Override
 	public boolean canBreak(int x, int y, int z)
 	{
 		if (originPos == null || world.isAirBlock(x, y, z))
@@ -106,69 +83,11 @@ public class MultiBreakExecutor implements IBreakExecutor
 			getBreakable().getBlock() instanceof BlockRedstoneOre && world.getBlock(x, y, z) instanceof BlockRedstoneOre;
 	}
 
-	@Override
-	public MultiBreakExecutor setBreakPositions()
+	public abstract MultiBreakExecutor setBreakPositions();
+
+	public boolean offer(int x, int y, int z)
 	{
-		boolean flag;
-
-		do
-		{
-			int x = currentPos.x;
-			int y = currentPos.y;
-			int z = currentPos.z;
-
-			flag = false;
-
-			if (offer(x + 1, y, z))
-			{
-				setBreakPositions();
-
-				if (!flag) flag = true;
-			}
-
-			if (offer(x, y + 1, z))
-			{
-				setBreakPositions();
-
-				if (!flag) flag = true;
-			}
-
-			if (offer(x, y, z + 1))
-			{
-				setBreakPositions();
-
-				if (!flag) flag = true;
-			}
-
-			if (offer(x - 1, y, z))
-			{
-				setBreakPositions();
-
-				if (!flag) flag = true;
-			}
-
-			if (offer(x, y - 1, z))
-			{
-				setBreakPositions();
-
-				if (!flag) flag = true;
-			}
-
-			if (offer(x, y, z - 1))
-			{
-				setBreakPositions();
-
-				if (!flag) flag = true;
-			}
-		}
-		while (flag);
-
-		return this;
-	}
-
-	private boolean offer(int x, int y, int z)
-	{
-		if (canBreak(x, y, z) && originPos.getDistance(x, y, z) <= 64.0D && breakPositions.size() < 1000)
+		if (canBreak(x, y, z))
 		{
 			currentPos = new BreakPos(world, x, y, z);
 
@@ -178,13 +97,11 @@ public class MultiBreakExecutor implements IBreakExecutor
 		return false;
 	}
 
-	@Override
 	public List<BreakPos> getBreakPositions()
 	{
 		return breakPositions;
 	}
 
-	@Override
 	public void breakAll()
 	{
 		Collections.sort(breakPositions, new NearestBreakPosComparator(originPos));
@@ -213,7 +130,6 @@ public class MultiBreakExecutor implements IBreakExecutor
 		}
 	}
 
-	@Override
 	public void clear()
 	{
 		breakPositions.clear();

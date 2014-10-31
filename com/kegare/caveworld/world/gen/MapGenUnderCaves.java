@@ -135,9 +135,9 @@ public class MapGenUnderCaves extends MapGenDeepCaves
 	}
 
 	@Override
-	protected void func_151538_a(World world, int x, int z, int chunkX, int chunkZ, Block[] blocks)
+	protected void func_151538_a(final World world, final int x, final int z, final int chunkX, final int chunkZ, final Block[] blocks)
 	{
-		int chance = rand.nextInt(rand.nextInt(rand.nextInt(20) + 1) + 1);
+		int chance = rand.nextInt(rand.nextInt(rand.nextInt(10) + 1) + 1);
 
 		if (rand.nextInt(3) != 0)
 		{
@@ -151,7 +151,7 @@ public class MapGenUnderCaves extends MapGenDeepCaves
 			double blockZ = z * 16 + rand.nextInt(16);
 			int count = 1;
 
-			if (rand.nextInt(4) == 0)
+			if (rand.nextInt(5) == 0)
 			{
 				func_151542_a(rand.nextLong(), chunkX, chunkZ, blocks, blockX, blockY, blockZ);
 
@@ -162,9 +162,9 @@ public class MapGenUnderCaves extends MapGenDeepCaves
 			{
 				float leftRightRadian = rand.nextFloat() * (float)Math.PI * 2.0F;
 				float upDownRadian = (rand.nextFloat() - 0.5F) * 2.0F / 8.0F;
-				float scale = rand.nextFloat() * 3.5F + rand.nextFloat();
+				float scale = rand.nextFloat() * 2.5F + rand.nextFloat();
 
-				if (rand.nextInt(5) == 0)
+				if (rand.nextInt(6) == 0)
 				{
 					scale *= rand.nextFloat() * rand.nextFloat() * 3.5F + 1.0F;
 				}

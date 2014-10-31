@@ -104,11 +104,16 @@ public class CaveUtils
 
 				if (i == 0 && unique1 != null && unique2 != null)
 				{
-					i = unique1.modId.compareTo(unique2.modId);
+					i = (unique1.modId.equals("minecraft") ? 0 : 1) - (unique2.modId.equals("minecraft") ? 0 : 1);
 
 					if (i == 0)
 					{
-						i = unique1.name.compareTo(unique1.name);
+						i = unique1.modId.compareTo(unique2.modId);
+
+						if (i == 0)
+						{
+							i = unique1.name.compareTo(unique1.name);
+						}
 					}
 				}
 			}
@@ -133,11 +138,16 @@ public class CaveUtils
 
 				if (i == 0 && unique1 != null && unique2 != null)
 				{
-					i = unique1.modId.compareTo(unique2.modId);
+					i = (unique1.modId.equals("minecraft") ? 0 : 1) - (unique2.modId.equals("minecraft") ? 0 : 1);
 
 					if (i == 0)
 					{
-						i = unique1.name.compareTo(unique1.name);
+						i = unique1.modId.compareTo(unique2.modId);
+
+						if (i == 0)
+						{
+							i = unique1.name.compareTo(unique1.name);
+						}
 					}
 				}
 			}

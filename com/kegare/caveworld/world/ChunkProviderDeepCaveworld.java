@@ -102,7 +102,6 @@ public class ChunkProviderDeepCaveworld implements IChunkProvider
 		}
 
 		int i;
-		boolean flag = random.nextInt(100) == 0;
 
 		for (int x = 0; x < 16; ++x)
 		{
@@ -117,18 +116,10 @@ public class ChunkProviderDeepCaveworld implements IChunkProvider
 				{
 					for (int y = 1; y < worldHeight - 2; ++y)
 					{
-						if (blocks[i + y] != null)
+						if (blocks[i + y] != null && blocks[i + y + 1] == null)
 						{
-							if (blocks[i + y + 1] == null)
-							{
-								blocks[i + y] = entry.getTopBlock().getBlock();
-								metadata[i + y] = (byte)entry.getTopBlock().getMetadata();
-							}
-							else if (blocks[i + y - 1] == null && flag && random.nextInt(30) == 0)
-							{
-								blocks[i + y] = Blocks.web;
-								metadata[i + y] = 0;
-							}
+							blocks[i + y] = entry.getTopBlock().getBlock();
+							metadata[i + y] = (byte)entry.getTopBlock().getMetadata();
 						}
 					}
 				}

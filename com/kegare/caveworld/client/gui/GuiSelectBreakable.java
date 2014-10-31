@@ -9,6 +9,7 @@
 
 package com.kegare.caveworld.client.gui;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -373,11 +374,22 @@ public class GuiSelectBreakable extends GuiScreen
 		@Override
 		public void scrollToSelected()
 		{
-			scrollToTop();
-
 			if (!selected.isEmpty())
 			{
-				scrollBy(contents.indexOf(selected.iterator().next()) * getSlotHeight());
+				int amount = 0;
+
+				for (Iterator<BlockEntry> iterator = selected.iterator(); iterator.hasNext();)
+				{
+					amount = contents.indexOf(iterator.next()) * getSlotHeight();
+
+					if (getAmountScrolled() != amount)
+					{
+						break;
+					}
+				}
+
+				scrollToTop();
+				scrollBy(amount);
 			}
 		}
 

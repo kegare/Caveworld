@@ -20,12 +20,15 @@ import com.kegare.caveworld.client.config.SelectItemEntry;
 import com.kegare.caveworld.client.renderer.RenderCaveman;
 import com.kegare.caveworld.client.renderer.RenderMiningPickaxe;
 import com.kegare.caveworld.client.renderer.RenderPortalCaveworld;
+import com.kegare.caveworld.client.renderer.TileEntityUniversalChestRenderer;
 import com.kegare.caveworld.core.CommonProxy;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.entity.EntityCaveman;
+import com.kegare.caveworld.entity.TileEntityUniversalChest;
 import com.kegare.caveworld.item.CaveItems;
 
 import cpw.mods.fml.client.FMLClientHandler;
+import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -45,9 +48,14 @@ public class ClientProxy extends CommonProxy
 	public void registerRenderers()
 	{
 		RenderingRegistry.registerBlockHandler(new RenderPortalCaveworld());
-		RenderingRegistry.registerEntityRenderingHandler(EntityCaveman.class, new RenderCaveman());
+
+		TileEntityUniversalChestRenderer chestRenderer = new TileEntityUniversalChestRenderer();
+		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityUniversalChest.class, chestRenderer);
+		RenderingRegistry.registerBlockHandler(Config.RENDER_TYPE_CHEST, chestRenderer);
 
 		MinecraftForgeClient.registerItemRenderer(CaveItems.mining_pickaxe, new RenderMiningPickaxe());
+
+		RenderingRegistry.registerEntityRenderingHandler(EntityCaveman.class, new RenderCaveman());
 	}
 
 	@Override

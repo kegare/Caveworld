@@ -11,9 +11,13 @@ package com.kegare.caveworld.core;
 
 import static com.kegare.caveworld.core.Caveworld.*;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
+import net.minecraft.nbt.CompressedStreamTools;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 
@@ -45,7 +49,7 @@ import com.kegare.caveworld.plugin.thaumcraft.ThaumcraftPlugin;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.util.breaker.AditBreakExecutor;
-import com.kegare.caveworld.util.breaker.MultiBreakExecutor;
+import com.kegare.caveworld.util.breaker.QuickBreakExecutor;
 import com.kegare.caveworld.util.breaker.RangedBreakExecutor;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 import com.kegare.caveworld.world.WorldProviderDeepCaveworld;
@@ -324,8 +328,28 @@ public class Caveworld
 	{
 		CaveEventHooks.firstJoinPlayers.clear();
 
-		MultiBreakExecutor.executors.clear();
+		QuickBreakExecutor.executors.clear();
 		AditBreakExecutor.executors.clear();
 		RangedBreakExecutor.executors.clear();
+
+		File dir = Config.getConfigDir();
+
+		if (dir == null)
+		{
+			return;
+		}
+
+		try (FileOutputStream output = new FileOutputStream(new File(dir, "UniversalChest.dat")))
+		{
+			NBTTagCompound data = CaveBlocks.universal_chest.getData();
+
+			data.setTag("ChestItems", CaveBlocks.universal_chest.inventory.saveInventoryToNBT());
+
+			CompressedStreamTools.writeCompressed(data, output);
+		}
+		catch (Exception e)
+		{
+			CaveLog.log(Level.ERROR, e, "An error occurred trying to writing Universal Chest data");
+		}
 	}
 }

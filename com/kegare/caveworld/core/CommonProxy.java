@@ -54,6 +54,15 @@ public class CommonProxy
 			addShapelessRecipe(new ItemStack(CaveItems.cavenium, 9, 1), new ItemStack(CaveBlocks.cavenium_ore, 1, 3));
 		}
 
+		if (Config.universalChest)
+		{
+			addShapedRecipe(new ItemStack(CaveBlocks.universal_chest),
+				"CCC", "CEC", "CCC",
+				'C', new ItemStack(CaveBlocks.cavenium_ore, 1, 3),
+				'E', Items.ender_eye
+			);
+		}
+
 		if (Config.cavenium)
 		{
 			FurnaceRecipes.smelting().func_151394_a(new ItemStack(CaveBlocks.cavenium_ore, 1, 0), new ItemStack(CaveItems.cavenium, 1, 0), 0.5F);
@@ -61,10 +70,12 @@ public class CommonProxy
 
 			addShapedRecipe(new ItemStack(CaveBlocks.cavenium_ore, 1, 2),
 				"CCC", "CCC", "CCC",
-				'C', new ItemStack(CaveItems.cavenium, 1, 0));
+				'C', new ItemStack(CaveItems.cavenium, 1, 0)
+			);
 			addShapedRecipe(new ItemStack(CaveBlocks.cavenium_ore, 1, 3),
 				"CCC", "CCC", "CCC",
-				'C', new ItemStack(CaveItems.cavenium, 1, 1));
+				'C', new ItemStack(CaveItems.cavenium, 1, 1)
+			);
 		}
 
 		if (Config.pickaxeMining)
@@ -77,7 +88,8 @@ public class CommonProxy
 			addShapedRecipe(new ItemStack(CaveItems.ore_compass),
 				" C ", "CXC", " C ",
 				'C', new ItemStack(CaveItems.cavenium, 1, 1),
-				'X', Items.compass);
+				'X', Items.compass
+			);
 		}
 
 		if (Config.portalCraftRecipe)

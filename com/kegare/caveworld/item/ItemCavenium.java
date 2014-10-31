@@ -16,7 +16,9 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IIcon;
+import net.minecraftforge.common.util.EnumHelper;
 
 import com.kegare.caveworld.core.Caveworld;
 
@@ -25,6 +27,8 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public class ItemCavenium extends Item
 {
+	public static final EnumRarity cavenium = EnumHelper.addRarity("cavenium", EnumChatFormatting.DARK_GRAY, "Cavenium");
+
 	@SideOnly(Side.CLIENT)
 	protected IIcon refinedIcon;
 
