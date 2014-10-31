@@ -50,6 +50,7 @@ import com.kegare.caveworld.entity.ai.EntityAIFleeEntityLiving;
 import com.kegare.caveworld.entity.ai.EntityAIFleeSun2;
 import com.kegare.caveworld.entity.ai.EntityAIFollower;
 import com.kegare.caveworld.entity.ai.EntityAISoldier;
+import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.item.ItemCavenium;
 import com.kegare.caveworld.util.CaveUtils;
 
@@ -216,7 +217,7 @@ public class EntityCaveman extends EntityTameable implements IInventory
 			items.add(new ItemStack(Items.coal, MathHelper.getRandomIntegerInRange(rand, 16, 48)));
 			items.add(new ItemStack(Items.iron_ingot, MathHelper.getRandomIntegerInRange(rand, 4, 10)));
 			items.add(new ItemStack(Items.gold_ingot, MathHelper.getRandomIntegerInRange(rand, 1, 3)));
-			items.add(new ItemStack(Items.emerald, MathHelper.getRandomIntegerInRange(rand, 2, 5)));
+			items.add(new ItemStack(CaveItems.cavenium, MathHelper.getRandomIntegerInRange(rand, 2, 3)));
 
 			if (rand.nextInt(10) == 0)
 			{

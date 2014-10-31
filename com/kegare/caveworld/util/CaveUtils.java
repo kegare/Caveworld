@@ -522,8 +522,9 @@ public class CaveUtils
 		if (itemstack != null && itemstack.getItem() != null)
 		{
 			Block block = Block.getBlockFromItem(itemstack.getItem());
+			UniqueIdentifier unique = GameRegistry.findUniqueIdentifierFor(block);
 
-			if (GameRegistry.findUniqueIdentifierFor(block).modId.equals("EnderIO") && !block.renderAsNormalBlock())
+			if (unique != null && unique.modId.equals("EnderIO") && !block.renderAsNormalBlock())
 			{
 				return false;
 			}

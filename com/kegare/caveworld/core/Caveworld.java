@@ -16,6 +16,7 @@ import java.io.FileOutputStream;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
+import net.minecraft.block.Block;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.DimensionManager;
@@ -30,6 +31,7 @@ import com.kegare.caveworld.handler.CaveAPIHandler;
 import com.kegare.caveworld.handler.CaveEventHooks;
 import com.kegare.caveworld.handler.CaveFuelHandler;
 import com.kegare.caveworld.item.CaveItems;
+import com.kegare.caveworld.item.ItemMiningPickaxe;
 import com.kegare.caveworld.network.BuffMessage;
 import com.kegare.caveworld.network.CaveAchievementMessage;
 import com.kegare.caveworld.network.CaveSoundMessage;
@@ -47,6 +49,7 @@ import com.kegare.caveworld.plugin.more.MOrePlugin;
 import com.kegare.caveworld.plugin.nei.NEIPlugin;
 import com.kegare.caveworld.plugin.thaumcraft.ThaumcraftPlugin;
 import com.kegare.caveworld.util.CaveLog;
+import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.util.breaker.AditBreakExecutor;
 import com.kegare.caveworld.util.breaker.QuickBreakExecutor;
@@ -68,6 +71,7 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import cpw.mods.fml.common.registry.EntityRegistry;
+import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.Side;
 
@@ -212,6 +216,19 @@ public class Caveworld
 				CaveworldAPI.setMiningPointAmount("titaniumOre", 1);
 				CaveworldAPI.setMiningPointAmount("oreCavenium", 2);
 				CaveworldAPI.setMiningPointAmount("caveniumOre", 2);
+
+				for (Object obj : GameData.getBlockRegistry().getKeys())
+				{
+					Block block = GameData.getBlockRegistry().getObject((String)obj);
+
+					for (int i = 0; i < 16; ++i)
+					{
+						if (CaveworldAPI.getMiningPointAmount(block, i) > 0)
+						{
+							ItemMiningPickaxe.defaultBreakables.add(CaveUtils.toStringHelper(block, i));
+						}
+					}
+				}
 			}
 		});
 

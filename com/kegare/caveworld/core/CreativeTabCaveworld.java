@@ -60,7 +60,7 @@ public class CreativeTabCaveworld extends CreativeTabs
 		{
 			Random random = new Random();
 
-			switch (random.nextInt(5))
+			switch (random.nextInt(6))
 			{
 				case 1:
 					if (Config.rope)
@@ -94,6 +94,12 @@ public class CreativeTabCaveworld extends CreativeTabs
 					if (Config.oreCompass)
 					{
 						tabIconItem = new ItemStack(CaveItems.ore_compass);
+						break;
+					}
+				case 5:
+					if (Config.universalChest)
+					{
+						tabIconItem = new ItemStack(CaveBlocks.universal_chest);
 						break;
 					}
 				default:

@@ -19,7 +19,6 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPickaxe;
@@ -32,7 +31,7 @@ import net.minecraftforge.common.util.EnumHelper;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.kegare.caveworld.block.CaveBlocks;
+import com.google.common.collect.Sets;
 import com.kegare.caveworld.client.gui.GuiSelectBreakable;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.recipe.RecipeMiningPickaxe;
@@ -59,6 +58,8 @@ public class ItemMiningPickaxe extends ItemPickaxe
 	}
 
 	public static final ToolMaterial MINING = EnumHelper.addToolMaterial("MINING", 3, 300, 5.0F, 1.5F, 10);
+
+	public static final Set<String> defaultBreakables = Sets.newHashSet();
 
 	static
 	{
@@ -91,20 +92,7 @@ public class ItemMiningPickaxe extends ItemPickaxe
 
 		if (!data.hasKey("Blocks") || Strings.isNullOrEmpty(data.getString("Blocks")))
 		{
-			List<String> list = Lists.newArrayList();
-
-			list.add(CaveUtils.toStringHelper(CaveBlocks.cavenium_ore, 0));
-			list.add(CaveUtils.toStringHelper(CaveBlocks.cavenium_ore, 1));
-			list.add(CaveUtils.toStringHelper(Blocks.coal_ore, 0));
-			list.add(CaveUtils.toStringHelper(Blocks.iron_ore, 0));
-			list.add(CaveUtils.toStringHelper(Blocks.gold_ore, 0));
-			list.add(CaveUtils.toStringHelper(Blocks.redstone_ore, 0));
-			list.add(CaveUtils.toStringHelper(Blocks.lit_redstone_ore, 0));
-			list.add(CaveUtils.toStringHelper(Blocks.lapis_ore, 0));
-			list.add(CaveUtils.toStringHelper(Blocks.emerald_ore, 0));
-			list.add(CaveUtils.toStringHelper(Blocks.diamond_ore, 0));
-
-			data.setString("Blocks", Joiner.on("|").join(list));
+			data.setString("Blocks", Joiner.on("|").join(defaultBreakables));
 		}
 	}
 

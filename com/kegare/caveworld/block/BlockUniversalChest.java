@@ -166,6 +166,7 @@ public class BlockUniversalChest extends BlockContainer
 		}
 	}
 
+	@SideOnly(Side.CLIENT)
 	@Override
 	public boolean addHitEffects(World world, MovingObjectPosition target, EffectRenderer effectRenderer)
 	{
@@ -204,6 +205,7 @@ public class BlockUniversalChest extends BlockContainer
 		return true;
 	}
 
+	@SideOnly(Side.CLIENT)
 	@Override
 	public boolean addDestroyEffects(World world, int x, int y, int z, int metadata, EffectRenderer effectRenderer)
 	{

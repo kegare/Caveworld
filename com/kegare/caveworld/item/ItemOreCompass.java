@@ -20,6 +20,7 @@ import net.minecraft.block.BlockRedstoneOre;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -46,6 +47,29 @@ public class ItemOreCompass extends Item
 	private long prevFindTime;
 	@SideOnly(Side.CLIENT)
 	private BreakPos nearestOrePos;
+	@SideOnly(Side.CLIENT)
+	private int findFailedCount;
+
+	private static final BreakPos failedPos = new BreakPos(null, 0, 0, 0)
+	{
+		@Override
+		public boolean isPlaced()
+		{
+			return false;
+		}
+
+		@Override
+		public Block getCurrentBlock()
+		{
+			return Blocks.air;
+		}
+
+		@Override
+		public int getCurrentMetadata()
+		{
+			return 0;
+		}
+	};
 
 	public ItemOreCompass(String name)
 	{
@@ -80,7 +104,7 @@ public class ItemOreCompass extends Item
 			return -1;
 		}
 
-		if (nearestOrePos != null && !nearestOrePos.isPlaced())
+		if (nearestOrePos != null && nearestOrePos.world != null && !nearestOrePos.isPlaced())
 		{
 			NBTTagCompound nbt = itemstack.getTagCompound();
 
@@ -167,7 +191,7 @@ public class ItemOreCompass extends Item
 	@Override
 	public IIcon getIcon(ItemStack itemstack, int pass)
 	{
-		if (nearestOrePos == null || nearestOrePos.isPlaced() || System.currentTimeMillis() - prevFindTime >= 1000L)
+		if (nearestOrePos == null || nearestOrePos.isPlaced() || System.currentTimeMillis() - prevFindTime >= 1500L)
 		{
 			findNearestOre();
 		}
@@ -197,6 +221,11 @@ public class ItemOreCompass extends Item
 	@SideOnly(Side.CLIENT)
 	public void findNearestOre()
 	{
+		if (findFailedCount > 10 && System.currentTimeMillis() - prevFindTime < 10000L)
+		{
+			return;
+		}
+
 		prevFindTime = System.currentTimeMillis();
 
 		nearestOrePos = new ForkJoinPool().invoke(new RecursiveTask<BreakPos>()
@@ -244,6 +273,17 @@ public class ItemOreCompass extends Item
 				return null;
 			}
 		});
+
+		if (nearestOrePos == null)
+		{
+			nearestOrePos = failedPos;
+
+			++findFailedCount;
+		}
+		else
+		{
+			findFailedCount = 0;
+		}
 	}
 
 	@SideOnly(Side.CLIENT)

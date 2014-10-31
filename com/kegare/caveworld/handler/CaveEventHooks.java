@@ -10,7 +10,6 @@
 package com.kegare.caveworld.handler;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -74,7 +73,6 @@ import org.lwjgl.opengl.GL11;
 
 import shift.mceconomy2.api.MCEconomyAPI;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table.Cell;
 import com.kegare.caveworld.api.CaveworldAPI;
@@ -93,9 +91,9 @@ import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.util.Version.Status;
-import com.kegare.caveworld.util.breaker.MultiBreakExecutor;
 import com.kegare.caveworld.util.breaker.AditBreakExecutor;
 import com.kegare.caveworld.util.breaker.BreakPos;
+import com.kegare.caveworld.util.breaker.MultiBreakExecutor;
 import com.kegare.caveworld.util.breaker.QuickBreakExecutor;
 import com.kegare.caveworld.util.breaker.RangedBreakExecutor;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
@@ -381,7 +379,7 @@ public class CaveEventHooks
 			{
 				if (Config.caveborn && firstJoinPlayers.contains(player.getGameProfile().getId().toString()))
 				{
-					List<ItemStack> bonus = Lists.newArrayList();
+					Set<ItemStack> bonus = Sets.newHashSet();
 
 					bonus.add(new ItemStack(Items.stone_pickaxe));
 					bonus.add(new ItemStack(Items.stone_sword));
@@ -497,7 +495,7 @@ public class CaveEventHooks
 				{
 					UniqueIdentifier unique = GameRegistry.findUniqueIdentifierFor(current.getItem());
 
-					if (unique.modId.equals("Wa") && unique.name.equals("magatama"))
+					if (unique != null && unique.modId.equals("Wa") && unique.name.equals("magatama"))
 					{
 						return;
 					}
