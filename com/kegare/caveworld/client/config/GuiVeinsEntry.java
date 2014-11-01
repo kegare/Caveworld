@@ -1205,7 +1205,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 
 				if (item != null)
 				{
-					CaveUtils.renderItemStack(mc, new ItemStack(block.getBlock(), entry.getGenBlockCount(), block.getMetadata()), width / 2 - 100, par3 + 1, true, null);
+					CaveUtils.renderItemStack(mc, new ItemStack(block.getBlock(), entry.getGenBlockCount(), block.getMetadata()), width / 2 - 100, par3 + 1, false, true, null);
 				}
 
 				block = entry.getGenTargetBlock();
@@ -1213,7 +1213,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 
 				if (item != null)
 				{
-					CaveUtils.renderItemStack(mc, new ItemStack(block.getBlock(), entry.getGenWeight(), block.getMetadata()), width / 2 + 90, par3 + 1, true, null);
+					CaveUtils.renderItemStack(mc, new ItemStack(block.getBlock(), entry.getGenWeight(), block.getMetadata()), width / 2 + 90, par3 + 1, false, true, null);
 				}
 			}
 		}

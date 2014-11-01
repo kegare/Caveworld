@@ -64,7 +64,7 @@ public class CaveVeinManager implements ICaveVeinManager
 		List<String> propOrder = Lists.newArrayList();
 
 		prop = Config.veinsCfg.get(name, "block", GameData.getBlockRegistry().getNameForObject(Blocks.stone));
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(Config.selectBlockEntryClass);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		if (!Strings.isNullOrEmpty(block)) prop.set(block);
 		propOrder.add(prop.getName());

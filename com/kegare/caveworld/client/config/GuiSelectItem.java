@@ -45,10 +45,7 @@ import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
 import cpw.mods.fml.client.config.HoverChecker;
 import cpw.mods.fml.common.registry.GameData;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
-@SideOnly(Side.CLIENT)
 public class GuiSelectItem extends GuiScreen
 {
 	public static final ArrayListExtended<Item> raws = new ArrayListExtended().addAllObject(GameData.getItemRegistry());
@@ -474,7 +471,7 @@ public class GuiSelectItem extends GuiScreen
 
 			if (parent.detailInfo.isChecked())
 			{
-				CaveUtils.renderItemStack(mc, itemstack, width / 2 - 100, par3 - 1, false, null);
+				CaveUtils.renderItemStack(mc, itemstack, width / 2 - 100, par3 - 1, false, false, null);
 			}
 		}
 

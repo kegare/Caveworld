@@ -4,6 +4,7 @@
     "sounds": [
       {
         "name": "ambient/cave",
+        "volume": 0.5,
         "stream": true
       }
     ]
@@ -13,6 +14,7 @@
     "sounds": [
       {
         "name": "ambient/unrest",
+        "volume": 0.5,
         "stream": true
       }
     ]

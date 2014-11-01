@@ -21,7 +21,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
@@ -299,6 +298,60 @@ public class CaveEventHooks
 					}
 				}
 			}
+
+			if (CaveworldAPI.isEntityInCaveworld(mc.thePlayer) && mc.currentScreen == null && (mc.thePlayer.capabilities.isCreativeMode || mc.gameSettings.advancedItemTooltips || CaveUtils.isItemPickaxe(current)))
+			{
+				String str = Integer.toString(CaveworldAPI.getMiningPoint(mc.thePlayer));
+				int x = resolution.getScaledWidth() - 20;
+				int y;
+				boolean left = false;
+				int type = Config.miningPointRenderType;
+
+				if (type == 2 || type == 3)
+				{
+					x = 5;
+					left = true;
+				}
+
+				if (type == 1 || type == 3)
+				{
+					y = resolution.getScaledHeight() - 21;
+				}
+				else
+				{
+					y = 5;
+				}
+
+				ItemStack icon;
+
+				if (CaveUtils.isItemPickaxe(current))
+				{
+					icon = current;
+				}
+				else
+				{
+					icon = new ItemStack(Items.stone_pickaxe);
+				}
+
+				GL11.glPushMatrix();
+				CaveUtils.renderItemStack(mc, icon, x, y, true, false, null);
+				GL11.glDisable(GL11.GL_LIGHTING);
+				GL11.glDisable(GL11.GL_DEPTH_TEST);
+				GL11.glDisable(GL11.GL_BLEND);
+
+				if (left)
+				{
+					mc.fontRenderer.drawStringWithShadow(str, x + 5, y + 9, 0xCECECE);
+				}
+				else
+				{
+					mc.fontRenderer.drawStringWithShadow(str, x + 17 - mc.fontRenderer.getStringWidth(str), y + 9, 0xCECECE);
+				}
+
+				GL11.glEnable(GL11.GL_LIGHTING);
+				GL11.glEnable(GL11.GL_DEPTH_TEST);
+				GL11.glPopMatrix();
+			}
 		}
 	}
 
@@ -321,10 +374,6 @@ public class CaveEventHooks
 				{
 					event.left.add("dim: Deep Caveworld");
 				}
-			}
-			else if (mc.gameSettings.advancedItemTooltips || CaveUtils.isItemPickaxe(player.getHeldItem()))
-			{
-				event.right.add(I18n.format("caveworld.mining.point") + ": " + CaveworldAPI.getMiningPoint(player));
 			}
 		}
 	}

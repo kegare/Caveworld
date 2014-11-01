@@ -22,7 +22,6 @@ import shift.mceconomy2.api.shop.IProductList;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.kegare.caveworld.core.Caveworld;
-import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.util.ArrayListExtended;
 
 import cpw.mods.fml.common.registry.GameData;
@@ -69,7 +68,7 @@ public class ShopProductManager implements IProductList
 		List<String> propOrder = Lists.newArrayList();
 
 		prop = MCEconomyPlugin.shopCfg.get(name, "item", "");
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(Config.selectItemEntryClass);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		if (!Strings.isNullOrEmpty(item)) prop.set(item);
 		propOrder.add(prop.getName());

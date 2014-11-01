@@ -30,11 +30,13 @@ import net.minecraft.world.gen.feature.WorldGenLakes;
 import net.minecraft.world.gen.feature.WorldGenLiquids;
 import net.minecraft.world.gen.feature.WorldGenVines;
 import net.minecraft.world.gen.feature.WorldGenerator;
+import net.minecraft.world.gen.structure.MapGenMineshaft;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
 import net.minecraftforge.event.terraingen.DecorateBiomeEvent.Decorate;
+import net.minecraftforge.event.terraingen.InitMapGenEvent;
 import net.minecraftforge.event.terraingen.OreGenEvent;
 import net.minecraftforge.event.terraingen.PopulateChunkEvent;
 import net.minecraftforge.event.terraingen.PopulateChunkEvent.Populate.EventType;
@@ -45,6 +47,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import com.bioxx.tfc.Chunkdata.ChunkData;
 import com.bioxx.tfc.Core.TFC_Core;
 import com.bioxx.tfc.WorldGen.DataLayer;
+import com.google.common.base.Strings;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.api.ICaveBiome;
@@ -59,9 +62,11 @@ public class ChunkProviderDeepCaveworld implements IChunkProvider
 {
 	private final World worldObj;
 	private final Random random;
+	private final boolean generateStructures;
 
 	private final MapGenBase caveGenerator = new MapGenDeepCaves();
 	private final MapGenBase underCaveGenerator = new MapGenUnderCaves();
+	private MapGenMineshaft mineshaftGenerator = new MapGenMineshaft();
 
 	private final WorldGenerator lakeWaterGen = new WorldGenLakes(Blocks.water);
 	private final WorldGenerator lakeLavaGen = new WorldGenLakes(Blocks.lava);
@@ -69,10 +74,15 @@ public class ChunkProviderDeepCaveworld implements IChunkProvider
 	private final WorldGenerator liquidLavaGen = new WorldGenLiquids(Blocks.flowing_lava);
 	private final WorldGenerator vinesGen = new WorldGenVines();
 
+	{
+		mineshaftGenerator = (MapGenMineshaft)TerrainGen.getModdedMapGen(mineshaftGenerator, InitMapGenEvent.EventType.MINESHAFT);
+	}
+
 	public ChunkProviderDeepCaveworld(World world)
 	{
 		this.worldObj = world;
 		this.random = new Random(world.getSeed());
+		this.generateStructures = world.getWorldInfo().isMapFeaturesEnabled();
 	}
 
 	@Override
@@ -99,6 +109,14 @@ public class ChunkProviderDeepCaveworld implements IChunkProvider
 		if (Config.generateUnderCaves)
 		{
 			underCaveGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
+		}
+
+		if (generateStructures)
+		{
+			if (Config.generateMineshaft)
+			{
+				mineshaftGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
+			}
 		}
 
 		int i;
@@ -197,6 +215,14 @@ public class ChunkProviderDeepCaveworld implements IChunkProvider
 		random.setSeed(chunkX * xSeed + chunkZ * zSeed ^ worldSeed);
 
 		MinecraftForge.EVENT_BUS.post(new PopulateChunkEvent.Pre(chunkProvider, worldObj, random, chunkX, chunkZ, false));
+
+		if (generateStructures)
+		{
+			if (Config.generateMineshaft)
+			{
+				mineshaftGenerator.generateStructuresInChunk(worldObj, random, chunkX, chunkZ);
+			}
+		}
 
 		int i, x, y, z;
 
@@ -455,7 +481,18 @@ public class ChunkProviderDeepCaveworld implements IChunkProvider
 	@Override
 	public ChunkPosition func_147416_a(World world, String name, int x, int y, int z)
 	{
-		return null;
+		if (Strings.isNullOrEmpty(name))
+		{
+			return null;
+		}
+
+		switch (name)
+		{
+			case "Mineshaft":
+				return mineshaftGenerator.func_151545_a(world, x, y, z);
+			default:
+				return null;
+		}
 	}
 
 	@Override
@@ -465,5 +502,14 @@ public class ChunkProviderDeepCaveworld implements IChunkProvider
 	}
 
 	@Override
-	public void recreateStructures(int chunkX, int chunkZ) {}
+	public void recreateStructures(int chunkX, int chunkZ)
+	{
+		if (generateStructures)
+		{
+			if (Config.generateMineshaft)
+			{
+				mineshaftGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, null);
+			}
+		}
+	}
 }

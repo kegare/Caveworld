@@ -101,6 +101,8 @@ public class Caveworld
 	@EventHandler
 	public void construct(FMLConstructionEvent event)
 	{
+		proxy.initializeConfigEntries();
+
 		CaveworldAPI.apiHandler = new CaveAPIHandler();
 		CaveworldAPI.biomeManager = new CaveBiomeManager();
 		CaveworldAPI.veinManager = new CaveVeinManager();
@@ -112,8 +114,6 @@ public class Caveworld
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event)
 	{
-		proxy.initializeConfigClasses();
-
 		Config.syncGeneralCfg();
 		Config.syncBlocksCfg();
 		Config.syncItemsCfg();

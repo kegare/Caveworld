@@ -14,9 +14,8 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.network.play.client.C07PacketPlayerDigging;
 import net.minecraftforge.client.MinecraftForgeClient;
 
+import com.kegare.caveworld.client.config.CycleIntegerEntry;
 import com.kegare.caveworld.client.config.SelectBiomeEntry;
-import com.kegare.caveworld.client.config.SelectBlockEntry;
-import com.kegare.caveworld.client.config.SelectItemEntry;
 import com.kegare.caveworld.client.renderer.RenderCaveman;
 import com.kegare.caveworld.client.renderer.RenderMiningPickaxe;
 import com.kegare.caveworld.client.renderer.RenderPortalCaveworld;
@@ -37,11 +36,10 @@ import cpw.mods.fml.relauncher.SideOnly;
 public class ClientProxy extends CommonProxy
 {
 	@Override
-	public void initializeConfigClasses()
+	public void initializeConfigEntries()
 	{
-		Config.selectBlockEntryClass = SelectBlockEntry.class;
-		Config.selectItemEntryClass = SelectItemEntry.class;
-		Config.selectBiomeEntryClass = SelectBiomeEntry.class;
+		Config.selectBiomes = SelectBiomeEntry.class;
+		Config.cycleInteger = CycleIntegerEntry.class;
 	}
 
 	@Override

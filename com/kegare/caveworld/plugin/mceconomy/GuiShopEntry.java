@@ -919,7 +919,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 
 			if (parent.detailInfo.isChecked())
 			{
-				CaveUtils.renderItemStack(mc, itemstack, width / 2 - 100, par3 + 1, true, null);
+				CaveUtils.renderItemStack(mc, itemstack, width / 2 - 100, par3 + 1, false, true, null);
 
 				name = Integer.toString(entry.getcost());
 				parent.drawString(parent.fontRendererObj, name, width / 2 + 107 - parent.fontRendererObj.getStringWidth(name), par3 + 8, 0xD0D0D0);

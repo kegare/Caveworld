@@ -512,7 +512,7 @@ public class CaveUtils
 	}
 
 	@SideOnly(Side.CLIENT)
-	public static boolean renderItemStack(Minecraft mc, ItemStack itemstack, int x, int y, boolean overlay, String txt)
+	public static boolean renderItemStack(Minecraft mc, ItemStack itemstack, int x, int y, boolean raw, boolean overlay, String txt)
 	{
 		GL11.glColor3f(1.0F, 1.0F, 1.0F);
 
@@ -543,11 +543,14 @@ public class CaveUtils
 			RenderItem itemRender = RenderItem.getInstance();
 
 			itemRender.zLevel += 100.0F;
-			boolean rendered;
+			boolean rendered = false;
 
 			try
 			{
-				rendered = ForgeHooksClient.renderInventoryItem(RenderBlocks.getInstance(), mc.getTextureManager(), itemstack, itemRender.renderWithColor, itemRender.zLevel, x, y);
+				if (!raw)
+				{
+					rendered = ForgeHooksClient.renderInventoryItem(RenderBlocks.getInstance(), mc.getTextureManager(), itemstack, itemRender.renderWithColor, itemRender.zLevel, x, y);
+				}
 			}
 			catch (Throwable e)
 			{

@@ -23,6 +23,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -47,10 +48,7 @@ import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
 import cpw.mods.fml.client.config.HoverChecker;
 import cpw.mods.fml.common.registry.GameData;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
-@SideOnly(Side.CLIENT)
 public class GuiSelectBlock extends GuiScreen
 {
 	public static final ArrayListExtended<Block> raws = new ArrayListExtended().addAllObject(GameData.getBlockRegistry());
@@ -342,33 +340,45 @@ public class GuiSelectBlock extends GuiScreen
 
 			for (Block block : raws)
 			{
-				list.clear();
-				block.getSubBlocks(Item.getItemFromBlock(block), block.getCreativeTabToDisplayOn(), list);
-
-				if (list.isEmpty())
+				try
 				{
-					if (!block.hasTileEntity(0))
+					list.clear();
+
+					CreativeTabs tab = block.getCreativeTabToDisplayOn();
+
+					if (tab == null)
 					{
-						blocks.addIfAbsent(new BlockEntry(block, 0));
+						tab = CreativeTabs.tabAllSearch;
 					}
-				}
-				else for (Object obj : list)
-				{
-					ItemStack itemstack = (ItemStack)obj;
 
-					if (itemstack != null && itemstack.getItem() != null)
+					block.getSubBlocks(Item.getItemFromBlock(block), tab, list);
+
+					if (list.isEmpty())
 					{
-						Block sub = Block.getBlockFromItem(itemstack.getItem());
-						int meta = itemstack.getItemDamage();
-
-						if (meta < 0 || meta >= 16 || sub == Blocks.air || sub.hasTileEntity(meta))
+						if (!block.hasTileEntity(0))
 						{
-							continue;
+							blocks.addIfAbsent(new BlockEntry(block, 0));
 						}
+					}
+					else for (Object obj : list)
+					{
+						ItemStack itemstack = (ItemStack)obj;
 
-						blocks.addIfAbsent(new BlockEntry(sub, meta));
+						if (itemstack != null && itemstack.getItem() != null)
+						{
+							Block sub = Block.getBlockFromItem(itemstack.getItem());
+							int meta = itemstack.getItemDamage();
+
+							if (meta < 0 || meta >= 16 || sub == Blocks.air || sub.hasTileEntity(meta))
+							{
+								continue;
+							}
+
+							blocks.addIfAbsent(new BlockEntry(sub, meta));
+						}
 					}
 				}
+				catch (Throwable e) {}
 			}
 		}
 
@@ -507,7 +517,7 @@ public class GuiSelectBlock extends GuiScreen
 
 			if (parent.detailInfo.isChecked() && itemstack.getItem() != null)
 			{
-				CaveUtils.renderItemStack(mc, itemstack, width / 2 - 100, par3 - 1, false, null);
+				CaveUtils.renderItemStack(mc, itemstack, width / 2 - 100, par3 - 1, false, false, null);
 			}
 		}
 

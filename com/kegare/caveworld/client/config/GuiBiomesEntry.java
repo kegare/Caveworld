@@ -915,14 +915,14 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 
 				if (Item.getItemFromBlock(block.getBlock()) != null)
 				{
-					CaveUtils.renderItemStack(mc, new ItemStack(block.getBlock(), 1, block.getMetadata()), width / 2 - 100, par3 + 1, true, Integer.toString(entry.getBiome().biomeID));
+					CaveUtils.renderItemStack(mc, new ItemStack(block.getBlock(), 1, block.getMetadata()), width / 2 - 100, par3 + 1, false, true, Integer.toString(entry.getBiome().biomeID));
 				}
 
 				block = entry.getTopBlock();
 
 				if (Item.getItemFromBlock(block.getBlock()) != null)
 				{
-					CaveUtils.renderItemStack(mc, new ItemStack(block.getBlock(), entry.getGenWeight(), block.getMetadata()), width / 2 + 90, par3 + 1, true, null);
+					CaveUtils.renderItemStack(mc, new ItemStack(block.getBlock(), entry.getGenWeight(), block.getMetadata()), width / 2 + 90, par3 + 1, false, true, null);
 				}
 			}
 		}

@@ -144,7 +144,7 @@ public class GuiRegeneration extends GuiScreen
 		drawGradientRect(0, 0, width, height, Integer.MIN_VALUE, Integer.MAX_VALUE);
 
 		GL11.glPushMatrix();
-		GL11.glScalef(1.5F, 1.5F, 1.5F);
+		GL11.glScalef(1.5F, 1.5F, 1.0F);
 		drawCenteredString(fontRendererObj, I18n.format("caveworld.regenerate.gui.title"), width / 3, 30, 0xFFFFFF);
 		GL11.glPopMatrix();
 

@@ -24,6 +24,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -293,45 +294,57 @@ public class GuiSelectBreakable extends GuiScreen
 
 			for (Block block : GuiSelectBlock.raws)
 			{
-				Item item = Item.getItemFromBlock(block);
-
-				if (item == null)
+				try
 				{
-					continue;
-				}
+					Item item = Item.getItemFromBlock(block);
 
-				list.clear();
-				block.getSubBlocks(item, block.getCreativeTabToDisplayOn(), list);
-
-				if (list.isEmpty())
-				{
-					if (Strings.nullToEmpty(block.getHarvestTool(0)).equalsIgnoreCase("pickaxe") || CaveItems.mining_pickaxe.func_150897_b(block) ||
-						block instanceof BlockOre || block instanceof BlockRedstoneOre)
+					if (item == null)
 					{
-						blocks.addIfAbsent(new BlockEntry(block, 0));
+						continue;
 					}
-				}
-				else for (Object obj : list)
-				{
-					ItemStack itemstack = (ItemStack)obj;
 
-					if (itemstack != null && itemstack.getItem() != null)
+					list.clear();
+
+					CreativeTabs tab = block.getCreativeTabToDisplayOn();
+
+					if (tab == null)
 					{
-						Block sub = Block.getBlockFromItem(itemstack.getItem());
-						int meta = itemstack.getItemDamage();
+						tab = CreativeTabs.tabAllSearch;
+					}
 
-						if (meta < 0 || meta >= 16 || sub == Blocks.air)
-						{
-							continue;
-						}
+					block.getSubBlocks(item, tab, list);
 
-						if (Strings.nullToEmpty(sub.getHarvestTool(meta)).equalsIgnoreCase("pickaxe") ||
-							CaveItems.mining_pickaxe.func_150897_b(sub) || block instanceof BlockOre || block instanceof BlockRedstoneOre)
+					if (list.isEmpty())
+					{
+						if (Strings.nullToEmpty(block.getHarvestTool(0)).equalsIgnoreCase("pickaxe") || CaveItems.mining_pickaxe.func_150897_b(block) ||
+							block instanceof BlockOre || block instanceof BlockRedstoneOre)
 						{
-							blocks.addIfAbsent(new BlockEntry(sub, meta));
+							blocks.addIfAbsent(new BlockEntry(block, 0));
 						}
 					}
+					else for (Object obj : list)
+					{
+						ItemStack itemstack = (ItemStack)obj;
+
+						if (itemstack != null && itemstack.getItem() != null)
+						{
+							Block sub = Block.getBlockFromItem(itemstack.getItem());
+							int meta = itemstack.getItemDamage();
+
+							if (meta < 0 || meta >= 16 || sub == Blocks.air)
+							{
+								continue;
+							}
+
+							if (Strings.nullToEmpty(sub.getHarvestTool(meta)).equalsIgnoreCase("pickaxe") ||
+								CaveItems.mining_pickaxe.func_150897_b(sub) || block instanceof BlockOre || block instanceof BlockRedstoneOre)
+							{
+								blocks.addIfAbsent(new BlockEntry(sub, meta));
+							}
+						}
+					}
 				}
+				catch (Throwable e) {}
 			}
 		}
 
@@ -456,7 +469,7 @@ public class GuiSelectBreakable extends GuiScreen
 
 			if (parent.detailInfo.isChecked() && itemstack.getItem() != null)
 			{
-				CaveUtils.renderItemStack(mc, itemstack, width / 2 - 100, par3 - 1, false, null);
+				CaveUtils.renderItemStack(mc, itemstack, width / 2 - 100, par3 - 1, false, false, null);
 			}
 		}
 

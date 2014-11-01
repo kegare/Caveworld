@@ -71,7 +71,7 @@ public class MiningPickaxeRecipeHandler extends ShapedRecipeHandler
 						}
 					}
 
-					recipes.add(new CachedShapedRecipe(3, 3, items, RecipeMiningPickaxe.instance.getRecipeOutput()));
+					recipes.add(new CachedShapedRecipe(3, 3, items, (ItemStack)items[9]));
 				}
 			}
 		}

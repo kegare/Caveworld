@@ -47,7 +47,14 @@ public final class ThaumcraftPlugin
 
 		ThaumcraftApi.registerEntityTag("Caveman", new AspectList().add(Aspect.LIFE, 3).add(Aspect.VOID, 3).add(Aspect.ELDRITCH, 2));
 
-		ThaumcraftApi.addCrucibleRecipe("CAVENIUM", new ItemStack(CaveItems.cavenium, 1, 1), new ItemStack(CaveItems.cavenium, 1, 0), new AspectList().add(Aspect.MAGIC, 4).add(Aspect.EXCHANGE, 4).add(Aspect.CRYSTAL, 4));
-		ThaumcraftApi.addCrucibleRecipe("CAVENIUM", new ItemStack(CaveBlocks.cavenium_ore, 1, 3), new ItemStack(CaveBlocks.cavenium_ore, 1, 2), new AspectList().add(Aspect.MAGIC, 32).add(Aspect.EXCHANGE, 32).add(Aspect.CRYSTAL, 32));
+		ItemStack key = new ItemStack(CaveItems.cavenium, 1, 0);
+		ItemStack result = new ItemStack(CaveItems.cavenium, 1, 1);
+		AspectList aspects = new AspectList().add(Aspect.MAGIC, 4).add(Aspect.EXCHANGE, 4).add(Aspect.CRYSTAL, 4);
+		ThaumcraftApi.addCrucibleRecipe("REFINED_CAVENIUM", result.copy(), key.copy(), aspects.copy());
+
+		key = new ItemStack(CaveBlocks.cavenium_ore, 1, 2);
+		result = new ItemStack(CaveBlocks.cavenium_ore, 1, 3);
+		aspects = new AspectList().add(Aspect.MAGIC, 32).add(Aspect.EXCHANGE, 32).add(Aspect.CRYSTAL, 32);
+		ThaumcraftApi.addCrucibleRecipe("REFINED_CAVENIUM_BLOCK", result.copy(), key.copy(), aspects.copy());
 	}
 }

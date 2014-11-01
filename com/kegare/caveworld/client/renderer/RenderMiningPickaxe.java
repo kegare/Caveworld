@@ -62,8 +62,8 @@ public class RenderMiningPickaxe implements IItemRenderer
 		if (base != CaveItems.mining_pickaxe)
 		{
 			GL11.glPushMatrix();
-			GL11.glTranslatef(-9.0F, 14.0F, -9.0F);
-			GL11.glScalef(0.6F, 0.6F, 0.6F);
+			GL11.glTranslatef(-9.0F, 14.0F, -1.0F);
+			GL11.glScalef(0.6F, 0.6F, 1.0F);
 			GL11.glRotatef(-90.0F, 0.0F, 0.0F, 1.0F);
 			itemRender.renderItemIntoGUI(renderer, mc.getTextureManager(), new ItemStack(base), 0, item.isItemDamaged() ? 13 : 16, true);
 			GL11.glPopMatrix();
@@ -77,8 +77,8 @@ public class RenderMiningPickaxe implements IItemRenderer
 			GL11.glDisable(GL11.GL_DEPTH_TEST);
 			GL11.glDisable(GL11.GL_BLEND);
 			GL11.glPushMatrix();
-			GL11.glTranslatef(5.0F, 5.0F, 5.0F);
-			GL11.glScalef(0.8F, 0.8F, 0.8F);
+			GL11.glTranslatef(5.0F, 5.0F, 1.0F);
+			GL11.glScalef(0.8F, 0.8F, 1.0F);
 			renderer.drawStringWithShadow(refined, 16 - renderer.getStringWidth(refined) - 2, item.isItemDamaged() ? 3 : 6, 0xEEEEEE);
 			GL11.glPopMatrix();
 			GL11.glEnable(GL11.GL_LIGHTING);

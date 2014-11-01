@@ -99,7 +99,7 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 	@Override
 	public void setBlockBoundsBasedOnState(IBlockAccess world, int x, int y, int z)
 	{
-		int metadata = func_149999_b(world.getBlockMetadata(x, y, z));
+		int metadata = world.getBlockMetadata(x, y, z);
 
 		if (metadata == 0)
 		{
@@ -181,7 +181,7 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 	@Override
 	public void onNeighborBlockChange(World world, int x, int y, int z, Block block)
 	{
-		int metadata = func_149999_b(world.getBlockMetadata(x, y, z));
+		int metadata = world.getBlockMetadata(x, y, z);
 
 		if (metadata == 1 || metadata == 2)
 		{
@@ -226,7 +226,7 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 
 		if (world.getBlock(x, y, z) == this)
 		{
-			metadata = func_149999_b(world.getBlockMetadata(x, y, z));
+			metadata = world.getBlockMetadata(x, y, z);
 
 			if (metadata == 0)
 			{

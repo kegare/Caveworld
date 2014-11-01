@@ -15,10 +15,7 @@ import cpw.mods.fml.client.config.GuiConfig;
 import cpw.mods.fml.client.config.GuiConfigEntries;
 import cpw.mods.fml.client.config.GuiConfigEntries.ArrayEntry;
 import cpw.mods.fml.client.config.IConfigElement;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
-@SideOnly(Side.CLIENT)
 public class SelectBiomeEntry extends ArrayEntry
 {
 	public SelectBiomeEntry(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement configElement)

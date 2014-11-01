@@ -45,6 +45,7 @@ import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Version;
 
+import cpw.mods.fml.client.config.GuiConfigEntries.IConfigEntry;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.registry.EntityRegistry;
@@ -66,6 +67,7 @@ public class Config
 	public static boolean versionNotify;
 	public static boolean veinsAutoRegister;
 	public static boolean deathLoseMiningPoint;
+	public static int miningPointRenderType;
 
 	public static boolean portalCraftRecipe;
 	public static boolean mossStoneCraftRecipe;
@@ -106,12 +108,11 @@ public class Config
 	public static boolean generateAnimalDungeons;
 	public static boolean decorateVines;
 
+	public static Class<? extends IConfigEntry> selectBiomes;
+	public static Class<? extends IConfigEntry> cycleInteger;
+
 	public static final int RENDER_TYPE_PORTAL = Caveworld.proxy.getUniqueRenderType();
 	public static final int RENDER_TYPE_CHEST = Caveworld.proxy.getUniqueRenderType();
-
-	public static Class selectBlockEntryClass;
-	public static Class selectItemEntryClass;
-	public static Class selectBiomeEntryClass;
 
 	public static File getConfigDir()
 	{
@@ -203,6 +204,31 @@ public class Config
 		prop.comment += "Note: If multiplayer, server-side only.";
 		propOrder.add(prop.getName());
 		deathLoseMiningPoint = prop.getBoolean(deathLoseMiningPoint);
+
+		if (side.isClient())
+		{
+			prop = generalCfg.get(category, "miningPointRenderType", 0);
+			prop.setMinValue(0).setMaxValue(3).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(cycleInteger);
+			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+			prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+
+			for (int i = Integer.parseInt(prop.getMinValue()); i <= Integer.parseInt(prop.getMaxValue()); ++i)
+			{
+				prop.comment += Configuration.NEW_LINE;
+
+				if (i == Integer.parseInt(prop.getMaxValue()))
+				{
+					prop.comment += i + ": " + StatCollector.translateToLocal(prop.getLanguageKey() + "." + i);
+				}
+				else
+				{
+					prop.comment += i + ": " + StatCollector.translateToLocal(prop.getLanguageKey() + "." + i) + ", ";
+				}
+			}
+
+			propOrder.add(prop.getName());
+			miningPointRenderType = MathHelper.clamp_int(prop.getInt(miningPointRenderType), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		}
 
 		generalCfg.setCategoryPropertyOrder(category, propOrder);
 
@@ -368,14 +394,29 @@ public class Config
 		propOrder.add(prop.getName());
 		cavemanSpawnInChunks = MathHelper.clamp_int(prop.getInt(cavemanSpawnInChunks), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 		prop = entitiesCfg.get(category, "spawnBiomes", new int[0]);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName()).setConfigEntryClass(selectBiomeEntryClass);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName()).setConfigEntryClass(selectBiomes);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		propOrder.add(prop.getName());
 		cavemanSpawnBiomes = prop.getIntList();
 		prop = entitiesCfg.get(category, "creatureType", 0);
-		prop.setMinValue(0).setMaxValue(1).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());;
+		prop.setMinValue(0).setMaxValue(1).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName()).setConfigEntryClass(cycleInteger);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-		prop.comment += " [default: " + prop.getDefault() + "]";
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+
+		for (int i = Integer.parseInt(prop.getMinValue()); i <= Integer.parseInt(prop.getMaxValue()); ++i)
+		{
+			prop.comment += Configuration.NEW_LINE;
+
+			if (i == Integer.parseInt(prop.getMaxValue()))
+			{
+				prop.comment += i + ": " + StatCollector.translateToLocal(prop.getLanguageKey() + "." + i);
+			}
+			else
+			{
+				prop.comment += i + ": " + StatCollector.translateToLocal(prop.getLanguageKey() + "." + i) + ", ";
+			}
+		}
+
 		propOrder.add(prop.getName());
 		cavemanCreatureType = MathHelper.clamp_int(prop.getInt(cavemanCreatureType), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 
@@ -616,7 +657,7 @@ public class Config
 			propOrder.add(prop.getName());
 			weight = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 			prop = biomesCfg.get(name, "terrainBlock", terrainBlock);
-			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(selectBlockEntryClass);
+			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 			prop.comment += " [default: " + prop.getDefault() + "]";
 			propOrder.add(prop.getName());
@@ -629,7 +670,7 @@ public class Config
 			propOrder.add(prop.getName());
 			terrainMeta = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 			prop = biomesCfg.get(name, "topBlock", topBlock);
-			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(selectBlockEntryClass);
+			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 			prop.comment += " [default: " + prop.getDefault() + "]";
 			propOrder.add(prop.getName());

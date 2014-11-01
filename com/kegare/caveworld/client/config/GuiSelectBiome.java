@@ -547,7 +547,7 @@ public class GuiSelectBiome extends GuiScreen
 
 					if (block != null && Item.getItemFromBlock(block) != null)
 					{
-						CaveUtils.renderItemStack(mc, new ItemStack(block, 1, meta), width / 2 + 70, par3 - 1, false, null);
+						CaveUtils.renderItemStack(mc, new ItemStack(block, 1, meta), width / 2 + 70, par3 - 1, false, false, null);
 					}
 
 					block = biome.fillerBlock;
@@ -555,7 +555,7 @@ public class GuiSelectBiome extends GuiScreen
 
 					if (block != null && Item.getItemFromBlock(block) != null)
 					{
-						CaveUtils.renderItemStack(mc, new ItemStack(block, 1, meta), width / 2 + 90, par3 - 1, false, null);
+						CaveUtils.renderItemStack(mc, new ItemStack(block, 1, meta), width / 2 + 90, par3 - 1, false, false, null);
 					}
 				}
 			}

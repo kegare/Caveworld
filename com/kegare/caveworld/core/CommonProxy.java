@@ -28,7 +28,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 
 public class CommonProxy
 {
-	public void initializeConfigClasses() {}
+	public void initializeConfigEntries() {}
 
 	public void registerRenderers() {}
 
