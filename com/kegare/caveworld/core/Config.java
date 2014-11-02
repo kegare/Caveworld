@@ -68,9 +68,12 @@ public class Config
 	public static boolean veinsAutoRegister;
 	public static boolean deathLoseMiningPoint;
 	public static int miningPointRenderType;
+	public static String[] miningPointValidItems;
+	public static String[] miningPointValidItemsDefault;
 
 	public static boolean portalCraftRecipe;
 	public static boolean mossStoneCraftRecipe;
+	public static boolean refinedCaveniumCraftRecipe;
 
 	public static boolean hardcore;
 	public static boolean caveborn;
@@ -108,6 +111,7 @@ public class Config
 	public static boolean generateAnimalDungeons;
 	public static boolean decorateVines;
 
+	public static Class<? extends IConfigEntry> selectItems;
 	public static Class<? extends IConfigEntry> selectBiomes;
 	public static Class<? extends IConfigEntry> cycleInteger;
 
@@ -230,6 +234,12 @@ public class Config
 			miningPointRenderType = MathHelper.clamp_int(prop.getInt(miningPointRenderType), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 		}
 
+		prop = generalCfg.get(category, "miningPointValidItems", miningPointValidItemsDefault == null ? new String[0] : miningPointValidItemsDefault);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(selectItems);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		propOrder.add(prop.getName());
+		miningPointValidItems = prop.getStringList();
+
 		generalCfg.setCategoryPropertyOrder(category, propOrder);
 
 		category = "recipes";
@@ -245,6 +255,12 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		mossStoneCraftRecipe = prop.getBoolean(mossStoneCraftRecipe);
+		prop = generalCfg.get(category, "refinedCaveniumCraftRecipe", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		refinedCaveniumCraftRecipe = prop.getBoolean(refinedCaveniumCraftRecipe);
 
 		generalCfg.setCategoryPropertyOrder(category, propOrder);
 		generalCfg.setCategoryRequiresMcRestart(category, true);

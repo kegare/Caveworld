@@ -16,6 +16,7 @@ import net.minecraftforge.client.MinecraftForgeClient;
 
 import com.kegare.caveworld.client.config.CycleIntegerEntry;
 import com.kegare.caveworld.client.config.SelectBiomeEntry;
+import com.kegare.caveworld.client.config.SelectItemEntry;
 import com.kegare.caveworld.client.renderer.RenderCaveman;
 import com.kegare.caveworld.client.renderer.RenderMiningPickaxe;
 import com.kegare.caveworld.client.renderer.RenderPortalCaveworld;
@@ -38,6 +39,7 @@ public class ClientProxy extends CommonProxy
 	@Override
 	public void initializeConfigEntries()
 	{
+		Config.selectItems = SelectItemEntry.class;
 		Config.selectBiomes = SelectBiomeEntry.class;
 		Config.cycleInteger = CycleIntegerEntry.class;
 	}

@@ -67,4 +67,10 @@ public class ItemEntry
 
 		return Objects.hashCode(GameData.getItemRegistry().getNameForObject(item), damage);
 	}
+
+	@Override
+	public String toString()
+	{
+		return GameData.getItemRegistry().getNameForObject(item) + "@" + damage;
+	}
 }

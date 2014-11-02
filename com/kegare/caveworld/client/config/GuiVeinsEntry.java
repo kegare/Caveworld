@@ -1060,6 +1060,10 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 				{
 					filterTextField.setFocused(true);
 				}
+				else if (isCtrlKeyDown() && code == Keyboard.KEY_A)
+				{
+					veinList.selected.addAll(veinList.contents);
+				}
 				else if (code == Keyboard.KEY_DELETE && veinList.selected != null)
 				{
 					actionPerformed(removeButton);

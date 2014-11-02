@@ -17,17 +17,21 @@ import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
+import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 
 import org.apache.commons.lang3.math.NumberUtils;
 import org.lwjgl.input.Keyboard;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
@@ -43,6 +47,7 @@ import com.kegare.caveworld.util.PanoramaPaths;
 
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
+import cpw.mods.fml.client.config.GuiConfigEntries.ArrayEntry;
 import cpw.mods.fml.client.config.HoverChecker;
 import cpw.mods.fml.common.registry.GameData;
 
@@ -63,6 +68,9 @@ public class GuiSelectItem extends GuiScreen
 	protected final GuiScreen parentScreen;
 	protected GuiTextField parentNameField;
 	protected GuiTextField parentDamageField;
+	protected ArrayEntry parentElement;
+
+	protected boolean hideBlocks;
 
 	protected ItemList itemList;
 
@@ -71,6 +79,7 @@ public class GuiSelectItem extends GuiScreen
 	protected GuiCheckBox instantFilter;
 	protected GuiTextField filterTextField;
 
+	protected HoverChecker selectedHoverChecker;
 	protected HoverChecker detailHoverChecker;
 	protected HoverChecker instantHoverChecker;
 
@@ -84,6 +93,19 @@ public class GuiSelectItem extends GuiScreen
 		this(parent);
 		this.parentNameField = nameField;
 		this.parentDamageField = damageField;
+	}
+
+	public GuiSelectItem(GuiScreen parent, ArrayEntry entry)
+	{
+		this(parent);
+		this.parentElement = entry;
+	}
+
+	public GuiSelectItem setHideBlocks(boolean hide)
+	{
+		hideBlocks = hide;
+
+		return this;
 	}
 
 	@Override
@@ -134,6 +156,7 @@ public class GuiSelectItem extends GuiScreen
 		filterTextField.xPosition = width / 2 - filterTextField.width - 5;
 		filterTextField.yPosition = height - filterTextField.height - 6;
 
+		selectedHoverChecker = new HoverChecker(0, 20, 0, 100, 800);
 		detailHoverChecker = new HoverChecker(detailInfo, 800);
 		instantHoverChecker = new HoverChecker(instantFilter, 800);
 	}
@@ -157,6 +180,11 @@ public class GuiSelectItem extends GuiScreen
 						{
 							parentDamageField.setText("");
 						}
+
+						if (parentElement != null)
+						{
+							parentElement.setListFromChildScreen(new Object[0]);
+						}
 					}
 					else
 					{
@@ -175,6 +203,29 @@ public class GuiSelectItem extends GuiScreen
 						if (parentDamageField != null)
 						{
 							parentDamageField.setText(Integer.toString(item.damage));
+						}
+
+						if (parentElement != null)
+						{
+							List<String> result = Lists.newArrayList(Collections2.transform(itemList.selected, new Function<ItemEntry, String>()
+							{
+								@Override
+								public String apply(ItemEntry entry)
+								{
+									String str = entry.toString();
+
+									if (str.endsWith("@0"))
+									{
+										str = str.substring(0, str.lastIndexOf("@"));
+									}
+
+									return str;
+								}
+							}));
+
+							Collections.sort(result);
+
+							parentElement.setListFromChildScreen(result.toArray());
 						}
 					}
 
@@ -209,9 +260,10 @@ public class GuiSelectItem extends GuiScreen
 	{
 		itemList.drawScreen(mouseX, mouseY, ticks);
 
+		boolean single = parentNameField != null || parentDamageField != null;
 		String name = null;
 
-		if (parentNameField != null || parentDamageField != null)
+		if (single)
 		{
 			name = I18n.format(Caveworld.CONFIG_LANG + "select.item");
 		}
@@ -236,6 +288,46 @@ public class GuiSelectItem extends GuiScreen
 		else if (instantHoverChecker.checkHover(mouseX, mouseY))
 		{
 			func_146283_a(fontRendererObj.listFormattedStringToWidth(I18n.format(Caveworld.CONFIG_LANG + "instant.hover"), 300), mouseX, mouseY);
+		}
+
+		if (!single && !itemList.selected.isEmpty())
+		{
+			if (mouseX <= 100 && mouseY <= 20)
+			{
+				drawString(fontRendererObj, I18n.format(Caveworld.CONFIG_LANG + "select.item.selected", itemList.selected.size()), 5, 5, 0xEFEFEF);
+			}
+
+			if (selectedHoverChecker.checkHover(mouseX, mouseY))
+			{
+				List<String> items = Lists.newArrayList();
+
+				for (ItemEntry entry : itemList.selected)
+				{
+					try
+					{
+						ItemStack itemstack = entry.getItemStack();
+
+						switch (itemList.nameType)
+						{
+							case 1:
+								name = GameData.getItemRegistry().getNameForObject(entry.item) + ", " + entry.damage;
+								break;
+							case 2:
+								name = itemstack.getUnlocalizedName();
+								name = name.substring(name.indexOf(".") + 1);
+								break;
+							default:
+								name = itemstack.getDisplayName();
+								break;
+						}
+
+						items.add(name);
+					}
+					catch (Throwable e) {}
+				}
+
+				func_146283_a(items, mouseX, mouseY);
+			}
 		}
 	}
 
@@ -322,6 +414,19 @@ public class GuiSelectItem extends GuiScreen
 			{
 				filterTextField.setFocused(true);
 			}
+			else if (isCtrlKeyDown() && code == Keyboard.KEY_A)
+			{
+				itemList.selected.addAll(itemList.contents);
+			}
+		}
+	}
+
+	@Override
+	public void onGuiClosed()
+	{
+		if (hideBlocks)
+		{
+			ItemList.initializeItems();
 		}
 	}
 
@@ -333,6 +438,13 @@ public class GuiSelectItem extends GuiScreen
 
 		static
 		{
+			initializeItems();
+		}
+
+		private static void initializeItems()
+		{
+			items.clear();
+
 			List list = Lists.newArrayList();
 
 			for (Item item : raws)
@@ -372,6 +484,25 @@ public class GuiSelectItem extends GuiScreen
 				@Override
 				protected void compute()
 				{
+					if (parent.hideBlocks)
+					{
+						Set<ItemEntry> hidden = Sets.newHashSet();
+
+						for (ItemEntry item : items)
+						{
+							if (item.item instanceof ItemBlock ||Block.getBlockFromItem(item.item) != Blocks.air)
+							{
+								hidden.add(item);
+							}
+						}
+
+						for (ItemEntry item : hidden)
+						{
+							items.remove(item);
+							contents.remove(item);
+						}
+					}
+
 					if (parent.parentNameField != null)
 					{
 						int damage = 0;
@@ -384,6 +515,27 @@ public class GuiSelectItem extends GuiScreen
 						for (ItemEntry entry : items)
 						{
 							if (GameData.getItemRegistry().getNameForObject(entry.item).equals(parent.parentNameField.getText()) && entry.damage == damage)
+							{
+								selected.add(entry);
+							}
+						}
+					}
+
+					if (parent.parentElement != null)
+					{
+						for (Object obj : parent.parentElement.getCurrentValues())
+						{
+							String str = String.valueOf(obj);
+
+							if (!str.contains("@"))
+							{
+								str += "@0";
+							}
+
+							String[] args = str.split("@");
+							ItemEntry entry = new ItemEntry(args[0], NumberUtils.toInt(args[1]));
+
+							if (entry.item != null)
 							{
 								selected.add(entry);
 							}

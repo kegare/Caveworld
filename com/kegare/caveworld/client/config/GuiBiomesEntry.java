@@ -827,6 +827,10 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 				{
 					filterTextField.setFocused(true);
 				}
+				else if (isCtrlKeyDown() && code == Keyboard.KEY_A)
+				{
+					biomeList.selected.addAll(biomeList.contents);
+				}
 				else if (code == Keyboard.KEY_DELETE && biomeList.selected != null)
 				{
 					actionPerformed(removeButton);

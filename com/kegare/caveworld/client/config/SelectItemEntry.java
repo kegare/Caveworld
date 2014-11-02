@@ -17,9 +17,9 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class SelectBiomeEntry extends ArrayEntry
+public class SelectItemEntry extends ArrayEntry
 {
-	public SelectBiomeEntry(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement configElement)
+	public SelectItemEntry(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement configElement)
 	{
 		super(owningScreen, owningEntryList, configElement);
 	}
@@ -35,7 +35,7 @@ public class SelectBiomeEntry extends ArrayEntry
 		{
 			btnValue.func_146113_a(mc.getSoundHandler());
 
-			mc.displayGuiScreen(new GuiSelectBiome(owningScreen, this));
+			mc.displayGuiScreen(new GuiSelectItem(owningScreen, this).setHideBlocks(true));
 		}
 	}
 }

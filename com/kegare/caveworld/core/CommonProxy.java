@@ -76,6 +76,14 @@ public class CommonProxy
 				"CCC", "CCC", "CCC",
 				'C', new ItemStack(CaveItems.cavenium, 1, 1)
 			);
+
+			if (Config.refinedCaveniumCraftRecipe)
+			{
+				addShapelessRecipe(new ItemStack(CaveItems.cavenium, 1, 1),
+					new ItemStack(CaveItems.cavenium, 1, 0),
+					new ItemStack(Items.dye, 1, 7), Items.quartz, Items.glowstone_dust
+				);
+			}
 		}
 
 		if (Config.pickaxeMining)

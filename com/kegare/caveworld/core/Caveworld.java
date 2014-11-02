@@ -13,17 +13,24 @@ import static com.kegare.caveworld.core.Caveworld.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
 import net.minecraft.block.Block;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.common.config.Property;
 
 import org.apache.logging.log4j.Level;
 
+import com.google.common.collect.Lists;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.entity.EntityCaveman;
@@ -47,6 +54,7 @@ import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.plugin.miningmod.MiningmodPlugin;
 import com.kegare.caveworld.plugin.more.MOrePlugin;
 import com.kegare.caveworld.plugin.nei.NEIPlugin;
+import com.kegare.caveworld.plugin.tconstruct.TinkersConstructPlugin;
 import com.kegare.caveworld.plugin.thaumcraft.ThaumcraftPlugin;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.CaveUtils;
@@ -169,7 +177,9 @@ public class Caveworld
 		Config.syncBiomesCfg();
 		Config.syncVeinsCfg();
 
-		new ForkJoinPool().execute(new RecursiveAction()
+		ForkJoinPool pool = new ForkJoinPool();
+
+		pool.execute(new RecursiveAction()
 		{
 			@Override
 			protected void compute()
@@ -216,7 +226,14 @@ public class Caveworld
 				CaveworldAPI.setMiningPointAmount("titaniumOre", 1);
 				CaveworldAPI.setMiningPointAmount("oreCavenium", 2);
 				CaveworldAPI.setMiningPointAmount("caveniumOre", 2);
+			}
+		});
 
+		pool.execute(new RecursiveAction()
+		{
+			@Override
+			protected void compute()
+			{
 				for (Object obj : GameData.getBlockRegistry().getKeys())
 				{
 					Block block = GameData.getBlockRegistry().getObject((String)obj);
@@ -228,6 +245,51 @@ public class Caveworld
 							ItemMiningPickaxe.defaultBreakables.add(CaveUtils.toStringHelper(block, i));
 						}
 					}
+				}
+			}
+		});
+
+		pool.execute(new RecursiveAction()
+		{
+			@Override
+			protected void compute()
+			{
+				List<String> items = Lists.newArrayList();
+
+				for (Object obj : GameData.getItemRegistry().getKeys())
+				{
+					String key = String.valueOf(obj);
+					Item item = GameData.getItemRegistry().getObject(key);
+
+					if (item != null)
+					{
+						if (CaveUtils.isItemPickaxe(new ItemStack(item)))
+						{
+							items.add(key);
+						}
+					}
+				}
+
+				Collections.sort(items);
+
+				Config.miningPointValidItemsDefault = new String[items.size()];
+
+				for (int i = 0; i < items.size(); ++i)
+				{
+					Config.miningPointValidItemsDefault[i] = items.get(i);
+				}
+
+				Property prop = Config.generalCfg.getCategory(Configuration.CATEGORY_GENERAL).get("miningPointValidItems");
+				prop.setDefaultValues(Config.miningPointValidItemsDefault);
+
+				if (prop.getStringList() == null || prop.getStringList().length <= 0)
+				{
+					prop.setToDefault();
+				}
+
+				if (Config.generalCfg.hasChanged())
+				{
+					Config.generalCfg.save();
 				}
 			}
 		});
@@ -326,6 +388,18 @@ public class Caveworld
 		catch (Throwable e)
 		{
 			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: AdvancedToolsPlugin");
+		}
+
+		try
+		{
+			if (TinkersConstructPlugin.enabled())
+			{
+				TinkersConstructPlugin.invoke();
+			}
+		}
+		catch (Throwable e)
+		{
+			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: TinkersConstructPlugin");
 		}
 	}
 

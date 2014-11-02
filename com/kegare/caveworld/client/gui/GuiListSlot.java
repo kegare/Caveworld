@@ -113,29 +113,23 @@ public abstract class GuiListSlot extends GuiSlot
 			{
 				GL11.glPushMatrix();
 
-				if (l == 1)
+				switch (l)
 				{
-					GL11.glRotatef(90.0F, 0.0F, 1.0F, 0.0F);
-				}
-
-				if (l == 2)
-				{
-					GL11.glRotatef(180.0F, 0.0F, 1.0F, 0.0F);
-				}
-
-				if (l == 3)
-				{
-					GL11.glRotatef(-90.0F, 0.0F, 1.0F, 0.0F);
-				}
-
-				if (l == 4)
-				{
-					GL11.glRotatef(90.0F, 1.0F, 0.0F, 0.0F);
-				}
-
-				if (l == 5)
-				{
-					GL11.glRotatef(-90.0F, 1.0F, 0.0F, 0.0F);
+					case 1:
+						GL11.glRotatef(90.0F, 0.0F, 1.0F, 0.0F);
+						break;
+					case 2:
+						GL11.glRotatef(180.0F, 0.0F, 1.0F, 0.0F);
+						break;
+					case 3:
+						GL11.glRotatef(-90.0F, 0.0F, 1.0F, 0.0F);
+						break;
+					case 4:
+						GL11.glRotatef(90.0F, 1.0F, 0.0F, 0.0F);
+						break;
+					case 5:
+						GL11.glRotatef(-90.0F, 1.0F, 0.0F, 0.0F);
+						break;
 				}
 
 				mc.getTextureManager().bindTexture(getPanoramaPaths().getPath(l));

@@ -21,7 +21,6 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -36,7 +35,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
@@ -54,24 +52,20 @@ import net.minecraftforge.common.BiomeDictionary.Type;
 import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.common.BiomeManager.BiomeEntry;
 import net.minecraftforge.common.BiomeManager.BiomeType;
-import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.common.config.ConfigCategory;
-import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.oredict.OreDictionary;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
-import com.google.common.base.Function;
 import com.google.common.base.Strings;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.core.Caveworld;
+import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -251,18 +245,6 @@ public class CaveUtils
 		}
 	};
 
-	public static List<ConfigCategory> getConfigCategories(final Configuration config)
-	{
-		return Lists.newArrayList(Collections2.transform(config.getCategoryNames(), new Function<String, ConfigCategory>()
-		{
-			@Override
-			public ConfigCategory apply(String category)
-			{
-				return config.getCategory(category);
-			}
-		}));
-	}
-
 	public static ModContainer getModContainer()
 	{
 		ModContainer mod = Loader.instance().getIndexedModList().get(Caveworld.MODID);
@@ -282,28 +264,40 @@ public class CaveUtils
 
 	public static boolean isItemPickaxe(ItemStack itemstack)
 	{
-		if (itemstack != null && itemstack.stackSize > 0)
+		if (itemstack != null && itemstack.getItem() != null && itemstack.stackSize > 0)
 		{
 			Item item = itemstack.getItem();
 
-			if (item != null && item.isItemTool(itemstack))
+			if (item instanceof ItemPickaxe)
 			{
-				if (item instanceof ItemPickaxe)
-				{
-					return true;
-				}
-				else if (item.getToolClasses(itemstack).contains("pickaxe"))
-				{
-					return true;
-				}
-				else if (ForgeHooks.isToolEffective(itemstack, Blocks.stone, 0))
-				{
-					return true;
-				}
+				return true;
+			}
+
+			if (item.getToolClasses(itemstack).contains("pickaxe"))
+			{
+				return true;
 			}
 		}
 
 		return false;
+	}
+
+	public static boolean isMiningPointValidItem(ItemStack itemstack)
+	{
+		if (itemstack != null && itemstack.getItem() != null && itemstack.stackSize > 0)
+		{
+			String name = GameData.getItemRegistry().getNameForObject(itemstack.getItem());
+			int damage = itemstack.isItemStackDamageable() ? 0 : itemstack.getItemDamage();
+
+			if (damage > 0)
+			{
+				name += "@" + damage;
+			}
+
+			return Config.miningPointValidItems != null && ArrayUtils.contains(Config.miningPointValidItems, name);
+		}
+
+		return true;
 	}
 
 	public static <T extends Entity> T createEntity(Class<T> clazz, World world)

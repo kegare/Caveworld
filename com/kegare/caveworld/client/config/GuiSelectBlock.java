@@ -74,6 +74,7 @@ public class GuiSelectBlock extends GuiScreen
 	protected GuiCheckBox instantFilter;
 	protected GuiTextField filterTextField;
 
+	protected HoverChecker selectedHoverChecker;
 	protected HoverChecker detailHoverChecker;
 	protected HoverChecker instantHoverChecker;
 
@@ -137,6 +138,7 @@ public class GuiSelectBlock extends GuiScreen
 		filterTextField.xPosition = width / 2 - filterTextField.width - 5;
 		filterTextField.yPosition = height - filterTextField.height - 6;
 
+		selectedHoverChecker = new HoverChecker(0, 20, 0, 100, 800);
 		detailHoverChecker = new HoverChecker(detailInfo, 800);
 		instantHoverChecker = new HoverChecker(instantFilter, 800);
 	}
@@ -212,9 +214,10 @@ public class GuiSelectBlock extends GuiScreen
 	{
 		blockList.drawScreen(mouseX, mouseY, ticks);
 
+		boolean single = parentNameField != null || parentMetaField != null;
 		String name = null;
 
-		if (parentNameField != null || parentMetaField != null)
+		if (single)
 		{
 			name = I18n.format(Caveworld.CONFIG_LANG + "select.block");
 		}
@@ -239,6 +242,46 @@ public class GuiSelectBlock extends GuiScreen
 		else if (instantHoverChecker.checkHover(mouseX, mouseY))
 		{
 			func_146283_a(fontRendererObj.listFormattedStringToWidth(I18n.format(Caveworld.CONFIG_LANG + "instant.hover"), 300), mouseX, mouseY);
+		}
+
+		if (!single && !blockList.selected.isEmpty())
+		{
+			if (mouseX <= 100 && mouseY <= 20)
+			{
+				drawString(fontRendererObj, I18n.format(Caveworld.CONFIG_LANG + "select.block.selected", blockList.selected.size()), 5, 5, 0xEFEFEF);
+			}
+
+			if (selectedHoverChecker.checkHover(mouseX, mouseY))
+			{
+				List<String> blocks = Lists.newArrayList();
+
+				for (BlockEntry entry : blockList.selected)
+				{
+					try
+					{
+						ItemStack itemstack = new ItemStack(entry.getBlock(), 1, entry.getMetadata());
+
+						switch (blockList.nameType)
+						{
+							case 1:
+								name = GameData.getBlockRegistry().getNameForObject(entry.getBlock()) + ", " + entry.getMetadata();
+								break;
+							case 2:
+								name = itemstack.getUnlocalizedName();
+								name = name.substring(name.indexOf(".") + 1);
+								break;
+							default:
+								name = itemstack.getDisplayName();
+								break;
+						}
+
+						blocks.add(name);
+					}
+					catch (Throwable e) {}
+				}
+
+				func_146283_a(blocks, mouseX, mouseY);
+			}
 		}
 	}
 
@@ -324,6 +367,10 @@ public class GuiSelectBlock extends GuiScreen
 			else if (code == Keyboard.KEY_F || code == mc.gameSettings.keyBindChat.getKeyCode())
 			{
 				filterTextField.setFocused(true);
+			}
+			else if (isCtrlKeyDown() && code == Keyboard.KEY_A)
+			{
+				blockList.selected.addAll(blockList.contents);
 			}
 		}
 	}

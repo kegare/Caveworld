@@ -191,7 +191,15 @@ public class ItemOreCompass extends Item
 	@Override
 	public IIcon getIcon(ItemStack itemstack, int pass)
 	{
-		if (nearestOrePos == null || nearestOrePos.isPlaced() || System.currentTimeMillis() - prevFindTime >= 1500L)
+		boolean first = false;
+
+		if (prevFindTime <= 0)
+		{
+			prevFindTime = System.currentTimeMillis();
+			first = true;
+		}
+
+		if (first || nearestOrePos != null && nearestOrePos.isPlaced() || System.currentTimeMillis() - prevFindTime >= 1500L)
 		{
 			findNearestOre();
 		}

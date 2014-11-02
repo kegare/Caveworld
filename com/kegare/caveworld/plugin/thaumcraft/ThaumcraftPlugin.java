@@ -14,6 +14,9 @@ import net.minecraftforge.oredict.OreDictionary;
 import thaumcraft.api.ThaumcraftApi;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectList;
+import thaumcraft.api.crafting.CrucibleRecipe;
+import thaumcraft.api.research.ResearchItem;
+import thaumcraft.api.research.ResearchPage;
 
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.item.CaveItems;
@@ -50,11 +53,15 @@ public final class ThaumcraftPlugin
 		ItemStack key = new ItemStack(CaveItems.cavenium, 1, 0);
 		ItemStack result = new ItemStack(CaveItems.cavenium, 1, 1);
 		AspectList aspects = new AspectList().add(Aspect.MAGIC, 4).add(Aspect.EXCHANGE, 4).add(Aspect.CRYSTAL, 4);
-		ThaumcraftApi.addCrucibleRecipe("REFINED_CAVENIUM", result.copy(), key.copy(), aspects.copy());
+		CrucibleRecipe recipe = ThaumcraftApi.addCrucibleRecipe("Refined Cavenium", result.copy(), key.copy(), aspects.copy());
+
+		new ResearchItem("Refined Cavenium", "ALCHEMY", aspects.copy(), -3, 3, 3, result.copy()).setSecondary().setPages(new ResearchPage(recipe)).registerResearchItem();
 
 		key = new ItemStack(CaveBlocks.cavenium_ore, 1, 2);
 		result = new ItemStack(CaveBlocks.cavenium_ore, 1, 3);
 		aspects = new AspectList().add(Aspect.MAGIC, 32).add(Aspect.EXCHANGE, 32).add(Aspect.CRYSTAL, 32);
-		ThaumcraftApi.addCrucibleRecipe("REFINED_CAVENIUM_BLOCK", result.copy(), key.copy(), aspects.copy());
+		recipe = ThaumcraftApi.addCrucibleRecipe("Refined Cavenium Block", result.copy(), key.copy(), aspects.copy());
+
+		new ResearchItem("Refined Cavenium Block", "ALCHEMY", aspects.copy(), -5, 5, 3, result.copy()).setSecondary().setPages(new ResearchPage(recipe)).registerResearchItem();
 	}
 }

@@ -453,11 +453,6 @@ public class TeleporterCaveworld extends Teleporter
 				}
 
 				worldObj.setBlock(var10, var9, var12, flag ? Blocks.mossy_cobblestone : CaveBlocks.caveworld_portal, 0, 2);
-
-				if (!flag)
-				{
-					CaveBlocks.caveworld_portal.setBlockBoundsBasedOnState(worldObj, var10, var9, var12);
-				}
 			}
 		}
 

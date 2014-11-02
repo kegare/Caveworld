@@ -148,7 +148,7 @@ public class ItemMiningPickaxe extends ItemPickaxe
 		}
 	}
 
-	public ItemTool getBaseTool(ItemStack itemstack)
+	public Item getBaseTool(ItemStack itemstack)
 	{
 		NBTTagCompound data = itemstack.getTagCompound();
 
@@ -171,7 +171,7 @@ public class ItemMiningPickaxe extends ItemPickaxe
 			return this;
 		}
 
-		return (ItemTool)item;
+		return item;
 	}
 
 	@Override
@@ -190,7 +190,7 @@ public class ItemMiningPickaxe extends ItemPickaxe
 	@Override
 	public Set<String> getToolClasses(ItemStack itemstack)
 	{
-		ItemTool item = getBaseTool(itemstack);
+		Item item = getBaseTool(itemstack);
 
 		if (item != this)
 		{
@@ -203,7 +203,7 @@ public class ItemMiningPickaxe extends ItemPickaxe
 	@Override
 	public int getHarvestLevel(ItemStack itemstack, String toolClass)
 	{
-		ItemTool item = getBaseTool(itemstack);
+		Item item = getBaseTool(itemstack);
 
 		if (item != this)
 		{
@@ -216,7 +216,7 @@ public class ItemMiningPickaxe extends ItemPickaxe
 	@Override
 	public boolean canHarvestBlock(Block block, ItemStack itemstack)
 	{
-		ItemTool item = getBaseTool(itemstack);
+		Item item = getBaseTool(itemstack);
 
 		if (item != this)
 		{
@@ -229,7 +229,7 @@ public class ItemMiningPickaxe extends ItemPickaxe
 	@Override
 	public int getMaxDamage(ItemStack itemstack)
 	{
-		ItemTool item = getBaseTool(itemstack);
+		Item item = getBaseTool(itemstack);
 
 		if (item != this)
 		{
@@ -242,7 +242,7 @@ public class ItemMiningPickaxe extends ItemPickaxe
 	@Override
 	public float getDigSpeed(ItemStack itemstack, Block block, int metadata)
 	{
-		ItemTool item = getBaseTool(itemstack);
+		Item item = getBaseTool(itemstack);
 
 		if (item != this)
 		{
@@ -255,7 +255,7 @@ public class ItemMiningPickaxe extends ItemPickaxe
 	@Override
 	public int getItemEnchantability(ItemStack itemstack)
 	{
-		ItemTool item = getBaseTool(itemstack);
+		Item item = getBaseTool(itemstack);
 
 		if (item != this)
 		{

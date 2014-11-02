@@ -14,9 +14,7 @@ import java.util.Set;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemTool;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.MathHelper;
@@ -26,6 +24,7 @@ import com.google.common.collect.Sets;
 import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.item.ItemCavenium;
 import com.kegare.caveworld.item.ItemMiningPickaxe;
+import com.kegare.caveworld.util.CaveUtils;
 
 import cpw.mods.fml.common.registry.GameData;
 
@@ -58,12 +57,9 @@ public class RecipeMiningPickaxe implements IRecipe
 				{
 					ItemStack itemstack = crafting.getStackInRowAndColumn(row, column);
 
-					if (itemstack != null && itemstack.getItem() != null && (pickaxeWhitelist.contains(itemstack.getItem()) ||
-						itemstack.getItem() instanceof ItemPickaxe || itemstack.getItem() instanceof ItemTool && itemstack.getItem().getToolClasses(itemstack).contains("pickaxe")))
+					if (itemstack != null && itemstack.getItem() != null && (pickaxeWhitelist.contains(itemstack.getItem()) || CaveUtils.isItemPickaxe(itemstack)))
 					{
-						ItemTool item = (ItemTool)itemstack.getItem();
-
-						if (item instanceof ItemMiningPickaxe)
+						if (itemstack.getItem() instanceof ItemMiningPickaxe)
 						{
 							flag = true;
 						}
@@ -157,7 +153,7 @@ public class RecipeMiningPickaxe implements IRecipe
 
 			ItemStack itemstack = new ItemStack(item);
 
-			if (pickaxeWhitelist.contains(item) || item instanceof ItemPickaxe || item instanceof ItemTool && item.getToolClasses(itemstack).contains("pickaxe"))
+			if (pickaxeWhitelist.contains(item) || CaveUtils.isItemPickaxe(itemstack))
 			{
 				result.add(itemstack);
 			}

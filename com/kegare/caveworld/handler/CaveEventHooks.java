@@ -19,7 +19,6 @@ import net.minecraft.block.BlockOre;
 import net.minecraft.block.BlockRedstoneOre;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiIngame;
-import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -54,6 +53,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.entity.EntityEvent.EntityConstructing;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
@@ -65,7 +65,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
-import net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent;
+import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.event.world.WorldEvent;
 
 import org.lwjgl.opengl.GL11;
@@ -107,7 +107,6 @@ import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
 import cpw.mods.fml.common.gameevent.TickEvent.ClientTickEvent;
 import cpw.mods.fml.common.gameevent.TickEvent.Phase;
-import cpw.mods.fml.common.gameevent.TickEvent.RenderTickEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ServerConnectionFromClientEvent;
@@ -126,6 +125,8 @@ public class CaveEventHooks
 	private BreakPos breakingPos;
 	@SideOnly(Side.CLIENT)
 	private long triggerTime;
+
+	private static final ItemStack defaultMiningRenderIcon = new ItemStack(Items.stone_pickaxe);;
 
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
@@ -259,15 +260,14 @@ public class CaveEventHooks
 
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
-	public void onRenderTick(RenderTickEvent event)
+	public void onPostRenderGameOverlay(RenderGameOverlayEvent.Post event)
 	{
-		if (event.phase != Phase.END)
+		if (event.type != ElementType.HOTBAR)
 		{
 			return;
 		}
 
 		Minecraft mc = FMLClientHandler.instance().getClient();
-		ScaledResolution resolution = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
 
 		if (mc.thePlayer != null)
 		{
@@ -282,7 +282,7 @@ public class CaveEventHooks
 					GL11.glPushMatrix();
 					GL11.glEnable(GL11.GL_BLEND);
 					OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-					mc.fontRenderer.drawStringWithShadow(item.getModeInfomation(current), 18, resolution.getScaledHeight() - 20, 0xEEEEEE);
+					mc.fontRenderer.drawStringWithShadow(item.getModeInfomation(current), 18, event.resolution.getScaledHeight() - 20, 0xEEEEEE);
 					GL11.glDisable(GL11.GL_BLEND);
 					GL11.glPopMatrix();
 
@@ -299,10 +299,11 @@ public class CaveEventHooks
 				}
 			}
 
-			if (CaveworldAPI.isEntityInCaveworld(mc.thePlayer) && mc.currentScreen == null && (mc.thePlayer.capabilities.isCreativeMode || mc.gameSettings.advancedItemTooltips || CaveUtils.isItemPickaxe(current)))
+			if (CaveworldAPI.isEntityInCaveworld(mc.thePlayer) && mc.currentScreen == null && (mc.thePlayer.capabilities.isCreativeMode || mc.gameSettings.advancedItemTooltips ||
+				CaveUtils.isItemPickaxe(current) || CaveUtils.isMiningPointValidItem(current)))
 			{
 				String str = Integer.toString(CaveworldAPI.getMiningPoint(mc.thePlayer));
-				int x = resolution.getScaledWidth() - 20;
+				int x = event.resolution.getScaledWidth() - 20;
 				int y;
 				boolean left = false;
 				int type = Config.miningPointRenderType;
@@ -315,7 +316,7 @@ public class CaveEventHooks
 
 				if (type == 1 || type == 3)
 				{
-					y = resolution.getScaledHeight() - 21;
+					y = event.resolution.getScaledHeight() - 21;
 				}
 				else
 				{
@@ -330,7 +331,7 @@ public class CaveEventHooks
 				}
 				else
 				{
-					icon = new ItemStack(Items.stone_pickaxe);
+					icon = defaultMiningRenderIcon;
 				}
 
 				GL11.glPushMatrix();
@@ -360,17 +361,16 @@ public class CaveEventHooks
 	public void onRenderGameTextOverlay(RenderGameOverlayEvent.Text event)
 	{
 		Minecraft mc = FMLClientHandler.instance().getClient();
-		EntityPlayer player = mc == null ? null : mc.thePlayer;
 
-		if (CaveworldAPI.isEntityInCaveworld(player))
+		if (CaveworldAPI.isEntityInCaveworld(mc.thePlayer))
 		{
 			if (mc.gameSettings.showDebugInfo)
 			{
-				if (player.dimension == CaveworldAPI.getDimension())
+				if (mc.thePlayer.dimension == CaveworldAPI.getDimension())
 				{
 					event.left.add("dim: Caveworld");
 				}
-				else if (player.dimension == CaveworldAPI.getDeepDimension())
+				else if (mc.thePlayer.dimension == CaveworldAPI.getDeepDimension())
 				{
 					event.left.add("dim: Deep Caveworld");
 				}
@@ -617,11 +617,11 @@ public class CaveEventHooks
 	}
 
 	@SubscribeEvent
-	public void onHarvestDrops(HarvestDropsEvent event)
+	public void onBlockBreak(BreakEvent event)
 	{
-		if (event.harvester != null && event.harvester instanceof EntityPlayerMP)
+		if (event.getPlayer() != null && event.getPlayer() instanceof EntityPlayerMP)
 		{
-			EntityPlayerMP player = (EntityPlayerMP)event.harvester;
+			EntityPlayerMP player = (EntityPlayerMP)event.getPlayer();
 
 			if (CaveworldAPI.isEntityInCaveworld(player))
 			{
@@ -629,7 +629,7 @@ public class CaveEventHooks
 				Block block = event.block;
 				int metadata = event.blockMetadata;
 
-				if (CaveUtils.isItemPickaxe(current))
+				if (CaveUtils.isMiningPointValidItem(current))
 				{
 					int amount = CaveworldAPI.getMiningPointAmount(block, metadata);
 
