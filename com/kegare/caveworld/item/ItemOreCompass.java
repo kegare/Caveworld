@@ -11,7 +11,6 @@ package com.kegare.caveworld.item;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 
 import net.minecraft.block.Block;
@@ -31,6 +30,7 @@ import net.minecraft.world.World;
 import com.google.common.collect.Lists;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.core.Caveworld;
+import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.breaker.BreakPos;
 import com.kegare.caveworld.util.breaker.BreakPos.NearestBreakPosComparator;
 
@@ -236,7 +236,7 @@ public class ItemOreCompass extends Item
 
 		prevFindTime = System.currentTimeMillis();
 
-		nearestOrePos = new ForkJoinPool().invoke(new RecursiveTask<BreakPos>()
+		nearestOrePos = CaveUtils.getPool().invoke(new RecursiveTask<BreakPos>()
 		{
 			@Override
 			protected BreakPos compute()

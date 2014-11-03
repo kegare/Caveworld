@@ -23,6 +23,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ForkJoinPool;
 import java.util.regex.Pattern;
 
 import net.minecraft.block.Block;
@@ -81,6 +82,18 @@ import cpw.mods.fml.relauncher.SideOnly;
 public class CaveUtils
 {
 	public static boolean mcpc = FMLCommonHandler.instance().getModName().contains("mcpc");
+
+	private static ForkJoinPool pool;
+
+	public static ForkJoinPool getPool()
+	{
+		if (pool == null || pool.isShutdown())
+		{
+			pool = new ForkJoinPool();
+		}
+
+		return pool;
+	}
 
 	public static final Comparator<Block> blockComparator = new Comparator<Block>()
 	{

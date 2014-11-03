@@ -80,6 +80,8 @@ public class AditBreakExecutor extends MultiBreakExecutor
 			return this;
 		}
 
+		offer(originPos.x, originPos.y, originPos.z);
+
 		if (originPos.y == MathHelper.floor_double(player.posY))
 		{
 			offer(originPos.x, originPos.y + 1, originPos.z);

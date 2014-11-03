@@ -13,7 +13,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
 import net.minecraft.block.Block;
@@ -359,7 +358,7 @@ public class GuiSelectBreakable extends GuiScreen
 			super(parent.mc, 0, 0, 0, 0, 18);
 			this.parent = parent;
 
-			new ForkJoinPool().execute(new RecursiveAction()
+			CaveUtils.getPool().execute(new RecursiveAction()
 			{
 				@Override
 				protected void compute()
@@ -494,7 +493,7 @@ public class GuiSelectBreakable extends GuiScreen
 
 		protected void setFilter(final String filter)
 		{
-			new ForkJoinPool().execute(new RecursiveAction()
+			CaveUtils.getPool().execute(new RecursiveAction()
 			{
 				@Override
 				protected void compute()

@@ -9,11 +9,14 @@
 
 package com.kegare.caveworld.util.breaker;
 
+import java.util.concurrent.RecursiveAction;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import com.kegare.caveworld.util.CaveUtils;
 
 public class QuickBreakExecutor extends MultiBreakExecutor
 {
@@ -47,6 +50,20 @@ public class QuickBreakExecutor extends MultiBreakExecutor
 	@Override
 	public QuickBreakExecutor setBreakPositions()
 	{
+		CaveUtils.getPool().invoke(new RecursiveAction()
+		{
+			@Override
+			protected void compute()
+			{
+				setChainedPositions();
+			}
+		});
+
+		return this;
+	}
+
+	private void setChainedPositions()
+	{
 		boolean flag;
 
 		do
@@ -59,48 +76,46 @@ public class QuickBreakExecutor extends MultiBreakExecutor
 
 			if (offer(x + 1, y, z))
 			{
-				setBreakPositions();
+				setChainedPositions();
 
 				if (!flag) flag = true;
 			}
 
 			if (offer(x, y + 1, z))
 			{
-				setBreakPositions();
+				setChainedPositions();
 
 				if (!flag) flag = true;
 			}
 
 			if (offer(x, y, z + 1))
 			{
-				setBreakPositions();
+				setChainedPositions();
 
 				if (!flag) flag = true;
 			}
 
 			if (offer(x - 1, y, z))
 			{
-				setBreakPositions();
+				setChainedPositions();
 
 				if (!flag) flag = true;
 			}
 
 			if (offer(x, y - 1, z))
 			{
-				setBreakPositions();
+				setChainedPositions();
 
 				if (!flag) flag = true;
 			}
 
 			if (offer(x, y, z - 1))
 			{
-				setBreakPositions();
+				setChainedPositions();
 
 				if (!flag) flag = true;
 			}
 		}
 		while (flag);
-
-		return this;
 	}
 }

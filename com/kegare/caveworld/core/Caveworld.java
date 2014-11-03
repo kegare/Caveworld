@@ -15,7 +15,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
 import net.minecraft.block.Block;
@@ -177,9 +176,7 @@ public class Caveworld
 		Config.syncBiomesCfg();
 		Config.syncVeinsCfg();
 
-		ForkJoinPool pool = new ForkJoinPool();
-
-		pool.execute(new RecursiveAction()
+		CaveUtils.getPool().execute(new RecursiveAction()
 		{
 			@Override
 			protected void compute()
@@ -229,7 +226,7 @@ public class Caveworld
 			}
 		});
 
-		pool.execute(new RecursiveAction()
+		CaveUtils.getPool().execute(new RecursiveAction()
 		{
 			@Override
 			protected void compute()
@@ -249,7 +246,7 @@ public class Caveworld
 			}
 		});
 
-		pool.execute(new RecursiveAction()
+		CaveUtils.getPool().execute(new RecursiveAction()
 		{
 			@Override
 			protected void compute()

@@ -126,7 +126,7 @@ public class CaveEventHooks
 	@SideOnly(Side.CLIENT)
 	private long triggerTime;
 
-	private static final ItemStack defaultMiningRenderIcon = new ItemStack(Items.stone_pickaxe);;
+	private static final ItemStack defaultMiningRenderIcon = new ItemStack(Items.stone_pickaxe);
 
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent

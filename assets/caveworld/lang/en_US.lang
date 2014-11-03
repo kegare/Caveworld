@@ -176,6 +176,7 @@ caveworld.config.select.biome.info.fillerBlock=Filler Block
 caveworld.config.select.biome.info.temperature=Temperature
 caveworld.config.select.biome.info.rainfall=Rainfall
 caveworld.config.select.biome.info.type=Type
+caveworld.config.select.entry.selected=%d entries selected
 
 tile.portalCaveworld.name=Caveworld Portal Block
 tile.rope.name=Rope

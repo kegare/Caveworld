@@ -15,7 +15,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
 import net.minecraft.client.gui.GuiButton;
@@ -304,24 +303,31 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 				case 0:
 					if (editMode)
 					{
-						for (ICaveBiome entry : biomeList.selected)
+						for (final ICaveBiome entry : biomeList.selected)
 						{
-							if (!Strings.isNullOrEmpty(weightField.getText()))
+							CaveUtils.getPool().execute(new RecursiveAction()
 							{
-								entry.setGenWeight(NumberUtils.toInt(weightField.getText(), entry.getGenWeight()));
-							}
+								@Override
+								protected void compute()
+								{
+									if (!Strings.isNullOrEmpty(weightField.getText()))
+									{
+										entry.setGenWeight(NumberUtils.toInt(weightField.getText(), entry.getGenWeight()));
+									}
 
-							if (!Strings.isNullOrEmpty(terrainBlockField.getText()))
-							{
-								entry.setTerrainBlock(new BlockEntry(terrainBlockField.getText(), NumberUtils.toInt(terrainMetaField.getText())));
-							}
+									if (!Strings.isNullOrEmpty(terrainBlockField.getText()))
+									{
+										entry.setTerrainBlock(new BlockEntry(terrainBlockField.getText(), NumberUtils.toInt(terrainMetaField.getText())));
+									}
 
-							if (!Strings.isNullOrEmpty(topBlockField.getText()))
-							{
-								entry.setTopBlock(new BlockEntry(topBlockField.getText(), NumberUtils.toInt(topMetaField.getText())));
-							}
+									if (!Strings.isNullOrEmpty(topBlockField.getText()))
+									{
+										entry.setTopBlock(new BlockEntry(topBlockField.getText(), NumberUtils.toInt(topMetaField.getText())));
+									}
 
-							hoverCache.remove(entry);
+									hoverCache.remove(entry);
+								}
+							});
 						}
 
 						actionPerformed(cancelButton);
@@ -331,28 +337,38 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 					}
 					else
 					{
-						CaveworldAPI.clearCaveBiomes();
-
-						ConfigCategory category;
-
-						for (ICaveBiome entry : biomeList.biomes)
+						CaveUtils.getPool().execute(new RecursiveAction()
 						{
-							category = Config.biomesCfg.getCategory(Integer.toString(entry.getBiome().biomeID));
-							category.get("genWeight").set(entry.getGenWeight());
-							category.get("terrainBlock").set(GameData.getBlockRegistry().getNameForObject(entry.getTerrainBlock().getBlock()));
-							category.get("terrainBlockMetadata").set(entry.getTerrainBlock().getMetadata());
-							category.get("topBlock").set(GameData.getBlockRegistry().getNameForObject(entry.getTopBlock().getBlock()));
-							category.get("topBlockMetadata").set(entry.getTopBlock().getMetadata());
+							@Override
+							protected void compute()
+							{
+								CaveworldAPI.clearCaveBiomes();
 
-							CaveworldAPI.addCaveBiome(entry);
-						}
+								ConfigCategory category;
 
-						if (Config.biomesCfg.hasChanged())
-						{
-							Config.biomesCfg.save();
-						}
+								for (ICaveBiome entry : biomeList.biomes)
+								{
+									category = Config.biomesCfg.getCategory(Integer.toString(entry.getBiome().biomeID));
+									category.get("genWeight").set(entry.getGenWeight());
+									category.get("terrainBlock").set(GameData.getBlockRegistry().getNameForObject(entry.getTerrainBlock().getBlock()));
+									category.get("terrainBlockMetadata").set(entry.getTerrainBlock().getMetadata());
+									category.get("topBlock").set(GameData.getBlockRegistry().getNameForObject(entry.getTopBlock().getBlock()));
+									category.get("topBlockMetadata").set(entry.getTopBlock().getMetadata());
+
+									CaveworldAPI.addCaveBiome(entry);
+								}
+
+								if (Config.biomesCfg.hasChanged())
+								{
+									Config.biomesCfg.save();
+								}
+							}
+						});
 
 						actionPerformed(cancelButton);
+
+						biomeList.selected.clear();
+						biomeList.scrollToTop();
 					}
 
 					break;
@@ -413,17 +429,25 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 					mc.displayGuiScreen(new GuiSelectBiome(this).setHiddenBiomes(biomes));
 					break;
 				case 4:
-					for (ICaveBiome entry : biomeList.selected)
+					CaveUtils.getPool().execute(new RecursiveAction()
 					{
-						if (biomeList.biomes.remove(entry))
+						@Override
+						protected void compute()
 						{
-							Config.biomesCfg.getCategory(Integer.toString(entry.getBiome().biomeID)).get("genWeight").set(0);
+							for (ICaveBiome entry : biomeList.selected)
+							{
+								if (biomeList.biomes.remove(entry))
+								{
+									Config.biomesCfg.getCategory(Integer.toString(entry.getBiome().biomeID)).get("genWeight").set(0);
 
-							biomeList.contents.remove(entry);
+									biomeList.contents.remove(entry);
+								}
+							}
+
+							biomeList.selected.clear();
 						}
-					}
+					});
 
-					biomeList.selected.clear();
 					break;
 				case 5:
 					biomeList.selected.addAll(biomeList.biomes);
@@ -448,7 +472,7 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 			return;
 		}
 
-		new ForkJoinPool().execute(new RecursiveAction()
+		CaveUtils.getPool().execute(new RecursiveAction()
 		{
 			@Override
 			protected void compute()
@@ -638,6 +662,11 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 
 				func_146283_a(hoverCache.get(entry), mouseX, mouseY);
 			}
+		}
+
+		if (biomeList.selected.size() > 1 && mouseX <= 100 && mouseY <= 20)
+		{
+			drawString(fontRendererObj, I18n.format(Caveworld.CONFIG_LANG + "select.entry.selected", biomeList.selected.size()), 5, 5, 0xEFEFEF);
 		}
 	}
 
@@ -962,7 +991,7 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 
 		protected void setFilter(final String filter)
 		{
-			new ForkJoinPool().execute(new RecursiveAction()
+			CaveUtils.getPool().execute(new RecursiveAction()
 			{
 				@Override
 				protected void compute()
@@ -972,6 +1001,10 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 					if (Strings.isNullOrEmpty(filter))
 					{
 						result = biomes;
+					}
+					else if (filter.equals("selected"))
+					{
+						result = Lists.newArrayList(selected);
 					}
 					else
 					{

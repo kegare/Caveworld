@@ -47,7 +47,7 @@ caveworld.config.general.miningPointRenderType.1=右下
 caveworld.config.general.miningPointRenderType.2=左上
 caveworld.config.general.miningPointRenderType.3=左下
 caveworld.config.general.miningPointValidItems=採掘ポイントの有効なアイテム
-caveworld.config.general.miningPointValidItems.tooltip=鉱石破壊時に採掘ポイントを獲得できるアイテムを指定します。
+caveworld.config.general.miningPointValidItems.tooltip=鉱石採掘時に採掘ポイントを獲得できるアイテムを指定します。
 caveworld.config.options.hardcore=ハードコアオプション
 caveworld.config.options.hardcore.tooltip=Caveworldへ行くと、Caveworldから戻ることができなくなります。
 caveworld.config.options.caveborn=ケイブボーンオプション
@@ -176,6 +176,7 @@ caveworld.config.select.biome.info.fillerBlock=構成ブロック
 caveworld.config.select.biome.info.temperature=気温
 caveworld.config.select.biome.info.rainfall=降水量
 caveworld.config.select.biome.info.type=タイプ
+caveworld.config.select.entry.selected=%dつのエントリが選択済み
 
 tile.portalCaveworld.name=Caveworld ポータルブロック
 tile.rope.name=ロープ

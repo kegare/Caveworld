@@ -17,7 +17,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Set;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 import java.util.regex.Pattern;
 
@@ -86,7 +85,7 @@ public class WorldProviderDeepCaveworld extends WorldProviderCaveworld
 			}
 		}
 
-		boolean result = new ForkJoinPool().invoke(new RecursiveTask<Boolean>()
+		boolean result = CaveUtils.getPool().invoke(new RecursiveTask<Boolean>()
 		{
 			@Override
 			protected Boolean compute()

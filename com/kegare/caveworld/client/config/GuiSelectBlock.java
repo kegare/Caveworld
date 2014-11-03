@@ -14,7 +14,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
 import net.minecraft.block.Block;
@@ -190,6 +189,9 @@ public class GuiSelectBlock extends GuiScreen
 					}
 
 					mc.displayGuiScreen(parentScreen);
+
+					blockList.selected.clear();
+					blockList.scrollToTop();
 					break;
 				case 1:
 					CaveConfigGui.detailInfo = detailInfo.isChecked();
@@ -440,7 +442,7 @@ public class GuiSelectBlock extends GuiScreen
 			super(parent.mc, 0, 0, 0, 0, 18);
 			this.parent = parent;
 
-			new ForkJoinPool().execute(new RecursiveAction()
+			CaveUtils.getPool().execute(new RecursiveAction()
 			{
 				@Override
 				protected void compute()
@@ -594,7 +596,7 @@ public class GuiSelectBlock extends GuiScreen
 
 		protected void setFilter(final String filter)
 		{
-			new ForkJoinPool().execute(new RecursiveAction()
+			CaveUtils.getPool().execute(new RecursiveAction()
 			{
 				@Override
 				protected void compute()

@@ -13,7 +13,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 
 import net.minecraft.util.MathHelper;
@@ -99,7 +98,7 @@ public class Version extends RecursiveAction
 			initialize();
 		}
 
-		new ForkJoinPool().execute(new Version());
+		CaveUtils.getPool().execute(new Version());
 	}
 
 	public static String getCurrent()

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
@@ -23,7 +24,6 @@ import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemTool;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.EnumHelper;
@@ -166,25 +166,21 @@ public class ItemMiningPickaxe extends ItemPickaxe
 
 		Item item = GameData.getItemRegistry().getObject(name);
 
-		if (item == null || !(item instanceof ItemTool))
-		{
-			return this;
-		}
-
-		return item;
+		return item == null ? this : item;
 	}
 
 	@Override
 	public String getItemStackDisplayName(ItemStack itemstack)
 	{
+		String name = super.getItemStackDisplayName(itemstack);
 		int refined = getRefined(itemstack);
 
 		if (refined > 0)
 		{
-			return super.getItemStackDisplayName(itemstack) + " " + Roman.toRoman(getRefined(itemstack));
+			return name + " " + Roman.toRoman(getRefined(itemstack));
 		}
 
-		return super.getItemStackDisplayName(itemstack);
+		return name;
 	}
 
 	@Override
@@ -227,6 +223,58 @@ public class ItemMiningPickaxe extends ItemPickaxe
 	}
 
 	@Override
+	public int getItemStackLimit(ItemStack itemstack)
+	{
+		Item item = getBaseTool(itemstack);
+
+		if (item != this)
+		{
+			return item.getItemStackLimit(itemstack);
+		}
+
+		return super.getItemStackLimit(itemstack);
+	}
+
+	@Override
+	public boolean showDurabilityBar(ItemStack itemstack)
+	{
+		Item item = getBaseTool(itemstack);
+
+		if (item != this)
+		{
+			return item.showDurabilityBar(itemstack);
+		}
+
+		return super.showDurabilityBar(itemstack);
+	}
+
+	@Override
+	public double getDurabilityForDisplay(ItemStack itemstack)
+	{
+		Item item = getBaseTool(itemstack);
+
+		if (item != this)
+		{
+			return item.getDurabilityForDisplay(itemstack);
+		}
+
+		return super.getDurabilityForDisplay(itemstack);
+	}
+
+	@Override
+	public int getDamage(ItemStack itemstack)
+	{
+		Item item = getBaseTool(itemstack);
+
+		if (item != this)
+		{
+			return item.getDamage(itemstack);
+		}
+
+		return super.getDamage(itemstack);
+	}
+
+	@Override
 	public int getMaxDamage(ItemStack itemstack)
 	{
 		Item item = getBaseTool(itemstack);
@@ -237,6 +285,19 @@ public class ItemMiningPickaxe extends ItemPickaxe
 		}
 
 		return super.getMaxDamage(itemstack);
+	}
+
+	@Override
+	public boolean isDamaged(ItemStack itemstack)
+	{
+		Item item = getBaseTool(itemstack);
+
+		if (item != this)
+		{
+			return item.isDamaged(itemstack);
+		}
+
+		return super.isDamaged(itemstack);
 	}
 
 	@Override
@@ -355,6 +416,60 @@ public class ItemMiningPickaxe extends ItemPickaxe
 		return ItemCavenium.cavenium;
 	}
 
+	@Override
+	public String getPotionEffect(ItemStack itemstack)
+	{
+		Item item = getBaseTool(itemstack);
+
+		if (item != this)
+		{
+			return item.getPotionEffect(itemstack);
+		}
+
+		return super.getPotionEffect(itemstack);
+	}
+
+	@Override
+	public int getEntityLifespan(ItemStack itemstack, World world)
+	{
+		Item item = getBaseTool(itemstack);
+
+		if (item != this)
+		{
+			return item.getEntityLifespan(itemstack, world);
+		}
+
+		return super.getEntityLifespan(itemstack, world);
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
+	public boolean hasEffect(ItemStack itemstack, int pass)
+	{
+		Item item = getBaseTool(itemstack);
+
+		if (item != this)
+		{
+			return item.hasEffect(itemstack, pass);
+		}
+
+		return super.hasEffect(itemstack, pass);
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
+	public FontRenderer getFontRenderer(ItemStack itemstack)
+	{
+		Item item = getBaseTool(itemstack);
+
+		if (item != this)
+		{
+			return item.getFontRenderer(itemstack);
+		}
+
+		return super.getFontRenderer(itemstack);
+	}
+
 	@SideOnly(Side.CLIENT)
 	public String getModeInfomation(ItemStack itemstack)
 	{
@@ -384,6 +499,8 @@ public class ItemMiningPickaxe extends ItemPickaxe
 		if (item != this)
 		{
 			list.add(I18n.format(getUnlocalizedName() + ".base") + ": " + item.getItemStackDisplayName(itemstack));
+
+			item.addInformation(itemstack, player, list, advanced);
 		}
 
 		super.addInformation(itemstack, player, list, advanced);
