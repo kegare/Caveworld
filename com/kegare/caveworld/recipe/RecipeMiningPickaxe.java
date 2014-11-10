@@ -33,6 +33,7 @@ public class RecipeMiningPickaxe implements IRecipe
 	public static final RecipeMiningPickaxe instance = new RecipeMiningPickaxe();
 
 	public static final Set<Item> pickaxeWhitelist = Sets.newHashSet();
+	private static final Set<ItemStack> centerItems = Sets.newHashSet();
 
 	@Override
 	public boolean matches(InventoryCrafting crafting, World world)
@@ -139,26 +140,28 @@ public class RecipeMiningPickaxe implements IRecipe
 
 	public Set<ItemStack> getCenterItems()
 	{
-		Set<String> set = GameData.getItemRegistry().getKeys();
-		Set<ItemStack> result = Sets.newHashSet();
-
-		for (String key : set)
+		if (centerItems.isEmpty())
 		{
-			Item item = GameData.getItemRegistry().getObject(key);
+			Set<String> set = GameData.getItemRegistry().getKeys();
 
-			if (item == null)
+			for (String key : set)
 			{
-				continue;
-			}
+				Item item = GameData.getItemRegistry().getObject(key);
 
-			ItemStack itemstack = new ItemStack(item);
+				if (item == null)
+				{
+					continue;
+				}
 
-			if (pickaxeWhitelist.contains(item) || CaveUtils.isItemPickaxe(itemstack))
-			{
-				result.add(itemstack);
+				ItemStack itemstack = new ItemStack(item);
+
+				if (pickaxeWhitelist.contains(item) || CaveUtils.isItemPickaxe(itemstack))
+				{
+					centerItems.add(itemstack);
+				}
 			}
 		}
 
-		return result;
+		return centerItems;
 	}
 }

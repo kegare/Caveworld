@@ -223,14 +223,7 @@ public class Caveworld
 				CaveworldAPI.setMiningPointAmount("titaniumOre", 1);
 				CaveworldAPI.setMiningPointAmount("oreCavenium", 2);
 				CaveworldAPI.setMiningPointAmount("caveniumOre", 2);
-			}
-		});
 
-		CaveUtils.getPool().execute(new RecursiveAction()
-		{
-			@Override
-			protected void compute()
-			{
 				for (Object obj : GameData.getBlockRegistry().getKeys())
 				{
 					Block block = GameData.getBlockRegistry().getObject((String)obj);

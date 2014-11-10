@@ -191,11 +191,11 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 
 			if (metadata == 1 && (!size1.canCreatePortal() || size1.portalBlockCount < size1.portalWidth * size1.portalHeight))
 			{
-				world.setBlock(x, y, z, Blocks.air);
+				world.setBlockToAir(x, y, z);
 			}
 			else if (metadata == 2 && (!size2.canCreatePortal() || size2.portalBlockCount < size2.portalWidth * size2.portalHeight))
 			{
-				world.setBlock(x, y, z, Blocks.air);
+				world.setBlockToAir(x, y, z);
 			}
 		}
 		else if (metadata == 3 || metadata == 4)
@@ -206,16 +206,16 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 
 			if (metadata == 3 && (!size3.canCreatePortal() || size3.portalBlockCount < size3.portalWidth * size3.portalHeight))
 			{
-				world.setBlock(x, y, z, Blocks.air);
+				world.setBlockToAir(x, y, z);
 			}
 			else if (metadata == 4 && (!size4.canCreatePortal() || size4.portalBlockCount < size4.portalWidth * size4.portalHeight))
 			{
-				world.setBlock(x, y, z, Blocks.air);
+				world.setBlockToAir(x, y, z);
 			}
 		}
 		else
 		{
-			world.setBlock(x, y, z, Blocks.air);
+			world.setBlockToAir(x, y, z);
 		}
 	}
 

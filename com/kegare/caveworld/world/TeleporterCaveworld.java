@@ -438,6 +438,8 @@ public class TeleporterCaveworld extends Teleporter
 			}
 		}
 
+		boolean flag2 = false;
+
 		for (var6 = 0; var6 < 4; ++var6)
 		{
 			for (var7 = -1; var7 < 4; ++var7)
@@ -450,9 +452,48 @@ public class TeleporterCaveworld extends Teleporter
 				if (worldObj.getBlock(var10, var3 - 1, var12) == Blocks.bedrock)
 				{
 					++var9;
+					flag2 = true;
 				}
 
 				worldObj.setBlock(var10, var9, var12, flag ? Blocks.mossy_cobblestone : CaveBlocks.caveworld_portal, 0, 2);
+			}
+		}
+
+		for (var6 = 0; var6 < 4; ++var6)
+		{
+			for (var7 = -1; var7 < 4; ++var7)
+			{
+				var10 = var2 + (var6 - 1) * var13;
+				var9 = var3 + var7;
+				var12 = var4 + (var6 - 1) * var14;
+				flag = var6 == 0 || var6 == 3 || var7 == -1 || var7 == 3;
+
+				if (flag2)
+				{
+					++var9;
+				}
+
+				if (!flag)
+				{
+					worldObj.getBlock(var10, var9, var12).setBlockBoundsBasedOnState(worldObj, var10, var9, var12);
+				}
+			}
+		}
+
+		for (var6 = 0; var6 < 4; ++var6)
+		{
+			for (var7 = -1; var7 < 4; ++var7)
+			{
+				var10 = var2 + (var6 - 1) * var13;
+				var9 = var3 + var7;
+				var12 = var4 + (var6 - 1) * var14;
+
+				if (flag2)
+				{
+					++var9;
+				}
+
+				worldObj.notifyBlockOfNeighborChange(var10, var9, var12, worldObj.getBlock(var10, var9, var12));
 			}
 		}
 

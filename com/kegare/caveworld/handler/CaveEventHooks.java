@@ -198,13 +198,13 @@ public class CaveEventHooks
 								switch (pickaxe.getMode(current))
 								{
 									case QUICK:
-										QuickBreakExecutor.getExecutor(mc.theWorld, mc.thePlayer).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
+										QuickBreakExecutor.getExecutor(mc.theWorld, mc.thePlayer).setOriginPos(x, y, z).setBreakPositions();
 										return;
 									case ADIT:
-										AditBreakExecutor.getExecutor(mc.theWorld, mc.thePlayer).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
+										AditBreakExecutor.getExecutor(mc.theWorld, mc.thePlayer).setOriginPos(x, y, z).setBreakPositions();
 										return;
 									case RANGED:
-										RangedBreakExecutor.getExecutor(mc.theWorld, mc.thePlayer).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
+										RangedBreakExecutor.getExecutor(mc.theWorld, mc.thePlayer).setOriginPos(x, y, z).setBreakPositions();
 										return;
 									default:
 								}
@@ -678,13 +678,13 @@ public class CaveEventHooks
 						switch (pickaxe.getMode(current))
 						{
 							case QUICK:
-								executor = QuickBreakExecutor.getExecutor(world, player).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
+								executor = QuickBreakExecutor.getExecutor(world, player).setOriginPos(x, y, z).setBreakPositions();
 								break;
 							case ADIT:
-								executor = AditBreakExecutor.getExecutor(world, player).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
+								executor = AditBreakExecutor.getExecutor(world, player).setOriginPos(x, y, z).setBreakPositions();
 								break;
 							case RANGED:
-								executor = RangedBreakExecutor.getExecutor(world, player).setOriginPos(x, y, z).setBreakable(block, meta).setBreakPositions();
+								executor = RangedBreakExecutor.getExecutor(world, player).setOriginPos(x, y, z).setBreakPositions();
 								break;
 							default:
 						}

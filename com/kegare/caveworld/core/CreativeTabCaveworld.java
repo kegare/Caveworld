@@ -49,7 +49,7 @@ public class CreativeTabCaveworld extends CreativeTabs
 	@Override
 	public Item getTabIconItem()
 	{
-		return null;
+		return tabIconItem == null ? null : tabIconItem.getItem();
 	}
 
 	@SideOnly(Side.CLIENT)

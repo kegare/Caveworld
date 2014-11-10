@@ -13,14 +13,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockRedstoneOre;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
 import com.google.common.collect.Sets;
-import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.util.ArrayListExtended;
 import com.kegare.caveworld.util.breaker.BreakPos.NearestBreakPosComparator;
 
@@ -30,7 +28,6 @@ public abstract class MultiBreakExecutor
 	protected final EntityPlayer player;
 
 	protected final ArrayListExtended<BreakPos> breakPositions = new ArrayListExtended();
-	protected BlockEntry breakableBlock;
 	protected BreakPos originPos;
 	protected BreakPos currentPos;
 
@@ -55,23 +52,6 @@ public abstract class MultiBreakExecutor
 		return originPos;
 	}
 
-	public MultiBreakExecutor setBreakable(Block block, int metadata)
-	{
-		breakableBlock = new BlockEntry(block, metadata);
-
-		return this;
-	}
-
-	public BlockEntry getBreakable()
-	{
-		if (breakableBlock == null)
-		{
-			breakableBlock = new BlockEntry(originPos.prevBlock, originPos.prevMeta);
-		}
-
-		return breakableBlock;
-	}
-
 	public boolean canBreak(int x, int y, int z)
 	{
 		if (originPos == null || world.isAirBlock(x, y, z))
@@ -79,8 +59,8 @@ public abstract class MultiBreakExecutor
 			return false;
 		}
 
-		return getBreakable().getBlock() == world.getBlock(x, y, z) && getBreakable().getMetadata() == world.getBlockMetadata(x, y, z) ||
-			getBreakable().getBlock() instanceof BlockRedstoneOre && world.getBlock(x, y, z) instanceof BlockRedstoneOre;
+		return originPos.getCurrentBlock() == world.getBlock(x, y, z) && originPos.getCurrentMetadata() == world.getBlockMetadata(x, y, z) ||
+			originPos.getCurrentBlock() instanceof BlockRedstoneOre && world.getBlock(x, y, z) instanceof BlockRedstoneOre;
 	}
 
 	public abstract MultiBreakExecutor setBreakPositions();
@@ -133,7 +113,6 @@ public abstract class MultiBreakExecutor
 	public void clear()
 	{
 		breakPositions.clear();
-		breakableBlock = null;
 		originPos = null;
 		currentPos = null;
 	}
