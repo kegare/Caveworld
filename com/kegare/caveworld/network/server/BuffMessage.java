@@ -7,7 +7,7 @@
  * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
  */
 
-package com.kegare.caveworld.network;
+package com.kegare.caveworld.network.server;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -33,11 +33,7 @@ public class BuffMessage implements IMessage, IMessageHandler<BuffMessage, IMess
 	@Override
 	public void fromBytes(ByteBuf buffer)
 	{
-		int id = buffer.readInt();
-		int duration = buffer.readInt();
-		int amplifier = buffer.readInt();
-
-		effect = new PotionEffect(id, duration, amplifier);
+		effect = new PotionEffect(buffer.readInt(), buffer.readInt(), buffer.readInt(), buffer.readBoolean());
 	}
 
 	@Override
@@ -46,6 +42,7 @@ public class BuffMessage implements IMessage, IMessageHandler<BuffMessage, IMess
 		buffer.writeInt(effect.getPotionID());
 		buffer.writeInt(effect.getDuration());
 		buffer.writeInt(effect.getAmplifier());
+		buffer.writeBoolean(effect.getIsAmbient());
 	}
 
 	@Override

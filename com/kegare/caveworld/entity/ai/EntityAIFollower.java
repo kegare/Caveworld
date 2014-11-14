@@ -89,7 +89,7 @@ public class EntityAIFollower extends EntityAIBase
 		theFollower.getNavigator().tryMoveToEntityLiving(theOwner, followSpeed);
 		theFollower.getLookHelper().setLookPositionWithEntity(theOwner, 10.0F, theFollower.getVerticalFaceSpeed());
 
-		if (!theFollower.getLeashed() && theFollower.getDistanceSqToEntity(theOwner) >= 144.0D)
+		if (!theFollower.getLeashed() && theFollower.getDistanceSqToEntity(theOwner) >= 144.0D && theOwner.onGround)
 		{
 			int x = MathHelper.floor_double(theOwner.posX) - 2;
 			int y = MathHelper.floor_double(theOwner.boundingBox.minY);
@@ -103,7 +103,7 @@ public class EntityAIFollower extends EntityAIBase
 					if ((i < 1 || j < 1 || i > 3 || j > 3) && World.doesBlockHaveSolidTopSurface(theWorld, x + i, y - 1, z + j) &&
 						!theWorld.getBlock(x + i, y, z + j).isNormalCube() && !theWorld.getBlock(x + i, y + 1, z + j).isNormalCube())
 					{
-						theFollower.setLocationAndAngles(x + i + 0.5F, y, z + j + 0.5F, theFollower.rotationYaw, theFollower.rotationPitch);
+						theFollower.setLocationAndAngles(x + i + 0.5D, y + 0.5D, z + j + 0.5D, theFollower.rotationYaw, theFollower.rotationPitch);
 
 						flag = true;
 					}

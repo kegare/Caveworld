@@ -9,34 +9,34 @@
 
 package com.kegare.caveworld.util.breaker;
 
+import java.util.Map;
+
 import net.minecraft.block.BlockPistonBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
-import net.minecraft.world.World;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
+import com.google.common.collect.Maps;
 import com.kegare.caveworld.item.ItemMiningPickaxe;
 
 public class AditBreakExecutor extends MultiBreakExecutor
 {
-	public static final Table<World, EntityPlayer, AditBreakExecutor> executors = HashBasedTable.create();
+	public static final Map<EntityPlayer, AditBreakExecutor> executors = Maps.newHashMap();
 
-	private AditBreakExecutor(World world, EntityPlayer player)
+	private AditBreakExecutor(EntityPlayer player)
 	{
-		super(world, player);
+		super(player);
 	}
 
-	public static AditBreakExecutor getExecutor(World world, EntityPlayer player)
+	public static AditBreakExecutor getExecutor(EntityPlayer player)
 	{
-		AditBreakExecutor executor = executors.get(world, player);
+		AditBreakExecutor executor = executors.get(player);
 
 		if (executor == null)
 		{
-			executor = new AditBreakExecutor(world, player);
+			executor = new AditBreakExecutor(player);
 
-			executors.put(world, player, executor);
+			executors.put(player, executor);
 		}
 
 		return executor;
@@ -61,7 +61,7 @@ public class AditBreakExecutor extends MultiBreakExecutor
 		{
 			ItemMiningPickaxe pickaxe = (ItemMiningPickaxe)current.getItem();
 
-			if (pickaxe.canBreak(current, world.getBlock(x, y, z), world.getBlockMetadata(x, y, z)))
+			if (pickaxe.canBreak(current, originPos.world.getBlock(x, y, z), originPos.world.getBlockMetadata(x, y, z)))
 			{
 				return true;
 			}
@@ -73,7 +73,7 @@ public class AditBreakExecutor extends MultiBreakExecutor
 	@Override
 	public AditBreakExecutor setBreakPositions()
 	{
-		int face = BlockPistonBase.determineOrientation(world, originPos.x, originPos.y, originPos.z, player);
+		int face = BlockPistonBase.determineOrientation(originPos.world, originPos.x, originPos.y, originPos.z, player);
 
 		if (face == 0 || face == 1)
 		{

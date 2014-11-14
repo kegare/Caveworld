@@ -28,7 +28,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import com.kegare.caveworld.api.ICaveMiningManager;
-import com.kegare.caveworld.network.MiningSyncMessage;
+import com.kegare.caveworld.network.client.MiningSyncMessage;
 import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 
 public class CaveMiningManager implements ICaveMiningManager

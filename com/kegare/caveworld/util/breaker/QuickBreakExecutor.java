@@ -9,33 +9,32 @@
 
 package com.kegare.caveworld.util.breaker;
 
+import java.util.Map;
 import java.util.concurrent.RecursiveAction;
 
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.world.World;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
+import com.google.common.collect.Maps;
 import com.kegare.caveworld.util.CaveUtils;
 
 public class QuickBreakExecutor extends MultiBreakExecutor
 {
-	public static final Table<World, EntityPlayer, QuickBreakExecutor> executors = HashBasedTable.create();
+	public static final Map<EntityPlayer, QuickBreakExecutor> executors = Maps.newHashMap();
 
-	private QuickBreakExecutor(World world, EntityPlayer player)
+	private QuickBreakExecutor(EntityPlayer player)
 	{
-		super(world, player);
+		super(player);
 	}
 
-	public static QuickBreakExecutor getExecutor(World world, EntityPlayer player)
+	public static QuickBreakExecutor getExecutor(EntityPlayer player)
 	{
-		QuickBreakExecutor executor = executors.get(world, player);
+		QuickBreakExecutor executor = executors.get(player);
 
 		if (executor == null)
 		{
-			executor = new QuickBreakExecutor(world, player);
+			executor = new QuickBreakExecutor(player);
 
-			executors.put(world, player, executor);
+			executors.put(player, executor);
 		}
 
 		return executor;

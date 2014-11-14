@@ -7,50 +7,51 @@
  * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
  */
 
-package com.kegare.caveworld.network;
+package com.kegare.caveworld.network.client;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 
-import com.kegare.caveworld.api.CaveworldAPI;
+import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.world.WorldProviderCaveworld;
 
-import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
-public class MiningSyncMessage implements IMessage, IMessageHandler<MiningSyncMessage, IMessage>
+public class DimSyncMessage implements IMessage, IMessageHandler<DimSyncMessage, IMessage>
 {
-	private NBTTagCompound data = new NBTTagCompound();
+	private int dimensionId;
+	private NBTTagCompound data;
 
-	public MiningSyncMessage() {}
+	public DimSyncMessage() {}
 
-	public MiningSyncMessage(EntityPlayer player)
+	public DimSyncMessage(int dim, NBTTagCompound compound)
 	{
-		CaveworldAPI.saveMiningData(player, data);
+		this.dimensionId = dim;
+		this.data = compound;
 	}
 
 	@Override
 	public void fromBytes(ByteBuf buffer)
 	{
+		dimensionId = buffer.readInt();
 		data = ByteBufUtils.readTag(buffer);
 	}
 
 	@Override
 	public void toBytes(ByteBuf buffer)
 	{
+		buffer.writeInt(dimensionId);
 		ByteBufUtils.writeTag(buffer, data);
 	}
 
-	@SideOnly(Side.CLIENT)
 	@Override
-	public IMessage onMessage(MiningSyncMessage message, MessageContext ctx)
+	public IMessage onMessage(DimSyncMessage message, MessageContext ctx)
 	{
-		CaveworldAPI.loadMiningData(FMLClientHandler.instance().getClientPlayerEntity(), message.data);
+		Config.dimensionCaveworld = message.dimensionId;
+		WorldProviderCaveworld.loadDimData(message.data);
 
 		return null;
 	}

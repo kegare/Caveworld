@@ -9,7 +9,6 @@
 
 package com.kegare.caveworld.handler;
 
-import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
 
@@ -73,7 +72,6 @@ import org.lwjgl.opengl.GL11;
 import shift.mceconomy2.api.MCEconomyAPI;
 
 import com.google.common.collect.Sets;
-import com.google.common.collect.Table.Cell;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.core.CaveAchievementList;
@@ -82,10 +80,10 @@ import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.entity.EntityCaveman;
 import com.kegare.caveworld.item.ItemCavenium;
 import com.kegare.caveworld.item.ItemMiningPickaxe;
-import com.kegare.caveworld.network.BuffMessage;
-import com.kegare.caveworld.network.CaveAchievementMessage;
-import com.kegare.caveworld.network.CaveSoundMessage;
-import com.kegare.caveworld.network.DimSyncMessage;
+import com.kegare.caveworld.network.client.DimSyncMessage;
+import com.kegare.caveworld.network.client.PlaySoundMessage;
+import com.kegare.caveworld.network.server.BuffMessage;
+import com.kegare.caveworld.network.server.CaveAchievementMessage;
 import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Version;
@@ -126,7 +124,7 @@ public class CaveEventHooks
 	@SideOnly(Side.CLIENT)
 	private long triggerTime;
 
-	private static final ItemStack defaultMiningRenderIcon = new ItemStack(Items.stone_pickaxe);
+	private static final ItemStack defaultMiningIconItem = new ItemStack(Items.stone_pickaxe);
 
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
@@ -198,14 +196,14 @@ public class CaveEventHooks
 								switch (pickaxe.getMode(current))
 								{
 									case QUICK:
-										QuickBreakExecutor.getExecutor(mc.theWorld, mc.thePlayer).setOriginPos(x, y, z).setBreakPositions();
-										return;
+										QuickBreakExecutor.getExecutor(mc.thePlayer).setOriginPos(x, y, z).setBreakPositions();
+										break;
 									case ADIT:
-										AditBreakExecutor.getExecutor(mc.theWorld, mc.thePlayer).setOriginPos(x, y, z).setBreakPositions();
-										return;
+										AditBreakExecutor.getExecutor(mc.thePlayer).setOriginPos(x, y, z).setBreakPositions();
+										break;
 									case RANGED:
-										RangedBreakExecutor.getExecutor(mc.theWorld, mc.thePlayer).setOriginPos(x, y, z).setBreakPositions();
-										return;
+										RangedBreakExecutor.getExecutor(mc.thePlayer).setOriginPos(x, y, z).setBreakPositions();
+										break;
 									default:
 								}
 
@@ -214,8 +212,9 @@ public class CaveEventHooks
 							}
 							else
 							{
-								QuickBreakExecutor.getExecutor(mc.theWorld, mc.thePlayer).clear();
-								RangedBreakExecutor.getExecutor(mc.theWorld, mc.thePlayer).clear();
+								QuickBreakExecutor.getExecutor(mc.thePlayer).clear();
+								AditBreakExecutor.getExecutor(mc.thePlayer).clear();
+								RangedBreakExecutor.getExecutor(mc.thePlayer).clear();
 
 								breakingPos = null;
 								triggerTime = 0;
@@ -331,7 +330,7 @@ public class CaveEventHooks
 				}
 				else
 				{
-					icon = defaultMiningRenderIcon;
+					icon = defaultMiningIconItem;
 				}
 
 				GL11.glPushMatrix();
@@ -459,33 +458,12 @@ public class CaveEventHooks
 	public void onPlayerLoggedOut(PlayerLoggedOutEvent event)
 	{
 		EntityPlayer player = event.player;
-		String key = player.getGameProfile().getId().toString();
 
-		firstJoinPlayers.remove(key);
+		firstJoinPlayers.remove(player.getGameProfile().getId().toString());
 
-		for (Iterator<Cell<World, EntityPlayer, QuickBreakExecutor>> iterator = QuickBreakExecutor.executors.cellSet().iterator(); iterator.hasNext();)
-		{
-			if (iterator.next().getColumnKey().getGameProfile().getId().toString().equals(key))
-			{
-				iterator.remove();
-			}
-		}
-
-		for (Iterator<Cell<World, EntityPlayer, AditBreakExecutor>> iterator = AditBreakExecutor.executors.cellSet().iterator(); iterator.hasNext();)
-		{
-			if (iterator.next().getColumnKey().getGameProfile().getId().toString().equals(key))
-			{
-				iterator.remove();
-			}
-		}
-
-		for (Iterator<Cell<World, EntityPlayer, RangedBreakExecutor>> iterator = RangedBreakExecutor.executors.cellSet().iterator(); iterator.hasNext();)
-		{
-			if (iterator.next().getColumnKey().getGameProfile().getId().toString().equals(key))
-			{
-				iterator.remove();
-			}
-		}
+		QuickBreakExecutor.executors.remove(player);
+		AditBreakExecutor.executors.remove(player);
+		RangedBreakExecutor.executors.remove(player);
 	}
 
 	@SubscribeEvent
@@ -513,7 +491,7 @@ public class CaveEventHooks
 						name = "ambient.unrest";
 					}
 
-					Caveworld.network.sendTo(new CaveSoundMessage(new ResourceLocation("caveworld", name)), player);
+					Caveworld.network.sendTo(new PlaySoundMessage(new ResourceLocation("caveworld", name)), player);
 				}
 
 				data.setLong("Caveworld:LastTeleportTime", world.getTotalWorldTime());
@@ -678,13 +656,13 @@ public class CaveEventHooks
 						switch (pickaxe.getMode(current))
 						{
 							case QUICK:
-								executor = QuickBreakExecutor.getExecutor(world, player).setOriginPos(x, y, z).setBreakPositions();
+								executor = QuickBreakExecutor.getExecutor(player).setOriginPos(x, y, z).setBreakPositions();
 								break;
 							case ADIT:
-								executor = AditBreakExecutor.getExecutor(world, player).setOriginPos(x, y, z).setBreakPositions();
+								executor = AditBreakExecutor.getExecutor(player).setOriginPos(x, y, z).setBreakPositions();
 								break;
 							case RANGED:
-								executor = RangedBreakExecutor.getExecutor(world, player).setOriginPos(x, y, z).setBreakPositions();
+								executor = RangedBreakExecutor.getExecutor(player).setOriginPos(x, y, z).setBreakPositions();
 								break;
 							default:
 						}
@@ -696,8 +674,9 @@ public class CaveEventHooks
 					}
 					else
 					{
-						QuickBreakExecutor.getExecutor(world, player).clear();
-						RangedBreakExecutor.getExecutor(world, player).clear();
+						QuickBreakExecutor.getExecutor(player).clear();
+						AditBreakExecutor.getExecutor(player).clear();
+						RangedBreakExecutor.getExecutor(player).clear();
 					}
 				}
 			}
@@ -822,13 +801,13 @@ public class CaveEventHooks
 			switch (pickaxe.getMode(current))
 			{
 				case QUICK:
-					executor = QuickBreakExecutor.getExecutor(player.worldObj, player);
+					executor = QuickBreakExecutor.getExecutor(player);
 					break;
 				case ADIT:
-					executor = AditBreakExecutor.getExecutor(player.worldObj, player);
+					executor = AditBreakExecutor.getExecutor(player);
 					break;
 				case RANGED:
-					executor = RangedBreakExecutor.getExecutor(player.worldObj, player);
+					executor = RangedBreakExecutor.getExecutor(player);
 					break;
 				default:
 					executor = null;
@@ -1078,30 +1057,6 @@ public class CaveEventHooks
 			CaveBlocks.caveworld_portal.clearInventory();
 
 			WorldProviderCaveworld.saveDimData();
-		}
-
-		for (Iterator<Cell<World, EntityPlayer, QuickBreakExecutor>> iterator = QuickBreakExecutor.executors.cellSet().iterator(); iterator.hasNext();)
-		{
-			if (iterator.next().getRowKey().provider.dimensionId == dim)
-			{
-				iterator.remove();
-			}
-		}
-
-		for (Iterator<Cell<World, EntityPlayer, AditBreakExecutor>> iterator = AditBreakExecutor.executors.cellSet().iterator(); iterator.hasNext();)
-		{
-			if (iterator.next().getRowKey().provider.dimensionId == dim)
-			{
-				iterator.remove();
-			}
-		}
-
-		for (Iterator<Cell<World, EntityPlayer, RangedBreakExecutor>> iterator = RangedBreakExecutor.executors.cellSet().iterator(); iterator.hasNext();)
-		{
-			if (iterator.next().getRowKey().provider.dimensionId == dim)
-			{
-				iterator.remove();
-			}
 		}
 	}
 

@@ -22,6 +22,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.StatCollector;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
@@ -38,14 +39,15 @@ import com.kegare.caveworld.handler.CaveEventHooks;
 import com.kegare.caveworld.handler.CaveFuelHandler;
 import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.item.ItemMiningPickaxe;
-import com.kegare.caveworld.network.BuffMessage;
-import com.kegare.caveworld.network.CaveAchievementMessage;
-import com.kegare.caveworld.network.CaveSoundMessage;
-import com.kegare.caveworld.network.CaveworldMenuMessage;
-import com.kegare.caveworld.network.DimSyncMessage;
-import com.kegare.caveworld.network.MiningSyncMessage;
-import com.kegare.caveworld.network.RegenerateMessage;
-import com.kegare.caveworld.network.SelectBreakableMessage;
+import com.kegare.caveworld.network.client.PlaySoundMessage;
+import com.kegare.caveworld.network.client.CaveworldMenuMessage;
+import com.kegare.caveworld.network.client.DimSyncMessage;
+import com.kegare.caveworld.network.client.MiningSyncMessage;
+import com.kegare.caveworld.network.client.SetBlockMessage;
+import com.kegare.caveworld.network.common.RegenerateMessage;
+import com.kegare.caveworld.network.server.BuffMessage;
+import com.kegare.caveworld.network.server.CaveAchievementMessage;
+import com.kegare.caveworld.network.server.SelectBreakableMessage;
 import com.kegare.caveworld.plugin.advancedtools.AdvancedToolsPlugin;
 import com.kegare.caveworld.plugin.craftguide.CraftGuidePlugin;
 import com.kegare.caveworld.plugin.ic2.IC2Plugin;
@@ -121,6 +123,20 @@ public class Caveworld
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event)
 	{
+		int id = 0;
+
+		network.registerMessage(DimSyncMessage.class, DimSyncMessage.class, id++, Side.CLIENT);
+		network.registerMessage(MiningSyncMessage.class, MiningSyncMessage.class, id++, Side.CLIENT);
+		network.registerMessage(PlaySoundMessage.class, PlaySoundMessage.class, id++, Side.CLIENT);
+		network.registerMessage(SetBlockMessage.class, SetBlockMessage.class, id++, Side.CLIENT);
+		network.registerMessage(RegenerateMessage.class, RegenerateMessage.class, id++, Side.CLIENT);
+		network.registerMessage(RegenerateMessage.class, RegenerateMessage.class, id++, Side.SERVER);
+		network.registerMessage(RegenerateMessage.ProgressNotify.class, RegenerateMessage.ProgressNotify.class, id++, Side.CLIENT);
+		network.registerMessage(BuffMessage.class, BuffMessage.class, id++, Side.SERVER);
+		network.registerMessage(CaveworldMenuMessage.class, CaveworldMenuMessage.class, id++, Side.CLIENT);
+		network.registerMessage(CaveAchievementMessage.class, CaveAchievementMessage.class, id++, Side.SERVER);
+		network.registerMessage(SelectBreakableMessage.class, SelectBreakableMessage.class, id++, Side.SERVER);
+
 		Config.syncGeneralCfg();
 		Config.syncBlocksCfg();
 		Config.syncItemsCfg();
@@ -140,25 +156,12 @@ public class Caveworld
 		Config.syncEntitiesCfg();
 		Config.syncDimensionCfg();
 
-		int id = 0;
-
-		network.registerMessage(DimSyncMessage.class, DimSyncMessage.class, id++, Side.CLIENT);
-		network.registerMessage(MiningSyncMessage.class, MiningSyncMessage.class, id++, Side.CLIENT);
-		network.registerMessage(CaveSoundMessage.class, CaveSoundMessage.class, id++, Side.CLIENT);
-		network.registerMessage(RegenerateMessage.class, RegenerateMessage.class, id++, Side.CLIENT);
-		network.registerMessage(RegenerateMessage.class, RegenerateMessage.class, id++, Side.SERVER);
-		network.registerMessage(RegenerateMessage.ProgressNotify.class, RegenerateMessage.ProgressNotify.class, id++, Side.CLIENT);
-		network.registerMessage(BuffMessage.class, BuffMessage.class, id++, Side.SERVER);
-		network.registerMessage(CaveworldMenuMessage.class, CaveworldMenuMessage.class, id++, Side.CLIENT);
-		network.registerMessage(CaveAchievementMessage.class, CaveAchievementMessage.class, id++, Side.SERVER);
-		network.registerMessage(SelectBreakableMessage.class, SelectBreakableMessage.class, id++, Side.SERVER);
-
 		EntityRegistry.registerGlobalEntityID(EntityCaveman.class, "Caveman", EntityRegistry.findGlobalUniqueEntityId(), 0xAAAAAA, 0xCCCCCC);
 		EntityRegistry.registerModEntity(EntityCaveman.class, "Caveman", 0, this, 128, 1, true);
 
 		proxy.registerRenderers();
 
-		id = CaveworldAPI.getDimension();
+		int id = CaveworldAPI.getDimension();
 		DimensionManager.registerProviderType(id, WorldProviderCaveworld.class, true);
 		DimensionManager.registerDimension(id, id);
 		id = CaveworldAPI.getDeepDimension();
@@ -400,7 +403,7 @@ public class Caveworld
 
 		if (event.getSide().isServer() && (Version.DEV_DEBUG || Config.versionNotify && Version.isOutdated()))
 		{
-			event.getServer().logInfo("A new Caveworld version is available : " + Version.getLatest());
+			event.getServer().logInfo(String.format(StatCollector.translateToLocal("caveworld.version.message"), "Caveworld") + ": " + Version.getLatest());
 		}
 	}
 

@@ -43,7 +43,7 @@ import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
-import com.kegare.caveworld.network.RegenerateMessage;
+import com.kegare.caveworld.network.common.RegenerateMessage;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.CaveUtils;
 
@@ -81,7 +81,7 @@ public class WorldProviderDeepCaveworld extends WorldProviderCaveworld
 		{
 			if (obj != null && ((EntityPlayerMP)obj).dimension == CaveworldAPI.getDeepDimension())
 			{
-				target.add(CaveUtils.respawnPlayer((EntityPlayerMP)obj, 0));
+				target.add(CaveUtils.forceTeleport((EntityPlayerMP)obj, 0, false));
 			}
 		}
 

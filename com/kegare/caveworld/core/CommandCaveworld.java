@@ -27,8 +27,8 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 
 import com.kegare.caveworld.api.CaveworldAPI;
-import com.kegare.caveworld.network.CaveworldMenuMessage;
-import com.kegare.caveworld.network.RegenerateMessage;
+import com.kegare.caveworld.network.client.CaveworldMenuMessage;
+import com.kegare.caveworld.network.common.RegenerateMessage;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 import com.kegare.caveworld.world.WorldProviderDeepCaveworld;

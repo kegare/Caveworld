@@ -9,7 +9,6 @@
 
 package com.kegare.caveworld.item;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -30,7 +29,6 @@ import net.minecraftforge.common.util.EnumHelper;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.client.gui.GuiSelectBreakable;
 import com.kegare.caveworld.core.Caveworld;
@@ -381,13 +379,13 @@ public class ItemMiningPickaxe extends ItemPickaxe
 			switch (mode)
 			{
 				case QUICK:
-					executor = QuickBreakExecutor.getExecutor(world, player);
+					executor = QuickBreakExecutor.getExecutor(player);
 					break;
 				case ADIT:
-					executor = AditBreakExecutor.getExecutor(world, player);
+					executor = AditBreakExecutor.getExecutor(player);
 					break;
 				case RANGED:
-					executor = RangedBreakExecutor.getExecutor(world, player);
+					executor = RangedBreakExecutor.getExecutor(player);
 					break;
 				default:
 					executor = null;
@@ -510,18 +508,21 @@ public class ItemMiningPickaxe extends ItemPickaxe
 	@Override
 	public void getSubItems(Item item, CreativeTabs tab, List list)
 	{
-		List<ItemStack> items = Lists.newArrayList(RecipeMiningPickaxe.instance.getCenterItems());
-
-		Collections.sort(items, CaveUtils.itemStackComparator);
-
-		for (ItemStack center : items)
+		for (ItemStack center : RecipeMiningPickaxe.instance.getCenterItems())
 		{
+			String name = GameData.getItemRegistry().getNameForObject(center.getItem());
+
+			if (Strings.isNullOrEmpty(name))
+			{
+				continue;
+			}
+
 			for (int i = 0; i <= 4; ++i)
 			{
-				ItemStack itemstack = new ItemStack(item, 1, 0);
+				ItemStack itemstack = new ItemStack(item);
 				NBTTagCompound data = new NBTTagCompound();
 
-				data.setString("BaseName", GameData.getItemRegistry().getNameForObject(center.getItem()));
+				data.setString("BaseName", name);
 				data.setInteger("Refined", i);
 
 				itemstack.setTagCompound(data);

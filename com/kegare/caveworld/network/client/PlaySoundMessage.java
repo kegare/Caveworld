@@ -7,7 +7,7 @@
  * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
  */
 
-package com.kegare.caveworld.network;
+package com.kegare.caveworld.network.client;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
@@ -23,13 +23,13 @@ import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class CaveSoundMessage implements IMessage, IMessageHandler<CaveSoundMessage, IMessage>
+public class PlaySoundMessage implements IMessage, IMessageHandler<PlaySoundMessage, IMessage>
 {
 	private ResourceLocation resource;
 
-	public CaveSoundMessage() {}
+	public PlaySoundMessage() {}
 
-	public CaveSoundMessage(ResourceLocation resource)
+	public PlaySoundMessage(ResourceLocation resource)
 	{
 		this.resource = resource;
 	}
@@ -52,7 +52,7 @@ public class CaveSoundMessage implements IMessage, IMessageHandler<CaveSoundMess
 
 	@SideOnly(Side.CLIENT)
 	@Override
-	public IMessage onMessage(CaveSoundMessage message, MessageContext ctx)
+	public IMessage onMessage(PlaySoundMessage message, MessageContext ctx)
 	{
 		Minecraft mc = FMLClientHandler.instance().getClient();
 		SoundHandler handler = mc.getSoundHandler();

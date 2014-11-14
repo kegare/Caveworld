@@ -61,8 +61,8 @@ import com.kegare.caveworld.client.renderer.EmptyRenderer;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.handler.TFCCaveEventHooks;
-import com.kegare.caveworld.network.CaveSoundMessage;
-import com.kegare.caveworld.network.RegenerateMessage;
+import com.kegare.caveworld.network.client.PlaySoundMessage;
+import com.kegare.caveworld.network.common.RegenerateMessage;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.world.gen.MapGenStrongholdCaveworld;
@@ -223,7 +223,7 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 		{
 			if (obj != null && ((EntityPlayerMP)obj).dimension == CaveworldAPI.getDimension())
 			{
-				target.add(CaveUtils.respawnPlayer((EntityPlayerMP)obj, 0));
+				target.add(CaveUtils.forceTeleport((EntityPlayerMP)obj, 0, false));
 			}
 		}
 
@@ -499,21 +499,36 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 	@Override
 	public IRenderHandler getSkyRenderer()
 	{
-		return EmptyRenderer.instance;
+		if (super.getSkyRenderer() == null)
+		{
+			setSkyRenderer(EmptyRenderer.instance);
+		}
+
+		return super.getSkyRenderer();
 	}
 
 	@SideOnly(Side.CLIENT)
 	@Override
 	public IRenderHandler getCloudRenderer()
 	{
-		return EmptyRenderer.instance;
+		if (super.getCloudRenderer() == null)
+		{
+			setCloudRenderer(EmptyRenderer.instance);
+		}
+
+		return super.getCloudRenderer();
 	}
 
 	@SideOnly(Side.CLIENT)
 	@Override
 	public IRenderHandler getWeatherRenderer()
 	{
-		return EmptyRenderer.instance;
+		if (super.getWeatherRenderer() == null)
+		{
+			setWeatherRenderer(EmptyRenderer.instance);
+		}
+
+		return super.getWeatherRenderer();
 	}
 
 	@Override
@@ -567,7 +582,7 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 					name = "ambient.unrest";
 				}
 
-				Caveworld.network.sendToDimension(new CaveSoundMessage(new ResourceLocation("caveworld", name)), dimensionId);
+				Caveworld.network.sendToDimension(new PlaySoundMessage(new ResourceLocation("caveworld", name)), dimensionId);
 
 				ambientTickCountdown = worldObj.rand.nextInt(5000) + 10000;
 			}

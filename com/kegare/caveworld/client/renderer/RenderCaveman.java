@@ -19,7 +19,6 @@ import net.minecraft.client.renderer.entity.RenderBiped;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.util.ResourceLocation;
 
@@ -80,12 +79,10 @@ public class RenderCaveman extends RenderBiped
 		if (Config.cavemanShowHealthBar && entity instanceof EntityCaveman)
 		{
 			Minecraft mc = FMLClientHandler.instance().getClient();
-			EntityPlayer player = mc.thePlayer;
 			EntityCaveman living = (EntityCaveman)entity;
 
-			if (living.isTamed() && player.getGameProfile().getId().toString().equals(Strings.nullToEmpty(living.func_152113_b())) &&
-				living.getEntitySenses().canSee(player) && living.getDistanceToEntity(player) <= 3.5F &&
-				mc.objectMouseOver.typeOfHit == MovingObjectType.ENTITY && mc.objectMouseOver.entityHit == living)
+			if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == MovingObjectType.ENTITY && mc.objectMouseOver.entityHit == living &&
+				living.isTamed() && mc.thePlayer.getGameProfile().getId().toString().equals(Strings.nullToEmpty(living.func_152113_b())) && living.getDistanceToEntity(mc.thePlayer) <= 3.5F)
 			{
 				float scale = 0.01666667F * 1.5F;
 				int width = 15;
@@ -188,7 +185,6 @@ public class RenderCaveman extends RenderBiped
 				tessellator1.addVertex(-width + renderHealth, top, 0.0D);
 				tessellator1.draw();
 				GL11.glEnable(GL11.GL_TEXTURE_2D);
-
 				GL11.glDisable(GL11.GL_BLEND);
 				GL11.glEnable(GL11.GL_LIGHTING);
 				GL11.glPopMatrix();

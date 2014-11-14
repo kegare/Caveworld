@@ -38,6 +38,6 @@ public class CaveAPIHandler implements ICaveAPIHandler
 	@Override
 	public boolean isEntityInCaveworld(Entity entity)
 	{
-		return entity == null ? false : entity.dimension == getDimension() || entity.dimension == getDeepDimension();
+		return entity != null && (entity.dimension == getDimension() || entity.dimension == getDeepDimension());
 	}
 }

@@ -73,7 +73,6 @@ public class ItemOreCompass extends Item
 
 	public ItemOreCompass(String name)
 	{
-		super();
 		this.setUnlocalizedName(name);
 		this.setTextureName("caveworld:ore_compass");
 		this.setMaxStackSize(1);

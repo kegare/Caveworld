@@ -30,6 +30,7 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
 import com.kegare.caveworld.core.Caveworld;
+import com.kegare.caveworld.network.client.SetBlockMessage;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -68,9 +69,9 @@ public class BlockRope extends Block
 		super(rope);
 		this.setBlockName(name);
 		this.setBlockTextureName("caveworld:rope");
-		this.setStepSound(soundTypeCloth);
 		this.setHardness(0.25F);
 		this.setBlockBounds(0.435F, 0.0F, 0.435F, 0.565F, 1.0F, 0.565F);
+		this.setStepSound(soundTypeCloth);
 		this.setCreativeTab(Caveworld.tabCaveworld);
 	}
 
@@ -154,18 +155,22 @@ public class BlockRope extends Block
 		}
 	}
 
-	@Override
-	public void onBlockAdded(World world, int x, int y, int z)
+	public void setUnderRopes(World world, int x, int y, int z)
 	{
-		if (world.getBlockMetadata(x, y, z) != 0 && world.isAirBlock(x, y - 1, z) && y - 1 > 0)
+		if (world.getBlockMetadata(x, y, z) != 0 && world.getBlock(x, y, z) == this && world.isAirBlock(x, y - 1, z) && y - 1 > 0)
 		{
 			for (int count = 0; count < 5 && world.isAirBlock(x, y - 1, z) && y - 1 > 0; --y)
 			{
 				if (world.isAirBlock(x, y - 2, z) && world.setBlock(x, y - 1, z, this))
 				{
+					if (!world.isRemote)
+					{
+						Caveworld.network.sendToDimension(new SetBlockMessage(x, y - 1, z, this, 0, 3), world.provider.dimensionId);
+					}
+
 					++count;
 				}
-				else break;
+				else return;
 			}
 		}
 	}
@@ -201,6 +206,8 @@ public class BlockRope extends Block
 
 			if (world.isAirBlock(x, y, z) && world.setBlock(x, y, z, CaveBlocks.rope, 1, 3))
 			{
+				CaveBlocks.rope.setUnderRopes(world, x, y, z);
+
 				--itemstack.stackSize;
 
 				for (int i = 1; itemstack.stackSize > 0 && i < itemstack.stackSize + 1; ++i)
@@ -211,6 +218,8 @@ public class BlockRope extends Block
 					{
 						if (world.setBlock(x, next, z, CaveBlocks.rope, 1, 3))
 						{
+							CaveBlocks.rope.setUnderRopes(world, x, next, z);
+
 							--itemstack.stackSize;
 						}
 						else break;

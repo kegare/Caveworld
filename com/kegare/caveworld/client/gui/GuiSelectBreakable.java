@@ -43,7 +43,7 @@ import com.kegare.caveworld.client.config.GuiSelectBlock.BlockFilter;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.item.ItemMiningPickaxe;
-import com.kegare.caveworld.network.SelectBreakableMessage;
+import com.kegare.caveworld.network.server.SelectBreakableMessage;
 import com.kegare.caveworld.util.ArrayListExtended;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.PanoramaPaths;
@@ -349,9 +349,9 @@ public class GuiSelectBreakable extends GuiScreen
 
 		protected final GuiSelectBreakable parent;
 		protected final ArrayListExtended<BlockEntry> contents = new ArrayListExtended(blocks);
+		protected final Set<BlockEntry> selected = Sets.newHashSet();
 
 		protected int nameType;
-		protected final Set<BlockEntry> selected = Sets.newHashSet();
 
 		private BlockList(final GuiSelectBreakable parent)
 		{

@@ -9,6 +9,8 @@
 
 package com.kegare.caveworld.recipe;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import net.minecraft.inventory.InventoryCrafting;
@@ -20,6 +22,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.item.ItemCavenium;
@@ -33,7 +36,7 @@ public class RecipeMiningPickaxe implements IRecipe
 	public static final RecipeMiningPickaxe instance = new RecipeMiningPickaxe();
 
 	public static final Set<Item> pickaxeWhitelist = Sets.newHashSet();
-	private static final Set<ItemStack> centerItems = Sets.newHashSet();
+	private static final List<ItemStack> centerItems = Lists.newArrayList();
 
 	@Override
 	public boolean matches(InventoryCrafting crafting, World world)
@@ -138,15 +141,13 @@ public class RecipeMiningPickaxe implements IRecipe
 		return new ItemStack(CaveItems.mining_pickaxe);
 	}
 
-	public Set<ItemStack> getCenterItems()
+	public List<ItemStack> getCenterItems()
 	{
 		if (centerItems.isEmpty())
 		{
-			Set<String> set = GameData.getItemRegistry().getKeys();
-
-			for (String key : set)
+			for (Object obj : GameData.getItemRegistry().getKeys())
 			{
-				Item item = GameData.getItemRegistry().getObject(key);
+				Item item = GameData.getItemRegistry().getObject(String.valueOf(obj));
 
 				if (item == null)
 				{
@@ -162,6 +163,6 @@ public class RecipeMiningPickaxe implements IRecipe
 			}
 		}
 
-		return centerItems;
+		return Collections.unmodifiableList(centerItems);
 	}
 }

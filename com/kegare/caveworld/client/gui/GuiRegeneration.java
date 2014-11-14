@@ -19,7 +19,7 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
 import com.kegare.caveworld.core.Caveworld;
-import com.kegare.caveworld.network.RegenerateMessage;
+import com.kegare.caveworld.network.common.RegenerateMessage;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 
 import cpw.mods.fml.client.config.GuiButtonExt;

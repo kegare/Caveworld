@@ -31,29 +31,26 @@ public class ItemPortalCaveworld extends ItemBlock
 	{
 		if (!world.isRemote)
 		{
-			if (side == 0)
+			switch (side)
 			{
-				--y;
-			}
-			else if (side == 1)
-			{
-				++y;
-			}
-			else if (side == 2)
-			{
-				--z;
-			}
-			else if (side == 3)
-			{
-				++z;
-			}
-			else if (side == 4)
-			{
-				--x;
-			}
-			else if (side == 5)
-			{
-				++x;
+				case 0:
+					--y;
+					break;
+				case 1:
+					++y;
+					break;
+				case 2:
+					--z;
+					break;
+				case 3:
+					++z;
+					break;
+				case 4:
+					--x;
+					break;
+				case 5:
+					++x;
+					break;
 			}
 
 			if (CaveBlocks.caveworld_portal.func_150000_e(world, x, y, z))

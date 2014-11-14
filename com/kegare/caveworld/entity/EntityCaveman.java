@@ -301,7 +301,7 @@ public class EntityCaveman extends EntityTameable implements IInventory
 							if ((i < 1 || j < 1 || i > 3 || j > 3) && World.doesBlockHaveSolidTopSurface(worldObj, x + i, y - 1, z + j) &&
 								!worldObj.getBlock(x + i, y, z + j).isNormalCube() && !worldObj.getBlock(x + i, y + 1, z + j).isNormalCube())
 							{
-								setLocationAndAngles(x + i + 0.5F, y, z + j + 0.5F, rotationYaw, rotationPitch);
+								setLocationAndAngles(x + i + 0.5D, y + 0.5D, z + j + 0.5D, rotationYaw, rotationPitch);
 
 								flag = true;
 							}

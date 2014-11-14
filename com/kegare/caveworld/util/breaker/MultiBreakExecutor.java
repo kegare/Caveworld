@@ -16,7 +16,6 @@ import java.util.Set;
 import net.minecraft.block.BlockRedstoneOre;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
 
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.util.ArrayListExtended;
@@ -24,16 +23,14 @@ import com.kegare.caveworld.util.breaker.BreakPos.NearestBreakPosComparator;
 
 public abstract class MultiBreakExecutor
 {
-	protected final World world;
 	protected final EntityPlayer player;
-
 	protected final ArrayListExtended<BreakPos> breakPositions = new ArrayListExtended();
+
 	protected BreakPos originPos;
 	protected BreakPos currentPos;
 
-	public MultiBreakExecutor(World world, EntityPlayer player)
+	public MultiBreakExecutor(EntityPlayer player)
 	{
-		this.world = world;
 		this.player = player;
 	}
 
@@ -41,7 +38,7 @@ public abstract class MultiBreakExecutor
 	{
 		breakPositions.clear();
 
-		originPos = new BreakPos(world, x, y, z);
+		originPos = new BreakPos(player.worldObj, x, y, z);
 		currentPos = originPos;
 
 		return this;
@@ -54,13 +51,13 @@ public abstract class MultiBreakExecutor
 
 	public boolean canBreak(int x, int y, int z)
 	{
-		if (originPos == null || world.isAirBlock(x, y, z))
+		if (originPos == null || originPos.world.isAirBlock(x, y, z))
 		{
 			return false;
 		}
 
-		return originPos.getCurrentBlock() == world.getBlock(x, y, z) && originPos.getCurrentMetadata() == world.getBlockMetadata(x, y, z) ||
-			originPos.getCurrentBlock() instanceof BlockRedstoneOre && world.getBlock(x, y, z) instanceof BlockRedstoneOre;
+		return originPos.getCurrentBlock() == originPos.world.getBlock(x, y, z) && originPos.getCurrentMetadata() == originPos.world.getBlockMetadata(x, y, z) ||
+			originPos.getCurrentBlock() instanceof BlockRedstoneOre && originPos.world.getBlock(x, y, z) instanceof BlockRedstoneOre;
 	}
 
 	public abstract MultiBreakExecutor setBreakPositions();
@@ -69,7 +66,7 @@ public abstract class MultiBreakExecutor
 	{
 		if (canBreak(x, y, z))
 		{
-			currentPos = new BreakPos(world, x, y, z);
+			currentPos = new BreakPos(originPos.world, x, y, z);
 
 			return breakPositions.addIfAbsent(currentPos);
 		}

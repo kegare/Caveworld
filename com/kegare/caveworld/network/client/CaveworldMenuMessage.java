@@ -7,7 +7,7 @@
  * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
  */
 
-package com.kegare.caveworld.network;
+package com.kegare.caveworld.network.client;
 
 import io.netty.buffer.ByteBuf;
 

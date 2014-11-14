@@ -367,7 +367,7 @@ public class CaveUtils
 		}
 
 		ChunkCoordinates spawn = world.getSpawnPoint();
-		int var1 = 64;
+		int var1 = 16;
 
 		for (int x = spawn.posX - var1; x < spawn.posX + var1; ++x)
 		{

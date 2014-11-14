@@ -60,9 +60,11 @@ public class BreakPos implements Comparable
 			if (block.removedByPlayer(world, player, x, y, z, false))
 			{
 				block.onBlockDestroyedByPlayer(world, x, y, z, meta);
+
+				MinecraftForge.EVENT_BUS.post(new BreakEvent(x, y, z, world, block, meta, player));
 			}
 
-			if (!world.isRemote)
+			if (!world.isRemote && player instanceof EntityPlayerMP)
 			{
 				((EntityPlayerMP)player).playerNetServerHandler.sendPacket(new S23PacketBlockChange(x, y, z, world));
 			}
@@ -89,7 +91,10 @@ public class BreakPos implements Comparable
 				player.getCurrentEquippedItem().damageItem(1, player);
 			}
 
-			((EntityPlayerMP)player).playerNetServerHandler.sendPacket(new S23PacketBlockChange(x, y, z, world));
+			if (player instanceof EntityPlayerMP)
+			{
+				((EntityPlayerMP)player).playerNetServerHandler.sendPacket(new S23PacketBlockChange(x, y, z, world));
+			}
 		}
 		else
 		{

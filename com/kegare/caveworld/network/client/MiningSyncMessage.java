@@ -7,51 +7,50 @@
  * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
  */
 
-package com.kegare.caveworld.network;
+package com.kegare.caveworld.network.client;
 
 import io.netty.buffer.ByteBuf;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 
-import com.kegare.caveworld.core.Config;
-import com.kegare.caveworld.world.WorldProviderCaveworld;
+import com.kegare.caveworld.api.CaveworldAPI;
 
+import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
-public class DimSyncMessage implements IMessage, IMessageHandler<DimSyncMessage, IMessage>
+public class MiningSyncMessage implements IMessage, IMessageHandler<MiningSyncMessage, IMessage>
 {
-	private int dimensionId;
-	private NBTTagCompound data;
+	private NBTTagCompound data = new NBTTagCompound();
 
-	public DimSyncMessage() {}
+	public MiningSyncMessage() {}
 
-	public DimSyncMessage(int dim, NBTTagCompound compound)
+	public MiningSyncMessage(EntityPlayer player)
 	{
-		this.dimensionId = dim;
-		this.data = compound;
+		CaveworldAPI.saveMiningData(player, data);
 	}
 
 	@Override
 	public void fromBytes(ByteBuf buffer)
 	{
-		dimensionId = buffer.readInt();
 		data = ByteBufUtils.readTag(buffer);
 	}
 
 	@Override
 	public void toBytes(ByteBuf buffer)
 	{
-		buffer.writeInt(dimensionId);
 		ByteBufUtils.writeTag(buffer, data);
 	}
 
+	@SideOnly(Side.CLIENT)
 	@Override
-	public IMessage onMessage(DimSyncMessage message, MessageContext ctx)
+	public IMessage onMessage(MiningSyncMessage message, MessageContext ctx)
 	{
-		Config.dimensionCaveworld = message.dimensionId;
-		WorldProviderCaveworld.loadDimData(message.data);
+		CaveworldAPI.loadMiningData(FMLClientHandler.instance().getClientPlayerEntity(), message.data);
 
 		return null;
 	}

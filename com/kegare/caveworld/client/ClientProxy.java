@@ -79,10 +79,13 @@ public class ClientProxy extends CommonProxy
 	public void destoryClientBlock(int x, int y, int z)
 	{
 		Minecraft mc = FMLClientHandler.instance().getClient();
-		int sideHit = mc.objectMouseOver.sideHit;
 
-		mc.playerController.onPlayerDestroyBlock(x, y, z, sideHit);
+		if (mc.objectMouseOver != null)
+		{
+			int sideHit = mc.objectMouseOver.sideHit;
 
-		mc.getNetHandler().addToSendQueue(new C07PacketPlayerDigging(2, x, y, z, sideHit));
+			mc.playerController.onPlayerDestroyBlock(x, y, z, sideHit);
+			mc.getNetHandler().addToSendQueue(new C07PacketPlayerDigging(2, x, y, z, sideHit));
+		}
 	}
 }
