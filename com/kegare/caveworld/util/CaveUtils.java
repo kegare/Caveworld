@@ -310,7 +310,7 @@ public class CaveUtils
 			return Config.miningPointValidItems != null && ArrayUtils.contains(Config.miningPointValidItems, name);
 		}
 
-		return true;
+		return false;
 	}
 
 	public static <T extends Entity> T createEntity(Class<T> clazz, World world)

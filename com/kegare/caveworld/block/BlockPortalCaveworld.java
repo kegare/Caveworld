@@ -280,13 +280,18 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 	@Override
 	public void onEntityCollidedWithBlock(World world, int x, int y, int z, Entity entity)
 	{
-		if (!world.isRemote && !portalDisabled && entity.isEntityAlive() && entity.dimension != CaveworldAPI.getDeepDimension() && (!CaveworldAPI.isEntityInCaveworld(entity) || !Config.hardcore))
+		if (!world.isRemote && !portalDisabled && entity.isEntityAlive())
 		{
+			if (Config.hardcore && CaveworldAPI.isEntityInCaveworld(entity))
+			{
+				return;
+			}
+
 			if (entity.timeUntilPortal <= 0)
 			{
 				MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
 				int dimOld = entity.dimension;
-				int dimNew = dimOld == CaveworldAPI.getDimension() ? entity.getEntityData().getInteger("Caveworld:LastDim") : CaveworldAPI.getDimension();
+				int dimNew = CaveworldAPI.isEntityInCaveworld(entity) ? entity.getEntityData().getInteger("Caveworld:LastDim") : CaveworldAPI.getDimension();
 				WorldServer worldOld = server.worldServerForDimension(dimOld);
 				WorldServer worldNew = server.worldServerForDimension(dimNew);
 

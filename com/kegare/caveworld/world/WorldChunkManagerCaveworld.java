@@ -13,7 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import net.minecraft.util.MathHelper;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.World;
@@ -45,12 +44,9 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 
 	private BiomeGenBase getCaveBiomeGenAt(int x, int z)
 	{
-		int dist = Config.biomeSize;
-		int chunkX = MathHelper.floor_double(x / (16 * dist));
-		int chunkZ = MathHelper.floor_double(z / (16 * dist));
-		long chunkSeed = ChunkCoordIntPair.chunkXZ2Int(chunkX, chunkZ);
+		int dist = Math.max(Config.biomeSize, 1);
 
-		random.setSeed(chunkSeed ^ worldObj.getSeed());
+		random.setSeed(ChunkCoordIntPair.chunkXZ2Int(x / (16 * dist), z / (16 * dist)) ^ worldObj.getSeed());
 
 		return CaveworldAPI.getRandomCaveBiome(random).getBiome();
 	}

@@ -25,15 +25,14 @@ public class CaveAchievementList
 {
 	private static final ArrayListExtended<Achievement> achievementList = new ArrayListExtended();
 
-	public static final Achievement portal = new CaveAchievement("portal", -3, -1, Blocks.mossy_cobblestone, null).initIndependentStat().registerStat();
-	public static final Achievement caveworld = new CaveAchievement("caveworld", -1, -1, CaveBlocks.caveworld_portal, null).initIndependentStat().registerStat();
-	public static final Achievement cavenium = new CaveAchievement("cavenium", -3, 2, CaveItems.cavenium, caveworld).registerStat();
-	public static final Achievement theMiner = new CaveAchievement("theMiner", 1, 2, Items.iron_pickaxe, caveworld).registerStat();
-	public static final Achievement caveman = new CaveAchievement("caveman", 5, 2, Blocks.stone, caveworld).registerStat();
-	public static final Achievement compCaving = new CaveAchievement("compCaving", 5, 5, Items.egg, caveman).registerStat();
-	public static final Achievement deepCaves = new CaveAchievement("deepCaves", -1, 10, new ItemStack(Blocks.stonebrick, 1, 1), caveworld).registerStat();
-	public static final Achievement underCaves = new CaveAchievement("underCaves", -1, 15, Blocks.water, deepCaves).registerStat();
-	public static final Achievement backFromDeep = new CaveAchievement("backFromDeep", -5, 6, new ItemStack(CaveItems.cavenium, 1, 1), deepCaves).setSpecial().registerStat();
+	public static final Achievement portal = new CaveAchievement("portal", 0, -2, Blocks.mossy_cobblestone, null).initIndependentStat().registerStat();
+	public static final Achievement caveworld = new CaveAchievement("caveworld", 0, 0, CaveBlocks.caveworld_portal, null).initIndependentStat().registerStat();
+	public static final Achievement cavenium = new CaveAchievement("cavenium", -1, 3, CaveItems.cavenium, caveworld).registerStat();
+	public static final Achievement theMiner = new CaveAchievement("theMiner", 3, 2, Items.iron_pickaxe, caveworld).registerStat();
+	public static final Achievement caveman = new CaveAchievement("caveman", -4, -1, Blocks.stone, caveworld).registerStat();
+	public static final Achievement compCaving = new CaveAchievement("compCaving", -5, -3, Items.egg, caveman).registerStat();
+	public static final Achievement deepCaves = new CaveAchievement("deepCaves", 0, 7, new ItemStack(Blocks.stonebrick, 1, 1), caveworld).registerStat();
+	public static final Achievement underCaves = new CaveAchievement("underCaves", 0, 10, Blocks.water, deepCaves).registerStat();
 
 	public static void registerAchievements()
 	{

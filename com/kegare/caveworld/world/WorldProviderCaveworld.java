@@ -37,7 +37,6 @@ import net.minecraft.util.StatCollector;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.WorldProviderSurface;
 import net.minecraft.world.WorldServer;
-import net.minecraft.world.WorldType;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.structure.MapGenStructureIO;
@@ -457,7 +456,7 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 	@Override
 	public boolean getWorldHasVoidParticles()
 	{
-		return terrainType != WorldType.FLAT;
+		return false;
 	}
 
 	@Override

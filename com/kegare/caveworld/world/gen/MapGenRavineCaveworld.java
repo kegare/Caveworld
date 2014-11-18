@@ -19,13 +19,16 @@ import net.minecraft.world.gen.MapGenRavine;
 
 public class MapGenRavineCaveworld extends MapGenRavine
 {
+	protected final Random random = new Random();
+
 	private final float[] parabolicField = new float[1024];
 
 	@Override
 	protected void func_151540_a(long ravineSeed, int chunkX, int chunkZ, Block[] blocks, double blockX, double blockY, double blockZ, float scale, float leftRightRadian, float upDownRadian, int currentY, int targetY, double scaleHeight)
 	{
+		random.setSeed(ravineSeed);
+
 		int worldHeight = worldObj.getActualHeight();
-		Random random = new Random(ravineSeed);
 		double centerX = chunkX * 16 + 8;
 		double centerZ = chunkZ * 16 + 8;
 		float leftRightChange = 0.0F;

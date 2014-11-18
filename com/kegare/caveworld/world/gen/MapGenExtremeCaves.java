@@ -9,19 +9,18 @@
 
 package com.kegare.caveworld.world.gen;
 
-import java.util.Random;
-
 import net.minecraft.block.Block;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
-public class MapGenExtremeCaves extends MapGenCavesCaveworld
+public class MapGenExtremeCaves extends MapGenDeepCaves
 {
 	@Override
 	protected void func_151541_a(long caveSeed, int chunkX, int chunkZ, Block[] blocks, double blockX, double blockY, double blockZ, float scale, float leftRightRadian, float upDownRadian, int currentY, int targetY, double scaleHeight)
 	{
+		random.setSeed(caveSeed);
+
 		int worldHeight = worldObj.getActualHeight();
-		Random random = new Random(caveSeed);
 		double centerX = chunkX * 16 + 8;
 		double centerZ = chunkZ * 16 + 8;
 		float leftRightChange = 0.0F;
@@ -45,7 +44,7 @@ public class MapGenExtremeCaves extends MapGenCavesCaveworld
 
 		for (boolean chance = random.nextInt(6) == 0; currentY < targetY; ++currentY)
 		{
-			double roomWidth = 2.5D + MathHelper.sin(currentY * (float)Math.PI / targetY) * scale * 1.0F;
+			double roomWidth = 2.5D + MathHelper.sin(currentY * (float)Math.PI / targetY) * scale;
 			double roomHeight = roomWidth * scaleHeight;
 			float moveHorizontal = MathHelper.cos(upDownRadian);
 			float moveVertical = MathHelper.sin(upDownRadian);

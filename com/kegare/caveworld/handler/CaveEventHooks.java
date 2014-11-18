@@ -9,6 +9,7 @@
 
 package com.kegare.caveworld.handler;
 
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -71,6 +72,7 @@ import org.lwjgl.opengl.GL11;
 
 import shift.mceconomy2.api.MCEconomyAPI;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
@@ -108,8 +110,6 @@ import cpw.mods.fml.common.gameevent.TickEvent.Phase;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ServerConnectionFromClientEvent;
-import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.common.registry.GameRegistry.UniqueIdentifier;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -427,7 +427,7 @@ public class CaveEventHooks
 			{
 				if (Config.caveborn && firstJoinPlayers.contains(player.getGameProfile().getId().toString()))
 				{
-					Set<ItemStack> bonus = Sets.newHashSet();
+					List<ItemStack> bonus = Lists.newArrayList();
 
 					bonus.add(new ItemStack(Items.stone_pickaxe));
 					bonus.add(new ItemStack(Items.stone_sword));
@@ -443,12 +443,14 @@ public class CaveEventHooks
 						bonus.add(new ItemStack(Blocks.sapling, MathHelper.getRandomIntegerInRange(world.rand, 2, 5), i));
 					}
 
+					bonus.add(new ItemStack(Blocks.crafting_table));
+
 					for (ItemStack stack : bonus)
 					{
 						player.inventory.addItemStackToInventory(stack);
 					}
 
-					CaveUtils.forceTeleport(player, CaveworldAPI.getDimension(), false);
+					CaveUtils.forceTeleport(player, CaveworldAPI.getDimension(), true);
 				}
 			}
 		}
@@ -474,21 +476,24 @@ public class CaveEventHooks
 			EntityPlayerMP player = (EntityPlayerMP)event.player;
 			WorldServer world = player.getServerForPlayer();
 
+			if (Config.hardcore && event.toDim != CaveworldAPI.getDimension() && event.toDim != CaveworldAPI.getDeepDimension())
+			{
+				CaveUtils.forceTeleport(player, event.fromDim, false);
+
+				return;
+			}
+
 			if (event.toDim == CaveworldAPI.getDimension() || event.toDim == CaveworldAPI.getDeepDimension())
 			{
 				NBTTagCompound data = player.getEntityData();
 
 				if (!player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.caveworld) || data.getLong("Caveworld:LastTeleportTime") + 18000L < world.getTotalWorldTime())
 				{
-					String name;
+					String name = "ambient.unrest";
 
 					if (world.rand.nextInt(3) == 0)
 					{
 						name = "ambient.cave";
-					}
-					else
-					{
-						name = "ambient.unrest";
 					}
 
 					Caveworld.network.sendTo(new PlaySoundMessage(new ResourceLocation("caveworld", name)), player);
@@ -496,62 +501,20 @@ public class CaveEventHooks
 
 				data.setLong("Caveworld:LastTeleportTime", world.getTotalWorldTime());
 
-				player.triggerAchievement(CaveAchievementList.caveworld);
-			}
-
-			int point = CaveworldAPI.getMiningPoint(player);
-
-			if (event.toDim == CaveworldAPI.getDeepDimension())
-			{
-				if (point < 100)
+				if (event.toDim == CaveworldAPI.getDeepDimension())
 				{
-					CaveUtils.forceTeleport(player, event.fromDim, false);
-				}
-				else
-				{
-					CaveworldAPI.addMiningPoint(player, -100);
-
-					player.triggerAchievement(CaveAchievementList.deepCaves);
-				}
-			}
-			else if (event.fromDim == CaveworldAPI.getDeepDimension())
-			{
-				ItemStack current = player.getCurrentEquippedItem();
-
-				if (current != null && current.getItem() != null)
-				{
-					UniqueIdentifier unique = GameRegistry.findUniqueIdentifierFor(current.getItem());
-
-					if (unique != null && unique.modId.equals("Wa") && unique.name.equals("magatama"))
+					if (player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.theMiner))
 					{
-						return;
+						player.triggerAchievement(CaveAchievementList.deepCaves);
+					}
+					else
+					{
+						CaveUtils.forceTeleport(player, event.fromDim, false);
 					}
 				}
-
-				int req = 10000;
-
-				if (player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.backFromDeep))
-				{
-					req /= 2;
-				}
-
-				if (point < req)
-				{
-					CaveUtils.forceTeleport(player, event.fromDim, false);
-				}
 				else
 				{
-					CaveworldAPI.addMiningPoint(player, -req);
-
-					player.triggerAchievement(CaveAchievementList.backFromDeep);
-				}
-			}
-
-			if (Config.hardcore)
-			{
-				if (event.toDim != CaveworldAPI.getDimension() && event.toDim != CaveworldAPI.getDeepDimension())
-				{
-					CaveUtils.forceTeleport(player, event.fromDim, false);
+					player.triggerAchievement(CaveAchievementList.caveworld);
 				}
 			}
 		}
@@ -723,7 +686,7 @@ public class CaveEventHooks
 						event.setCanceled(true);
 					}
 				}
-				else if (player.dimension == CaveworldAPI.getDimension() && world.getBlock(x, y, z).isBed(world, x, y, z, player))
+				else if (CaveworldAPI.isEntityInCaveworld(player) && world.getBlock(x, y, z).isBed(world, x, y, z, player))
 				{
 					int metadata = world.getBlockMetadata(x, y, z);
 
@@ -915,14 +878,7 @@ public class CaveEventHooks
 			{
 				if (player.boundingBox.maxY >= player.worldObj.provider.getActualHeight())
 				{
-					if (CaveworldAPI.getMiningPoint(player) >= 10000)
-					{
-						CaveUtils.forceTeleport(player, CaveworldAPI.getDimension(), true);
-					}
-					else
-					{
-						CaveUtils.forceTeleport(player, player.dimension, false);
-					}
+					CaveUtils.forceTeleport(player, CaveworldAPI.getDimension(), true);
 				}
 				else if (player.posY <= 30.0D && player.func_147099_x().canUnlockAchievement(CaveAchievementList.underCaves) && !player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.underCaves))
 				{
@@ -953,7 +909,7 @@ public class CaveEventHooks
 			{
 				if (player.boundingBox.minY <= 0)
 				{
-					if (CaveworldAPI.getMiningPoint(player) >= 100)
+					if (player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.theMiner))
 					{
 						CaveUtils.forceTeleport(player, CaveworldAPI.getDeepDimension(), true);
 					}
@@ -986,11 +942,6 @@ public class CaveEventHooks
 			if (!Config.deathLoseMiningPoint)
 			{
 				CaveworldAPI.saveMiningData(player, null);
-			}
-
-			if (player.dimension == CaveworldAPI.getDeepDimension() && player.posY < 16.0D && player.isInWater())
-			{
-				CaveUtils.forceTeleport(player, CaveworldAPI.getDimension(), false);
 			}
 		}
 	}

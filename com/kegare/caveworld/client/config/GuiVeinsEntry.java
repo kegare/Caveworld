@@ -1245,22 +1245,42 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 			}
 
 			BlockEntry block = entry.getBlock();
+			ItemStack itemstack = new ItemStack(block.getBlock(), 1, block.getMetadata());
 			String name = null;
 
 			try
 			{
-				switch (nameType)
+				if (itemstack.getItem() == null)
 				{
-					case 1:
-						name = GameData.getBlockRegistry().getNameForObject(block.getBlock());
-						break;
-					case 2:
-						name = block.getBlock().getUnlocalizedName();
-						name = name.substring(name.indexOf(".") + 1);
-						break;
-					default:
-						name = block.getBlock().getLocalizedName();
-						break;
+					switch (nameType)
+					{
+						case 1:
+							name = GameData.getBlockRegistry().getNameForObject(block.getBlock());
+							break;
+						case 2:
+							name = block.getBlock().getUnlocalizedName();
+							name = name.substring(name.indexOf(".") + 1);
+							break;
+						default:
+							name = block.getBlock().getLocalizedName();
+							break;
+					}
+				}
+				else
+				{
+					switch (nameType)
+					{
+						case 1:
+							name = GameData.getBlockRegistry().getNameForObject(block.getBlock()) + ", " + itemstack.getItemDamage();
+							break;
+						case 2:
+							name = itemstack.getUnlocalizedName();
+							name = name.substring(name.indexOf(".") + 1);
+							break;
+						default:
+							name = itemstack.getDisplayName();
+							break;
+					}
 				}
 			}
 			catch (Throwable e) {}

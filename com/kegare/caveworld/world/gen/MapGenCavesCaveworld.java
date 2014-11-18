@@ -18,11 +18,14 @@ import net.minecraft.world.gen.MapGenCaves;
 
 public class MapGenCavesCaveworld extends MapGenCaves
 {
+	protected final Random random = new Random();
+
 	@Override
 	protected void func_151541_a(long caveSeed, int chunkX, int chunkZ, Block[] blocks, double blockX, double blockY, double blockZ, float scale, float leftRightRadian, float upDownRadian, int currentY, int targetY, double scaleHeight)
 	{
+		random.setSeed(caveSeed);
+
 		int worldHeight = worldObj.getActualHeight();
-		Random random = new Random(caveSeed);
 		double centerX = chunkX * 16 + 8;
 		double centerZ = chunkZ * 16 + 8;
 		float leftRightChange = 0.0F;
@@ -44,9 +47,9 @@ public class MapGenCavesCaveworld extends MapGenCaves
 
 		int nextInterHeight = random.nextInt(targetY / 2) + targetY / 4;
 
-		for (boolean chance = random.nextInt(6) == 0; currentY < targetY; ++currentY)
+		for (boolean chance = random.nextInt(10) == 0; currentY < targetY; ++currentY)
 		{
-			double roomWidth = 1.5D + MathHelper.sin(currentY * (float)Math.PI / targetY) * scale;
+			double roomWidth = 2.0D + MathHelper.sin(currentY * (float)Math.PI / targetY) * scale;
 			double roomHeight = roomWidth * scaleHeight;
 			float moveHorizontal = MathHelper.cos(upDownRadian);
 			float moveVertical = MathHelper.sin(upDownRadian);
@@ -56,11 +59,11 @@ public class MapGenCavesCaveworld extends MapGenCaves
 
 			if (chance)
 			{
-				upDownRadian *= 0.92F;
+				upDownRadian *= 0.95F;
 			}
 			else
 			{
-				upDownRadian *= 0.7F;
+				upDownRadian *= 0.8F;
 			}
 
 			upDownRadian += upDownChange * 0.1F;
@@ -138,9 +141,9 @@ public class MapGenCavesCaveworld extends MapGenCaves
 	protected void func_151538_a(World world, int x, int z, int chunkX, int chunkZ, Block[] blocks)
 	{
 		int worldHeight = world.provider.getActualHeight();
-		int chance = rand.nextInt(rand.nextInt(rand.nextInt(15) + 1) + 1);
+		int chance = rand.nextInt(rand.nextInt(rand.nextInt(25) + 1) + 1);
 
-		if (rand.nextInt(6) != 0)
+		if (rand.nextInt(4) != 0)
 		{
 			chance = 0;
 		}
@@ -163,14 +166,14 @@ public class MapGenCavesCaveworld extends MapGenCaves
 			{
 				float leftRightRadian = rand.nextFloat() * (float)Math.PI * 2.0F;
 				float upDownRadian = (rand.nextFloat() - 0.5F) * 2.0F / 8.0F;
-				float scale = rand.nextFloat() * 2.5F + rand.nextFloat();
+				float scale = rand.nextFloat() * 3.0F + rand.nextFloat();
 
-				if (rand.nextInt(10) == 0)
+				if (rand.nextInt(8) == 0)
 				{
 					scale *= rand.nextFloat() * rand.nextFloat() * 3.5F + 1.0F;
 				}
 
-				func_151541_a(rand.nextLong(), chunkX, chunkZ, blocks, blockX, blockY, blockZ, scale, leftRightRadian, upDownRadian, 0, 0, 1.0D);
+				func_151541_a(rand.nextLong(), chunkX, chunkZ, blocks, blockX, blockY, blockZ, scale, leftRightRadian, upDownRadian, 0, 0, 1.15D);
 			}
 		}
 	}

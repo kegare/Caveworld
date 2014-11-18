@@ -23,6 +23,7 @@ import net.minecraft.world.biome.BiomeGenBase;
 import com.bioxx.tfc.WorldGen.TFCBiome;
 import com.bioxx.tfc.WorldGen.TFCWorldChunkManager;
 import com.kegare.caveworld.api.CaveworldAPI;
+import com.kegare.caveworld.core.Config;
 
 public class TFCWorldChunkManagerCaveworld extends TFCWorldChunkManager
 {
@@ -87,11 +88,9 @@ public class TFCWorldChunkManagerCaveworld extends TFCWorldChunkManager
 
 	private TFCBiome getCaveBiomeGenAt(int x, int z)
 	{
-		int chunkX = x >> 4;
-		int chunkZ = z >> 4;
-		long chunkSeed = ChunkCoordIntPair.chunkXZ2Int(chunkX, chunkZ);
+		int dist = Math.max(Config.biomeSize, 1);
 
-		random.setSeed(chunkSeed ^ worldObj.getSeed());
+		random.setSeed(ChunkCoordIntPair.chunkXZ2Int(x / (16 * dist), z / (16 * dist)) ^ worldObj.getSeed());
 
 		return convertToTFCBiome(CaveworldAPI.getRandomCaveBiome(random).getBiome());
 	}
