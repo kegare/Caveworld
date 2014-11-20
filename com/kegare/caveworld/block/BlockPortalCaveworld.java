@@ -136,13 +136,6 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 	@Override
 	public boolean func_150000_e(World world, int x, int y, int z)
 	{
-		if (world.provider.dimensionId == 1)
-		{
-			world.newExplosion(null, x, y, z, 4.5F, true, true);
-
-			return true;
-		}
-
 		BlockEntry frame = new BlockEntry(Blocks.mossy_cobblestone, 0);
 		Size size1 = new Size(world, x, y, z, 1, frame);
 		Size size2 = new Size(world, x, y, z, 2, frame);
