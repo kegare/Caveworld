@@ -12,22 +12,22 @@ package com.kegare.caveworld.network.client;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
 
-import com.kegare.caveworld.world.ChunkProviderCaveworld;
-import com.kegare.caveworld.world.WorldProviderCaveworld;
+import com.kegare.caveworld.world.ChunkProviderDeepCaveworld;
+import com.kegare.caveworld.world.WorldProviderDeepCaveworld;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 
-public class DimSyncMessage implements IMessage, IMessageHandler<DimSyncMessage, IMessage>
+public class DimDeepSyncMessage implements IMessage, IMessageHandler<DimDeepSyncMessage, IMessage>
 {
 	private int dimensionId;
 	private NBTTagCompound data;
 
-	public DimSyncMessage() {}
+	public DimDeepSyncMessage() {}
 
-	public DimSyncMessage(int dim, NBTTagCompound data)
+	public DimDeepSyncMessage(int dim, NBTTagCompound data)
 	{
 		this.dimensionId = dim;
 		this.data = data;
@@ -48,10 +48,10 @@ public class DimSyncMessage implements IMessage, IMessageHandler<DimSyncMessage,
 	}
 
 	@Override
-	public IMessage onMessage(DimSyncMessage message, MessageContext ctx)
+	public IMessage onMessage(DimDeepSyncMessage message, MessageContext ctx)
 	{
-		ChunkProviderCaveworld.dimensionId = message.dimensionId;
-		WorldProviderCaveworld.loadDimData(message.data);
+		ChunkProviderDeepCaveworld.dimensionId = message.dimensionId;
+		WorldProviderDeepCaveworld.loadDimData(message.data);
 
 		return null;
 	}

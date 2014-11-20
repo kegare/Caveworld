@@ -36,6 +36,7 @@ import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.api.ICaveBiome;
+import com.kegare.caveworld.api.ICaveVein;
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome;
 import com.kegare.caveworld.core.CaveVeinManager.CaveVein;
@@ -44,6 +45,8 @@ import com.kegare.caveworld.util.CaveConfiguration;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Version;
+import com.kegare.caveworld.world.ChunkProviderCaveworld;
+import com.kegare.caveworld.world.ChunkProviderDeepCaveworld;
 
 import cpw.mods.fml.client.config.GuiConfigEntries.IConfigEntry;
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -59,10 +62,12 @@ public class Config
 	public static Configuration generalCfg;
 	public static Configuration blocksCfg;
 	public static Configuration itemsCfg;
+	public static Configuration entitiesCfg;
 	public static Configuration dimensionCfg;
 	public static Configuration biomesCfg;
-	public static Configuration entitiesCfg;
 	public static Configuration veinsCfg;
+	public static Configuration biomesDeepCfg;
+	public static Configuration veinsDeepCfg;
 
 	public static boolean versionNotify;
 	public static boolean veinsAutoRegister;
@@ -93,23 +98,6 @@ public class Config
 	public static int[] cavemanSpawnBiomes;
 	public static int cavemanCreatureType;
 	public static boolean cavemanShowHealthBar;
-
-	public static int dimensionCaveworld;
-	public static int dimensionDeepCaveworld;
-	public static int subsurfaceHeight;
-	public static int biomeSize;
-	public static boolean generateCaves;
-	public static boolean generateRavine;
-	public static boolean generateDeepCaves;
-	public static boolean generateUnderCaves;
-	public static boolean generateExtremeCaves;
-	public static boolean generateExtremeRavine;
-	public static boolean generateMineshaft;
-	public static boolean generateStronghold;
-	public static boolean generateLakes;
-	public static boolean generateDungeons;
-	public static boolean generateAnimalDungeons;
-	public static boolean decorateVines;
 
 	public static Class<? extends IConfigEntry> selectItems;
 	public static Class<? extends IConfigEntry> selectBiomes;
@@ -487,7 +475,7 @@ public class Config
 
 	public static void syncDimensionCfg()
 	{
-		String category = "caveworld";
+		String category = "Caveworld";
 		Property prop;
 		List<String> propOrder = Lists.newArrayList();
 
@@ -498,118 +486,196 @@ public class Config
 
 		dimensionCfg.addCustomCategoryComment(category, "If multiplayer, server-side only.");
 
-		prop = dimensionCfg.get(category, "dimensionCaveworld", -5);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
+		prop = dimensionCfg.get(category, "dimension", -5);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName()).setRequiresMcRestart(true);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
-		dimensionCaveworld = prop.getInt(dimensionCaveworld);
+		ChunkProviderCaveworld.dimensionId = prop.getInt(ChunkProviderCaveworld.dimensionId);
 
-		if (dimensionCaveworld == 0)
+		if (ChunkProviderCaveworld.dimensionId == 0)
 		{
 			prop.set(DimensionManager.getNextFreeDimId());
 
-			dimensionCaveworld = prop.getInt();
-		}
-
-		prop = dimensionCfg.get(category, "dimensionDeepCaveworld", -6);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
-		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-		prop.comment += " [default: " + prop.getDefault() + "]";
-		propOrder.add(prop.getName());
-		dimensionDeepCaveworld = prop.getInt(dimensionDeepCaveworld);
-
-		if (dimensionDeepCaveworld == 0)
-		{
-			prop.set(DimensionManager.getNextFreeDimId());
-
-			dimensionDeepCaveworld = prop.getInt();
+			ChunkProviderCaveworld.dimensionId = prop.getInt();
 		}
 
 		prop = dimensionCfg.get(category, "subsurfaceHeight", 255);
-		prop.setMinValue(63).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop.setMinValue(63).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
-		subsurfaceHeight = MathHelper.clamp_int(prop.getInt(subsurfaceHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		ChunkProviderCaveworld.subsurfaceHeight = MathHelper.clamp_int(prop.getInt(ChunkProviderCaveworld.subsurfaceHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 		prop = dimensionCfg.get(category, "biomeSize", 1);
-		prop.setMinValue(1).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop.setMinValue(1).setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
-		biomeSize = MathHelper.clamp_int(prop.getInt(biomeSize), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		ChunkProviderCaveworld.biomeSize = MathHelper.clamp_int(prop.getInt(ChunkProviderCaveworld.biomeSize), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 		prop = dimensionCfg.get(category, "generateCaves", true);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
-		generateCaves = prop.getBoolean(generateCaves);
+		ChunkProviderCaveworld.generateCaves = prop.getBoolean(ChunkProviderCaveworld.generateCaves);
 		prop = dimensionCfg.get(category, "generateRavine", true);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
-		generateRavine = prop.getBoolean(generateRavine);
-		prop = dimensionCfg.get(category, "generateDeepCaves", true);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		ChunkProviderCaveworld.generateRavine = prop.getBoolean(ChunkProviderCaveworld.generateRavine);
+		prop = dimensionCfg.get(category, "generateUnderCaves", false);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
-		generateDeepCaves = prop.getBoolean(generateDeepCaves);
-		prop = dimensionCfg.get(category, "generateUnderCaves", true);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		ChunkProviderCaveworld.generateUnderCaves = prop.getBoolean(ChunkProviderCaveworld.generateUnderCaves);
+		prop = dimensionCfg.get(category, "generateExtremeCaves", false);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
-		generateUnderCaves = prop.getBoolean(generateUnderCaves);
-		prop = dimensionCfg.get(category, "generateExtremeCaves", true);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		ChunkProviderCaveworld.generateExtremeCaves = prop.getBoolean(ChunkProviderCaveworld.generateExtremeCaves);
+		prop = dimensionCfg.get(category, "generateExtremeRavine", false);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
-		generateExtremeCaves = prop.getBoolean(generateExtremeCaves);
-		prop = dimensionCfg.get(category, "generateExtremeRavine", true);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
-		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-		prop.comment += " [default: " + prop.getDefault() + "]";
-		propOrder.add(prop.getName());
-		generateExtremeRavine = prop.getBoolean(generateExtremeRavine);
+		ChunkProviderCaveworld.generateExtremeRavine = prop.getBoolean(ChunkProviderCaveworld.generateExtremeRavine);
 		prop = dimensionCfg.get(category, "generateMineshaft", true);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
-		generateMineshaft = prop.getBoolean(generateMineshaft);
+		ChunkProviderCaveworld.generateMineshaft = prop.getBoolean(ChunkProviderCaveworld.generateMineshaft);
 		prop = dimensionCfg.get(category, "generateStronghold", true);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
-		generateStronghold = prop.getBoolean(generateStronghold);
+		ChunkProviderCaveworld.generateStronghold = prop.getBoolean(ChunkProviderCaveworld.generateStronghold);
 		prop = dimensionCfg.get(category, "generateLakes", true);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
-		generateLakes = prop.getBoolean(generateLakes);
+		ChunkProviderCaveworld.generateLakes = prop.getBoolean(ChunkProviderCaveworld.generateLakes);
 		prop = dimensionCfg.get(category, "generateDungeons", true);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
-		generateDungeons = prop.getBoolean(generateDungeons);
+		ChunkProviderCaveworld.generateDungeons = prop.getBoolean(ChunkProviderCaveworld.generateDungeons);
 		prop = dimensionCfg.get(category, "generateAnimalDungeons", true);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
-		generateAnimalDungeons = prop.getBoolean(generateAnimalDungeons);
+		ChunkProviderCaveworld.generateAnimalDungeons = prop.getBoolean(ChunkProviderCaveworld.generateAnimalDungeons);
 		prop = dimensionCfg.get(category, "decorateVines", true);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
-		decorateVines = prop.getBoolean(decorateVines);
+		ChunkProviderCaveworld.decorateVines = prop.getBoolean(ChunkProviderCaveworld.decorateVines);
+
+		dimensionCfg.setCategoryPropertyOrder(category, propOrder);
+
+		propOrder.clear();
+		category = "Deep Caveworld";
+
+		dimensionCfg.addCustomCategoryComment(category, "If multiplayer, server-side only.");
+
+		prop = dimensionCfg.get(category, "dimension", -6);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName()).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderDeepCaveworld.dimensionId = prop.getInt(ChunkProviderDeepCaveworld.dimensionId);
+
+		if (ChunkProviderDeepCaveworld.dimensionId == 0)
+		{
+			ChunkProviderDeepCaveworld.dimensionId = ChunkProviderCaveworld.dimensionId;
+		}
+
+		prop = dimensionCfg.get(category, "subsurfaceHeight", 255);
+		prop.setMinValue(63).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderDeepCaveworld.subsurfaceHeight = MathHelper.clamp_int(prop.getInt(ChunkProviderDeepCaveworld.subsurfaceHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		prop = dimensionCfg.get(category, "biomeSize", 1);
+		prop.setMinValue(1).setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderDeepCaveworld.biomeSize = MathHelper.clamp_int(prop.getInt(ChunkProviderDeepCaveworld.biomeSize), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		prop = dimensionCfg.get(category, "generateCaves", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderDeepCaveworld.generateCaves = prop.getBoolean(ChunkProviderDeepCaveworld.generateCaves);
+		prop = dimensionCfg.get(category, "generateRavine", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderDeepCaveworld.generateRavine = prop.getBoolean(ChunkProviderDeepCaveworld.generateRavine);
+		prop = dimensionCfg.get(category, "generateUnderCaves", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderDeepCaveworld.generateUnderCaves = prop.getBoolean(ChunkProviderDeepCaveworld.generateUnderCaves);
+		prop = dimensionCfg.get(category, "generateExtremeCaves", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderDeepCaveworld.generateExtremeCaves = prop.getBoolean(ChunkProviderDeepCaveworld.generateExtremeCaves);
+		prop = dimensionCfg.get(category, "generateExtremeRavine", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderDeepCaveworld.generateExtremeRavine = prop.getBoolean(ChunkProviderDeepCaveworld.generateExtremeRavine);
+		prop = dimensionCfg.get(category, "generateMineshaft", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderDeepCaveworld.generateMineshaft = prop.getBoolean(ChunkProviderDeepCaveworld.generateMineshaft);
+		prop = dimensionCfg.get(category, "generateStronghold", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderDeepCaveworld.generateStronghold = prop.getBoolean(ChunkProviderDeepCaveworld.generateStronghold);
+		prop = dimensionCfg.get(category, "generateLakes", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderDeepCaveworld.generateLakes = prop.getBoolean(ChunkProviderDeepCaveworld.generateLakes);
+		prop = dimensionCfg.get(category, "generateDungeons", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderDeepCaveworld.generateDungeons = prop.getBoolean(ChunkProviderDeepCaveworld.generateDungeons);
+		prop = dimensionCfg.get(category, "generateAnimalDungeons", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderDeepCaveworld.generateAnimalDungeons = prop.getBoolean(ChunkProviderDeepCaveworld.generateAnimalDungeons);
+		prop = dimensionCfg.get(category, "decorateVines", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderDeepCaveworld.decorateVines = prop.getBoolean(ChunkProviderDeepCaveworld.decorateVines);
 
 		dimensionCfg.setCategoryPropertyOrder(category, propOrder);
 
@@ -637,13 +703,8 @@ public class Config
 		String name, terrainBlock, topBlock;
 		int weight, terrainMeta, topMeta;
 
-		for (BiomeGenBase biome : BiomeGenBase.getBiomeGenArray())
+		for (BiomeGenBase biome : CaveUtils.getBiomes())
 		{
-			if (biome == null)
-			{
-				continue;
-			}
-
 			name = Integer.toString(biome.biomeID);
 
 			if (CaveBiomeManager.defaultMapping.containsKey(biome))
@@ -767,8 +828,8 @@ public class Config
 			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.sand, 0), 20, 8, 100, 0, 255, null, Type.SANDY));
 			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.sand, 0), 20, 8, 100, 0, 20, new BlockEntry(Blocks.gravel, 0), Type.SANDY));
 			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.soul_sand, 0), 20, 10, 100, 0, 255, new BlockEntry(Blocks.netherrack, 0), Type.NETHER));
-			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.hardened_clay, 1), 24, 20, 100, 0, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
-			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.hardened_clay, 12), 24, 14, 100, 0, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.stained_hardened_clay, 1), 24, 20, 100, 0, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.stained_hardened_clay, 12), 24, 14, 100, 0, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
 		}
 		else
 		{
@@ -804,6 +865,199 @@ public class Config
 		if (veinsCfg.hasChanged())
 		{
 			veinsCfg.save();
+		}
+	}
+
+	public static void syncBiomesDeepCfg()
+	{
+		String category = "biomes";
+		Property prop;
+		List<String> propOrder = Lists.newArrayList();
+
+		if (biomesDeepCfg == null)
+		{
+			biomesDeepCfg = loadConfig(category + "-deep");
+		}
+		else
+		{
+			CaveworldAPI.clearCaveDeepBiomes();
+		}
+
+		ICaveBiome entry;
+		String name, terrainBlock, topBlock;
+		int weight, terrainMeta, topMeta;
+
+		for (BiomeGenBase biome : CaveUtils.getBiomes())
+		{
+			name = Integer.toString(biome.biomeID);
+			entry = CaveworldAPI.getCaveBiome(biome);
+
+			if (entry != null && entry.getGenWeight() > 0)
+			{
+				weight = entry.getGenWeight();
+				terrainBlock = GameData.getBlockRegistry().getNameForObject(entry.getTerrainBlock().getBlock());
+				terrainMeta = entry.getTerrainBlock().getMetadata();
+				topBlock = GameData.getBlockRegistry().getNameForObject(entry.getTopBlock().getBlock());
+				topMeta = entry.getTopBlock().getMetadata();
+			}
+			else if (CaveBiomeManager.defaultMapping.containsKey(biome))
+			{
+				entry = CaveBiomeManager.defaultMapping.get(biome);
+
+				weight = entry.getGenWeight();
+				terrainBlock = GameData.getBlockRegistry().getNameForObject(entry.getTerrainBlock().getBlock());
+				terrainMeta = entry.getTerrainBlock().getMetadata();
+				topBlock = GameData.getBlockRegistry().getNameForObject(entry.getTopBlock().getBlock());
+				topMeta = entry.getTopBlock().getMetadata();
+			}
+			else
+			{
+				weight = 0;
+				terrainBlock = GameData.getBlockRegistry().getNameForObject(Blocks.stone);
+				terrainMeta = 0;
+				topBlock = terrainBlock;
+				topMeta = terrainMeta;
+			}
+
+			propOrder.clear();
+			prop = biomesDeepCfg.get(name, "genWeight", weight);
+			prop.setMinValue(0).setMaxValue(100).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+			prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+			propOrder.add(prop.getName());
+			weight = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+			prop = biomesDeepCfg.get(name, "terrainBlock", terrainBlock);
+			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+			prop.comment += " [default: " + prop.getDefault() + "]";
+			propOrder.add(prop.getName());
+			terrainBlock = prop.getString();
+			if (!GameData.getBlockRegistry().containsKey(terrainBlock)) prop.setToDefault();
+			prop = biomesDeepCfg.get(name, "terrainBlockMetadata", terrainMeta);
+			prop.setMinValue(0).setMaxValue(15).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+			prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+			propOrder.add(prop.getName());
+			terrainMeta = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+			prop = biomesDeepCfg.get(name, "topBlock", topBlock);
+			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+			prop.comment += " [default: " + prop.getDefault() + "]";
+			propOrder.add(prop.getName());
+			topBlock = prop.getString();
+			if (!GameData.getBlockRegistry().containsKey(topBlock)) prop.setToDefault();
+			prop = biomesDeepCfg.get(name, "topBlockMetadata", topMeta);
+			prop.setMinValue(0).setMaxValue(15).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+			prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+			propOrder.add(prop.getName());
+			topMeta = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+
+			if (BiomeDictionary.isBiomeRegistered(biome))
+			{
+				Set<String> types = Sets.newTreeSet();
+
+				for (Type type : BiomeDictionary.getTypesForBiome(biome))
+				{
+					types.add(type.name());
+				}
+
+				biomesDeepCfg.addCustomCategoryComment(name, biome.biomeName + ": " + Joiner.on(", ").skipNulls().join(types));
+			}
+			else
+			{
+				biomesDeepCfg.addCustomCategoryComment(name, biome.biomeName);
+			}
+
+			biomesDeepCfg.setCategoryPropertyOrder(name, propOrder);
+
+			if (weight > 0)
+			{
+				CaveworldAPI.addCaveDeepBiome(new CaveBiome(biome, weight, new BlockEntry(terrainBlock, terrainMeta), new BlockEntry(topBlock, topMeta)));
+			}
+		}
+
+		if (biomesDeepCfg.hasChanged())
+		{
+			biomesDeepCfg.save();
+		}
+	}
+
+	public static void syncVeinsDeepCfg()
+	{
+		if (veinsDeepCfg == null)
+		{
+			veinsDeepCfg = loadConfig("veins-deep");
+		}
+		else
+		{
+			CaveworldAPI.clearCaveDeepVeins();
+		}
+
+		if (veinsDeepCfg.getCategoryNames().isEmpty())
+		{
+			Set<BlockEntry> temp = Sets.newHashSet();
+
+			for (ICaveVein entry : CaveworldAPI.getCaveVeins())
+			{
+				if (!temp.contains(entry.getBlock()))
+				{
+					ICaveVein vein = new CaveVein(entry);
+					vein.setGenWeight(vein.getGenWeight() * 2);
+					vein.setGenRate(Math.min(vein.getGenRate() * 2, 100));
+					vein.setGenMinHeight(16);
+					vein.setGenMaxHeight(255);
+					vein.setGenBiomes(null);
+
+					CaveworldAPI.addCaveDeepVein(vein);
+
+					vein = new CaveVein(entry);
+					vein.setGenWeight(vein.getGenWeight() * 3);
+					vein.setGenRate(Math.min(vein.getGenRate() * 2, 100));
+					vein.setGenMinHeight(0);
+					vein.setGenMaxHeight(15);
+					vein.setGenBiomes(null);
+
+					CaveworldAPI.addCaveDeepVein(vein);
+
+					temp.add(entry.getBlock());
+				}
+			}
+		}
+		else
+		{
+			int i = 0;
+
+			for (String name : veinsDeepCfg.getCategoryNames())
+			{
+				if (NumberUtils.isNumber(name))
+				{
+					CaveworldAPI.addCaveDeepVein(null);
+				}
+				else ++i;
+			}
+
+			if (i > 0)
+			{
+				try
+				{
+					FileUtils.forceDelete(new File(veinsDeepCfg.toString()));
+
+					CaveworldAPI.clearCaveDeepVeins();
+
+					veinsDeepCfg = null;
+					syncVeinsDeepCfg();
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
+			}
+		}
+
+		if (veinsDeepCfg.hasChanged())
+		{
+			veinsDeepCfg.save();
 		}
 	}
 }

@@ -1,5 +1,9 @@
 package com.kegare.caveworld.api;
 
+import java.util.Random;
+
+import net.minecraft.world.World;
+
 public interface ICaveVein
 {
 	public BlockEntry setBlock(BlockEntry entry);
@@ -33,4 +37,6 @@ public interface ICaveVein
 	public int[] setGenBiomes(int[] biomes);
 
 	public int[] getGenBiomes();
+
+	public void generateVein(World world, Random random, int chunkX, int chunkZ);
 }

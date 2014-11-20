@@ -23,6 +23,8 @@ public final class CaveworldAPI
 	public static ICaveAPIHandler apiHandler;
 	public static ICaveBiomeManager biomeManager;
 	public static ICaveVeinManager veinManager;
+	public static ICaveBiomeManager biomeDeepManager;
+	public static ICaveVeinManager veinDeepManager;
 	public static ICaveMiningManager miningManager;
 
 	private CaveworldAPI() {}
@@ -52,11 +54,19 @@ public final class CaveworldAPI
 	}
 
 	/**
+	 * @see ICaveAPIHandler#isDeepExist()
+	 */
+	public static boolean isDeepExist()
+	{
+		return apiHandler != null && apiHandler.isDeepExist();
+	}
+
+	/**
 	 * @see ICaveAPIHandler#isEntityInCaveworld(Entity)
 	 */
 	public static boolean isEntityInCaveworld(Entity entity)
 	{
-		return apiHandler == null ? false : apiHandler.isEntityInCaveworld(entity);
+		return apiHandler != null && apiHandler.isEntityInCaveworld(entity);
 	}
 
 	/**
@@ -64,7 +74,7 @@ public final class CaveworldAPI
 	 */
 	public static boolean addCaveBiome(ICaveBiome biome)
 	{
-		return biomeManager == null ? false : biomeManager.addCaveBiome(biome);
+		return biomeManager != null && biomeManager.addCaveBiome(biome);
 	}
 
 	/**
@@ -72,7 +82,7 @@ public final class CaveworldAPI
 	 */
 	public static boolean removeCaveBiome(BiomeGenBase biome)
 	{
-		return biomeManager == null ? false : biomeManager.removeCaveBiome(biome);
+		return biomeManager != null && biomeManager.removeCaveBiome(biome);
 	}
 
 	/**
@@ -139,11 +149,78 @@ public final class CaveworldAPI
 	}
 
 	/**
+	 * @see ICaveBiomeManager#addCaveBiome(ICaveBiome)
+	 */
+	public static boolean addCaveDeepBiome(ICaveBiome biome)
+	{
+		return biomeDeepManager != null && biomeDeepManager.addCaveBiome(biome);
+	}
+
+	/**
+	 * @see ICaveBiomeManager#removeCaveBiome(BiomeGenBase)
+	 */
+	public static boolean removeCaveDeepBiome(BiomeGenBase biome)
+	{
+		return biomeDeepManager != null && biomeDeepManager.removeCaveBiome(biome);
+	}
+
+	/**
+	 * @see ICaveBiomeManager#getActiveBiomeCount()
+	 */
+	public static int getActiveDeepBiomeCount()
+	{
+		return biomeDeepManager == null ? 0 : biomeDeepManager.getActiveBiomeCount();
+	}
+
+	/**
+	 * @see ICaveBiomeManager#getCaveBiome(BiomeGenBase)
+	 */
+	public static ICaveBiome getCaveDeepBiome(BiomeGenBase biome)
+	{
+		return biomeDeepManager == null ? new EmptyCaveBiome(biome) : biomeDeepManager.getCaveBiome(biome);
+	}
+
+	/**
+	 * @see ICaveBiomeManager#getRandomCaveBiome(Random)
+	 */
+	public static ICaveBiome getRandomCaveDeepBiome(Random random)
+	{
+		return biomeDeepManager == null ? null : biomeDeepManager.getRandomCaveBiome(random);
+	}
+
+	/**
+	 * @see ICaveBiomeManager#getCaveBiomes()
+	 */
+	public static Set<ICaveBiome> getCaveDeepBiomes()
+	{
+		return biomeDeepManager == null ? new HashSet<ICaveBiome>() : biomeDeepManager.getCaveBiomes();
+	}
+
+	/**
+	 * @see ICaveBiomeManager#getBiomeList()
+	 */
+	public static List<BiomeGenBase> getDeepBiomeList()
+	{
+		return biomeDeepManager == null ? new ArrayList<BiomeGenBase>() : biomeDeepManager.getBiomeList();
+	}
+
+	/**
+	 * @see ICaveBiomeManager#clearCaveBiomes()
+	 */
+	public static void clearCaveDeepBiomes()
+	{
+		if (biomeDeepManager != null)
+		{
+			biomeDeepManager.clearCaveBiomes();
+		}
+	}
+
+	/**
 	 * @see ICaveVeinManager#addCaveVein(ICaveVein)
 	 */
 	public static boolean addCaveVein(ICaveVein vein)
 	{
-		return veinManager == null ? false : veinManager.addCaveVein(vein);
+		return veinManager != null && veinManager.addCaveVein(vein);
 	}
 
 	@Deprecated
@@ -225,6 +302,54 @@ public final class CaveworldAPI
 		if (veinManager != null)
 		{
 			veinManager.clearCaveVeins();
+		}
+	}
+
+	/**
+	 * @see ICaveVeinManager#addCaveVein(ICaveVein)
+	 */
+	public static boolean addCaveDeepVein(ICaveVein vein)
+	{
+		return veinDeepManager != null && veinDeepManager.addCaveVein(vein);
+	}
+
+	/**
+	 * @see ICaveVeinManager#removeCaveVeins(ICaveVein)
+	 */
+	public static int removeCaveDeepVeins(ICaveVein vein)
+	{
+		return veinDeepManager == null ? 0 : veinDeepManager.removeCaveVeins(vein);
+	}
+
+	/**
+	 * @see ICaveVeinManager#removeCaveVeins(Block, int)
+	 */
+	public static int removeCaveDeepVeins(Block block, int metadata)
+	{
+		return veinDeepManager == null ? 0 : veinDeepManager.removeCaveVeins(block, metadata);
+	}
+
+	/**
+	 * @see ICaveVeinManager#getRandomCaveVein(Random)
+	 */
+	public static ICaveVein getRandomCaveDeepVein(Random random)
+	{
+		return veinDeepManager == null ? null : veinDeepManager.getRandomCaveVein(random);
+	}
+
+	public static List<ICaveVein> getCaveDeepVeins()
+	{
+		return veinDeepManager == null ? new ArrayList<ICaveVein>() : veinDeepManager.getCaveVeins();
+	}
+
+	/**
+	 * @see ICaveVeinManager#clearCaveVeins()
+	 */
+	public static void clearCaveDeepVeins()
+	{
+		if (veinDeepManager != null)
+		{
+			veinDeepManager.clearCaveVeins();
 		}
 	}
 

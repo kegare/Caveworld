@@ -12,13 +12,20 @@ package com.kegare.caveworld.world.gen;
 import java.util.Random;
 
 import net.minecraft.block.Block;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.MapGenCaves;
 
 public class MapGenCavesCaveworld extends MapGenCaves
 {
+	protected final boolean deepCaves;
 	protected final Random random = new Random();
+
+	public MapGenCavesCaveworld(boolean deep)
+	{
+		this.deepCaves = deep;
+	}
 
 	@Override
 	protected void func_151541_a(long caveSeed, int chunkX, int chunkZ, Block[] blocks, double blockX, double blockY, double blockZ, float scale, float leftRightRadian, float upDownRadian, int currentY, int targetY, double scaleHeight)
@@ -181,6 +188,27 @@ public class MapGenCavesCaveworld extends MapGenCaves
 	@Override
 	protected void digBlock(Block[] blocks, int index, int x, int y, int z, int chunkX, int chunkZ, boolean foundTop)
 	{
-		blocks[index] = null;
+		if (deepCaves)
+		{
+			if (y < 16)
+			{
+				blocks[index] = Blocks.water;
+			}
+			else
+			{
+				blocks[index] = null;
+			}
+		}
+		else
+		{
+			if (y < 10)
+			{
+				blocks[index] = Blocks.lava;
+			}
+			else
+			{
+				blocks[index] = null;
+			}
+		}
 	}
 }

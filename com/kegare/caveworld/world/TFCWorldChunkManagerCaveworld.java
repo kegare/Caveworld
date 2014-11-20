@@ -22,20 +22,23 @@ import net.minecraft.world.biome.BiomeGenBase;
 
 import com.bioxx.tfc.WorldGen.TFCBiome;
 import com.bioxx.tfc.WorldGen.TFCWorldChunkManager;
-import com.kegare.caveworld.api.CaveworldAPI;
-import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.api.ICaveBiomeManager;
 
 public class TFCWorldChunkManagerCaveworld extends TFCWorldChunkManager
 {
 	private final World worldObj;
 	private final Random random;
 	private final BiomeCache biomeCache;
+	private final int biomeSize;
+	private final ICaveBiomeManager biomeManager;
 
-	public TFCWorldChunkManagerCaveworld(World world)
+	public TFCWorldChunkManagerCaveworld(World world, int biomeSize, ICaveBiomeManager manager)
 	{
 		this.worldObj = world;
 		this.random = new Random(world.getSeed());
 		this.biomeCache = new BiomeCache(this);
+		this.biomeSize = biomeSize;
+		this.biomeManager = manager;
 	}
 
 	public static TFCBiome convertToTFCBiome(final BiomeGenBase biome)
@@ -88,11 +91,11 @@ public class TFCWorldChunkManagerCaveworld extends TFCWorldChunkManager
 
 	private TFCBiome getCaveBiomeGenAt(int x, int z)
 	{
-		int dist = Math.max(Config.biomeSize, 1);
+		int dist = Math.max(biomeSize, 1);
 
 		random.setSeed(ChunkCoordIntPair.chunkXZ2Int(x / (16 * dist), z / (16 * dist)) ^ worldObj.getSeed());
 
-		return convertToTFCBiome(CaveworldAPI.getRandomCaveBiome(random).getBiome());
+		return convertToTFCBiome(biomeManager.getRandomCaveBiome(random).getBiome());
 	}
 
 	@Override

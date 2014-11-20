@@ -1,6 +1,9 @@
 package com.kegare.caveworld.api;
 
+import java.util.Random;
+
 import net.minecraft.init.Blocks;
+import net.minecraft.world.World;
 
 public class EmptyCaveVein implements ICaveVein
 {
@@ -99,4 +102,7 @@ public class EmptyCaveVein implements ICaveVein
 	{
 		return new int[0];
 	}
+
+	@Override
+	public void generateVein(World world, Random random, int chunkX, int chunkZ) {}
 }

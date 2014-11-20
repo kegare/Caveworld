@@ -46,8 +46,6 @@ public class CaveConfigGui extends GuiConfig
 		list.add(new CaveCategoryElement("items", ItemsEntry.class));
 		list.add(new CaveCategoryElement("entities", EntitiesEntry.class));
 		list.add(new CaveCategoryElement("dimension", DimensionEntry.class));
-		list.add(new CaveCategoryElement("biomes", BiomesEntry.class));
-		list.add(new CaveCategoryElement("veins", VeinsEntry.class));
 
 		if (MCEconomyPlugin.enabled())
 		{

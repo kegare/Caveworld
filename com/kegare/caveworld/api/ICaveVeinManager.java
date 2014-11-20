@@ -4,9 +4,12 @@ import java.util.List;
 import java.util.Random;
 
 import net.minecraft.block.Block;
+import net.minecraftforge.common.config.Configuration;
 
 public interface ICaveVeinManager
 {
+	public Configuration getConfig();
+
 	/**
 	 * Add a cave vein.
 	 * @param vein The additional vein

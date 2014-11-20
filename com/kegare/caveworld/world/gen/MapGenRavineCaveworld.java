@@ -19,9 +19,15 @@ import net.minecraft.world.gen.MapGenRavine;
 
 public class MapGenRavineCaveworld extends MapGenRavine
 {
+	protected final boolean deepCaves;
 	protected final Random random = new Random();
 
 	private final float[] parabolicField = new float[1024];
+
+	public MapGenRavineCaveworld(boolean deep)
+	{
+		this.deepCaves = deep;
+	}
 
 	@Override
 	protected void func_151540_a(long ravineSeed, int chunkX, int chunkZ, Block[] blocks, double blockX, double blockY, double blockZ, float scale, float leftRightRadian, float upDownRadian, int currentY, int targetY, double scaleHeight)
@@ -160,13 +166,27 @@ public class MapGenRavineCaveworld extends MapGenRavine
 	@Override
 	protected void digBlock(Block[] blocks, int index, int x, int y, int z, int chunkX, int chunkZ, boolean foundTop)
 	{
-		if (y < 10)
+		if (deepCaves)
 		{
-			blocks[index] = Blocks.flowing_lava;
+			if (y < 16)
+			{
+				blocks[index] = Blocks.flowing_water;
+			}
+			else
+			{
+				blocks[index] = null;
+			}
 		}
 		else
 		{
-			blocks[index] = null;
+			if (y < 10)
+			{
+				blocks[index] = Blocks.flowing_lava;
+			}
+			else
+			{
+				blocks[index] = null;
+			}
 		}
 	}
 }

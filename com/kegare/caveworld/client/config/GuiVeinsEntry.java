@@ -43,13 +43,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.primitives.Ints;
 import com.kegare.caveworld.api.BlockEntry;
-import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.api.ICaveVein;
+import com.kegare.caveworld.api.ICaveVeinManager;
 import com.kegare.caveworld.client.config.GuiSelectBlock.SelectListener;
 import com.kegare.caveworld.client.gui.GuiListSlot;
 import com.kegare.caveworld.core.CaveVeinManager.CaveVein;
 import com.kegare.caveworld.core.Caveworld;
-import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.util.ArrayListExtended;
 import com.kegare.caveworld.util.CaveUtils;
 
@@ -64,6 +63,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 public class GuiVeinsEntry extends GuiScreen implements SelectListener
 {
 	protected final GuiScreen parentScreen;
+	protected final ICaveVeinManager veinManager;
 
 	protected VeinList veinList;
 
@@ -107,9 +107,10 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 
 	private final Map<Object, List<String>> hoverCache = Maps.newHashMap();
 
-	public GuiVeinsEntry(GuiScreen parent)
+	public GuiVeinsEntry(GuiScreen parent, ICaveVeinManager manager)
 	{
 		this.parentScreen = parent;
+		this.veinManager = manager;
 	}
 
 	@Override
@@ -455,17 +456,17 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 							@Override
 							protected void compute()
 							{
-								boolean flag = CaveworldAPI.getCaveVeins().size() != veinList.veins.size();
+								boolean flag = veinManager.getCaveVeins().size() != veinList.veins.size();
 
-								CaveworldAPI.clearCaveVeins();
+								veinManager.clearCaveVeins();
 
 								if (flag)
 								{
 									try
 									{
-										FileUtils.forceDelete(new File(Config.veinsCfg.toString()));
+										FileUtils.forceDelete(new File(veinManager.getConfig().toString()));
 
-										Config.veinsCfg.load();
+										veinManager.getConfig().load();
 									}
 									catch (IOException e)
 									{
@@ -475,12 +476,12 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 
 								for (ICaveVein vein : veinList.veins)
 								{
-									CaveworldAPI.addCaveVein(vein);
+									veinManager.addCaveVein(vein);
 								}
 
-								if (Config.veinsCfg.hasChanged())
+								if (veinManager.getConfig().hasChanged())
 								{
-									Config.veinsCfg.save();
+									veinManager.getConfig().save();
 								}
 							}
 						});
@@ -1185,8 +1186,8 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 	{
 		protected final GuiVeinsEntry parent;
 
-		protected final ArrayListExtended<ICaveVein> veins = new ArrayListExtended(CaveworldAPI.getCaveVeins());
-		protected final ArrayListExtended<ICaveVein> contents = new ArrayListExtended(veins);
+		protected final ArrayListExtended<ICaveVein> veins = new ArrayListExtended();
+		protected final ArrayListExtended<ICaveVein> contents = new ArrayListExtended();
 		protected final List<ICaveVein> selected = Lists.newArrayList();
 		protected final List<ICaveVein> copied = Lists.newArrayList();
 
@@ -1198,6 +1199,8 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 		{
 			super(parent.mc, 0, 0, 0, 0, 22);
 			this.parent = parent;
+			this.veins.addAll(parent.veinManager.getCaveVeins());
+			this.contents.addAll(veins);
 		}
 
 		@Override
@@ -1296,7 +1299,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 
 				if (item != null)
 				{
-					CaveUtils.renderItemStack(mc, new ItemStack(block.getBlock(), entry.getGenBlockCount(), block.getMetadata()), width / 2 - 100, par3 + 1, false, true, null);
+					CaveUtils.renderItemStack(mc, new ItemStack(item, entry.getGenBlockCount(), block.getMetadata()), width / 2 - 100, par3 + 1, false, true, null);
 				}
 
 				block = entry.getGenTargetBlock();
@@ -1304,7 +1307,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 
 				if (item != null)
 				{
-					CaveUtils.renderItemStack(mc, new ItemStack(block.getBlock(), entry.getGenWeight(), block.getMetadata()), width / 2 + 90, par3 + 1, false, true, null);
+					CaveUtils.renderItemStack(mc, new ItemStack(item, entry.getGenWeight(), block.getMetadata()), width / 2 + 90, par3 + 1, false, true, null);
 				}
 			}
 		}

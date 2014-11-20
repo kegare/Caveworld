@@ -10,9 +10,12 @@
 package com.kegare.caveworld.world;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
@@ -22,6 +25,8 @@ import java.util.regex.Pattern;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.event.ClickEvent;
+import net.minecraft.nbt.CompressedStreamTools;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
@@ -37,20 +42,40 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Level;
 
+import com.bioxx.tfc.Core.TFC_Climate;
+import com.bioxx.tfc.Core.TFC_Core;
+import com.bioxx.tfc.WorldGen.WorldCacheManager;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.handler.TFCCaveEventHooks;
+import com.kegare.caveworld.network.client.DimDeepSyncMessage;
 import com.kegare.caveworld.network.common.RegenerateMessage;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.CaveUtils;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.Optional.Method;
 
 public class WorldProviderDeepCaveworld extends WorldProviderCaveworld
 {
+	private static NBTTagCompound dimData;
+	private static long dimensionSeed;
+	private static int subsurfaceHeight;
+
+	public static NBTTagCompound getDimData()
+	{
+		if (dimData == null)
+		{
+			dimData = readDimData();
+		}
+
+		return dimData;
+	}
+
 	public static File getDimDir()
 	{
 		File root = DimensionManager.getCurrentSaveRootDirectory();
@@ -70,6 +95,83 @@ public class WorldProviderDeepCaveworld extends WorldProviderCaveworld
 		return dir.isDirectory() ? dir : null;
 	}
 
+	private static NBTTagCompound readDimData()
+	{
+		NBTTagCompound data;
+		File dir = getDimDir();
+
+		if (dir == null)
+		{
+			data = null;
+		}
+		else
+		{
+			File file = new File(dir, "caveworld.dat");
+
+			if (!file.exists() || !file.isFile() || !file.canRead())
+			{
+				data = null;
+			}
+			else try (FileInputStream input = new FileInputStream(file))
+			{
+				data = CompressedStreamTools.readCompressed(input);
+			}
+			catch (Exception e)
+			{
+				CaveLog.log(Level.ERROR, e, "An error occurred trying to reading Caveworld dimension data");
+
+				data = null;
+			}
+		}
+
+		return data == null ? new NBTTagCompound() : data;
+	}
+
+	private static void writeDimData()
+	{
+		File dir = getDimDir();
+
+		if (dir == null)
+		{
+			return;
+		}
+
+		try (FileOutputStream output = new FileOutputStream(new File(dir, "caveworld.dat")))
+		{
+			CompressedStreamTools.writeCompressed(getDimData(), output);
+		}
+		catch (Exception e)
+		{
+			CaveLog.log(Level.ERROR, e, "An error occurred trying to writing Caveworld dimension data");
+		}
+	}
+
+	public static void loadDimData(NBTTagCompound data)
+	{
+		if (!data.hasKey("Seed"))
+		{
+			data.setLong("Seed", new SecureRandom().nextLong());
+		}
+
+		if (!data.hasKey("SubsurfaceHeight"))
+		{
+			data.setInteger("SubsurfaceHeight", ChunkProviderDeepCaveworld.subsurfaceHeight);
+		}
+
+		dimensionSeed = data.getLong("Seed");
+		subsurfaceHeight = data.getInteger("SubsurfaceHeight");
+	}
+
+	public static void saveDimData()
+	{
+		if (dimData != null)
+		{
+			writeDimData();
+
+			dimData = null;
+		}
+	}
+
 	public static void regenerate(final boolean backup)
 	{
 		final File dir = getDimDir();
@@ -81,7 +183,7 @@ public class WorldProviderDeepCaveworld extends WorldProviderCaveworld
 		{
 			if (obj != null && ((EntityPlayerMP)obj).dimension == CaveworldAPI.getDeepDimension())
 			{
-				target.add(CaveUtils.forceTeleport((EntityPlayerMP)obj, 0, false));
+				target.add(CaveUtils.forceTeleport((EntityPlayerMP)obj, 0));
 			}
 		}
 
@@ -108,6 +210,12 @@ public class WorldProviderDeepCaveworld extends WorldProviderCaveworld
 					CaveBlocks.caveworld_portal.portalDisabled = true;
 
 					int dim = CaveworldAPI.getDeepDimension();
+
+					if (!DimensionManager.isDimensionRegistered(dim))
+					{
+						return false;
+					}
+
 					WorldServer world = DimensionManager.getWorld(dim);
 
 					if (world != null)
@@ -237,30 +345,50 @@ public class WorldProviderDeepCaveworld extends WorldProviderCaveworld
 			}
 		});
 
-		if (result && (Config.hardcore || Config.caveborn))
+		if (result)
 		{
-			for (EntityPlayerMP player : target)
+			Caveworld.network.sendToAll(new DimDeepSyncMessage(CaveworldAPI.getDeepDimension(), WorldProviderDeepCaveworld.getDimData()));
+
+			if (Config.hardcore || Config.caveborn)
 			{
-				if (!CaveworldAPI.isEntityInCaveworld(player))
+				for (EntityPlayerMP player : target)
 				{
-					CaveUtils.forceTeleport(player, CaveworldAPI.getDeepDimension(), false);
+					if (player.dimension != CaveworldAPI.getDeepDimension())
+					{
+						CaveUtils.forceTeleport(player, CaveworldAPI.getDeepDimension());
+					}
 				}
 			}
 		}
 	}
 
+	public WorldProviderDeepCaveworld()
+	{
+		this.dimensionId = CaveworldAPI.getDeepDimension();
+		this.hasNoSky = true;
+	}
+
 	@Override
 	protected void registerWorldChunkManager()
 	{
-		worldChunkMgr = new WorldChunkManagerCaveworld(worldObj);
-		dimensionId = CaveworldAPI.getDeepDimension();
-		hasNoSky = true;
+		worldChunkMgr = new WorldChunkManagerCaveworld(worldObj, ChunkProviderDeepCaveworld.biomeSize, CaveworldAPI.biomeDeepManager);
 
 		try
 		{
 			registerWorldChunkManagerTFC();
 		}
 		catch (NoSuchMethodError e) {}
+	}
+
+	@Method(modid = "terrafirmacraft")
+	private void registerWorldChunkManagerTFC()
+	{
+		MinecraftForge.EVENT_BUS.register(new TFCCaveEventHooks());
+
+		TFC_Climate.worldPair.put(worldObj, new WorldCacheManager(worldObj));
+		TFC_Core.addCDM(worldObj);
+
+		worldChunkMgr = new TFCWorldChunkManagerCaveworld(worldObj, ChunkProviderDeepCaveworld.biomeSize, CaveworldAPI.biomeDeepManager);
 	}
 
 	@Override
@@ -273,5 +401,27 @@ public class WorldProviderDeepCaveworld extends WorldProviderCaveworld
 	public String getDimensionName()
 	{
 		return "Deep Caveworld";
+	}
+
+	@Override
+	public long getSeed()
+	{
+		if (!worldObj.isRemote && dimData == null)
+		{
+			loadDimData(getDimData());
+		}
+
+		return dimensionSeed;
+	}
+
+	@Override
+	public int getActualHeight()
+	{
+		if (!worldObj.isRemote && dimData == null)
+		{
+			loadDimData(getDimData());
+		}
+
+		return subsurfaceHeight + 1;
 	}
 }

@@ -27,7 +27,6 @@ import net.minecraft.world.WorldServer;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
 
 public class TeleporterCaveworld extends Teleporter
@@ -62,11 +61,6 @@ public class TeleporterCaveworld extends Teleporter
 
 			player.addExperienceLevel(0);
 			player.addPotionEffect(new PotionEffect(Potion.blindness.getId(), 25));
-
-			if (CaveworldAPI.isEntityInCaveworld(player))
-			{
-				WorldProviderCaveworld.recentTeleportPos = player.getPlayerCoordinates();
-			}
 		}
 	}
 

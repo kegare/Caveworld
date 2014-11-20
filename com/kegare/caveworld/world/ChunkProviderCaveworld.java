@@ -18,7 +18,6 @@ import net.minecraft.block.BlockFalling;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.IProgressUpdate;
-import net.minecraft.util.MathHelper;
 import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeDecorator;
@@ -44,38 +43,57 @@ import net.minecraftforge.event.terraingen.PopulateChunkEvent;
 import net.minecraftforge.event.terraingen.PopulateChunkEvent.Populate.EventType;
 import net.minecraftforge.event.terraingen.TerrainGen;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import com.bioxx.tfc.Chunkdata.ChunkData;
 import com.bioxx.tfc.Core.TFC_Core;
 import com.bioxx.tfc.WorldGen.DataLayer;
 import com.google.common.base.Strings;
-import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.api.ICaveBiome;
 import com.kegare.caveworld.api.ICaveVein;
-import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.world.gen.MapGenCavesCaveworld;
+import com.kegare.caveworld.world.gen.MapGenExtremeCaves;
+import com.kegare.caveworld.world.gen.MapGenExtremeRavine;
 import com.kegare.caveworld.world.gen.MapGenRavineCaveworld;
 import com.kegare.caveworld.world.gen.MapGenStrongholdCaveworld;
+import com.kegare.caveworld.world.gen.MapGenUnderCaves;
+import com.kegare.caveworld.world.gen.WorldGenAnimalDungeons;
 import com.kegare.caveworld.world.gen.WorldGenDungeonsCaveworld;
 
 import cpw.mods.fml.common.Optional.Method;
 
 public class ChunkProviderCaveworld implements IChunkProvider
 {
+	public static int dimensionId;
+	public static int subsurfaceHeight;
+	public static int biomeSize;
+	public static boolean generateCaves;
+	public static boolean generateRavine;
+	public static boolean generateUnderCaves;
+	public static boolean generateExtremeCaves;
+	public static boolean generateExtremeRavine;
+	public static boolean generateMineshaft;
+	public static boolean generateStronghold;
+	public static boolean generateLakes;
+	public static boolean generateDungeons;
+	public static boolean generateAnimalDungeons;
+	public static boolean decorateVines;
+
 	private final World worldObj;
 	private final Random random;
 	private final boolean generateStructures;
 
-	private final MapGenBase caveGenerator = new MapGenCavesCaveworld();
-	private final MapGenBase ravineGenerator = new MapGenRavineCaveworld();
+	private final MapGenBase caveGenerator = new MapGenCavesCaveworld(false);
+	private final MapGenBase ravineGenerator = new MapGenRavineCaveworld(false);
+	private final MapGenBase underCaveGenerator = new MapGenUnderCaves(false);
+	private final MapGenBase extremeCaveGenerator = new MapGenExtremeCaves(false);
+	private final MapGenBase extremeRavineGenerator = new MapGenExtremeRavine(false);
 	private MapGenMineshaft mineshaftGenerator = new MapGenMineshaft();
-	private MapGenStronghold strongholdGenerator = new MapGenStrongholdCaveworld();
+	private final MapGenStronghold strongholdGenerator = new MapGenStrongholdCaveworld();
 
 	private final WorldGenerator lakeWaterGen = new WorldGenLakes(Blocks.water);
 	private final WorldGenerator lakeLavaGen = new WorldGenLakes(Blocks.lava);
 	private final WorldGenerator dungeonGen = new WorldGenDungeonsCaveworld();
+	private final WorldGenerator animalDungeonGen = new WorldGenAnimalDungeons();
 	private final WorldGenerator glowStoneGen = new WorldGenGlowStone1();
 	private final WorldGenerator liquidWaterGen = new WorldGenLiquids(Blocks.flowing_water);
 	private final WorldGenerator liquidLavaGen = new WorldGenLiquids(Blocks.flowing_lava);
@@ -83,7 +101,6 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 	{
 		mineshaftGenerator = (MapGenMineshaft)TerrainGen.getModdedMapGen(mineshaftGenerator, InitMapGenEvent.EventType.MINESHAFT);
-		strongholdGenerator = (MapGenStronghold)TerrainGen.getModdedMapGen(strongholdGenerator, InitMapGenEvent.EventType.STRONGHOLD);
 	}
 
 	public ChunkProviderCaveworld(World world)
@@ -109,24 +126,39 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		Arrays.fill(blocks, block);
 		Arrays.fill(metadata, (byte)meta);
 
-		if (Config.generateCaves)
+		if (generateCaves)
 		{
 			caveGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
 		}
 
-		if (Config.generateRavine)
+		if (generateRavine)
 		{
 			ravineGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
 		}
 
+		if (generateUnderCaves)
+		{
+			underCaveGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
+		}
+
+		if (generateExtremeCaves && worldHeight > 150)
+		{
+			extremeCaveGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
+		}
+
+		if (generateExtremeRavine)
+		{
+			extremeRavineGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
+		}
+
 		if (generateStructures)
 		{
-			if (Config.generateMineshaft)
+			if (generateMineshaft)
 			{
 				mineshaftGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
 			}
 
-			if (Config.generateStronghold)
+			if (generateStronghold)
 			{
 				strongholdGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
 			}
@@ -231,12 +263,12 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 		if (generateStructures)
 		{
-			if (Config.generateMineshaft)
+			if (generateMineshaft)
 			{
 				mineshaftGenerator.generateStructuresInChunk(worldObj, random, chunkX, chunkZ);
 			}
 
-			if (Config.generateStronghold)
+			if (generateStronghold)
 			{
 				strongholdGenerator.generateStructuresInChunk(worldObj, random, chunkX, chunkZ);
 			}
@@ -246,7 +278,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 		if (BiomeDictionary.isBiomeOfType(biome, Type.NETHER))
 		{
-			if (Config.generateLakes && random.nextInt(4) == 0 && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.LAVA))
+			if (generateLakes && random.nextInt(4) == 0 && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.LAVA))
 			{
 				x = worldX + random.nextInt(16) + 8;
 				y = random.nextInt(worldHeight - 16);
@@ -266,7 +298,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		}
 		else if (!BiomeDictionary.isBiomeOfType(biome, Type.END))
 		{
-			if (Config.generateLakes)
+			if (generateLakes)
 			{
 				if (!BiomeDictionary.isBiomeOfType(biome, Type.SANDY) && random.nextInt(4) == 0 && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.LAKE))
 				{
@@ -287,7 +319,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 				}
 			}
 
-			if (Config.generateDungeons && generateStructures && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.DUNGEON))
+			if (generateDungeons && generateStructures && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.DUNGEON))
 			{
 				for (i = 0; i < 12; ++i)
 				{
@@ -298,13 +330,22 @@ public class ChunkProviderCaveworld implements IChunkProvider
 					dungeonGen.generate(worldObj, random, x, y, z);
 				}
 			}
+
+			if (generateAnimalDungeons && random.nextInt(5) == 0 && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.DUNGEON))
+			{
+				x = worldX + random.nextInt(16) + 8;
+				y = random.nextInt(worldHeight - 24);
+				z = worldZ + random.nextInt(16) + 8;
+
+				animalDungeonGen.generate(worldObj, random, x, y, z);
+			}
 		}
 
 		MinecraftForge.ORE_GEN_BUS.post(new OreGenEvent.Pre(worldObj, random, worldX, worldZ));
 
 		for (ICaveVein vein : CaveworldAPI.getCaveVeins())
 		{
-			generateVein(vein, worldX, worldZ);
+			vein.generateVein(worldObj, random, worldX, worldZ);
 		}
 
 		MinecraftForge.ORE_GEN_BUS.post(new OreGenEvent.Post(worldObj, random, worldX, worldZ));
@@ -388,7 +429,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 			}
 		}
 
-		if (Config.decorateVines && (BiomeDictionary.isBiomeOfType(biome, Type.FOREST) || BiomeDictionary.isBiomeOfType(biome, Type.MOUNTAIN)) && random.nextInt(6) == 0)
+		if (decorateVines && (BiomeDictionary.isBiomeOfType(biome, Type.FOREST) || BiomeDictionary.isBiomeOfType(biome, Type.MOUNTAIN)) && random.nextInt(6) == 0)
 		{
 			for (i = 0; i < 50; ++i)
 			{
@@ -404,96 +445,6 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		MinecraftForge.EVENT_BUS.post(new PopulateChunkEvent.Post(chunkProvider, worldObj, random, chunkX, chunkZ, false));
 
 		BlockFalling.fallInstantly = false;
-	}
-
-	private void generateVein(ICaveVein vein, int worldX, int worldZ)
-	{
-		int worldHeight = worldObj.getActualHeight();
-		BlockEntry block = vein.getBlock();
-		int count = vein.getGenBlockCount();
-		int weight = vein.getGenWeight();
-		int rate = vein.getGenRate();
-		int min = vein.getGenMinHeight();
-		int max = vein.getGenMaxHeight();
-		BlockEntry target = vein.getGenTargetBlock();
-		int[] biomes = vein.getGenBiomes();
-
-		if (weight > 0 && min < worldHeight && min < max)
-		{
-			for (int i = 0; i < weight; ++i)
-			{
-				if (random.nextInt(100) + 1 > rate)
-				{
-					continue;
-				}
-
-				int x = worldX + random.nextInt(16);
-				int y = random.nextInt(Math.min(max, worldHeight - 1) - min) + min;
-				int z = worldZ + random.nextInt(16);
-				float var1 = random.nextFloat() * (float)Math.PI;
-				double var2 = x + 8 + MathHelper.sin(var1) * count / 8.0F;
-				double var3 = x + 8 - MathHelper.sin(var1) * count / 8.0F;
-				double var4 = z + 8 + MathHelper.cos(var1) * count / 8.0F;
-				double var5 = z + 8 - MathHelper.cos(var1) * count / 8.0F;
-				double var6 = y + random.nextInt(3) - 2;
-				double var7 = y + random.nextInt(3) - 2;
-				int gen = 0;
-
-				for (int j = 0; gen <= count && j <= count; ++j)
-				{
-					double var8 = var2 + (var3 - var2) * j / count;
-					double var9 = var6 + (var7 - var6) * j / count;
-					double var10 = var4 + (var5 - var4) * j / count;
-					double var11 = random.nextDouble() * count / 16.0D;
-					double var12 = (MathHelper.sin(j * (float)Math.PI / count) + 1.0F) * var11 + 1.0D;
-					double var13 = (MathHelper.sin(j * (float)Math.PI / count) + 1.0F) * var11 + 1.0D;
-
-					for (x = MathHelper.floor_double(var8 - var12 / 2.0D); gen <= count && x <= MathHelper.floor_double(var8 + var12 / 2.0D); ++x)
-					{
-						double xScale = (x + 0.5D - var8) / (var12 / 2.0D);
-
-						if (xScale * xScale < 1.0D)
-						{
-							for (y = MathHelper.floor_double(var9 - var13 / 2.0D); gen <= count && y <= MathHelper.floor_double(var9 + var13 / 2.0D); ++y)
-							{
-								double yScale = (y + 0.5D - var9) / (var13 / 2.0D);
-
-								if (xScale * xScale + yScale * yScale < 1.0D)
-								{
-									for (z = MathHelper.floor_double(var10 - var12 / 2.0D); gen < count && z <= MathHelper.floor_double(var10 + var12 / 2.0D); ++z)
-									{
-										double zScale = (z + 0.5D - var10) / (var12 / 2.0D);
-
-										if (xScale * xScale + yScale * yScale + zScale * zScale < 1.0D)
-										{
-											if (target == null)
-											{
-												if (!worldObj.getBlock(x, y, z).isReplaceableOreGen(worldObj, x, y, z, Blocks.stone))
-												{
-													continue;
-												}
-											}
-											else if (!worldObj.getBlock(x, y, z).isReplaceableOreGen(worldObj, x, y, z, target.getBlock()) || worldObj.getBlockMetadata(x, y, z) != target.getMetadata())
-											{
-												continue;
-											}
-
-											if (biomes == null || biomes.length <= 0 || ArrayUtils.contains(biomes, worldObj.getBiomeGenForCoords(x, z).biomeID))
-											{
-												if (worldObj.setBlock(x, y, z, block.getBlock(), block.getMetadata(), 2))
-												{
-													++gen;
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
 	}
 
 	@Override
@@ -567,12 +518,12 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	{
 		if (generateStructures)
 		{
-			if (Config.generateMineshaft)
+			if (generateMineshaft)
 			{
 				mineshaftGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, null);
 			}
 
-			if (Config.generateStronghold)
+			if (generateStronghold)
 			{
 				strongholdGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, null);
 			}

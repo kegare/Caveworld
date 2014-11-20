@@ -6,7 +6,7 @@
 (
 	owner = "kegare.caveworld",
 	provides = "kegare.caveworld.api",
-	apiVersion = "1.6.9"
+	apiVersion = "1.8.1"
 )
 package com.kegare.caveworld.api;
 

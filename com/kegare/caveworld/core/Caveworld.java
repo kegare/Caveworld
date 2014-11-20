@@ -23,6 +23,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.StatCollector;
+import net.minecraft.world.gen.structure.MapGenStructureIO;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
@@ -39,10 +40,11 @@ import com.kegare.caveworld.handler.CaveEventHooks;
 import com.kegare.caveworld.handler.CaveFuelHandler;
 import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.item.ItemMiningPickaxe;
-import com.kegare.caveworld.network.client.PlaySoundMessage;
 import com.kegare.caveworld.network.client.CaveworldMenuMessage;
+import com.kegare.caveworld.network.client.DimDeepSyncMessage;
 import com.kegare.caveworld.network.client.DimSyncMessage;
 import com.kegare.caveworld.network.client.MiningSyncMessage;
+import com.kegare.caveworld.network.client.PlaySoundMessage;
 import com.kegare.caveworld.network.client.SetBlockMessage;
 import com.kegare.caveworld.network.common.RegenerateMessage;
 import com.kegare.caveworld.network.server.BuffMessage;
@@ -65,6 +67,8 @@ import com.kegare.caveworld.util.breaker.QuickBreakExecutor;
 import com.kegare.caveworld.util.breaker.RangedBreakExecutor;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 import com.kegare.caveworld.world.WorldProviderDeepCaveworld;
+import com.kegare.caveworld.world.gen.MapGenStrongholdCaveworld;
+import com.kegare.caveworld.world.gen.StructureStrongholdPiecesCaveworld;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
@@ -115,6 +119,8 @@ public class Caveworld
 		CaveworldAPI.apiHandler = new CaveAPIHandler();
 		CaveworldAPI.biomeManager = new CaveBiomeManager();
 		CaveworldAPI.veinManager = new CaveVeinManager();
+		CaveworldAPI.biomeDeepManager = new CaveDeepBiomeManager();
+		CaveworldAPI.veinDeepManager = new CaveDeepVeinManager();
 		CaveworldAPI.miningManager = new CaveMiningManager();
 
 		Version.versionCheck();
@@ -126,6 +132,7 @@ public class Caveworld
 		int id = 0;
 
 		network.registerMessage(DimSyncMessage.class, DimSyncMessage.class, id++, Side.CLIENT);
+		network.registerMessage(DimDeepSyncMessage.class, DimDeepSyncMessage.class, id++, Side.CLIENT);
 		network.registerMessage(MiningSyncMessage.class, MiningSyncMessage.class, id++, Side.CLIENT);
 		network.registerMessage(PlaySoundMessage.class, PlaySoundMessage.class, id++, Side.CLIENT);
 		network.registerMessage(SetBlockMessage.class, SetBlockMessage.class, id++, Side.CLIENT);
@@ -145,8 +152,6 @@ public class Caveworld
 		CaveItems.registerItems();
 		CaveAchievementList.registerAchievements();
 
-		proxy.registerRecipes();
-
 		GameRegistry.registerFuelHandler(new CaveFuelHandler());
 	}
 
@@ -159,14 +164,22 @@ public class Caveworld
 		EntityRegistry.registerGlobalEntityID(EntityCaveman.class, "Caveman", EntityRegistry.findGlobalUniqueEntityId(), 0xAAAAAA, 0xCCCCCC);
 		EntityRegistry.registerModEntity(EntityCaveman.class, "Caveman", 0, this, 128, 1, true);
 
+		proxy.registerRecipes();
 		proxy.registerRenderers();
 
 		int id = CaveworldAPI.getDimension();
 		DimensionManager.registerProviderType(id, WorldProviderCaveworld.class, true);
 		DimensionManager.registerDimension(id, id);
 		id = CaveworldAPI.getDeepDimension();
-		DimensionManager.registerProviderType(id, WorldProviderDeepCaveworld.class, true);
-		DimensionManager.registerDimension(id, id);
+
+		if (id != 0 && id != CaveworldAPI.getDimension())
+		{
+			DimensionManager.registerProviderType(id, WorldProviderDeepCaveworld.class, true);
+			DimensionManager.registerDimension(id, id);
+		}
+
+		MapGenStructureIO.registerStructure(MapGenStrongholdCaveworld.Start.class, "Caveworld.Stronghold");
+		StructureStrongholdPiecesCaveworld.registerStrongholdPieces();
 
 		FMLCommonHandler.instance().bus().register(CaveEventHooks.instance);
 
@@ -178,6 +191,8 @@ public class Caveworld
 	{
 		Config.syncBiomesCfg();
 		Config.syncVeinsCfg();
+		Config.syncBiomesDeepCfg();
+		Config.syncVeinsDeepCfg();
 
 		CaveUtils.getPool().execute(new RecursiveAction()
 		{

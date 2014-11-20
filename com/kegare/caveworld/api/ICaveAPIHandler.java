@@ -20,6 +20,12 @@ public interface ICaveAPIHandler
 	public int getDeepDimension();
 
 	/**
+	 * Checks if the Deep Caveworld dimension is exist.
+	 * @return <tt>true</tt> if the Deep Caveworld dimension is exist.
+	 */
+	public boolean isDeepExist();
+
+	/**
 	 * Checks if entity is in Caveworld.
 	 * @param entity The entity
 	 * @return <tt>true</tt> if the entity is in the Caveworld dimension.

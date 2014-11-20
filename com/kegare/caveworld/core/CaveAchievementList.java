@@ -32,7 +32,7 @@ public class CaveAchievementList
 	public static final Achievement caveman = new CaveAchievement("caveman", -4, -1, Blocks.stone, caveworld).registerStat();
 	public static final Achievement compCaving = new CaveAchievement("compCaving", -5, -3, Items.egg, caveman).registerStat();
 	public static final Achievement deepCaves = new CaveAchievement("deepCaves", 0, 7, new ItemStack(Blocks.stonebrick, 1, 1), caveworld).registerStat();
-	public static final Achievement underCaves = new CaveAchievement("underCaves", 0, 10, Blocks.water, deepCaves).registerStat();
+	public static final Achievement underCaves = new CaveAchievement("underCaves", 0, 10, Blocks.water, caveworld).registerStat();
 
 	public static void registerAchievements()
 	{

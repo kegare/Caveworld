@@ -10,10 +10,12 @@
 package com.kegare.caveworld.handler;
 
 import net.minecraft.entity.Entity;
+import net.minecraftforge.common.DimensionManager;
 
 import com.kegare.caveworld.api.ICaveAPIHandler;
-import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.util.Version;
+import com.kegare.caveworld.world.ChunkProviderCaveworld;
+import com.kegare.caveworld.world.ChunkProviderDeepCaveworld;
 
 public class CaveAPIHandler implements ICaveAPIHandler
 {
@@ -26,13 +28,19 @@ public class CaveAPIHandler implements ICaveAPIHandler
 	@Override
 	public int getDimension()
 	{
-		return Config.dimensionCaveworld;
+		return ChunkProviderCaveworld.dimensionId;
 	}
 
 	@Override
 	public int getDeepDimension()
 	{
-		return Config.dimensionDeepCaveworld;
+		return ChunkProviderDeepCaveworld.dimensionId;
+	}
+
+	@Override
+	public boolean isDeepExist()
+	{
+		return getDimension() != 0 && getDimension() != getDeepDimension() && DimensionManager.isDimensionRegistered(getDeepDimension());
 	}
 
 	@Override

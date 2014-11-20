@@ -41,14 +41,13 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.BlockEntry;
-import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.api.ICaveBiome;
+import com.kegare.caveworld.api.ICaveBiomeManager;
 import com.kegare.caveworld.client.config.GuiSelectBiome.SelectListener;
 import com.kegare.caveworld.client.gui.GuiListSlot;
 import com.kegare.caveworld.core.CaveBiomeManager;
 import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome;
 import com.kegare.caveworld.core.Caveworld;
-import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.util.ArrayListExtended;
 import com.kegare.caveworld.util.CaveUtils;
 
@@ -63,6 +62,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 public class GuiBiomesEntry extends GuiScreen implements SelectListener
 {
 	protected final GuiScreen parentScreen;
+	protected final ICaveBiomeManager biomeManager;
 
 	protected BiomeList biomeList;
 
@@ -97,9 +97,10 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 
 	private final Map<Object, List<String>> hoverCache = Maps.newHashMap();
 
-	public GuiBiomesEntry(GuiScreen parent)
+	public GuiBiomesEntry(GuiScreen parent, ICaveBiomeManager manager)
 	{
 		this.parentScreen = parent;
+		this.biomeManager = manager;
 	}
 
 	@Override
@@ -342,25 +343,25 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 							@Override
 							protected void compute()
 							{
-								CaveworldAPI.clearCaveBiomes();
+								biomeManager.clearCaveBiomes();
 
 								ConfigCategory category;
 
 								for (ICaveBiome entry : biomeList.biomes)
 								{
-									category = Config.biomesCfg.getCategory(Integer.toString(entry.getBiome().biomeID));
+									category = biomeManager.getConfig().getCategory(Integer.toString(entry.getBiome().biomeID));
 									category.get("genWeight").set(entry.getGenWeight());
 									category.get("terrainBlock").set(GameData.getBlockRegistry().getNameForObject(entry.getTerrainBlock().getBlock()));
 									category.get("terrainBlockMetadata").set(entry.getTerrainBlock().getMetadata());
 									category.get("topBlock").set(GameData.getBlockRegistry().getNameForObject(entry.getTopBlock().getBlock()));
 									category.get("topBlockMetadata").set(entry.getTopBlock().getMetadata());
 
-									CaveworldAPI.addCaveBiome(entry);
+									biomeManager.addCaveBiome(entry);
 								}
 
-								if (Config.biomesCfg.hasChanged())
+								if (biomeManager.getConfig().hasChanged())
 								{
-									Config.biomesCfg.save();
+									biomeManager.getConfig().save();
 								}
 							}
 						});
@@ -438,7 +439,7 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 							{
 								if (biomeList.biomes.remove(entry))
 								{
-									Config.biomesCfg.getCategory(Integer.toString(entry.getBiome().biomeID)).get("genWeight").set(0);
+									biomeManager.getConfig().getCategory(Integer.toString(entry.getBiome().biomeID)).get("genWeight").set(0);
 
 									biomeList.contents.remove(entry);
 								}
@@ -884,8 +885,8 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 	{
 		protected final GuiBiomesEntry parent;
 
-		protected final ArrayListExtended<ICaveBiome> biomes = new ArrayListExtended(CaveworldAPI.getCaveBiomes());
-		protected final ArrayListExtended<ICaveBiome> contents = new ArrayListExtended(biomes);
+		protected final ArrayListExtended<ICaveBiome> biomes = new ArrayListExtended();
+		protected final ArrayListExtended<ICaveBiome> contents = new ArrayListExtended();
 		protected final Set<ICaveBiome> selected = Sets.newTreeSet(this);
 
 		private final Map<String, List<ICaveBiome>> filterCache = Maps.newHashMap();
@@ -894,6 +895,8 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 		{
 			super(parent.mc, 0, 0, 0, 0, 22);
 			this.parent = parent;
+			this.biomes.addAll(parent.biomeManager.getCaveBiomes());
+			this.contents.addAll(biomes);
 		}
 
 		@Override

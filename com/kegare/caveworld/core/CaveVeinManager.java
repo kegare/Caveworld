@@ -18,10 +18,14 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.util.WeightedRandom;
+import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
+import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -30,13 +34,18 @@ import com.google.common.primitives.Ints;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.ICaveVein;
 import com.kegare.caveworld.api.ICaveVeinManager;
-import com.kegare.caveworld.util.ArrayListExtended;
 
 import cpw.mods.fml.common.registry.GameData;
 
 public class CaveVeinManager implements ICaveVeinManager
 {
-	private final ArrayListExtended<ICaveVein> CAVE_VEINS = new ArrayListExtended();
+	private final List<ICaveVein> CAVE_VEINS = Lists.newArrayList();
+
+	@Override
+	public Configuration getConfig()
+	{
+		return Config.veinsCfg;
+	}
 
 	@Override
 	public boolean addCaveVein(ICaveVein vein)
@@ -52,9 +61,9 @@ public class CaveVeinManager implements ICaveVeinManager
 		int targetMetadata = vein == null ? -1 : vein.getGenTargetBlock().getMetadata();
 		int[] biomes = vein == null ? null : vein.getGenBiomes();
 
-		String name = Integer.toString(CAVE_VEINS.size());
+		String name = Integer.toString(getCaveVeins().size());
 
-		if (vein == null && !Config.veinsCfg.hasCategory(name))
+		if (vein == null && !getConfig().hasCategory(name))
 		{
 			return false;
 		}
@@ -63,7 +72,7 @@ public class CaveVeinManager implements ICaveVeinManager
 		Property prop;
 		List<String> propOrder = Lists.newArrayList();
 
-		prop = Config.veinsCfg.get(name, "block", GameData.getBlockRegistry().getNameForObject(Blocks.stone));
+		prop = getConfig().get(name, "block", GameData.getBlockRegistry().getNameForObject(Blocks.stone));
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		if (!Strings.isNullOrEmpty(block)) prop.set(block);
@@ -71,7 +80,7 @@ public class CaveVeinManager implements ICaveVeinManager
 		block = prop.getString();
 		if (!GameData.getBlockRegistry().containsKey(Strings.nullToEmpty(block))) return false;
 
-		prop = Config.veinsCfg.get(name, "blockMetadata", 0);
+		prop = getConfig().get(name, "blockMetadata", 0);
 		prop.setMinValue(0).setMaxValue(15).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
@@ -79,7 +88,7 @@ public class CaveVeinManager implements ICaveVeinManager
 		propOrder.add(prop.getName());
 		blockMetadata = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 
-		prop = Config.veinsCfg.get(name, "genBlockCount", 1);
+		prop = getConfig().get(name, "genBlockCount", 1);
 		prop.setMinValue(1).setMaxValue(500).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
@@ -87,7 +96,7 @@ public class CaveVeinManager implements ICaveVeinManager
 		propOrder.add(prop.getName());
 		count = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 
-		prop = Config.veinsCfg.get(name, "genWeight", 1);
+		prop = getConfig().get(name, "genWeight", 1);
 		prop.setMinValue(1).setMaxValue(100).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
@@ -95,7 +104,7 @@ public class CaveVeinManager implements ICaveVeinManager
 		propOrder.add(prop.getName());
 		weight = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 
-		prop = Config.veinsCfg.get(name, "genRate", 100);
+		prop = getConfig().get(name, "genRate", 100);
 		prop.setMinValue(1).setMaxValue(100).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
@@ -103,7 +112,7 @@ public class CaveVeinManager implements ICaveVeinManager
 		propOrder.add(prop.getName());
 		rate = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 
-		prop = Config.veinsCfg.get(name, "genMinHeight", 0);
+		prop = getConfig().get(name, "genMinHeight", 0);
 		prop.setMinValue(0).setMaxValue(254).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
@@ -111,7 +120,7 @@ public class CaveVeinManager implements ICaveVeinManager
 		propOrder.add(prop.getName());
 		min = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 
-		prop = Config.veinsCfg.get(name, "genMaxHeight", 255);
+		prop = getConfig().get(name, "genMaxHeight", 255);
 		prop.setMinValue(1).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
@@ -119,7 +128,7 @@ public class CaveVeinManager implements ICaveVeinManager
 		propOrder.add(prop.getName());
 		max = MathHelper.clamp_int(prop.getInt(), min + 1, Integer.parseInt(prop.getMaxValue()));
 
-		prop = Config.veinsCfg.get(name, "genTargetBlock", GameData.getBlockRegistry().getNameForObject(Blocks.stone));
+		prop = getConfig().get(name, "genTargetBlock", GameData.getBlockRegistry().getNameForObject(Blocks.stone));
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
@@ -128,7 +137,7 @@ public class CaveVeinManager implements ICaveVeinManager
 		propOrder.add(prop.getName());
 		target = prop.getString();
 
-		prop = Config.veinsCfg.get(name, "genTargetBlockMetadata", 0);
+		prop = getConfig().get(name, "genTargetBlockMetadata", 0);
 		prop.setMinValue(0).setMaxValue(15).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
@@ -136,57 +145,57 @@ public class CaveVeinManager implements ICaveVeinManager
 		propOrder.add(prop.getName());
 		targetMetadata = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 
-		prop = Config.veinsCfg.get(name, "genBiomes", new int[0]);
+		prop = getConfig().get(name, "genBiomes", new int[0]);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		if (biomes != null) prop.set(biomes);
 		propOrder.add(prop.getName());
 		biomes = prop.getIntList();
 
-		Config.veinsCfg.setCategoryPropertyOrder(name, propOrder);
+		getConfig().setCategoryPropertyOrder(name, propOrder);
 
 		if (vein == null)
 		{
 			vein = new CaveVein(new BlockEntry(block, blockMetadata), count, weight, rate, min, max, new BlockEntry(target, targetMetadata), biomes);
 		}
 
-		return CAVE_VEINS.addIfAbsent(vein);
+		return getCaveVeins().add(vein);
 	}
 
 	@Override
 	public int removeCaveVeins(ICaveVein vein)
 	{
-		int prev = CAVE_VEINS.size();
+		int prev = getCaveVeins().size();
 
-		for (int i = CAVE_VEINS.indexOf(vein); i >= 0;)
+		for (int i = getCaveVeins().indexOf(vein); i >= 0;)
 		{
-			CAVE_VEINS.remove(i);
+			getCaveVeins().remove(i);
 
-			Config.veinsCfg.removeCategory(Config.veinsCfg.getCategory(Integer.toString(i)));
+			getConfig().removeCategory(getConfig().getCategory(Integer.toString(i)));
 		}
 
-		return Math.max(CAVE_VEINS.size(), prev);
+		return Math.max(getCaveVeins().size(), prev);
 	}
 
 	@Override
 	public int removeCaveVeins(Block block, int metadata)
 	{
 		ICaveVein vein;
-		int prev = CAVE_VEINS.size();
+		int prev = getCaveVeins().size();
 
 		for (int i = 0; i < prev; ++i)
 		{
-			vein = CAVE_VEINS.get(i);
+			vein = getCaveVeins().get(i);
 
 			if (vein.getBlock().getBlock() == block && vein.getBlock().getMetadata() == metadata)
 			{
-				CAVE_VEINS.remove(i);
+				getCaveVeins().remove(i);
 
-				Config.veinsCfg.removeCategory(Config.veinsCfg.getCategory(Integer.toString(i)));
+				getConfig().removeCategory(getConfig().getCategory(Integer.toString(i)));
 			}
 		}
 
-		return Math.max(CAVE_VEINS.size(), prev);
+		return Math.max(getCaveVeins().size(), prev);
 	}
 
 	@Override
@@ -194,7 +203,7 @@ public class CaveVeinManager implements ICaveVeinManager
 	{
 		try
 		{
-			return (ICaveVein)WeightedRandom.getRandomItem(random, CAVE_VEINS);
+			return (ICaveVein)WeightedRandom.getRandomItem(random, getCaveVeins());
 		}
 		catch (Exception e)
 		{
@@ -211,7 +220,7 @@ public class CaveVeinManager implements ICaveVeinManager
 	@Override
 	public void clearCaveVeins()
 	{
-		CAVE_VEINS.clear();
+		getCaveVeins().clear();
 	}
 
 	public static class CaveVein extends WeightedRandom.Item implements ICaveVein
@@ -381,6 +390,97 @@ public class CaveVeinManager implements ICaveVeinManager
 			}
 
 			return Ints.toArray(biomes);
+		}
+
+		@Override
+		public void generateVein(World world, Random random, int chunkX, int chunkZ)
+		{
+			int worldHeight = world.getActualHeight();
+			BlockEntry block = getBlock();
+			int count = getGenBlockCount();
+			int weight = getGenWeight();
+			int rate = getGenRate();
+			int min = getGenMinHeight();
+			int max = getGenMaxHeight();
+			BlockEntry target = getGenTargetBlock();
+			int[] biomes = getGenBiomes();
+
+			if (weight > 0 && min < worldHeight && min < max)
+			{
+				for (int i = 0; i < weight; ++i)
+				{
+					if (random.nextInt(100) + 1 > rate)
+					{
+						continue;
+					}
+
+					int x = chunkX + random.nextInt(16);
+					int y = random.nextInt(Math.min(max, worldHeight - 1) - min) + min;
+					int z = chunkZ + random.nextInt(16);
+					float var1 = random.nextFloat() * (float)Math.PI;
+					double var2 = x + 8 + MathHelper.sin(var1) * count / 8.0F;
+					double var3 = x + 8 - MathHelper.sin(var1) * count / 8.0F;
+					double var4 = z + 8 + MathHelper.cos(var1) * count / 8.0F;
+					double var5 = z + 8 - MathHelper.cos(var1) * count / 8.0F;
+					double var6 = y + random.nextInt(3) - 2;
+					double var7 = y + random.nextInt(3) - 2;
+					int gen = 0;
+
+					for (int j = 0; gen <= count && j <= count; ++j)
+					{
+						double var8 = var2 + (var3 - var2) * j / count;
+						double var9 = var6 + (var7 - var6) * j / count;
+						double var10 = var4 + (var5 - var4) * j / count;
+						double var11 = random.nextDouble() * count / 16.0D;
+						double var12 = (MathHelper.sin(j * (float)Math.PI / count) + 1.0F) * var11 + 1.0D;
+						double var13 = (MathHelper.sin(j * (float)Math.PI / count) + 1.0F) * var11 + 1.0D;
+
+						for (x = MathHelper.floor_double(var8 - var12 / 2.0D); gen <= count && x <= MathHelper.floor_double(var8 + var12 / 2.0D); ++x)
+						{
+							double xScale = (x + 0.5D - var8) / (var12 / 2.0D);
+
+							if (xScale * xScale < 1.0D)
+							{
+								for (y = MathHelper.floor_double(var9 - var13 / 2.0D); gen <= count && y <= MathHelper.floor_double(var9 + var13 / 2.0D); ++y)
+								{
+									double yScale = (y + 0.5D - var9) / (var13 / 2.0D);
+
+									if (xScale * xScale + yScale * yScale < 1.0D)
+									{
+										for (z = MathHelper.floor_double(var10 - var12 / 2.0D); gen < count && z <= MathHelper.floor_double(var10 + var12 / 2.0D); ++z)
+										{
+											double zScale = (z + 0.5D - var10) / (var12 / 2.0D);
+
+											if (xScale * xScale + yScale * yScale + zScale * zScale < 1.0D)
+											{
+												if (target == null)
+												{
+													if (!world.getBlock(x, y, z).isReplaceableOreGen(world, x, y, z, Blocks.stone))
+													{
+														continue;
+													}
+												}
+												else if (!world.getBlock(x, y, z).isReplaceableOreGen(world, x, y, z, target.getBlock()) || world.getBlockMetadata(x, y, z) != target.getMetadata())
+												{
+													continue;
+												}
+
+												if (biomes == null || biomes.length <= 0 || ArrayUtils.contains(biomes, world.getBiomeGenForCoords(x, z).biomeID))
+												{
+													if (world.setBlock(x, y, z, block.getBlock(), block.getMetadata(), 2))
+													{
+														++gen;
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 }

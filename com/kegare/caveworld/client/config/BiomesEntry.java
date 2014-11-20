@@ -37,7 +37,7 @@ public class BiomesEntry extends CategoryEntry
 	@Override
 	protected GuiScreen buildChildScreen()
 	{
-		return new GuiBiomesEntry(owningScreen);
+		return new GuiBiomesEntry(owningScreen, CaveworldAPI.biomeManager);
 	}
 
 	@Override

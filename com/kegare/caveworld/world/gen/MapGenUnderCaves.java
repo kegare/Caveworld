@@ -10,11 +10,17 @@
 package com.kegare.caveworld.world.gen;
 
 import net.minecraft.block.Block;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
-public class MapGenUnderCaves extends MapGenDeepCaves
+public class MapGenUnderCaves extends MapGenCavesCaveworld
 {
+	public MapGenUnderCaves(boolean deep)
+	{
+		super(deep);
+	}
+
 	@Override
 	protected void func_151541_a(long caveSeed, int chunkX, int chunkZ, Block[] blocks, double blockX, double blockY, double blockZ, float scale, float leftRightRadian, float upDownRadian, int currentY, int targetY, double scaleHeight)
 	{
@@ -169,6 +175,33 @@ public class MapGenUnderCaves extends MapGenDeepCaves
 				}
 
 				func_151541_a(rand.nextLong(), chunkX, chunkZ, blocks, blockX, blockY, blockZ, scale, leftRightRadian, upDownRadian, 0, 0, 1.25D);
+			}
+		}
+	}
+
+	@Override
+	protected void digBlock(Block[] blocks, int index, int x, int y, int z, int chunkX, int chunkZ, boolean foundTop)
+	{
+		if (deepCaves)
+		{
+			if (y < 16)
+			{
+				blocks[index] = Blocks.water;
+			}
+			else
+			{
+				blocks[index] = null;
+			}
+		}
+		else
+		{
+			if (y < 10)
+			{
+				blocks[index] = Blocks.water;
+			}
+			else
+			{
+				blocks[index] = null;
 			}
 		}
 	}

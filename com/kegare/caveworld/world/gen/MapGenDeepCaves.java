@@ -16,6 +16,11 @@ import net.minecraft.world.World;
 
 public class MapGenDeepCaves extends MapGenCavesCaveworld
 {
+	public MapGenDeepCaves()
+	{
+		super(true);
+	}
+
 	@Override
 	protected void func_151541_a(long caveSeed, int chunkX, int chunkZ, Block[] blocks, double blockX, double blockY, double blockZ, float scale, float leftRightRadian, float upDownRadian, int currentY, int targetY, double scaleHeight)
 	{

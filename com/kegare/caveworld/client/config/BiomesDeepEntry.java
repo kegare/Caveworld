@@ -23,21 +23,18 @@ import cpw.mods.fml.client.config.GuiConfig;
 import cpw.mods.fml.client.config.GuiConfigEntries;
 import cpw.mods.fml.client.config.GuiConfigEntries.CategoryEntry;
 import cpw.mods.fml.client.config.IConfigElement;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
-@SideOnly(Side.CLIENT)
-public class VeinsEntry extends CategoryEntry
+public class BiomesDeepEntry extends CategoryEntry
 {
-	public VeinsEntry(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement prop)
+	public BiomesDeepEntry(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement configElement)
 	{
-		super(owningScreen, owningEntryList, prop);
+		super(owningScreen, owningEntryList, configElement);
 	}
 
 	@Override
 	protected GuiScreen buildChildScreen()
 	{
-		return new GuiVeinsEntry(owningScreen, CaveworldAPI.veinManager);
+		return new GuiBiomesEntry(owningScreen, CaveworldAPI.biomeDeepManager);
 	}
 
 	@Override
@@ -51,7 +48,7 @@ public class VeinsEntry extends CategoryEntry
 	{
 		try
 		{
-			FileUtils.forceDelete(new File(Config.veinsCfg.toString()));
+			FileUtils.forceDelete(new File(Config.biomesDeepCfg.toString()));
 		}
 		catch (IOException e)
 		{
@@ -60,21 +57,21 @@ public class VeinsEntry extends CategoryEntry
 			return;
 		}
 
-		CaveworldAPI.clearCaveVeins();
+		CaveworldAPI.clearCaveDeepBiomes();
 
-		Config.veinsCfg = null;
-		Config.syncVeinsCfg();
+		Config.biomesDeepCfg = null;
+		Config.syncBiomesDeepCfg();
 
-		if (childScreen instanceof GuiVeinsEntry)
+		if (childScreen instanceof GuiBiomesEntry)
 		{
-			GuiVeinsEntry gui = (GuiVeinsEntry)childScreen;
+			GuiBiomesEntry gui = (GuiBiomesEntry)childScreen;
 
-			if (gui.veinList != null)
+			if (gui.biomeList != null)
 			{
-				gui.veinList.veins.clear();
-				gui.veinList.veins.addAll(CaveworldAPI.getCaveVeins());
-				gui.veinList.contents.clear();
-				gui.veinList.contents.addAll(gui.veinList.veins);
+				gui.biomeList.biomes.clear();
+				gui.biomeList.biomes.addAll(CaveworldAPI.getCaveBiomes());
+				gui.biomeList.contents.clear();
+				gui.biomeList.contents.addAll(gui.biomeList.biomes);
 			}
 		}
 	}

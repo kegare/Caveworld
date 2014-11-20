@@ -13,8 +13,13 @@ import net.minecraft.block.Block;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
-public class MapGenExtremeCaves extends MapGenDeepCaves
+public class MapGenExtremeCaves extends MapGenCavesCaveworld
 {
+	public MapGenExtremeCaves(boolean deep)
+	{
+		super(deep);
+	}
+
 	@Override
 	protected void func_151541_a(long caveSeed, int chunkX, int chunkZ, Block[] blocks, double blockX, double blockY, double blockZ, float scale, float leftRightRadian, float upDownRadian, int currentY, int targetY, double scaleHeight)
 	{

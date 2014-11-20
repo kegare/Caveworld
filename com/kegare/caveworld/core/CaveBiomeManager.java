@@ -10,7 +10,6 @@
 package com.kegare.caveworld.core;
 
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -19,8 +18,8 @@ import java.util.Set;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.WeightedRandom;
 import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraftforge.common.config.Configuration;
 
-import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -31,11 +30,9 @@ import com.kegare.caveworld.api.ICaveBiome;
 import com.kegare.caveworld.api.ICaveBiomeManager;
 import com.kegare.caveworld.util.CaveUtils;
 
-public class CaveBiomeManager implements ICaveBiomeManager, Function<ICaveBiome, BiomeGenBase>
+public class CaveBiomeManager implements ICaveBiomeManager
 {
-	private final Set<ICaveBiome> CAVE_BIOMES = Sets.newTreeSet(CaveBiome.caveBiomeComparator);
-
-	private final Map<BiomeGenBase, ICaveBiome> entriesCache = Maps.newHashMap();
+	private final Map<BiomeGenBase, ICaveBiome> CAVE_BIOMES = Maps.newHashMap();
 
 	public static final Map<BiomeGenBase, ICaveBiome> defaultMapping = Maps.newHashMap();
 
@@ -62,10 +59,21 @@ public class CaveBiomeManager implements ICaveBiomeManager, Function<ICaveBiome,
 		defaultMapping.put(BiomeGenBase.sky, new CaveBiome(BiomeGenBase.sky, 0, new BlockEntry(Blocks.end_stone, 0), null));
 	}
 
+	public Map<BiomeGenBase, ICaveBiome> getRaw()
+	{
+		return CAVE_BIOMES;
+	}
+
+	@Override
+	public Configuration getConfig()
+	{
+		return Config.biomesCfg;
+	}
+
 	@Override
 	public boolean addCaveBiome(ICaveBiome biome)
 	{
-		for (ICaveBiome entry : CAVE_BIOMES)
+		for (ICaveBiome entry : getRaw().values())
 		{
 			if (entry.getBiome().biomeID == biome.getBiome().biomeID)
 			{
@@ -75,31 +83,15 @@ public class CaveBiomeManager implements ICaveBiomeManager, Function<ICaveBiome,
 			}
 		}
 
-		if (CAVE_BIOMES.add(biome))
-		{
-			entriesCache.put(biome.getBiome(), biome);
+		getRaw().put(biome.getBiome(), biome);
 
-			return true;
-		}
-
-		return false;
+		return true;
 	}
 
 	@Override
 	public boolean removeCaveBiome(BiomeGenBase biome)
 	{
-		for (Iterator<ICaveBiome> biomes = CAVE_BIOMES.iterator(); biomes.hasNext();)
-		{
-			if (biomes.next().getBiome().biomeID == biome.biomeID)
-			{
-				biomes.remove();
-				entriesCache.remove(biome);
-
-				return true;
-			}
-		}
-
-		return false;
+		return getRaw().remove(biome) != null;
 	}
 
 	@Override
@@ -107,7 +99,7 @@ public class CaveBiomeManager implements ICaveBiomeManager, Function<ICaveBiome,
 	{
 		int count = 0;
 
-		for (ICaveBiome entry : CAVE_BIOMES)
+		for (ICaveBiome entry : getRaw().values())
 		{
 			if (entry.getGenWeight() > 0)
 			{
@@ -121,7 +113,7 @@ public class CaveBiomeManager implements ICaveBiomeManager, Function<ICaveBiome,
 	@Override
 	public ICaveBiome getCaveBiome(BiomeGenBase biome)
 	{
-		return entriesCache.containsKey(biome) ? entriesCache.get(biome) : new EmptyCaveBiome(biome);
+		return getRaw().containsKey(biome) ? getRaw().get(biome) : new EmptyCaveBiome(biome);
 	}
 
 	@Override
@@ -129,7 +121,7 @@ public class CaveBiomeManager implements ICaveBiomeManager, Function<ICaveBiome,
 	{
 		try
 		{
-			return (ICaveBiome)WeightedRandom.getRandomItem(random, CAVE_BIOMES);
+			return (ICaveBiome)WeightedRandom.getRandomItem(random, getRaw().values());
 		}
 		catch (Exception e)
 		{
@@ -140,26 +132,22 @@ public class CaveBiomeManager implements ICaveBiomeManager, Function<ICaveBiome,
 	@Override
 	public Set<ICaveBiome> getCaveBiomes()
 	{
-		return CAVE_BIOMES;
+		Set<ICaveBiome> result = Sets.newTreeSet(CaveBiome.caveBiomeComparator);
+		result.addAll(getRaw().values());
+
+		return result;
 	}
 
 	@Override
 	public List<BiomeGenBase> getBiomeList()
 	{
-		return Lists.transform(Lists.newArrayList(CAVE_BIOMES), this);
+		return Lists.newArrayList(getRaw().keySet());
 	}
 
 	@Override
 	public void clearCaveBiomes()
 	{
-		CAVE_BIOMES.clear();
-		entriesCache.clear();
-	}
-
-	@Override
-	public BiomeGenBase apply(ICaveBiome input)
-	{
-		return input.getBiome();
+		getRaw().clear();
 	}
 
 	public static class CaveBiome extends WeightedRandom.Item implements ICaveBiome, Comparable

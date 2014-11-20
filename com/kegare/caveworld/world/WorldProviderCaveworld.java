@@ -39,7 +39,6 @@ import net.minecraft.world.WorldProviderSurface;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
-import net.minecraft.world.gen.structure.MapGenStructureIO;
 import net.minecraftforge.client.IRenderHandler;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
@@ -60,12 +59,11 @@ import com.kegare.caveworld.client.renderer.EmptyRenderer;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.handler.TFCCaveEventHooks;
+import com.kegare.caveworld.network.client.DimSyncMessage;
 import com.kegare.caveworld.network.client.PlaySoundMessage;
 import com.kegare.caveworld.network.common.RegenerateMessage;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.CaveUtils;
-import com.kegare.caveworld.world.gen.MapGenStrongholdCaveworld;
-import com.kegare.caveworld.world.gen.StructureStrongholdPiecesCaveworld;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Optional.Method;
@@ -75,11 +73,8 @@ import cpw.mods.fml.relauncher.SideOnly;
 public class WorldProviderCaveworld extends WorldProviderSurface
 {
 	private static NBTTagCompound dimData;
-
 	private static long dimensionSeed;
 	private static int subsurfaceHeight;
-
-	public static ChunkCoordinates recentTeleportPos;
 
 	public static NBTTagCompound getDimData()
 	{
@@ -153,20 +148,7 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 
 		try (FileOutputStream output = new FileOutputStream(new File(dir, "caveworld.dat")))
 		{
-			NBTTagCompound data = getDimData();
-
-			if (recentTeleportPos != null)
-			{
-				NBTTagCompound dat = new NBTTagCompound();
-
-				dat.setInteger("PosX", recentTeleportPos.posX);
-				dat.setInteger("PosY", recentTeleportPos.posY);
-				dat.setInteger("PosZ", recentTeleportPos.posZ);
-
-				data.setTag("TeleportPos", dat);
-			}
-
-			CompressedStreamTools.writeCompressed(data, output);
+			CompressedStreamTools.writeCompressed(getDimData(), output);
 		}
 		catch (Exception e)
 		{
@@ -183,22 +165,11 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 
 		if (!data.hasKey("SubsurfaceHeight"))
 		{
-			data.setInteger("SubsurfaceHeight", Config.subsurfaceHeight);
+			data.setInteger("SubsurfaceHeight", ChunkProviderCaveworld.subsurfaceHeight);
 		}
 
 		dimensionSeed = data.getLong("Seed");
 		subsurfaceHeight = data.getInteger("SubsurfaceHeight");
-
-		NBTTagCompound dat = data.getCompoundTag("TeleportPos");
-
-		if (dat != null)
-		{
-			int posX = dat.getInteger("PosX");
-			int posY = dat.getInteger("PosY");
-			int posZ = dat.getInteger("PosZ");
-
-			recentTeleportPos = new ChunkCoordinates(posX, posY, posZ);
-		}
 	}
 
 	public static void saveDimData()
@@ -222,7 +193,7 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 		{
 			if (obj != null && ((EntityPlayerMP)obj).dimension == CaveworldAPI.getDimension())
 			{
-				target.add(CaveUtils.forceTeleport((EntityPlayerMP)obj, 0, false));
+				target.add(CaveUtils.forceTeleport((EntityPlayerMP)obj, 0));
 			}
 		}
 
@@ -378,46 +349,52 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 			}
 		});
 
-		if (result && (Config.hardcore || Config.caveborn))
+		if (result)
 		{
-			for (EntityPlayerMP player : target)
+			Caveworld.network.sendToAll(new DimSyncMessage(CaveworldAPI.getDimension(), WorldProviderCaveworld.getDimData()));
+
+			if (Config.hardcore || Config.caveborn)
 			{
-				if (!CaveworldAPI.isEntityInCaveworld(player))
+				for (EntityPlayerMP player : target)
 				{
-					CaveUtils.forceTeleport(player, CaveworldAPI.getDimension(), false);
+					if (player.dimension != CaveworldAPI.getDimension())
+					{
+						CaveUtils.forceTeleport(player, CaveworldAPI.getDimension());
+					}
 				}
 			}
 		}
 	}
 
-	private int ambientTickCountdown = 0;
+	protected int ambientTickCountdown = 0;
+
+	public WorldProviderCaveworld()
+	{
+		this.dimensionId = CaveworldAPI.getDimension();
+		this.hasNoSky = true;
+	}
 
 	@Override
 	protected void registerWorldChunkManager()
 	{
-		worldChunkMgr = new WorldChunkManagerCaveworld(worldObj);
-		dimensionId = CaveworldAPI.getDimension();
-		hasNoSky = true;
+		worldChunkMgr = new WorldChunkManagerCaveworld(worldObj, ChunkProviderCaveworld.biomeSize, CaveworldAPI.biomeManager);
 
 		try
 		{
 			registerWorldChunkManagerTFC();
 		}
 		catch (NoSuchMethodError e) {}
-
-		MapGenStructureIO.registerStructure(MapGenStrongholdCaveworld.Start.class, "Caveworld.Stronghold");
-		StructureStrongholdPiecesCaveworld.registerStrongholdPieces();
 	}
 
 	@Method(modid = "terrafirmacraft")
-	protected void registerWorldChunkManagerTFC()
+	private void registerWorldChunkManagerTFC()
 	{
 		MinecraftForge.EVENT_BUS.register(new TFCCaveEventHooks());
 
 		TFC_Climate.worldPair.put(worldObj, new WorldCacheManager(worldObj));
 		TFC_Core.addCDM(worldObj);
 
-		worldChunkMgr = new TFCWorldChunkManagerCaveworld(worldObj);
+		worldChunkMgr = new TFCWorldChunkManagerCaveworld(worldObj, ChunkProviderCaveworld.biomeSize, CaveworldAPI.biomeManager);
 	}
 
 	@Override
@@ -470,7 +447,7 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 	{
 		if (CaveUtils.mcpc)
 		{
-			return "DIM" + CaveworldAPI.getDimension();
+			return "DIM" + dimensionId;
 		}
 
 		return "DIM-" + getDimensionName();
@@ -539,7 +516,7 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 	@Override
 	public ChunkCoordinates getSpawnPoint()
 	{
-		return recentTeleportPos == null ? new ChunkCoordinates(0, getAverageGroundLevel(), 0) : recentTeleportPos;
+		return new ChunkCoordinates(0, getAverageGroundLevel(), 0);
 	}
 
 	@Override
@@ -613,7 +590,7 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 	@Override
 	public double getHorizon()
 	{
-		return getActualHeight() - 1.0D;
+		return getActualHeight();
 	}
 
 	@Override

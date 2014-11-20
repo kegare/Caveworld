@@ -5,9 +5,12 @@ import java.util.Random;
 import java.util.Set;
 
 import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraftforge.common.config.Configuration;
 
 public interface ICaveBiomeManager
 {
+	public Configuration getConfig();
+
 	/**
 	 * Add a cave biome.
 	 * @return <tt>true</tt> if has been added successfully.
