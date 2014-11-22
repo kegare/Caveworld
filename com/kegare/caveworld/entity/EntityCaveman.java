@@ -40,6 +40,7 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
@@ -59,6 +60,14 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public class EntityCaveman extends EntityTameable implements IInventory
 {
+	public static int spawnWeight;
+	public static int spawnMinHeight;
+	public static int spawnMaxHeight;
+	public static int spawnInChunks;
+	public static int[] spawnBiomes;
+	public static int creatureType;
+	public static boolean showHealthBar;
+
 	private final ItemStack[] inventoryContents = new ItemStack[getSizeInventory()];
 
 	private long stoppedTime;
@@ -154,6 +163,11 @@ public class EntityCaveman extends EntityTameable implements IInventory
 		return false;
 	}
 
+	public boolean isOwner(EntityPlayer player)
+	{
+		return isTamed() && player != null && player.getGameProfile().getId().toString().equals(Strings.nullToEmpty(func_152113_b()));
+	}
+
 	@Override
 	public float getEyeHeight()
 	{
@@ -187,7 +201,7 @@ public class EntityCaveman extends EntityTameable implements IInventory
 
 		if (!isTamed())
 		{
-			if (Config.cavemanCreatureType > 0 && rand.nextInt(5) == 0)
+			if (creatureType > 0 && rand.nextInt(5) == 0)
 			{
 				setCurrentItemOrArmor(0, new ItemStack(Items.stone_sword));
 			}
@@ -377,7 +391,7 @@ public class EntityCaveman extends EntityTameable implements IInventory
 
 		if (entity != null)
 		{
-			if (entity instanceof EntityPlayer && isTamed() && func_152113_b().equals(((EntityPlayer)entity).getGameProfile().getId().toString()) && ((EntityPlayer)entity).isSneaking())
+			if (entity instanceof EntityPlayer && isOwner((EntityPlayer)entity) && entity.isSneaking())
 			{
 				setSitting(!isSitting());
 
@@ -426,7 +440,7 @@ public class EntityCaveman extends EntityTameable implements IInventory
 
 				setCurrentItemOrArmor(0, itemstack);
 			}
-			else if (!worldObj.isRemote && func_152113_b().equals(player.getGameProfile().getId().toString()))
+			else if (!worldObj.isRemote && isOwner(player))
 			{
 				player.displayGUIChest(this);
 			}
@@ -541,7 +555,7 @@ public class EntityCaveman extends EntityTameable implements IInventory
 	{
 		int y = MathHelper.floor_double(boundingBox.minY);
 
-		return CaveworldAPI.isEntityInCaveworld(this) && y >= Config.cavemanSpawnMinHeight && y <= Config.cavemanSpawnMaxHeight &&
+		return CaveworldAPI.isEntityInCaveworld(this) && y >= spawnMinHeight && y <= spawnMaxHeight &&
 			worldObj.getEntitiesWithinAABB(getClass(), boundingBox.expand(64.0D, 64.0D, 64.0D)).isEmpty() &&
 			worldObj.checkNoEntityCollision(boundingBox) && worldObj.getCollidingBoundingBoxes(this, boundingBox).isEmpty() && !worldObj.isAnyLiquid(boundingBox);
 	}
@@ -549,7 +563,7 @@ public class EntityCaveman extends EntityTameable implements IInventory
 	@Override
 	public int getMaxSpawnedInChunk()
 	{
-		return Config.cavemanSpawnInChunks;
+		return spawnInChunks;
 	}
 
 	@SideOnly(Side.CLIENT)

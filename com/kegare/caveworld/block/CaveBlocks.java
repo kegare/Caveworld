@@ -14,6 +14,7 @@ import java.io.FileInputStream;
 
 import net.minecraft.block.BlockDispenser;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
@@ -51,6 +52,16 @@ public class CaveBlocks
 
 		OreDictionary.registerOre("portalCaveworld", caveworld_portal);
 
+		if (Config.portalCraftRecipe)
+		{
+			GameRegistry.addShapedRecipe(new ItemStack(caveworld_portal),
+				" E ", "EPE", " D ",
+				'E', Items.emerald,
+				'P', Items.ender_pearl,
+				'D', Items.diamond
+			);
+		}
+
 		BlockDispenser.dispenseBehaviorRegistry.putObject(Item.getItemFromBlock(caveworld_portal), new DispencePortal());
 
 		if (Config.rope)
@@ -60,6 +71,8 @@ public class CaveBlocks
 			Blocks.fire.setFireInfo(rope, 15, 100);
 
 			OreDictionary.registerOre("rope", new ItemStack(rope));
+
+			GameRegistry.addShapelessRecipe(new ItemStack(rope), Items.string, Items.string, Items.string, Items.leather);
 
 			Item item = Item.getItemFromBlock(rope);
 			ChestGenHooks.addItem(ChestGenHooks.BONUS_CHEST, new WeightedRandomChestContent(item, 0, 2, 5, 10));
@@ -94,6 +107,12 @@ public class CaveBlocks
 			GameRegistry.registerBlock(universal_chest, ItemUniversalChest.class, "universal_chest");
 			GameRegistry.registerTileEntity(TileEntityUniversalChest.class, "UniversalChest");
 
+			GameRegistry.addShapedRecipe(new ItemStack(universal_chest),
+				"CCC", "CEC", "CCC",
+				'C', new ItemStack(cavenium_ore, 1, 3),
+				'E', Items.ender_eye
+			);
+
 			File file = new File(Config.getConfigDir(), "UniversalChest.dat");
 			NBTTagCompound data;
 
@@ -121,6 +140,15 @@ public class CaveBlocks
 					universal_chest.inventory.loadInventoryFromNBT((NBTTagList)data.getTag("ChestItems"));
 				}
 			}
+		}
+
+		if (Config.mossStoneCraftRecipe)
+		{
+			GameRegistry.addShapedRecipe(new ItemStack(Blocks.mossy_cobblestone),
+				" V ", "VCV", " V ",
+				'V', Blocks.vine,
+				'C', Blocks.cobblestone
+			);
 		}
 	}
 }

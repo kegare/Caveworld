@@ -24,8 +24,6 @@ import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
-import com.google.common.base.Strings;
-import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.entity.EntityCaveman;
 
 import cpw.mods.fml.client.FMLClientHandler;
@@ -39,6 +37,7 @@ public class RenderCaveman extends RenderBiped
 	private static final ResourceLocation keimanTextures = new ResourceLocation("caveworld", "textures/entity/keiman.png");
 	private static final ResourceLocation halloweenTextures = new ResourceLocation("caveworld", "textures/entity/caveman_hw.png");
 
+	private final Minecraft mc = FMLClientHandler.instance().getClient();
 	private final ModelCaveman cavemanModel;
 
 	private double renderHealth = -1.0D;
@@ -76,13 +75,12 @@ public class RenderCaveman extends RenderBiped
 	{
 		super.doRender(entity, par2, par3, par4, par5, par6);
 
-		if (Config.cavemanShowHealthBar && entity instanceof EntityCaveman)
+		if (EntityCaveman.showHealthBar && entity instanceof EntityCaveman)
 		{
-			Minecraft mc = FMLClientHandler.instance().getClient();
 			EntityCaveman living = (EntityCaveman)entity;
 
 			if (mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == MovingObjectType.ENTITY && mc.objectMouseOver.entityHit == living &&
-				living.isTamed() && mc.thePlayer.getGameProfile().getId().toString().equals(Strings.nullToEmpty(living.func_152113_b())) && living.getDistanceToEntity(mc.thePlayer) <= 3.5F)
+				living.isOwner(mc.thePlayer) && living.getDistanceToEntity(mc.thePlayer) <= 3.5F)
 			{
 				float scale = 0.01666667F * 1.5F;
 				int width = 15;

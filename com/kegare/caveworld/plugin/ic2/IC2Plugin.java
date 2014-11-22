@@ -39,6 +39,7 @@ public class IC2Plugin
 		if (Config.veinsAutoRegister)
 		{
 			CaveworldAPI.addCaveVein(new CaveVein(block, 16, 20, 100, 0, 255));
+			CaveworldAPI.addCaveDeepVein(new CaveVein(block, 16, 40, 100, 0, 255));
 		}
 
 		CaveworldAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 1);
@@ -49,6 +50,7 @@ public class IC2Plugin
 		if (Config.veinsAutoRegister)
 		{
 			CaveworldAPI.addCaveVein(new CaveVein(block, 14, 24, 100, 0, 255));
+			CaveworldAPI.addCaveDeepVein(new CaveVein(block, 14, 48, 100, 0, 255));
 		}
 
 		CaveworldAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 1);
@@ -59,6 +61,7 @@ public class IC2Plugin
 		if (Config.veinsAutoRegister)
 		{
 			CaveworldAPI.addCaveVein(new CaveVein(block, 10, 7, 100, 0, 50));
+			CaveworldAPI.addCaveDeepVein(new CaveVein(block, 10, 14, 100, 0, 255));
 		}
 
 		CaveworldAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 2);
@@ -69,6 +72,7 @@ public class IC2Plugin
 		if (Config.veinsAutoRegister)
 		{
 			CaveworldAPI.addCaveVein(new CaveVein(block, 15, 20, 100, 0, 255));
+			CaveworldAPI.addCaveDeepVein(new CaveVein(block, 15, 40, 100, 0, 255));
 		}
 
 		CaveworldAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 1);

@@ -164,7 +164,6 @@ public class Caveworld
 		EntityRegistry.registerGlobalEntityID(EntityCaveman.class, "Caveman", EntityRegistry.findGlobalUniqueEntityId(), 0xAAAAAA, 0xCCCCCC);
 		EntityRegistry.registerModEntity(EntityCaveman.class, "Caveman", 0, this, 128, 1, true);
 
-		proxy.registerRecipes();
 		proxy.registerRenderers();
 
 		int id = CaveworldAPI.getDimension();

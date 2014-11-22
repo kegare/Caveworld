@@ -30,6 +30,7 @@ caveworld.config.detail=詳細情報
 caveworld.config.detail.hover=詳細情報を表示します。
 caveworld.config.instant=インスタントフィルター
 caveworld.config.instant.hover=フィルタテキストボックスに文字を入力すると瞬時にフィルタリングします。
+caveworld.config.whether=%sを追加します。
 caveworld.config.general=一般的な設定
 caveworld.config.general.tooltip=caveworld-general.cfg に含まれる設定を変更できます。
 caveworld.config.general.versionNotify=バージョン通知
@@ -60,20 +61,8 @@ caveworld.config.recipes.refinedCaveniumCraftRecipe=上質なケイブニウム�
 caveworld.config.recipes.refinedCaveniumCraftRecipe.tooltip=上質なケイブニウムのクラフトレシピを追加します。
 caveworld.config.blocks=ブロックの設定
 caveworld.config.blocks.tooltip=caveworld-blocks.cfg に含まれる設定を変更できます。
-caveworld.config.blocks.Rope=ロープ
-caveworld.config.blocks.Rope.tooltip=ロープを追加します。
-caveworld.config.blocks.oreCavenium=ケイブニウム鉱石
-caveworld.config.blocks.oreCavenium.tooltip=ケイブニウム鉱石を追加します。
-caveworld.config.blocks.universalChest=ユニバーサルチェスト
-caveworld.config.blocks.universalChest.tooltip=ユニバーサルチェストを追加します。
 caveworld.config.items=アイテムの設定
 caveworld.config.items.tooltip=caveworld-items.cfg に含まれる設定を変更できます。
-caveworld.config.items.cavenium=ケイブニウム
-caveworld.config.items.cavenium.tooltip=ケイブニウムを追加します。
-caveworld.config.items.pickaxeMining=採掘ツルハシ
-caveworld.config.items.pickaxeMining.tooltip=採掘ツルハシを追加します。
-caveworld.config.items.oreCompass=鉱石コンパス
-caveworld.config.items.oreCompass.tooltip=鉱石コンパスを追加します。
 caveworld.config.entities=エンティティの設定
 caveworld.config.entities.tooltip=caveworld-entities.cfg に含まれる設定を変更できます。
 caveworld.config.entities.entry.tooltip=%sに関する設定を変更できます。
@@ -198,6 +187,8 @@ item.pickaxeMining.mode.ranged=範囲破壊
 item.pickaxeMining.base=ベース
 item.oreCompass.name=鉱石コンパス
 
+entity.Caveman.name=ケイブマン
+
 inventory.caveworld.portal=Caveworld ポータル
 
 achievement.caveworld.portal=Caveworld ポータル
@@ -216,10 +207,6 @@ achievement.caveworld.deepCaves=深き洞窟
 achievement.caveworld.deepCaves.desc=Deep Caveworldへ行く
 achievement.caveworld.underCaves=深淵なる洞窟
 achievement.caveworld.underCaves.desc=Deep Caveworldの深淵部の湖へ到達する
-achievement.caveworld.backFromDeep=帰還！
-achievement.caveworld.backFromDeep.desc=Deep Caveworldから戻る
-
-entity.Caveman.name=ケイブマン
 
 caveworld.shop.title=Caveworld ショップ
 caveworld.config.shop=ショップの製品のカスタマイズ

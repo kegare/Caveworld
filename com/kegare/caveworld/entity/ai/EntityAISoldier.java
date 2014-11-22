@@ -24,7 +24,6 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
 import com.kegare.caveworld.api.CaveworldAPI;
-import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.entity.EntityCaveman;
 
 public class EntityAISoldier extends EntityAIBase implements IEntitySelector
@@ -234,7 +233,7 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 			return false;
 		}
 
-		switch (Config.cavemanCreatureType)
+		switch (EntityCaveman.creatureType)
 		{
 			case 0:
 				if (theSoldier.isTamed())

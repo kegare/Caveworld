@@ -91,14 +91,6 @@ public class Config
 	public static boolean pickaxeMining;
 	public static boolean oreCompass;
 
-	public static int cavemanSpawnWeight;
-	public static int cavemanSpawnMinHeight;
-	public static int cavemanSpawnMaxHeight;
-	public static int cavemanSpawnInChunks;
-	public static int[] cavemanSpawnBiomes;
-	public static int cavemanCreatureType;
-	public static boolean cavemanShowHealthBar;
-
 	public static Class<? extends IConfigEntry> selectItems;
 	public static Class<? extends IConfigEntry> selectBiomes;
 	public static Class<? extends IConfigEntry> cycleInteger;
@@ -292,21 +284,18 @@ public class Config
 
 		blocksCfg.addCustomCategoryComment(category, "If multiplayer, values must match on client-side and server-side.");
 
-		prop = blocksCfg.get(category, "Rope", true);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
-		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop = blocksCfg.get(category, "rope", true).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocalFormatted(Caveworld.CONFIG_LANG + "whether", StatCollector.translateToLocal("tile." + prop.getName() + ".name"));
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		rope = prop.getBoolean(rope);
-		prop = blocksCfg.get(category, "oreCavenium", true);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
-		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop = blocksCfg.get(category, "oreCavenium", true).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocalFormatted(Caveworld.CONFIG_LANG + "whether", StatCollector.translateToLocal("tile." + prop.getName() + ".name"));
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		oreCavenium = prop.getBoolean(oreCavenium);
-		prop = blocksCfg.get(category, "universalChest", true);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
-		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop = blocksCfg.get(category, "universalChest", true).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocalFormatted(Caveworld.CONFIG_LANG + "whether", StatCollector.translateToLocal("tile." + prop.getName() + ".name"));
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		universalChest = prop.getBoolean(universalChest);
@@ -333,21 +322,18 @@ public class Config
 
 		itemsCfg.addCustomCategoryComment(category, "If multiplayer, values must match on client-side and server-side.");
 
-		prop = itemsCfg.get(category, "cavenium", true);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
-		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop = itemsCfg.get(category, "cavenium", true).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocalFormatted(Caveworld.CONFIG_LANG + "whether", StatCollector.translateToLocal("item." + prop.getName() + ".name"));
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		cavenium = prop.getBoolean(cavenium);
-		prop = itemsCfg.get(category, "pickaxeMining", true);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
-		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop = itemsCfg.get(category, "pickaxeMining", true).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocalFormatted(Caveworld.CONFIG_LANG + "whether", StatCollector.translateToLocal("item." + prop.getName() + ".name"));
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		pickaxeMining = prop.getBoolean(pickaxeMining);
-		prop = itemsCfg.get(category, "oreCompass", true);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
-		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop = itemsCfg.get(category, "oreCompass", true).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocalFormatted(Caveworld.CONFIG_LANG + "whether", StatCollector.translateToLocal("item." + prop.getName() + ".name"));
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		oreCompass = prop.getBoolean(oreCompass);
@@ -378,30 +364,30 @@ public class Config
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
-		cavemanSpawnWeight = MathHelper.clamp_int(prop.getInt(cavemanSpawnWeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		EntityCaveman.spawnWeight = MathHelper.clamp_int(prop.getInt(EntityCaveman.spawnWeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 		prop = entitiesCfg.get(category, "spawnMinHeight", 10);
 		prop.setMinValue(1).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
-		cavemanSpawnMinHeight = MathHelper.clamp_int(prop.getInt(cavemanSpawnMinHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		EntityCaveman.spawnMinHeight = MathHelper.clamp_int(prop.getInt(EntityCaveman.spawnMinHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 		prop = entitiesCfg.get(category, "spawnMaxHeight", 255);
 		prop.setMinValue(1).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
-		cavemanSpawnMaxHeight = MathHelper.clamp_int(prop.getInt(cavemanSpawnMaxHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		EntityCaveman.spawnMaxHeight = MathHelper.clamp_int(prop.getInt(EntityCaveman.spawnMaxHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 		prop = entitiesCfg.get(category, "spawnInChunks", 1);
 		prop.setMinValue(1).setMaxValue(500).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
-		cavemanSpawnInChunks = MathHelper.clamp_int(prop.getInt(cavemanSpawnInChunks), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		EntityCaveman.spawnInChunks = MathHelper.clamp_int(prop.getInt(EntityCaveman.spawnInChunks), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 		prop = entitiesCfg.get(category, "spawnBiomes", new int[0]);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName()).setConfigEntryClass(selectBiomes);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		propOrder.add(prop.getName());
-		cavemanSpawnBiomes = prop.getIntList();
+		EntityCaveman.spawnBiomes = prop.getIntList();
 		prop = entitiesCfg.get(category, "creatureType", 0);
 		prop.setMinValue(0).setMaxValue(1).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName()).setConfigEntryClass(cycleInteger);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -422,7 +408,7 @@ public class Config
 		}
 
 		propOrder.add(prop.getName());
-		cavemanCreatureType = MathHelper.clamp_int(prop.getInt(cavemanCreatureType), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		EntityCaveman.creatureType = MathHelper.clamp_int(prop.getInt(EntityCaveman.creatureType), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 
 		if (side.isClient())
 		{
@@ -431,14 +417,14 @@ public class Config
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 			prop.comment += " [default: " + prop.getDefault() + "]";
 			propOrder.add(prop.getName());
-			cavemanShowHealthBar = prop.getBoolean();
+			EntityCaveman.showHealthBar = prop.getBoolean();
 		}
 
 		BiomeGenBase[] def = CaveUtils.getBiomes().toArray(new BiomeGenBase[0]);
 		BiomeGenBase[] biomes = new BiomeGenBase[0];
 		BiomeGenBase biome;
 
-		for (int i : cavemanSpawnBiomes)
+		for (int i : EntityCaveman.spawnBiomes)
 		{
 			if (i >= 0 && i < BiomeGenBase.getBiomeGenArray().length)
 			{
@@ -458,9 +444,9 @@ public class Config
 
 		EntityRegistry.removeSpawn(EntityCaveman.class, EnumCreatureType.ambient, def);
 
-		if (cavemanSpawnWeight > 0)
+		if (EntityCaveman.spawnWeight > 0)
 		{
-			EntityRegistry.addSpawn(EntityCaveman.class, cavemanSpawnWeight, 1, 1, EnumCreatureType.ambient, biomes);
+			EntityRegistry.addSpawn(EntityCaveman.class, EntityCaveman.spawnWeight, 1, 1, EnumCreatureType.ambient, biomes);
 		}
 
 		entitiesCfg.addCustomCategoryComment(category, "If multiplayer, server-side only.");

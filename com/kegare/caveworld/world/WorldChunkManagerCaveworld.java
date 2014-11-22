@@ -47,9 +47,11 @@ public class WorldChunkManagerCaveworld extends WorldChunkManager
 
 	private BiomeGenBase getCaveBiomeGenAt(int x, int z)
 	{
-		int dist = Math.max(biomeSize, 1);
+		int chunkX = x >> 4;
+		int chunkZ = z >> 4;
+		int size = Math.max(biomeSize, 1);
 
-		random.setSeed(ChunkCoordIntPair.chunkXZ2Int(x / (16 * dist), z / (16 * dist)) ^ worldObj.getSeed());
+		random.setSeed(ChunkCoordIntPair.chunkXZ2Int((chunkX + 1) / size, (chunkZ + 1) / size) ^ worldObj.getSeed());
 
 		return biomeManager.getRandomCaveBiome(random).getBiome();
 	}
