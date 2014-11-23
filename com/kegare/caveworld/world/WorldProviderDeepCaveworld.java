@@ -183,7 +183,9 @@ public class WorldProviderDeepCaveworld extends WorldProviderCaveworld
 		{
 			if (obj != null && ((EntityPlayerMP)obj).dimension == CaveworldAPI.getDeepDimension())
 			{
-				target.add(CaveUtils.forceTeleport((EntityPlayerMP)obj, 0));
+				CaveUtils.teleportPlayer((EntityPlayerMP)obj, 0);
+
+				target.add((EntityPlayerMP)obj);
 			}
 		}
 
@@ -355,7 +357,7 @@ public class WorldProviderDeepCaveworld extends WorldProviderCaveworld
 				{
 					if (player.dimension != CaveworldAPI.getDeepDimension())
 					{
-						CaveUtils.forceTeleport(player, CaveworldAPI.getDeepDimension());
+						CaveUtils.teleportPlayer(player, CaveworldAPI.getDeepDimension());
 					}
 				}
 			}

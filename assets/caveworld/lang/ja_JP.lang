@@ -188,6 +188,7 @@ item.pickaxeMining.base=ベース
 item.oreCompass.name=鉱石コンパス
 
 entity.Caveman.name=ケイブマン
+entity.ArcherZombie.name=弓兵ゾンビ
 
 inventory.caveworld.portal=Caveworld ポータル
 

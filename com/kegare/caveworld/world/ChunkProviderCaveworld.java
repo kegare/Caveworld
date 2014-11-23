@@ -483,9 +483,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	@Override
 	public List getPossibleCreatures(EnumCreatureType creature, int x, int y, int z)
 	{
-		BiomeGenBase biome = worldObj.getBiomeGenForCoords(x, z);
-
-		return biome == null || y >= worldObj.getActualHeight() ? null : biome.getSpawnableList(creature);
+		return worldObj.getBiomeGenForCoords(x, z).getSpawnableList(creature);
 	}
 
 	@Override

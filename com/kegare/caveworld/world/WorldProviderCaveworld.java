@@ -193,7 +193,9 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 		{
 			if (obj != null && ((EntityPlayerMP)obj).dimension == CaveworldAPI.getDimension())
 			{
-				target.add(CaveUtils.forceTeleport((EntityPlayerMP)obj, 0));
+				CaveUtils.teleportPlayer((EntityPlayerMP)obj, 0);
+
+				target.add((EntityPlayerMP)obj);
 			}
 		}
 
@@ -359,7 +361,7 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 				{
 					if (player.dimension != CaveworldAPI.getDimension())
 					{
-						CaveUtils.forceTeleport(player, CaveworldAPI.getDimension());
+						CaveUtils.teleportPlayer(player, CaveworldAPI.getDimension());
 					}
 				}
 			}
@@ -517,12 +519,6 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 	public ChunkCoordinates getSpawnPoint()
 	{
 		return new ChunkCoordinates(0, getAverageGroundLevel(), 0);
-	}
-
-	@Override
-	public int getRespawnDimension(EntityPlayerMP player)
-	{
-		return dimensionId;
 	}
 
 	@Override

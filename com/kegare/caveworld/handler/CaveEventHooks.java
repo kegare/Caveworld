@@ -423,7 +423,7 @@ public class CaveEventHooks
 			{
 				if (MathHelper.floor_double(player.posY) >= world.getActualHeight() - 1)
 				{
-					CaveUtils.forceTeleport(player, player.dimension);
+					CaveUtils.teleportPlayer(player, player.dimension);
 				}
 			}
 			else
@@ -453,7 +453,12 @@ public class CaveEventHooks
 						player.inventory.addItemStackToInventory(stack);
 					}
 
-					CaveUtils.forceTeleport(player, CaveworldAPI.getDimension());
+					CaveUtils.teleportPlayer(player, CaveworldAPI.getDimension());
+
+					if (player.getBedLocation(player.dimension) == null)
+					{
+						player.setSpawnChunk(player.getPlayerCoordinates(), true);
+					}
 				}
 			}
 		}
@@ -481,7 +486,7 @@ public class CaveEventHooks
 
 			if (Config.hardcore && event.toDim != CaveworldAPI.getDimension() && (!CaveworldAPI.isDeepExist() || event.toDim != CaveworldAPI.getDeepDimension()))
 			{
-				CaveUtils.forceTeleport(player, event.fromDim);
+				CaveUtils.teleportPlayer(player, event.fromDim);
 
 				return;
 			}
@@ -512,7 +517,7 @@ public class CaveEventHooks
 					}
 					else
 					{
-						CaveUtils.forceTeleport(player, event.fromDim);
+						CaveUtils.teleportPlayer(player, event.fromDim);
 					}
 				}
 				else
@@ -893,7 +898,7 @@ public class CaveEventHooks
 				{
 					if (player.boundingBox.maxY >= player.worldObj.provider.getActualHeight())
 					{
-						CaveUtils.forceTeleport(player, CaveworldAPI.getDimension());
+						CaveUtils.teleportPlayer(player, CaveworldAPI.getDimension());
 					}
 				}
 				else
@@ -902,11 +907,11 @@ public class CaveEventHooks
 					{
 						if (player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.theMiner))
 						{
-							CaveUtils.forceTeleport(player, CaveworldAPI.getDeepDimension());
+							CaveUtils.teleportPlayer(player, CaveworldAPI.getDeepDimension());
 						}
 						else
 						{
-							CaveUtils.forceTeleport(player, player.dimension);
+							CaveUtils.teleportPlayer(player, player.dimension);
 						}
 					}
 				}

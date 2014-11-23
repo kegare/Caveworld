@@ -17,6 +17,7 @@ import net.minecraft.command.IEntitySelector;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityAgeable;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAILookIdle;
@@ -39,6 +40,9 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeGenBase;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
@@ -55,6 +59,7 @@ import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.item.ItemCavenium;
 import com.kegare.caveworld.util.CaveUtils;
 
+import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -67,6 +72,38 @@ public class EntityCaveman extends EntityTameable implements IInventory
 	public static int[] spawnBiomes;
 	public static int creatureType;
 	public static boolean showHealthBar;
+
+	public static void refreshSpawn()
+	{
+		BiomeGenBase[] def = CaveUtils.getBiomes().toArray(new BiomeGenBase[0]);
+		BiomeGenBase[] biomes = new BiomeGenBase[0];
+		BiomeGenBase biome;
+
+		for (int i : spawnBiomes)
+		{
+			if (i >= 0 && i < BiomeGenBase.getBiomeGenArray().length)
+			{
+				biome = BiomeGenBase.getBiome(i);
+
+				if (biome != null)
+				{
+					biomes = ArrayUtils.add(biomes, biome);
+				}
+			}
+		}
+
+		if (ArrayUtils.isEmpty(biomes))
+		{
+			biomes = def;
+		}
+
+		EntityRegistry.removeSpawn(EntityCaveman.class, EnumCreatureType.ambient, def);
+
+		if (spawnWeight > 0)
+		{
+			EntityRegistry.addSpawn(EntityCaveman.class, spawnWeight, 1, 1, EnumCreatureType.ambient, biomes);
+		}
+	}
 
 	private final ItemStack[] inventoryContents = new ItemStack[getSizeInventory()];
 

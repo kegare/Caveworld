@@ -34,47 +34,64 @@ public class IC2Plugin
 	public static void invoke()
 	{
 		ItemStack itemstack = IC2Items.getItem("copperOre");
-		BlockEntry block = new BlockEntry(Block.getBlockFromItem(itemstack.getItem()), itemstack.getItemDamage());
+		BlockEntry block;
 
-		if (Config.veinsAutoRegister)
+		if (itemstack != null)
 		{
-			CaveworldAPI.addCaveVein(new CaveVein(block, 16, 20, 100, 0, 255));
-			CaveworldAPI.addCaveDeepVein(new CaveVein(block, 16, 40, 100, 0, 255));
-		}
+			block = new BlockEntry(Block.getBlockFromItem(itemstack.getItem()), itemstack.getItemDamage());
 
-		CaveworldAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 1);
+			if (Config.veinsAutoRegister)
+			{
+				CaveworldAPI.addCaveVein(new CaveVein(block, 16, 20, 100, 0, 255));
+				CaveworldAPI.addCaveDeepVein(new CaveVein(block, 16, 40, 100, 0, 255));
+			}
+
+			CaveworldAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 1);
+		}
 
 		itemstack = IC2Items.getItem("tinOre");
-		block = new BlockEntry(Block.getBlockFromItem(itemstack.getItem()), itemstack.getItemDamage());
 
-		if (Config.veinsAutoRegister)
+		if (itemstack != null)
 		{
-			CaveworldAPI.addCaveVein(new CaveVein(block, 14, 24, 100, 0, 255));
-			CaveworldAPI.addCaveDeepVein(new CaveVein(block, 14, 48, 100, 0, 255));
-		}
+			block = new BlockEntry(Block.getBlockFromItem(itemstack.getItem()), itemstack.getItemDamage());
 
-		CaveworldAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 1);
+			if (Config.veinsAutoRegister)
+			{
+				CaveworldAPI.addCaveVein(new CaveVein(block, 14, 24, 100, 0, 255));
+				CaveworldAPI.addCaveDeepVein(new CaveVein(block, 14, 48, 100, 0, 255));
+			}
+
+			CaveworldAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 1);
+		}
 
 		itemstack = IC2Items.getItem("uraniumOre");
-		block = new BlockEntry(Block.getBlockFromItem(itemstack.getItem()), itemstack.getItemDamage());
 
-		if (Config.veinsAutoRegister)
+		if (itemstack != null)
 		{
-			CaveworldAPI.addCaveVein(new CaveVein(block, 10, 7, 100, 0, 50));
-			CaveworldAPI.addCaveDeepVein(new CaveVein(block, 10, 14, 100, 0, 255));
-		}
+			block = new BlockEntry(Block.getBlockFromItem(itemstack.getItem()), itemstack.getItemDamage());
 
-		CaveworldAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 2);
+			if (Config.veinsAutoRegister)
+			{
+				CaveworldAPI.addCaveVein(new CaveVein(block, 10, 7, 100, 0, 50));
+				CaveworldAPI.addCaveDeepVein(new CaveVein(block, 10, 14, 100, 0, 255));
+			}
+
+			CaveworldAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 2);
+		}
 
 		itemstack = IC2Items.getItem("leadOre");
-		block = new BlockEntry(Block.getBlockFromItem(itemstack.getItem()), itemstack.getItemDamage());
 
-		if (Config.veinsAutoRegister)
+		if (itemstack != null)
 		{
-			CaveworldAPI.addCaveVein(new CaveVein(block, 15, 20, 100, 0, 255));
-			CaveworldAPI.addCaveDeepVein(new CaveVein(block, 15, 40, 100, 0, 255));
-		}
+			block = new BlockEntry(Block.getBlockFromItem(itemstack.getItem()), itemstack.getItemDamage());
 
-		CaveworldAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 1);
+			if (Config.veinsAutoRegister)
+			{
+				CaveworldAPI.addCaveVein(new CaveVein(block, 15, 20, 100, 0, 255));
+				CaveworldAPI.addCaveDeepVein(new CaveVein(block, 15, 40, 100, 0, 255));
+			}
+
+			CaveworldAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 1);
+		}
 	}
 }

@@ -13,9 +13,6 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 
-import com.kegare.caveworld.api.CaveworldAPI;
-import com.kegare.caveworld.client.config.GuiBiomesEntry;
-import com.kegare.caveworld.client.config.GuiVeinsEntry;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.plugin.mceconomy.GuiShopEntry;
 import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
@@ -85,26 +82,10 @@ public class GuiIngameCaveworldMenu extends GuiScreen
 					mc.setIngameFocus();
 					break;
 				case 1:
-					if (mc.theWorld.provider.dimensionId == CaveworldAPI.getDeepDimension())
-					{
-						mc.displayGuiScreen(new GuiBiomesEntry(this, CaveworldAPI.biomeDeepManager));
-					}
-					else
-					{
-						mc.displayGuiScreen(new GuiBiomesEntry(this, CaveworldAPI.biomeManager));
-					}
-
+					mc.displayGuiScreen(new GuiIngameBiomeCustomize());
 					break;
 				case 2:
-					if (mc.theWorld.provider.dimensionId == CaveworldAPI.getDeepDimension())
-					{
-						mc.displayGuiScreen(new GuiVeinsEntry(this, CaveworldAPI.veinDeepManager));
-					}
-					else
-					{
-						mc.displayGuiScreen(new GuiVeinsEntry(this, CaveworldAPI.veinManager));
-					}
-
+					mc.displayGuiScreen(new GuiIngameVeinCustomize());
 					break;
 				case 3:
 					mc.displayGuiScreen(new GuiRegeneration(true));

@@ -13,7 +13,6 @@ import java.io.File;
 import java.util.List;
 import java.util.Set;
 
-import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
@@ -26,7 +25,6 @@ import net.minecraftforge.common.config.Property;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.Level;
 
@@ -40,6 +38,7 @@ import com.kegare.caveworld.api.ICaveVein;
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome;
 import com.kegare.caveworld.core.CaveVeinManager.CaveVein;
+import com.kegare.caveworld.entity.EntityArcherZombie;
 import com.kegare.caveworld.entity.EntityCaveman;
 import com.kegare.caveworld.util.CaveConfiguration;
 import com.kegare.caveworld.util.CaveLog;
@@ -51,7 +50,6 @@ import com.kegare.caveworld.world.ChunkProviderDeepCaveworld;
 import cpw.mods.fml.client.config.GuiConfigEntries.IConfigEntry;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
 
@@ -388,6 +386,7 @@ public class Config
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		propOrder.add(prop.getName());
 		EntityCaveman.spawnBiomes = prop.getIntList();
+		EntityCaveman.refreshSpawn();
 		prop = entitiesCfg.get(category, "creatureType", 0);
 		prop.setMinValue(0).setMaxValue(1).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName()).setConfigEntryClass(cycleInteger);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -420,36 +419,42 @@ public class Config
 			EntityCaveman.showHealthBar = prop.getBoolean();
 		}
 
-		BiomeGenBase[] def = CaveUtils.getBiomes().toArray(new BiomeGenBase[0]);
-		BiomeGenBase[] biomes = new BiomeGenBase[0];
-		BiomeGenBase biome;
+		entitiesCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
+		entitiesCfg.setCategoryPropertyOrder(category, propOrder);
 
-		for (int i : EntityCaveman.spawnBiomes)
-		{
-			if (i >= 0 && i < BiomeGenBase.getBiomeGenArray().length)
-			{
-				biome = BiomeGenBase.getBiome(i);
+		propOrder.clear();
+		category = "ArcherZombie";
+		prop = entitiesCfg.get(category, "spawnWeight", 100);
+		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		EntityArcherZombie.spawnWeight = MathHelper.clamp_int(prop.getInt(EntityArcherZombie.spawnWeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		prop = entitiesCfg.get(category, "spawnMinHeight", 10);
+		prop.setMinValue(1).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		EntityArcherZombie.spawnMinHeight = MathHelper.clamp_int(prop.getInt(EntityArcherZombie.spawnMinHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		prop = entitiesCfg.get(category, "spawnMaxHeight", 255);
+		prop.setMinValue(1).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		EntityArcherZombie.spawnMaxHeight = MathHelper.clamp_int(prop.getInt(EntityArcherZombie.spawnMaxHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		prop = entitiesCfg.get(category, "spawnInChunks", 4);
+		prop.setMinValue(1).setMaxValue(500).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		EntityArcherZombie.spawnInChunks = MathHelper.clamp_int(prop.getInt(EntityArcherZombie.spawnInChunks), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		prop = entitiesCfg.get(category, "spawnBiomes", new int[0]);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName()).setConfigEntryClass(selectBiomes);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		propOrder.add(prop.getName());
+		EntityArcherZombie.spawnBiomes = prop.getIntList();
+		EntityArcherZombie.refreshSpawn();
 
-				if (biome != null)
-				{
-					biomes = ArrayUtils.add(biomes, biome);
-				}
-			}
-		}
-
-		if (ArrayUtils.isEmpty(biomes))
-		{
-			biomes = def;
-		}
-
-		EntityRegistry.removeSpawn(EntityCaveman.class, EnumCreatureType.ambient, def);
-
-		if (EntityCaveman.spawnWeight > 0)
-		{
-			EntityRegistry.addSpawn(EntityCaveman.class, EntityCaveman.spawnWeight, 1, 1, EnumCreatureType.ambient, biomes);
-		}
-
-		entitiesCfg.addCustomCategoryComment(category, "If multiplayer, server-side only.");
 		entitiesCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
 		entitiesCfg.setCategoryPropertyOrder(category, propOrder);
 

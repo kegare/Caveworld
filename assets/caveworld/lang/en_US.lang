@@ -188,6 +188,7 @@ item.pickaxeMining.base=Base
 item.oreCompass.name=Ore Compass
 
 entity.Caveman.name=Caveman
+entity.ArcherZombie.name=Archer Zombie
 
 inventory.caveworld.portal=Caveworld Portal
 

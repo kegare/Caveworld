@@ -61,6 +61,11 @@ public class TeleporterCaveworld extends Teleporter
 
 			player.addExperienceLevel(0);
 			player.addPotionEffect(new PotionEffect(Potion.blindness.getId(), 25));
+
+			if (player.getBedLocation(player.dimension) == null)
+			{
+				player.setSpawnChunk(player.getPlayerCoordinates(), true);
+			}
 		}
 	}
 

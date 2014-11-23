@@ -67,11 +67,11 @@ import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.world.TeleporterDummy;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
-import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.GameRegistry.UniqueIdentifier;
@@ -349,36 +349,20 @@ public class CaveUtils
 		return result;
 	}
 
-	public static EntityPlayerMP respawnPlayer(EntityPlayerMP player, int dim)
+	public static boolean teleportPlayer(EntityPlayerMP player, int dim)
 	{
 		if (!DimensionManager.isDimensionRegistered(dim))
 		{
-			return player;
-		}
-
-		player.isDead = false;
-		player.forceSpawn = true;
-		player.timeUntilPortal = player.getPortalCooldown();
-		player.playerNetServerHandler.playerEntity = player.mcServer.getConfigurationManager().respawnPlayer(player, dim, true);
-		player.playerNetServerHandler.playerEntity.addExperienceLevel(0);
-
-		return player.playerNetServerHandler.playerEntity;
-	}
-
-	public static EntityPlayerMP forceTeleport(EntityPlayerMP player, int dim)
-	{
-		if (!DimensionManager.isDimensionRegistered(dim))
-		{
-			return player;
+			return false;
 		}
 
 		if (dim != player.dimension)
 		{
-			int dimOld = player.dimension;
-
-			player = respawnPlayer(player, dim);
-
-			FMLCommonHandler.instance().bus().post(new PlayerChangedDimensionEvent(player, dimOld, dim));
+			player.isDead = false;
+			player.forceSpawn = true;
+			player.timeUntilPortal = player.getPortalCooldown();
+			player.mcServer.getConfigurationManager().transferPlayerToDimension(player, dim, new TeleporterDummy(player.mcServer.worldServerForDimension(dim)));
+			player.addExperienceLevel(0);
 		}
 
 		WorldServer world = player.getServerForPlayer();
@@ -452,7 +436,7 @@ public class CaveUtils
 								data.setInteger("PosZ", z);
 								player.getEntityData().setTag(key, data);
 
-								return player;
+								return true;
 							}
 						}
 					}
@@ -468,7 +452,7 @@ public class CaveUtils
 			world.setBlock(x, y - 1, z, Blocks.stone);
 		}
 
-		return player;
+		return false;
 	}
 
 	public static MovingObjectPosition rayTrace(EntityPlayer player, double distance)

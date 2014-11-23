@@ -86,7 +86,7 @@ public class BlockCaveniumOre extends BlockOre
 	@Override
 	public int damageDropped(int metadata)
 	{
-		return metadata & 1;
+		return metadata & 3;
 	}
 
 	@Override

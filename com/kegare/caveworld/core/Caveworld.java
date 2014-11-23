@@ -34,6 +34,7 @@ import org.apache.logging.log4j.Level;
 import com.google.common.collect.Lists;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
+import com.kegare.caveworld.entity.EntityArcherZombie;
 import com.kegare.caveworld.entity.EntityCaveman;
 import com.kegare.caveworld.handler.CaveAPIHandler;
 import com.kegare.caveworld.handler.CaveEventHooks;
@@ -161,12 +162,15 @@ public class Caveworld
 		Config.syncEntitiesCfg();
 		Config.syncDimensionCfg();
 
+		int id = 0;
 		EntityRegistry.registerGlobalEntityID(EntityCaveman.class, "Caveman", EntityRegistry.findGlobalUniqueEntityId(), 0xAAAAAA, 0xCCCCCC);
-		EntityRegistry.registerModEntity(EntityCaveman.class, "Caveman", 0, this, 128, 1, true);
+		EntityRegistry.registerModEntity(EntityCaveman.class, "Caveman", id++, this, 128, 1, true);
+		EntityRegistry.registerGlobalEntityID(EntityArcherZombie.class, "ArcherZombie", EntityRegistry.findGlobalUniqueEntityId(), 0x00A0A0, 0xAAAAAA);
+		EntityRegistry.registerModEntity(EntityArcherZombie.class, "ArcherZombie", id++, this, 128, 1, true);
 
 		proxy.registerRenderers();
 
-		int id = CaveworldAPI.getDimension();
+		id = CaveworldAPI.getDimension();
 		DimensionManager.registerProviderType(id, WorldProviderCaveworld.class, true);
 		DimensionManager.registerDimension(id, id);
 		id = CaveworldAPI.getDeepDimension();

@@ -11,6 +11,7 @@ package com.kegare.caveworld.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.entity.RenderZombie;
 import net.minecraft.network.play.client.C07PacketPlayerDigging;
 import net.minecraftforge.client.MinecraftForgeClient;
 
@@ -23,6 +24,7 @@ import com.kegare.caveworld.client.renderer.RenderPortalCaveworld;
 import com.kegare.caveworld.client.renderer.TileEntityUniversalChestRenderer;
 import com.kegare.caveworld.core.CommonProxy;
 import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.entity.EntityArcherZombie;
 import com.kegare.caveworld.entity.EntityCaveman;
 import com.kegare.caveworld.entity.TileEntityUniversalChest;
 import com.kegare.caveworld.item.CaveItems;
@@ -56,6 +58,7 @@ public class ClientProxy extends CommonProxy
 		MinecraftForgeClient.registerItemRenderer(CaveItems.mining_pickaxe, new RenderMiningPickaxe());
 
 		RenderingRegistry.registerEntityRenderingHandler(EntityCaveman.class, new RenderCaveman());
+		RenderingRegistry.registerEntityRenderingHandler(EntityArcherZombie.class, new RenderZombie());
 	}
 
 	@Override

@@ -93,9 +93,15 @@ public class TFCWorldChunkManagerCaveworld extends TFCWorldChunkManager
 	{
 		int chunkX = x >> 4;
 		int chunkZ = z >> 4;
-		int size = Math.max(biomeSize, 1);
 
-		random.setSeed(ChunkCoordIntPair.chunkXZ2Int((chunkX + 1) / size, (chunkZ + 1) / size) ^ worldObj.getSeed());
+		if (biomeSize <= 0)
+		{
+			random.setSeed(ChunkCoordIntPair.chunkXZ2Int(chunkX, chunkZ) ^ worldObj.getSeed());
+		}
+		else
+		{
+			random.setSeed(ChunkCoordIntPair.chunkXZ2Int((chunkX + 1) / biomeSize, (chunkZ + 1) / biomeSize) ^ worldObj.getSeed());
+		}
 
 		return convertToTFCBiome(biomeManager.getRandomCaveBiome(random).getBiome());
 	}
