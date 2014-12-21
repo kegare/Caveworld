@@ -396,7 +396,7 @@ public class CaveUtils
 
 			if (!world.isAirBlock(x, y - 1, z) && !world.getBlock(x, y - 1, z).getMaterial().isLiquid())
 			{
-				player.playerNetServerHandler.setPlayerLocation(x + 0.5D, y + 0.8D, z + 0.5D, player.rotationYaw, player.rotationPitch);
+				player.playerNetServerHandler.setPlayerLocation(x + 0.5D, y + 0.5D, z + 0.5D, player.rotationYaw, player.rotationPitch);
 
 				NBTTagCompound data = new NBTTagCompound();
 				data.setInteger("PosX", x);
@@ -428,7 +428,7 @@ public class CaveUtils
 
 							if (!world.isAirBlock(x, y - 1, z) && !world.getBlock(x, y - 1, z).getMaterial().isLiquid())
 							{
-								player.playerNetServerHandler.setPlayerLocation(x + 0.5D, y + 0.8D, z + 0.5D, player.rotationYaw, player.rotationPitch);
+								player.playerNetServerHandler.setPlayerLocation(x + 0.5D, y + 0.5D, z + 0.5D, player.rotationYaw, player.rotationPitch);
 
 								NBTTagCompound data = new NBTTagCompound();
 								data.setInteger("PosX", x);
@@ -446,7 +446,7 @@ public class CaveUtils
 			x = 0;
 			y = 30;
 			z = 0;
-			player.playerNetServerHandler.setPlayerLocation(x + 0.5D, y + 0.8D, z + 0.5D, player.rotationYaw, player.rotationPitch);
+			player.playerNetServerHandler.setPlayerLocation(x + 0.5D, y + 0.5D, z + 0.5D, player.rotationYaw, player.rotationPitch);
 			world.setBlockToAir(x, y, z);
 			world.setBlockToAir(x, y + 1, z);
 			world.setBlock(x, y - 1, z, Blocks.stone);

@@ -71,6 +71,7 @@ public class Config
 	public static boolean veinsAutoRegister;
 	public static boolean deathLoseMiningPoint;
 	public static int miningPointRenderType;
+	public static boolean fakeMiningPickaxe;
 	public static String[] miningPointValidItems;
 	public static String[] miningPointValidItemsDefault;
 
@@ -210,6 +211,13 @@ public class Config
 
 			propOrder.add(prop.getName());
 			miningPointRenderType = MathHelper.clamp_int(prop.getInt(miningPointRenderType), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+
+			prop = generalCfg.get(category, "fakeMiningPickaxe", false);
+			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+			prop.comment += " [default: " + prop.getDefault() + "]";
+			propOrder.add(prop.getName());
+			fakeMiningPickaxe = prop.getBoolean(fakeMiningPickaxe);
 		}
 
 		prop = generalCfg.get(category, "miningPointValidItems", miningPointValidItemsDefault == null ? new String[0] : miningPointValidItemsDefault);

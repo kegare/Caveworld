@@ -45,8 +45,8 @@ import com.kegare.caveworld.network.client.CaveworldMenuMessage;
 import com.kegare.caveworld.network.client.DimDeepSyncMessage;
 import com.kegare.caveworld.network.client.DimSyncMessage;
 import com.kegare.caveworld.network.client.MiningSyncMessage;
+import com.kegare.caveworld.network.client.MultiBreakCountMessage;
 import com.kegare.caveworld.network.client.PlaySoundMessage;
-import com.kegare.caveworld.network.client.SetBlockMessage;
 import com.kegare.caveworld.network.common.RegenerateMessage;
 import com.kegare.caveworld.network.server.BuffMessage;
 import com.kegare.caveworld.network.server.CaveAchievementMessage;
@@ -136,7 +136,6 @@ public class Caveworld
 		network.registerMessage(DimDeepSyncMessage.class, DimDeepSyncMessage.class, id++, Side.CLIENT);
 		network.registerMessage(MiningSyncMessage.class, MiningSyncMessage.class, id++, Side.CLIENT);
 		network.registerMessage(PlaySoundMessage.class, PlaySoundMessage.class, id++, Side.CLIENT);
-		network.registerMessage(SetBlockMessage.class, SetBlockMessage.class, id++, Side.CLIENT);
 		network.registerMessage(RegenerateMessage.class, RegenerateMessage.class, id++, Side.CLIENT);
 		network.registerMessage(RegenerateMessage.class, RegenerateMessage.class, id++, Side.SERVER);
 		network.registerMessage(RegenerateMessage.ProgressNotify.class, RegenerateMessage.ProgressNotify.class, id++, Side.CLIENT);
@@ -144,6 +143,7 @@ public class Caveworld
 		network.registerMessage(CaveworldMenuMessage.class, CaveworldMenuMessage.class, id++, Side.CLIENT);
 		network.registerMessage(CaveAchievementMessage.class, CaveAchievementMessage.class, id++, Side.SERVER);
 		network.registerMessage(SelectBreakableMessage.class, SelectBreakableMessage.class, id++, Side.SERVER);
+		network.registerMessage(MultiBreakCountMessage.class, MultiBreakCountMessage.class, id, Side.CLIENT);
 
 		Config.syncGeneralCfg();
 		Config.syncBlocksCfg();

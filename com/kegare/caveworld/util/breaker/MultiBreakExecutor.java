@@ -12,6 +12,7 @@ package com.kegare.caveworld.util.breaker;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.minecraft.block.BlockRedstoneOre;
 import net.minecraft.entity.player.EntityPlayer;
@@ -23,6 +24,8 @@ import com.kegare.caveworld.util.breaker.BreakPos.NearestBreakPosComparator;
 
 public abstract class MultiBreakExecutor
 {
+	public static final AtomicInteger positionsCount = new AtomicInteger(0);
+
 	protected final EntityPlayer player;
 	protected final ArrayListExtended<BreakPos> breakPositions = new ArrayListExtended();
 

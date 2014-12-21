@@ -23,6 +23,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.play.server.S23PacketBlockChange;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MathHelper;
@@ -30,8 +31,8 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
 import com.kegare.caveworld.core.Caveworld;
-import com.kegare.caveworld.network.client.SetBlockMessage;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -165,7 +166,7 @@ public class BlockRope extends Block
 				{
 					if (!world.isRemote)
 					{
-						Caveworld.network.sendToDimension(new SetBlockMessage(x, y - 1, z, this, 0, 3), world.provider.dimensionId);
+						FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager().sendToAllNear(x, y -1, z, 64.0D, world.provider.dimensionId, new S23PacketBlockChange(x, y - 1, z, world));
 					}
 
 					++count;

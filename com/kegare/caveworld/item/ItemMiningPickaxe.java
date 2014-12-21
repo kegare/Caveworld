@@ -24,6 +24,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.EnumHelper;
 
@@ -32,6 +33,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.client.gui.GuiSelectBreakable;
 import com.kegare.caveworld.core.Caveworld;
+import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.recipe.RecipeMiningPickaxe;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Roman;
@@ -530,5 +532,43 @@ public class ItemMiningPickaxe extends ItemPickaxe
 				list.add(itemstack);
 			}
 		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
+	public IIcon getIcon(ItemStack itemstack, int pass)
+	{
+		if (!Config.fakeMiningPickaxe)
+		{
+			return super.getIcon(itemstack, pass);
+		}
+
+		Item base = getBaseTool(itemstack);
+
+		if (base != this)
+		{
+			return base.getIcon(itemstack, pass);
+		}
+
+		return super.getIcon(itemstack, pass);
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
+	public IIcon getIconIndex(ItemStack itemstack)
+	{
+		if (!Config.fakeMiningPickaxe)
+		{
+			return super.getIconIndex(itemstack);
+		}
+
+		Item base = getBaseTool(itemstack);
+
+		if (base != this)
+		{
+			return base.getIconIndex(itemstack);
+		}
+
+		return super.getIconIndex(itemstack);
 	}
 }

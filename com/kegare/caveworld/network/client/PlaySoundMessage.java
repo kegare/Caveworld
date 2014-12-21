@@ -10,7 +10,6 @@
 package com.kegare.caveworld.network.client;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.ISound;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.audio.SoundHandler;
@@ -54,8 +53,7 @@ public class PlaySoundMessage implements IMessage, IMessageHandler<PlaySoundMess
 	@Override
 	public IMessage onMessage(PlaySoundMessage message, MessageContext ctx)
 	{
-		Minecraft mc = FMLClientHandler.instance().getClient();
-		SoundHandler handler = mc.getSoundHandler();
+		SoundHandler handler = FMLClientHandler.instance().getClient().getSoundHandler();
 		ISound sound = PositionedSoundRecord.func_147673_a(message.resource);
 
 		if (!handler.isSoundPlaying(sound))

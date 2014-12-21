@@ -82,8 +82,10 @@ import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.entity.EntityCaveman;
 import com.kegare.caveworld.item.ItemCavenium;
 import com.kegare.caveworld.item.ItemMiningPickaxe;
+import com.kegare.caveworld.item.ItemMiningPickaxe.BreakMode;
 import com.kegare.caveworld.network.client.DimDeepSyncMessage;
 import com.kegare.caveworld.network.client.DimSyncMessage;
+import com.kegare.caveworld.network.client.MultiBreakCountMessage;
 import com.kegare.caveworld.network.client.PlaySoundMessage;
 import com.kegare.caveworld.network.server.BuffMessage;
 import com.kegare.caveworld.network.server.CaveAchievementMessage;
@@ -92,7 +94,6 @@ import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.util.Version.Status;
 import com.kegare.caveworld.util.breaker.AditBreakExecutor;
-import com.kegare.caveworld.util.breaker.BreakPos;
 import com.kegare.caveworld.util.breaker.MultiBreakExecutor;
 import com.kegare.caveworld.util.breaker.QuickBreakExecutor;
 import com.kegare.caveworld.util.breaker.RangedBreakExecutor;
@@ -120,11 +121,6 @@ public class CaveEventHooks
 	public static final CaveEventHooks instance = new CaveEventHooks();
 
 	public static final Set<String> firstJoinPlayers = Sets.newHashSet();
-
-	@SideOnly(Side.CLIENT)
-	private BreakPos breakingPos;
-	@SideOnly(Side.CLIENT)
-	private long triggerTime;
 
 	private static final ItemStack defaultMiningIconItem = new ItemStack(Items.stone_pickaxe);
 
@@ -166,95 +162,16 @@ public class CaveEventHooks
 
 		Minecraft mc = FMLClientHandler.instance().getClient();
 
-		if (mc.thePlayer != null && mc.objectMouseOver != null)
+		if (mc.thePlayer != null && mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == MovingObjectType.ENTITY)
 		{
-			switch (mc.objectMouseOver.typeOfHit)
+			Entity entity = mc.objectMouseOver.entityHit;
+
+			if (CaveworldAPI.isEntityInCaveworld(entity) && entity instanceof EntityCaveman && !((EntityCaveman)entity).isTamed())
 			{
-				case BLOCK:
-					ItemStack current = mc.thePlayer.getCurrentEquippedItem();
-
-					if (current != null && current.getItem() != null && current.getItem() instanceof ItemMiningPickaxe && current.getItemDamage() < current.getMaxDamage())
-					{
-						if (mc.thePlayer.capabilities.isCreativeMode)
-						{
-							return;
-						}
-
-						int x = mc.objectMouseOver.blockX;
-						int y = mc.objectMouseOver.blockY;
-						int z = mc.objectMouseOver.blockZ;
-						ItemMiningPickaxe pickaxe = (ItemMiningPickaxe)current.getItem();
-
-						if (mc.thePlayer.isSwingInProgress && (breakingPos == null || breakingPos.x != x || breakingPos.y != y || breakingPos.z != z))
-						{
-							breakingPos = null;
-							triggerTime = 0;
-
-							Block block = mc.theWorld.getBlock(x, y, z);
-							int meta = mc.theWorld.getBlockMetadata(x, y, z);
-
-							if (pickaxe.canBreak(current, block, meta))
-							{
-								switch (pickaxe.getMode(current))
-								{
-									case QUICK:
-										QuickBreakExecutor.getExecutor(mc.thePlayer).setOriginPos(x, y, z).setBreakPositions();
-										break;
-									case ADIT:
-										AditBreakExecutor.getExecutor(mc.thePlayer).setOriginPos(x, y, z).setBreakPositions();
-										break;
-									case RANGED:
-										RangedBreakExecutor.getExecutor(mc.thePlayer).setOriginPos(x, y, z).setBreakPositions();
-										break;
-									default:
-								}
-
-								breakingPos = new BreakPos(mc.theWorld, x, y, z);
-								triggerTime = System.nanoTime();
-							}
-							else
-							{
-								QuickBreakExecutor.getExecutor(mc.thePlayer).clear();
-								AditBreakExecutor.getExecutor(mc.thePlayer).clear();
-								RangedBreakExecutor.getExecutor(mc.thePlayer).clear();
-
-								breakingPos = null;
-								triggerTime = 0;
-							}
-						}
-
-						if (breakingPos != null)
-						{
-							Block block = breakingPos.getCurrentBlock();
-
-							if (block == null || breakingPos.isPlaced() || block.isAir(mc.theWorld, x, y, z))
-							{
-								breakingPos = null;
-								triggerTime = 0;
-							}
-						}
-					}
-
-					if (System.nanoTime() - triggerTime >= 10000000000L)
-					{
-						breakingPos = null;
-						triggerTime = 0;
-					}
-
-					break;
-				case ENTITY:
-					Entity entity = mc.objectMouseOver.entityHit;
-
-					if (CaveworldAPI.isEntityInCaveworld(entity) && entity instanceof EntityCaveman && !((EntityCaveman)entity).isTamed())
-					{
-						if (!mc.thePlayer.getStatFileWriter().hasAchievementUnlocked(CaveAchievementList.caveman))
-						{
-							Caveworld.network.sendToServer(new CaveAchievementMessage(CaveAchievementList.caveman));
-						}
-					}
-
-					break;
-				default:
+				if (!mc.thePlayer.getStatFileWriter().hasAchievementUnlocked(CaveAchievementList.caveman))
+				{
+					Caveworld.network.sendToServer(new CaveAchievementMessage(CaveAchievementList.caveman));
+				}
 			}
 		}
 	}
@@ -638,9 +555,20 @@ public class CaveEventHooks
 							default:
 						}
 
-						if (player.capabilities.isCreativeMode && executor != null)
+						if (executor != null)
 						{
-							executor.breakAll();
+							if (player.capabilities.isCreativeMode)
+							{
+								executor.breakAll();
+							}
+							else
+							{
+								int size = executor.getBreakPositions().size();
+
+								MultiBreakExecutor.positionsCount.set(size);
+
+								Caveworld.network.sendTo(new MultiBreakCountMessage(size), player);
+							}
 						}
 					}
 					else
@@ -767,27 +695,9 @@ public class CaveEventHooks
 		if (current != null && current.getItem() != null && current.getItem() instanceof ItemMiningPickaxe)
 		{
 			ItemMiningPickaxe pickaxe = (ItemMiningPickaxe)current.getItem();
-			MultiBreakExecutor executor;
 
-			switch (pickaxe.getMode(current))
+			if (pickaxe.getMode(current) != BreakMode.NORMAL)
 			{
-				case QUICK:
-					executor = QuickBreakExecutor.getExecutor(player);
-					break;
-				case ADIT:
-					executor = AditBreakExecutor.getExecutor(player);
-					break;
-				case RANGED:
-					executor = RangedBreakExecutor.getExecutor(player);
-					break;
-				default:
-					executor = null;
-					break;
-			}
-
-			if (executor != null && !executor.getBreakPositions().isEmpty())
-			{
-				int count = executor.getBreakPositions().size();
 				int raw = pickaxe.getRefined(current);
 
 				if (raw >= 4 || pickaxe.getHarvestLevel(current, "pickaxe") >= 3 && EnchantmentHelper.getEnchantmentLevel(Enchantment.efficiency.effectId, current) >= 4)
@@ -797,7 +707,7 @@ public class CaveEventHooks
 
 				float refined = raw * 0.1245F;
 
-				event.newSpeed = Math.min(event.originalSpeed / (count * (0.5F - refined)), pickaxe.getDigSpeed(current, event.block, event.metadata));
+				event.newSpeed = Math.min(event.originalSpeed / (MultiBreakExecutor.positionsCount.get() * (0.5F - refined)), pickaxe.getDigSpeed(current, event.block, event.metadata));
 			}
 		}
 

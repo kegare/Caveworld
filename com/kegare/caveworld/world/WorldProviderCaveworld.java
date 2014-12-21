@@ -351,18 +351,13 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 			}
 		});
 
-		if (result)
+		if (result && (Config.hardcore || Config.caveborn))
 		{
-			Caveworld.network.sendToAll(new DimSyncMessage(CaveworldAPI.getDimension(), WorldProviderCaveworld.getDimData()));
-
-			if (Config.hardcore || Config.caveborn)
+			for (EntityPlayerMP player : target)
 			{
-				for (EntityPlayerMP player : target)
+				if (player.dimension != CaveworldAPI.getDimension())
 				{
-					if (player.dimension != CaveworldAPI.getDimension())
-					{
-						CaveUtils.teleportPlayer(player, CaveworldAPI.getDimension());
-					}
+					CaveUtils.teleportPlayer(player, CaveworldAPI.getDimension());
 				}
 			}
 		}
@@ -567,6 +562,8 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 		if (!worldObj.isRemote && dimData == null)
 		{
 			loadDimData(getDimData());
+
+			Caveworld.network.sendToAll(new DimSyncMessage(dimensionId, getDimData()));
 		}
 
 		return dimensionSeed;

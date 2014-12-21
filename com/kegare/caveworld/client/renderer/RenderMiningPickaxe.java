@@ -19,6 +19,7 @@ import net.minecraftforge.client.IItemRenderer;
 import org.lwjgl.opengl.GL11;
 
 import com.google.common.base.Strings;
+import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.item.ItemMiningPickaxe;
 import com.kegare.caveworld.util.Roman;
@@ -57,16 +58,19 @@ public class RenderMiningPickaxe implements IItemRenderer
 
 		itemRender.renderItemIntoGUI(renderer, mc.getTextureManager(), item, 0, 0, true);
 
-		Item base = ((ItemMiningPickaxe)item.getItem()).getBaseTool(item);
-
-		if (base != CaveItems.mining_pickaxe)
+		if (!Config.fakeMiningPickaxe)
 		{
-			GL11.glPushMatrix();
-			GL11.glTranslatef(-9.0F, 14.0F, -1.0F);
-			GL11.glScalef(0.6F, 0.6F, 1.0F);
-			GL11.glRotatef(-90.0F, 0.0F, 0.0F, 1.0F);
-			itemRender.renderItemIntoGUI(renderer, mc.getTextureManager(), new ItemStack(base), 0, item.isItemDamaged() ? 13 : 16, true);
-			GL11.glPopMatrix();
+			Item base = ((ItemMiningPickaxe)item.getItem()).getBaseTool(item);
+
+			if (base != CaveItems.mining_pickaxe)
+			{
+				GL11.glPushMatrix();
+				GL11.glTranslatef(-9.0F, 14.0F, -1.0F);
+				GL11.glScalef(0.6F, 0.6F, 1.0F);
+				GL11.glRotatef(-90.0F, 0.0F, 0.0F, 1.0F);
+				itemRender.renderItemIntoGUI(renderer, mc.getTextureManager(), new ItemStack(base), 0, item.isItemDamaged() ? 13 : 16, true);
+				GL11.glPopMatrix();
+			}
 		}
 
 		String refined = Roman.toRoman(((ItemMiningPickaxe)item.getItem()).getRefined(item));
