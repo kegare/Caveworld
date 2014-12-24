@@ -18,8 +18,8 @@ import net.minecraft.block.BlockRedstoneOre;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.kegare.caveworld.util.ArrayListExtended;
 import com.kegare.caveworld.util.breaker.BreakPos.NearestBreakPosComparator;
 
 public abstract class MultiBreakExecutor
@@ -27,7 +27,7 @@ public abstract class MultiBreakExecutor
 	public static final AtomicInteger positionsCount = new AtomicInteger(0);
 
 	protected final EntityPlayer player;
-	protected final ArrayListExtended<BreakPos> breakPositions = new ArrayListExtended();
+	protected final Set<BreakPos> breakPositions = Sets.newConcurrentHashSet();
 
 	protected BreakPos originPos;
 	protected BreakPos currentPos;
@@ -71,43 +71,33 @@ public abstract class MultiBreakExecutor
 		{
 			currentPos = new BreakPos(originPos.world, x, y, z);
 
-			return breakPositions.addIfAbsent(currentPos);
+			return breakPositions.add(currentPos);
 		}
 
 		return false;
 	}
 
-	public List<BreakPos> getBreakPositions()
+	public Set<BreakPos> getBreakPositions()
 	{
 		return breakPositions;
 	}
 
 	public void breakAll()
 	{
-		Collections.sort(breakPositions, new NearestBreakPosComparator(originPos));
+		ItemStack current = player.getCurrentEquippedItem();
+		List<BreakPos> list = Lists.newArrayList(breakPositions);
 
-		Set<BreakPos> remove = Sets.newHashSet();
+		Collections.sort(list, new NearestBreakPosComparator(originPos));
 
-		for (BreakPos pos : breakPositions)
+		for (BreakPos pos : list)
 		{
-			ItemStack current = player.getCurrentEquippedItem();
-
-			if (current == null || current.isItemStackDamageable() && current.getItemDamage() >= current.getMaxDamage() || pos.isPlaced())
-			{
-				remove.add(pos);
-			}
-			else
+			if (current != null && (!current.isItemStackDamageable() || current.getItemDamage() < current.getMaxDamage()) && !pos.isPlaced())
 			{
 				pos.doBreak(player);
-
-				remove.add(pos);
 			}
 		}
 
-		for (BreakPos pos : remove)
-		{
-			breakPositions.remove(pos);
-		}
+		breakPositions.clear();
 	}
 
 	public void clear()

@@ -20,8 +20,6 @@ import net.minecraft.block.BlockRedstoneOre;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
@@ -29,6 +27,7 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.EntityBat;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayer.EnumChatVisibility;
 import net.minecraft.entity.player.EntityPlayer.EnumStatus;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.event.ClickEvent;
@@ -37,7 +36,6 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.play.server.S02PacketChat;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ChatComponentTranslation;
@@ -51,10 +49,10 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.EntityEvent.EntityConstructing;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -82,12 +80,10 @@ import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.entity.EntityCaveman;
 import com.kegare.caveworld.item.ItemCavenium;
 import com.kegare.caveworld.item.ItemMiningPickaxe;
-import com.kegare.caveworld.item.ItemMiningPickaxe.BreakMode;
 import com.kegare.caveworld.network.client.DimDeepSyncMessage;
 import com.kegare.caveworld.network.client.DimSyncMessage;
 import com.kegare.caveworld.network.client.MultiBreakCountMessage;
 import com.kegare.caveworld.network.client.PlaySoundMessage;
-import com.kegare.caveworld.network.server.BuffMessage;
 import com.kegare.caveworld.network.server.CaveAchievementMessage;
 import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.util.CaveUtils;
@@ -217,8 +213,8 @@ public class CaveEventHooks
 				}
 			}
 
-			if (CaveworldAPI.isEntityInCaveworld(mc.thePlayer) && mc.currentScreen == null && (mc.thePlayer.capabilities.isCreativeMode || mc.gameSettings.advancedItemTooltips ||
-				CaveUtils.isItemPickaxe(current) || CaveUtils.isMiningPointValidItem(current)))
+			if (CaveworldAPI.isEntityInCaveworld(mc.thePlayer) && (mc.currentScreen == null || mc.gameSettings.chatVisibility != EnumChatVisibility.HIDDEN) &&
+				(mc.thePlayer.capabilities.isCreativeMode || mc.gameSettings.advancedItemTooltips || CaveUtils.isItemPickaxe(current) || CaveUtils.isMiningPointValidItem(current)))
 			{
 				String str = Integer.toString(CaveworldAPI.getMiningPoint(mc.thePlayer));
 				int x = event.resolution.getScaledWidth() - 20;
@@ -310,7 +306,7 @@ public class CaveEventHooks
 			component.appendText(" : " + EnumChatFormatting.YELLOW + Version.getLatest());
 			component.getChatStyle().setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, Caveworld.metadata.url));
 
-			event.handler.handleChat(new S02PacketChat(component));
+			FMLClientHandler.instance().getClient().ingameGUI.getChatGUI().printChatMessage(component);
 		}
 	}
 
@@ -492,12 +488,11 @@ public class CaveEventHooks
 			if (CaveworldAPI.isEntityInCaveworld(player))
 			{
 				ItemStack current = player.getCurrentEquippedItem();
-				Block block = event.block;
-				int metadata = event.blockMetadata;
 
 				if (CaveUtils.isMiningPointValidItem(current))
 				{
-					int amount = CaveworldAPI.getMiningPointAmount(block, metadata);
+					Block block = event.block;
+					int amount = CaveworldAPI.getMiningPointAmount(block, event.blockMetadata);
 
 					if (amount == 0)
 					{
@@ -534,29 +529,15 @@ public class CaveEventHooks
 				if (current != null && current.getItem() != null && current.getItem() instanceof ItemMiningPickaxe && current.getItemDamage() < current.getMaxDamage())
 				{
 					ItemMiningPickaxe pickaxe = (ItemMiningPickaxe)current.getItem();
-					Block block = world.getBlock(x, y, z);
-					int meta = world.getBlockMetadata(x, y, z);
 
-					if (pickaxe.canBreak(current, block, meta))
+					if (pickaxe.canBreak(current, world.getBlock(x, y, z), world.getBlockMetadata(x, y, z)))
 					{
-						MultiBreakExecutor executor = null;
-
-						switch (pickaxe.getMode(current))
-						{
-							case QUICK:
-								executor = QuickBreakExecutor.getExecutor(player).setOriginPos(x, y, z).setBreakPositions();
-								break;
-							case ADIT:
-								executor = AditBreakExecutor.getExecutor(player).setOriginPos(x, y, z).setBreakPositions();
-								break;
-							case RANGED:
-								executor = RangedBreakExecutor.getExecutor(player).setOriginPos(x, y, z).setBreakPositions();
-								break;
-							default:
-						}
+						MultiBreakExecutor executor = pickaxe.getMode(current).getExecutor(player);
 
 						if (executor != null)
 						{
+							executor.setOriginPos(x, y, z).setBreakPositions();
+
 							if (player.capabilities.isCreativeMode)
 							{
 								executor.breakAll();
@@ -690,26 +671,6 @@ public class CaveEventHooks
 	public void onBreakSpeed(BreakSpeed event)
 	{
 		EntityPlayer player = event.entityPlayer;
-		ItemStack current = player.getCurrentEquippedItem();
-
-		if (current != null && current.getItem() != null && current.getItem() instanceof ItemMiningPickaxe)
-		{
-			ItemMiningPickaxe pickaxe = (ItemMiningPickaxe)current.getItem();
-
-			if (pickaxe.getMode(current) != BreakMode.NORMAL)
-			{
-				int raw = pickaxe.getRefined(current);
-
-				if (raw >= 4 || pickaxe.getHarvestLevel(current, "pickaxe") >= 3 && EnchantmentHelper.getEnchantmentLevel(Enchantment.efficiency.effectId, current) >= 4)
-				{
-					return;
-				}
-
-				float refined = raw * 0.1245F;
-
-				event.newSpeed = Math.min(event.originalSpeed / (MultiBreakExecutor.positionsCount.get() * (0.5F - refined)), pickaxe.getDigSpeed(current, event.block, event.metadata));
-			}
-		}
 
 		if (CaveworldAPI.isEntityInCaveworld(player))
 		{
@@ -940,17 +901,11 @@ public class CaveEventHooks
 		}
 	}
 
-	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
-	public void onClientChat(ClientChatReceivedEvent event)
+	public void onServerChat(ServerChatEvent event)
 	{
-		String message = event.message.getUnformattedTextForChat();
-		EntityPlayer player = FMLClientHandler.instance().getClientPlayerEntity();
-
-		if (player != null && message.startsWith(String.format("<%s> ", player.getCommandSenderName())))
-		{
-			message = message.substring(message.indexOf(" ") + 1);
-		}
+		String message = event.message;
+		EntityPlayerMP player = event.player;
 
 		if (message.matches("@buff|@buff ([0-9]*$|max)") && CaveworldAPI.isEntityInCaveworld(player))
 		{
@@ -967,15 +922,19 @@ public class CaveEventHooks
 
 			if (point > 0)
 			{
-				Random random = new Random();
 				Potion potion = null;
 
-				while (potion == null || potion.isBadEffect() || player.isPotionActive(potion))
+				while (potion == null || potion.getEffectiveness() <= 0.5D || player.isPotionActive(potion))
 				{
-					potion = Potion.potionTypes[random.nextInt(Potion.potionTypes.length)];
+					potion = Potion.potionTypes[player.getRNG().nextInt(Potion.potionTypes.length)];
 				}
 
-				Caveworld.network.sendToServer(new BuffMessage(new PotionEffect(potion.id, point * 20)));
+				if (potion != null)
+				{
+					CaveworldAPI.addMiningPoint(player, -point);
+
+					player.addPotionEffect(new PotionEffect(potion.id, point * 20));
+				}
 			}
 
 			event.setCanceled(true);

@@ -131,29 +131,35 @@ public class EntityArcherZombie extends EntityZombie implements IRangedAttackMob
 	@Override
 	public void attackEntityWithRangedAttack(EntityLivingBase entity, float power)
 	{
-		EntityArrow entityarrow = new EntityArrow(worldObj, this, entity, 0.45F + rand.nextFloat() * 2, 14 - worldObj.difficultySetting.getDifficultyId() * 4);
+		EntityArrow arrow = new EntityArrow(worldObj, this, entity, 0.45F + rand.nextFloat() * 2, 14 - worldObj.difficultySetting.getDifficultyId() * 4);
+
+		arrow.setDamage(power * 2.0F + rand.nextGaussian() * 0.25D + worldObj.difficultySetting.getDifficultyId() * 0.11F);
+
 		int i = EnchantmentHelper.getEnchantmentLevel(Enchantment.power.effectId, getHeldItem());
-		int j = EnchantmentHelper.getEnchantmentLevel(Enchantment.punch.effectId, getHeldItem());
-		entityarrow.setDamage(power * 2.0F + rand.nextGaussian() * 0.25D + worldObj.difficultySetting.getDifficultyId() * 0.11F);
 
 		if (i > 0)
 		{
-			entityarrow.setDamage(entityarrow.getDamage() + i * 0.5D + 0.5D);
+			arrow.setDamage(arrow.getDamage() + i * 0.5D + 0.5D);
 		}
 
-		if (j > 0)
+		i = EnchantmentHelper.getEnchantmentLevel(Enchantment.punch.effectId, getHeldItem());
+
+		if (i > 0)
 		{
-			entityarrow.setKnockbackStrength(j);
+			arrow.setKnockbackStrength(i);
 		}
 
 		if (EnchantmentHelper.getEnchantmentLevel(Enchantment.flame.effectId, getHeldItem()) > 0)
 		{
-			entityarrow.setFire(100);
+			arrow.setFire(100);
 		}
 
 		playSound("random.bow", 1.0F, 1.0F / (rand.nextFloat() * 0.4F + 0.8F));
 
-		worldObj.spawnEntityInWorld(entityarrow);
+		if (!worldObj.isRemote)
+		{
+			worldObj.spawnEntityInWorld(arrow);
+		}
 	}
 
 	@Override

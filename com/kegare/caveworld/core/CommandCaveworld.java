@@ -28,10 +28,10 @@ import net.minecraft.util.IChatComponent;
 
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.network.client.CaveworldMenuMessage;
+import com.kegare.caveworld.network.client.OpenUrlMessage;
 import com.kegare.caveworld.network.common.RegenerateMessage;
+import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Version;
-import com.kegare.caveworld.world.WorldProviderCaveworld;
-import com.kegare.caveworld.world.WorldProviderDeepCaveworld;
 
 import cpw.mods.fml.common.Loader;
 
@@ -114,7 +114,11 @@ public class CommandCaveworld implements ICommand
 		}
 		else if (args[0].equalsIgnoreCase("forum") || args[0].equalsIgnoreCase("url"))
 		{
-			try
+			if (sender instanceof EntityPlayerMP)
+			{
+				Caveworld.network.sendTo(new OpenUrlMessage(Caveworld.metadata.url), (EntityPlayerMP)sender);
+			}
+			else try
 			{
 				Desktop.getDesktop().browse(new URI(Caveworld.metadata.url));
 			}
@@ -154,8 +158,10 @@ public class CommandCaveworld implements ICommand
 			}
 			else
 			{
-				WorldProviderCaveworld.regenerate(backup);
-				WorldProviderDeepCaveworld.regenerate(backup);
+				boolean ret = Config.hardcore || Config.caveborn;
+
+				CaveUtils.regenerateDimension(CaveworldAPI.getDimension(), backup, ret);
+				CaveUtils.regenerateDimension(CaveworldAPI.getDeepDimension(), backup, ret);
 			}
 		}
 		else if (args[0].equalsIgnoreCase("mp") && args.length > 1 && sender instanceof EntityPlayerMP)

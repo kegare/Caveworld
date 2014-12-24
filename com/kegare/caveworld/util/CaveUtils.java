@@ -10,6 +10,7 @@
 package com.kegare.caveworld.util;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.FileSystem;
@@ -20,6 +21,8 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
@@ -36,14 +39,21 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.event.ClickEvent;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChunkCoordinates;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.StatCollector;
 import net.minecraft.util.Vec3;
+import net.minecraft.world.MinecraftException;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -54,19 +64,25 @@ import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.common.BiomeManager.BiomeEntry;
 import net.minecraftforge.common.BiomeManager.BiomeType;
 import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.oredict.OreDictionary;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.network.common.RegenerateMessage;
 import com.kegare.caveworld.world.TeleporterDummy;
 
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -463,6 +479,180 @@ public class CaveUtils
 		Vec3 direction = origin.addVector(lookVec.xCoord * distance, lookVec.yCoord * distance, lookVec.zCoord * distance);
 
 		return player.worldObj.rayTraceBlocks(origin, direction, true);
+	}
+
+	public static boolean regenerateDimension(int dim, boolean backup, boolean ret)
+	{
+		MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+		WorldServer world = server.worldServerForDimension(dim);
+		File dir = new File(DimensionManager.getCurrentSaveRootDirectory(), world.provider.getSaveFolder());
+		String name = world.provider.getDimensionName();
+		Set<EntityPlayerMP> teleportedPlayers = Sets.newHashSet();
+
+		for (Object obj : server.getConfigurationManager().playerEntityList)
+		{
+			EntityPlayerMP player = (EntityPlayerMP)obj;
+
+			if (player.dimension == dim)
+			{
+				teleportPlayer(player, 0);
+
+				teleportedPlayers.add(player);
+			}
+		}
+
+		IChatComponent component;
+
+		component = new ChatComponentText(StatCollector.translateToLocalFormatted("caveworld.regenerate.regenerating", name));
+		component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
+		server.getConfigurationManager().sendChatMsg(component);
+
+		if (server.isSinglePlayer())
+		{
+			Caveworld.network.sendToAll(new RegenerateMessage(backup));
+		}
+
+		Caveworld.network.sendToAll(new RegenerateMessage.ProgressNotify(0));
+
+		try
+		{
+			world.saveAllChunks(true, null);
+		}
+		catch (MinecraftException e)
+		{
+			return false;
+		}
+
+		world.flush();
+
+		MinecraftForge.EVENT_BUS.post(new WorldEvent.Unload(world));
+
+		DimensionManager.setWorld(dim, null);
+
+		if (dir.exists())
+		{
+			if (backup)
+			{
+				File parent = dir.getParentFile();
+				final Pattern pattern = Pattern.compile("^" + dir.getName() + "_bak-..*\\.zip$");
+				File[] files = parent.listFiles(new FilenameFilter()
+				{
+					@Override
+					public boolean accept(File dir, String name)
+					{
+						return pattern.matcher(name).matches();
+					}
+				});
+
+				if (files != null && files.length >= 5)
+				{
+					Arrays.sort(files, new Comparator<File>()
+					{
+						@Override
+						public int compare(File o1, File o2)
+						{
+							int i = compareWithNull(o1, o2);
+
+							if (i == 0 && o1 != null && o2 != null)
+							{
+								try
+								{
+									i = Files.getLastModifiedTime(o1.toPath()).compareTo(Files.getLastModifiedTime(o2.toPath()));
+								}
+								catch (IOException e) {}
+							}
+
+							return i;
+						}
+					});
+
+					try
+					{
+						FileUtils.forceDelete(files[0]);
+					}
+					catch (IOException e) {}
+				}
+
+				Calendar calendar = Calendar.getInstance();
+				String year = Integer.toString(calendar.get(Calendar.YEAR));
+				String month = String.format("%02d", calendar.get(Calendar.MONTH) + 1);
+				String day = String.format("%02d", calendar.get(Calendar.DATE));
+				String hour = String.format("%02d", calendar.get(Calendar.HOUR_OF_DAY));
+				String minute = String.format("%02d", calendar.get(Calendar.MINUTE));
+				String second = String.format("%02d", calendar.get(Calendar.SECOND));
+				File bak = new File(parent, dir.getName() + "_bak-" + Joiner.on("").join(year, month, day) + "-" + Joiner.on("").join(hour, minute, second) + ".zip");
+
+				if (bak.exists())
+				{
+					FileUtils.deleteQuietly(bak);
+				}
+
+				component = new ChatComponentText(StatCollector.translateToLocalFormatted("caveworld.regenerate.backingup", name));
+				component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
+				server.getConfigurationManager().sendChatMsg(component);
+
+				Caveworld.network.sendToAll(new RegenerateMessage.ProgressNotify(1));
+
+				if (archiveDirZip(dir, bak))
+				{
+					ClickEvent click = new ClickEvent(ClickEvent.Action.OPEN_FILE, FilenameUtils.normalize(bak.getParentFile().getPath()));
+
+					component = new ChatComponentText(StatCollector.translateToLocalFormatted("caveworld.regenerate.backedup", name));
+					component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true).setChatClickEvent(click);
+					server.getConfigurationManager().sendChatMsg(component);
+				}
+				else
+				{
+					component = new ChatComponentText(StatCollector.translateToLocalFormatted("caveworld.regenerate.backup.failed", name));
+					component.getChatStyle().setColor(EnumChatFormatting.RED).setItalic(true);
+					server.getConfigurationManager().sendChatMsg(component);
+				}
+			}
+
+			try
+			{
+				FileUtils.deleteDirectory(dir);
+			}
+			catch (IOException e)
+			{
+				return false;
+			}
+		}
+
+		if (DimensionManager.shouldLoadSpawn(dim))
+		{
+			world = server.worldServerForDimension(dim);
+
+			try
+			{
+				world.saveAllChunks(true, null);
+			}
+			catch (MinecraftException e)
+			{
+				return false;
+			}
+
+			world.flush();
+		}
+
+		component = new ChatComponentText(StatCollector.translateToLocalFormatted("caveworld.regenerate.regenerated", name));
+		component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
+		server.getConfigurationManager().sendChatMsg(component);
+
+		Caveworld.network.sendToAll(new RegenerateMessage.ProgressNotify(2));
+
+		if (ret)
+		{
+			for (EntityPlayerMP player : teleportedPlayers)
+			{
+				if (player.dimension != dim)
+				{
+					teleportPlayer(player, dim);
+				}
+			}
+		}
+
+		return true;
 	}
 
 	public static boolean archiveDirZip(final File dir, final File dest)

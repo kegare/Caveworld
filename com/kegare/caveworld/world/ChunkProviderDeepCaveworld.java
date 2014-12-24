@@ -43,9 +43,6 @@ import net.minecraftforge.event.terraingen.PopulateChunkEvent;
 import net.minecraftforge.event.terraingen.PopulateChunkEvent.Populate.EventType;
 import net.minecraftforge.event.terraingen.TerrainGen;
 
-import com.bioxx.tfc.Chunkdata.ChunkData;
-import com.bioxx.tfc.Core.TFC_Core;
-import com.bioxx.tfc.WorldGen.DataLayer;
 import com.google.common.base.Strings;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.api.ICaveBiome;
@@ -58,8 +55,6 @@ import com.kegare.caveworld.world.gen.MapGenStrongholdCaveworld;
 import com.kegare.caveworld.world.gen.MapGenUnderCaves;
 import com.kegare.caveworld.world.gen.WorldGenAnimalDungeons;
 import com.kegare.caveworld.world.gen.WorldGenDungeonsCaveworld;
-
-import cpw.mods.fml.common.Optional.Method;
 
 public class ChunkProviderDeepCaveworld implements IChunkProvider
 {
@@ -210,31 +205,7 @@ public class ChunkProviderDeepCaveworld implements IChunkProvider
 		chunk.setBiomeArray(biomes);
 		chunk.resetRelightChecks();
 
-		try
-		{
-			provideChunkTFC(chunk);
-		}
-		catch (NoSuchMethodError e) {}
-
 		return chunk;
-	}
-
-	@Method(modid = "terrafirmacraft")
-	private void provideChunkTFC(Chunk chunk)
-	{
-		ChunkData data = new ChunkData()
-		{
-			@Override
-			public float getRainfall(int x, int z)
-			{
-				return 0.0F;
-			};
-		}.CreateNew(worldObj, chunk.xPosition, chunk.zPosition);
-
-		data.heightmap = chunk.heightMap;
-		Arrays.fill(data.rainfallMap, DataLayer.NoTree);
-
-		TFC_Core.getCDM(worldObj).addData(chunk, data);
 	}
 
 	@Override

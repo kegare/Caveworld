@@ -74,6 +74,7 @@ public class Config
 	public static boolean fakeMiningPickaxe;
 	public static String[] miningPointValidItems;
 	public static String[] miningPointValidItemsDefault;
+	public static int quickBreakLimit;
 
 	public static boolean portalCraftRecipe;
 	public static boolean mossStoneCraftRecipe;
@@ -225,6 +226,11 @@ public class Config
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		propOrder.add(prop.getName());
 		miningPointValidItems = prop.getStringList();
+		prop = generalCfg.get(category, "quickBreakLimit", 100);
+		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		quickBreakLimit = MathHelper.clamp_int(prop.getInt(quickBreakLimit), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 
 		generalCfg.setCategoryPropertyOrder(category, propOrder);
 

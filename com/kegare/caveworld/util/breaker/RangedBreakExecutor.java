@@ -67,9 +67,7 @@ public class RangedBreakExecutor extends MultiBreakExecutor
 	@Override
 	public RangedBreakExecutor setBreakPositions()
 	{
-		int face = BlockPistonBase.determineOrientation(originPos.world, originPos.x, originPos.y, originPos.z, player);
-
-		switch (face)
+		switch (BlockPistonBase.determineOrientation(originPos.world, originPos.x, originPos.y, originPos.z, player))
 		{
 			case 0:
 			case 1:

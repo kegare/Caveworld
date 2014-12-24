@@ -28,12 +28,14 @@ import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 
 public class TileEntityUniversalChestRenderer extends TileEntitySpecialRenderer implements ISimpleBlockRenderingHandler
 {
+	private static final ResourceLocation chestTexture = new ResourceLocation("caveworld", "textures/entity/chest/universal_chest.png");
 	private static final TileEntityUniversalChest tileEntityChestDammy = new TileEntityUniversalChest();
+
 	private final ModelChest model = new ModelChest();
 
 	public void renderChest(int direction, float lidAngle, float prevLidAngle, double x, double y, double z, float ticks)
 	{
-		bindTexture(new ResourceLocation("caveworld", "textures/entity/chest/universal_chest.png"));
+		bindTexture(chestTexture);
 
 		GL11.glPushMatrix();
 		GL11.glEnable(GL12.GL_RESCALE_NORMAL);

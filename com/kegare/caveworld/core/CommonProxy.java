@@ -22,6 +22,4 @@ public class CommonProxy
 	}
 
 	public void displayClientGuiScreen(Object obj) {}
-
-	public void destoryClientBlock(int x, int y, int z) {}
 }

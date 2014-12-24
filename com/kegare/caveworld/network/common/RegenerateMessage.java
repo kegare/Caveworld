@@ -12,10 +12,11 @@ package com.kegare.caveworld.network.common;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 
+import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.client.gui.GuiRegeneration;
 import com.kegare.caveworld.core.Caveworld;
-import com.kegare.caveworld.world.WorldProviderCaveworld;
-import com.kegare.caveworld.world.WorldProviderDeepCaveworld;
+import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.util.CaveUtils;
 
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
@@ -27,6 +28,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMessage, IMessage>
 {
 	private boolean backup = true;
+	private boolean caveworld = true, deep = true;
 
 	public RegenerateMessage() {}
 
@@ -35,16 +37,27 @@ public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMe
 		this.backup = backup;
 	}
 
+	public RegenerateMessage(boolean backup, boolean caveworld, boolean deep)
+	{
+		this(backup);
+		this.caveworld = caveworld;
+		this.deep = deep;
+	}
+
 	@Override
 	public void fromBytes(ByteBuf buffer)
 	{
 		backup = buffer.readBoolean();
+		caveworld = buffer.readBoolean();
+		deep = buffer.readBoolean();
 	}
 
 	@Override
 	public void toBytes(ByteBuf buffer)
 	{
 		buffer.writeBoolean(backup);
+		buffer.writeBoolean(caveworld);
+		buffer.writeBoolean(deep);
 	}
 
 	@Override
@@ -56,8 +69,17 @@ public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMe
 		}
 		else
 		{
-			WorldProviderCaveworld.regenerate(message.backup);
-			WorldProviderDeepCaveworld.regenerate(message.backup);
+			boolean ret = Config.hardcore || Config.caveborn;
+
+			if (message.caveworld)
+			{
+				CaveUtils.regenerateDimension(CaveworldAPI.getDimension(), message.backup, ret);
+			}
+
+			if (message.deep)
+			{
+				CaveUtils.regenerateDimension(CaveworldAPI.getDeepDimension(), message.backup, ret);
+			}
 		}
 
 		return null;

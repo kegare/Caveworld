@@ -16,6 +16,8 @@ import net.minecraft.block.Block;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -51,10 +53,33 @@ public class ItemMiningPickaxe extends ItemPickaxe
 {
 	public enum BreakMode
 	{
-		NORMAL,
-		QUICK,
-		ADIT,
-		RANGED
+		NORMAL(MultiBreakExecutor.class),
+		QUICK(QuickBreakExecutor.class),
+		ADIT(AditBreakExecutor.class),
+		RANGED(RangedBreakExecutor.class);
+
+		private final Class<? extends MultiBreakExecutor> executor;
+
+		private BreakMode(Class<? extends MultiBreakExecutor> executor)
+		{
+			this.executor = executor;
+		}
+
+		public MultiBreakExecutor getExecutor(EntityPlayer player)
+		{
+			try
+			{
+				Object obj = executor.getMethod("getExecutor", EntityPlayer.class).invoke(null, player);
+
+				if (obj != null && obj instanceof MultiBreakExecutor)
+				{
+					return (MultiBreakExecutor)obj;
+				}
+			}
+			catch (Exception ignored) {}
+
+			return null;
+		}
 	}
 
 	public static final ToolMaterial MINING = EnumHelper.addToolMaterial("MINING", 3, 300, 5.0F, 1.5F, 10);
@@ -304,13 +329,28 @@ public class ItemMiningPickaxe extends ItemPickaxe
 	public float getDigSpeed(ItemStack itemstack, Block block, int metadata)
 	{
 		Item item = getBaseTool(itemstack);
+		float result;
 
 		if (item != this)
 		{
-			return item.getDigSpeed(itemstack, block, metadata);
+			result = item.getDigSpeed(itemstack, block, metadata);
 		}
 
-		return super.getDigSpeed(itemstack, block, metadata);
+		result = super.getDigSpeed(itemstack, block, metadata);
+
+		if (getMode(itemstack) != BreakMode.NORMAL)
+		{
+			int i = getRefined(itemstack);
+
+			if (i >= 4 || getHarvestLevel(itemstack, "pickaxe") >= 3 && EnchantmentHelper.getEnchantmentLevel(Enchantment.efficiency.effectId, itemstack) >= 4)
+			{
+				return result;
+			}
+
+			result = Math.min(result / (MultiBreakExecutor.positionsCount.get() * (0.5F - i * 0.1245F)), result);
+		}
+
+		return result;
 	}
 
 	@Override
@@ -373,26 +413,9 @@ public class ItemMiningPickaxe extends ItemPickaxe
 			return getBaseTool(itemstack).onBlockDestroyed(itemstack, world, block, x, y, z, entity);
 		}
 
-		if (entity instanceof EntityPlayer)
+		if (!world.isRemote && entity instanceof EntityPlayer)
 		{
-			EntityPlayer player = (EntityPlayer)entity;
-			MultiBreakExecutor executor;
-
-			switch (mode)
-			{
-				case QUICK:
-					executor = QuickBreakExecutor.getExecutor(player);
-					break;
-				case ADIT:
-					executor = AditBreakExecutor.getExecutor(player);
-					break;
-				case RANGED:
-					executor = RangedBreakExecutor.getExecutor(player);
-					break;
-				default:
-					executor = null;
-					break;
-			}
+			MultiBreakExecutor executor = mode.getExecutor((EntityPlayer)entity);
 
 			if (executor != null && !executor.getBreakPositions().isEmpty())
 			{
@@ -514,7 +537,7 @@ public class ItemMiningPickaxe extends ItemPickaxe
 		{
 			String name = GameData.getItemRegistry().getNameForObject(center.getItem());
 
-			if (Strings.isNullOrEmpty(name))
+			if (Strings.isNullOrEmpty(name) || center.getItem() == this)
 			{
 				continue;
 			}

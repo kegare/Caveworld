@@ -12,7 +12,6 @@ package com.kegare.caveworld.client;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.entity.RenderZombie;
-import net.minecraft.network.play.client.C07PacketPlayerDigging;
 import net.minecraftforge.client.MinecraftForgeClient;
 
 import com.kegare.caveworld.client.config.CycleIntegerEntry;
@@ -75,20 +74,6 @@ public class ClientProxy extends CommonProxy
 		if (obj instanceof GuiScreen && (mc.currentScreen == null || mc.currentScreen.getClass() != obj.getClass()))
 		{
 			mc.displayGuiScreen((GuiScreen)obj);
-		}
-	}
-
-	@Override
-	public void destoryClientBlock(int x, int y, int z)
-	{
-		Minecraft mc = FMLClientHandler.instance().getClient();
-
-		if (mc.objectMouseOver != null)
-		{
-			int sideHit = mc.objectMouseOver.sideHit;
-
-			mc.playerController.onPlayerDestroyBlock(x, y, z, sideHit);
-			mc.getNetHandler().addToSendQueue(new C07PacketPlayerDigging(2, x, y, z, sideHit));
 		}
 	}
 }

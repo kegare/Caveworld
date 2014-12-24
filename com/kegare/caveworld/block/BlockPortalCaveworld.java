@@ -67,8 +67,6 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 	@SideOnly(Side.CLIENT)
 	public IIcon portalIcon;
 
-	public boolean portalDisabled;
-
 	public BlockPortalCaveworld(String name)
 	{
 		super();
@@ -273,7 +271,7 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 	@Override
 	public void onEntityCollidedWithBlock(World world, int x, int y, int z, Entity entity)
 	{
-		if (!world.isRemote && !portalDisabled && entity.isEntityAlive())
+		if (!world.isRemote && entity.isEntityAlive())
 		{
 			if (Config.hardcore && CaveworldAPI.isEntityInCaveworld(entity))
 			{

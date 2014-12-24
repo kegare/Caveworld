@@ -30,10 +30,8 @@ public class GuiRegeneration extends GuiScreen
 {
 	private boolean backup;
 
-	protected GuiButton regenButton;
-	protected GuiButton openButton;
-	protected GuiButton cancelButton;
-	protected GuiCheckBox backupCheckBox;
+	protected GuiButton regenButton, openButton, cancelButton;
+	protected GuiCheckBox caveworldCheckBox, deepCheckBox, backupCheckBox;
 
 	private HoverChecker backupHoverChecker;
 
@@ -72,9 +70,19 @@ public class GuiRegeneration extends GuiScreen
 		cancelButton.xPosition = regenButton.xPosition;
 		cancelButton.yPosition = regenButton.yPosition + regenButton.height + 5;
 
+		if (caveworldCheckBox == null)
+		{
+			caveworldCheckBox = new GuiCheckBox(3, 10, 8, "Caveworld", true);
+		}
+
+		if (deepCheckBox == null)
+		{
+			deepCheckBox = new GuiCheckBox(4, 10, caveworldCheckBox.yPosition + caveworldCheckBox.height + 5, "Deep Caveworld", true);
+		}
+
 		if (backupCheckBox == null)
 		{
-			backupCheckBox = new GuiCheckBox(3, 10, 0, I18n.format("caveworld.regenerate.gui.backup"), backup);
+			backupCheckBox = new GuiCheckBox(5, 10, 0, I18n.format("caveworld.regenerate.gui.backup"), backup);
 		}
 
 		backupCheckBox.yPosition = height - 20;
@@ -83,6 +91,8 @@ public class GuiRegeneration extends GuiScreen
 		buttonList.add(regenButton);
 		buttonList.add(openButton);
 		buttonList.add(cancelButton);
+		buttonList.add(caveworldCheckBox);
+		buttonList.add(deepCheckBox);
 		buttonList.add(backupCheckBox);
 
 		backupHoverChecker = new HoverChecker(backupCheckBox, 800);
@@ -117,7 +127,15 @@ public class GuiRegeneration extends GuiScreen
 			switch (button.id)
 			{
 				case 0:
-					Caveworld.network.sendToServer(new RegenerateMessage(backupCheckBox.isChecked()));
+					boolean caveworld = caveworldCheckBox.isChecked();
+					boolean deep = deepCheckBox.isChecked();
+
+					if (!caveworld && !deep)
+					{
+						break;
+					}
+
+					Caveworld.network.sendToServer(new RegenerateMessage(backupCheckBox.isChecked(), caveworld, deep));
 
 					regenButton.enabled = false;
 					cancelButton.visible = false;

@@ -10,12 +10,11 @@
 package com.kegare.caveworld.util.breaker;
 
 import java.util.Map;
-import java.util.concurrent.RecursiveAction;
 
 import net.minecraft.entity.player.EntityPlayer;
 
 import com.google.common.collect.Maps;
-import com.kegare.caveworld.util.CaveUtils;
+import com.kegare.caveworld.core.Config;
 
 public class QuickBreakExecutor extends MultiBreakExecutor
 {
@@ -43,20 +42,13 @@ public class QuickBreakExecutor extends MultiBreakExecutor
 	@Override
 	public boolean canBreak(int x, int y, int z)
 	{
-		return originPos.getDistance(x, y, z) <= 64.0D && breakPositions.size() < 1000 && super.canBreak(x, y, z);
+		return originPos.getDistance(x, y, z) <= 64.0D && (Config.quickBreakLimit <= 0 || breakPositions.size() < Config.quickBreakLimit) && super.canBreak(x, y, z);
 	}
 
 	@Override
 	public QuickBreakExecutor setBreakPositions()
 	{
-		CaveUtils.getPool().invoke(new RecursiveAction()
-		{
-			@Override
-			protected void compute()
-			{
-				setChainedPositions();
-			}
-		});
+		setChainedPositions();
 
 		return this;
 	}

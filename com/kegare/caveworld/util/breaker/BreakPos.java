@@ -21,7 +21,6 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 
 import com.google.common.base.Objects;
-import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.util.CaveUtils;
 
 public class BreakPos implements Comparable
@@ -64,7 +63,7 @@ public class BreakPos implements Comparable
 				MinecraftForge.EVENT_BUS.post(new BreakEvent(x, y, z, world, block, meta, player));
 			}
 
-			if (!world.isRemote && player instanceof EntityPlayerMP)
+			if (player instanceof EntityPlayerMP)
 			{
 				((EntityPlayerMP)player).playerNetServerHandler.sendPacket(new S23PacketBlockChange(x, y, z, world));
 			}
@@ -72,40 +71,28 @@ public class BreakPos implements Comparable
 			return;
 		}
 
-		if (!world.isRemote)
+		world.playAuxSFX(2001, x, y, z, Block.getIdFromBlock(block) + (meta << 12));
+
+		block.onBlockHarvested(world, x, y, z, meta, player);
+
+		if (block.removedByPlayer(world, player, x, y, z, true))
 		{
-			block.onBlockHarvested(world, x, y, z, meta, player);
+			block.onBlockDestroyedByPlayer(world, x, y, z, meta);
+			block.harvestBlock(world, player, x, y, z, meta);
 
-			if (block.removedByPlayer(world, player, x, y, z, true))
+			BreakEvent event = new BreakEvent(x, y, z, world, block, meta, player);
+
+			if (MinecraftForge.EVENT_BUS.post(event))
 			{
-				block.onBlockDestroyedByPlayer(world, x, y, z, meta);
-				block.harvestBlock(world, player, x, y, z, meta);
-
-				BreakEvent event = new BreakEvent(x, y, z, world, block, meta, player);
-
-				if (MinecraftForge.EVENT_BUS.post(event))
-				{
-					block.dropXpOnBlockBreak(world, x, y, z, event.getExpToDrop());
-				}
-
-				player.getCurrentEquippedItem().damageItem(1, player);
+				block.dropXpOnBlockBreak(world, x, y, z, event.getExpToDrop());
 			}
 
-			if (player instanceof EntityPlayerMP)
-			{
-				((EntityPlayerMP)player).playerNetServerHandler.sendPacket(new S23PacketBlockChange(x, y, z, world));
-			}
+			player.getCurrentEquippedItem().damageItem(1, player);
 		}
-		else
+
+		if (player instanceof EntityPlayerMP)
 		{
-			world.playAuxSFX(2001, x, y, z, Block.getIdFromBlock(block) + (meta << 12));
-
-			if (block.removedByPlayer(world, player, x, y, z, true))
-			{
-				block.onBlockDestroyedByPlayer(world, x, y, z, meta);
-			}
-
-			Caveworld.proxy.destoryClientBlock(x, y, z);
+			((EntityPlayerMP)player).playerNetServerHandler.sendPacket(new S23PacketBlockChange(x, y, z, world));
 		}
 	}
 
