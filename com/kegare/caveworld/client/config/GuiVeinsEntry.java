@@ -120,7 +120,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 
 		if (veinList == null)
 		{
-			veinList = new VeinList(this);
+			veinList = new VeinList();
 		}
 
 		veinList.func_148122_a(width, height, 32, height - (editMode ? 170 : 28));
@@ -1182,10 +1182,8 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 		veinList.currentPanoramaPaths = null;
 	}
 
-	protected static class VeinList extends GuiListSlot implements Comparator<ICaveVein>
+	class VeinList extends GuiListSlot implements Comparator<ICaveVein>
 	{
-		protected final GuiVeinsEntry parent;
-
 		protected final ArrayListExtended<ICaveVein> veins = new ArrayListExtended();
 		protected final ArrayListExtended<ICaveVein> contents = new ArrayListExtended();
 		protected final List<ICaveVein> selected = Lists.newArrayList();
@@ -1195,11 +1193,10 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 
 		protected int nameType;
 
-		private VeinList(GuiVeinsEntry parent)
+		private VeinList()
 		{
-			super(parent.mc, 0, 0, 0, 0, 22);
-			this.parent = parent;
-			this.veins.addAll(parent.veinManager.getCaveVeins());
+			super(GuiVeinsEntry.this.mc, 0, 0, 0, 0, 22);
+			this.veins.addAll(veinManager.getCaveVeins());
 			this.contents.addAll(veins);
 		}
 
@@ -1234,7 +1231,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 		@Override
 		protected void drawBackground()
 		{
-			parent.drawDefaultBackground();
+			drawDefaultBackground();
 		}
 
 		@Override
@@ -1290,10 +1287,10 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 
 			if (!Strings.isNullOrEmpty(name))
 			{
-				parent.drawCenteredString(parent.fontRendererObj, name, width / 2, par3 + 3, 0xFFFFFF);
+				drawCenteredString(fontRendererObj, name, width / 2, par3 + 3, 0xFFFFFF);
 			}
 
-			if (parent.detailInfo.isChecked())
+			if (detailInfo.isChecked())
 			{
 				Item item = Item.getItemFromBlock(block.getBlock());
 
@@ -1315,7 +1312,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 		@Override
 		protected void elementClicked(int index, boolean flag, int mouseX, int mouseY)
 		{
-			if (parent.editMode)
+			if (editMode)
 			{
 				return;
 			}

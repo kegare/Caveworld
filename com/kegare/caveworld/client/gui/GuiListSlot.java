@@ -26,6 +26,10 @@ import org.lwjgl.util.glu.Project;
 import com.kegare.caveworld.util.ArrayListExtended;
 import com.kegare.caveworld.util.PanoramaPaths;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+
+@SideOnly(Side.CLIENT)
 public abstract class GuiListSlot extends GuiSlot
 {
 	public static final ArrayListExtended<PanoramaPaths> panoramaPaths = new ArrayListExtended();

@@ -9,7 +9,6 @@
 
 package com.kegare.caveworld.client.config;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -47,14 +46,62 @@ import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
 import cpw.mods.fml.client.config.HoverChecker;
 import cpw.mods.fml.common.registry.GameData;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
+@SideOnly(Side.CLIENT)
 public class GuiSelectBlock extends GuiScreen
 {
-	public static final ArrayListExtended<Block> raws = new ArrayListExtended().addAllObject(GameData.getBlockRegistry());
+	protected static final ArrayListExtended<BlockEntry> blocks = new ArrayListExtended();
+
+	private static final Map<String, List<BlockEntry>> filterCache = Maps.newHashMap();
 
 	static
 	{
-		Collections.sort(raws, CaveUtils.blockComparator);
+		List list = Lists.newArrayList();
+
+		for (Block block : GameData.getBlockRegistry().typeSafeIterable())
+		{
+			try
+			{
+				list.clear();
+
+				CreativeTabs tab = block.getCreativeTabToDisplayOn();
+
+				if (tab == null)
+				{
+					tab = CreativeTabs.tabAllSearch;
+				}
+
+				block.getSubBlocks(Item.getItemFromBlock(block), tab, list);
+
+				if (list.isEmpty())
+				{
+					if (!block.hasTileEntity(0))
+					{
+						blocks.addIfAbsent(new BlockEntry(block, 0));
+					}
+				}
+				else for (Object obj : list)
+				{
+					ItemStack itemstack = (ItemStack)obj;
+
+					if (itemstack != null && itemstack.getItem() != null)
+					{
+						Block sub = Block.getBlockFromItem(itemstack.getItem());
+						int meta = itemstack.getItemDamage();
+
+						if (meta < 0 || meta >= 16 || sub == Blocks.air || sub.hasTileEntity(meta))
+						{
+							continue;
+						}
+
+						blocks.addIfAbsent(new BlockEntry(sub, meta));
+					}
+				}
+			}
+			catch (Throwable e) {}
+		}
 	}
 
 	public interface SelectListener
@@ -94,7 +141,7 @@ public class GuiSelectBlock extends GuiScreen
 	{
 		if (blockList == null)
 		{
-			blockList = new BlockList(this);
+			blockList = new BlockList();
 		}
 
 		blockList.func_148122_a(width, height, 32, height - 28);
@@ -377,88 +424,34 @@ public class GuiSelectBlock extends GuiScreen
 		}
 	}
 
-	protected static class BlockList extends GuiListSlot
+	class BlockList extends GuiListSlot
 	{
-		protected static final ArrayListExtended<BlockEntry> blocks = new ArrayListExtended();
-
-		private static final Map<String, List<BlockEntry>> filterCache = Maps.newHashMap();
-
-		static
-		{
-			List list = Lists.newArrayList();
-
-			for (Block block : raws)
-			{
-				try
-				{
-					list.clear();
-
-					CreativeTabs tab = block.getCreativeTabToDisplayOn();
-
-					if (tab == null)
-					{
-						tab = CreativeTabs.tabAllSearch;
-					}
-
-					block.getSubBlocks(Item.getItemFromBlock(block), tab, list);
-
-					if (list.isEmpty())
-					{
-						if (!block.hasTileEntity(0))
-						{
-							blocks.addIfAbsent(new BlockEntry(block, 0));
-						}
-					}
-					else for (Object obj : list)
-					{
-						ItemStack itemstack = (ItemStack)obj;
-
-						if (itemstack != null && itemstack.getItem() != null)
-						{
-							Block sub = Block.getBlockFromItem(itemstack.getItem());
-							int meta = itemstack.getItemDamage();
-
-							if (meta < 0 || meta >= 16 || sub == Blocks.air || sub.hasTileEntity(meta))
-							{
-								continue;
-							}
-
-							blocks.addIfAbsent(new BlockEntry(sub, meta));
-						}
-					}
-				}
-				catch (Throwable e) {}
-			}
-		}
-
-		protected final GuiSelectBlock parent;
 		protected final ArrayListExtended<BlockEntry> contents = new ArrayListExtended(blocks);
 		protected final Set<BlockEntry> selected = Sets.newHashSet();
 
 		protected int nameType;
 
-		private BlockList(final GuiSelectBlock parent)
+		private BlockList()
 		{
-			super(parent.mc, 0, 0, 0, 0, 18);
-			this.parent = parent;
+			super(GuiSelectBlock.this.mc, 0, 0, 0, 0, 18);
 
 			CaveUtils.getPool().execute(new RecursiveAction()
 			{
 				@Override
 				protected void compute()
 				{
-					if (parent.parentNameField != null)
+					if (parentNameField != null)
 					{
 						int meta = 0;
 
-						if (parent.parentMetaField != null)
+						if (parentMetaField != null)
 						{
-							meta = NumberUtils.toInt(parent.parentMetaField.getText());
+							meta = NumberUtils.toInt(parentMetaField.getText());
 						}
 
 						for (BlockEntry entry : blocks)
 						{
-							if (GameData.getBlockRegistry().getNameForObject(entry.getBlock()).equals(parent.parentNameField.getText()) && entry.getMetadata() == meta)
+							if (GameData.getBlockRegistry().getNameForObject(entry.getBlock()).equals(parentNameField.getText()) && entry.getMetadata() == meta)
 							{
 								selected.add(entry);
 							}
@@ -505,7 +498,7 @@ public class GuiSelectBlock extends GuiScreen
 		@Override
 		protected void drawBackground()
 		{
-			parent.drawDefaultBackground();
+			drawDefaultBackground();
 		}
 
 		@Override
@@ -561,10 +554,10 @@ public class GuiSelectBlock extends GuiScreen
 
 			if (!Strings.isNullOrEmpty(name))
 			{
-				parent.drawCenteredString(parent.fontRendererObj, name, width / 2, par3 + 1, 0xFFFFFF);
+				drawCenteredString(fontRendererObj, name, width / 2, par3 + 1, 0xFFFFFF);
 			}
 
-			if (parent.detailInfo.isChecked() && itemstack.getItem() != null)
+			if (detailInfo.isChecked() && itemstack.getItem() != null)
 			{
 				CaveUtils.renderItemStack(mc, itemstack, width / 2 - 100, par3 - 1, false, false, null);
 			}
@@ -577,7 +570,7 @@ public class GuiSelectBlock extends GuiScreen
 
 			if (entry != null && !selected.remove(entry))
 			{
-				if (parent.parentNameField != null || parent.parentMetaField != null)
+				if (parentNameField != null || parentMetaField != null)
 				{
 					selected.clear();
 				}

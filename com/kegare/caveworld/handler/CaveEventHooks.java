@@ -18,6 +18,8 @@ import net.minecraft.block.BlockBed;
 import net.minecraft.block.BlockOre;
 import net.minecraft.block.BlockRedstoneOre;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityClientPlayerMP;
+import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.entity.Entity;
@@ -27,7 +29,6 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.EntityBat;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayer.EnumChatVisibility;
 import net.minecraft.entity.player.EntityPlayer.EnumStatus;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.event.ClickEvent;
@@ -36,6 +37,7 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.NetworkManager;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ChatComponentTranslation;
@@ -49,6 +51,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.common.config.Configuration;
@@ -70,16 +73,20 @@ import org.lwjgl.opengl.GL11;
 
 import shift.mceconomy2.api.MCEconomyAPI;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
+import com.kegare.caveworld.client.gui.GuiSelectBreakable;
 import com.kegare.caveworld.core.CaveAchievementList;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.entity.EntityCaveman;
+import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.item.ItemCavenium;
 import com.kegare.caveworld.item.ItemMiningPickaxe;
+import com.kegare.caveworld.item.ItemMiningPickaxe.BreakMode;
 import com.kegare.caveworld.network.client.DimDeepSyncMessage;
 import com.kegare.caveworld.network.client.DimSyncMessage;
 import com.kegare.caveworld.network.client.MultiBreakCountMessage;
@@ -89,10 +96,7 @@ import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.util.Version.Status;
-import com.kegare.caveworld.util.breaker.AditBreakExecutor;
 import com.kegare.caveworld.util.breaker.MultiBreakExecutor;
-import com.kegare.caveworld.util.breaker.QuickBreakExecutor;
-import com.kegare.caveworld.util.breaker.RangedBreakExecutor;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 import com.kegare.caveworld.world.WorldProviderDeepCaveworld;
 
@@ -118,7 +122,8 @@ public class CaveEventHooks
 
 	public static final Set<String> firstJoinPlayers = Sets.newHashSet();
 
-	private static final ItemStack defaultMiningIconItem = new ItemStack(Items.stone_pickaxe);
+	@SideOnly(Side.CLIENT)
+	private ItemStack miningPointItemDefault;
 
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
@@ -158,9 +163,9 @@ public class CaveEventHooks
 
 		Minecraft mc = FMLClientHandler.instance().getClient();
 
-		if (mc.thePlayer != null && mc.objectMouseOver != null && mc.objectMouseOver.typeOfHit == MovingObjectType.ENTITY)
+		if (mc.thePlayer != null && mc.pointedEntity != null)
 		{
-			Entity entity = mc.objectMouseOver.entityHit;
+			Entity entity = mc.pointedEntity;
 
 			if (CaveworldAPI.isEntityInCaveworld(entity) && entity instanceof EntityCaveman && !((EntityCaveman)entity).isTamed())
 			{
@@ -182,25 +187,36 @@ public class CaveEventHooks
 		}
 
 		Minecraft mc = FMLClientHandler.instance().getClient();
+		EntityPlayer player = mc.thePlayer;
 
-		if (mc.thePlayer != null)
+		if (player != null)
 		{
-			ItemStack current = mc.thePlayer.getCurrentEquippedItem();
+			ItemStack current = player.getCurrentEquippedItem();
 
 			if (current != null && current.getItem() != null && current.getItem() instanceof ItemMiningPickaxe)
 			{
 				ItemMiningPickaxe item = (ItemMiningPickaxe)current.getItem();
 
-				if (item.highlightTicks > 0)
+				if (item.highlightStart > 0 && System.currentTimeMillis() - item.highlightStart < Config.modeDisplayTime)
 				{
-					GL11.glPushMatrix();
-					GL11.glEnable(GL11.GL_BLEND);
-					OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-					mc.fontRenderer.drawStringWithShadow(item.getModeInfomation(current), 18, event.resolution.getScaledHeight() - 20, 0xEEEEEE);
-					GL11.glDisable(GL11.GL_BLEND);
-					GL11.glPopMatrix();
+					long time = System.currentTimeMillis() - item.highlightStart;
 
-					--item.highlightTicks;
+					if (time > Config.modeDisplayTime - 255)
+					{
+						time = item.highlightStart + Config.modeDisplayTime - System.currentTimeMillis();
+					}
+
+					int i = MathHelper.clamp_int((int)time, 0, 255);
+
+					if (i > 0)
+					{
+						GL11.glPushMatrix();
+						GL11.glEnable(GL11.GL_BLEND);
+						OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+						mc.fontRenderer.drawStringWithShadow(item.getModeInfomation(current), 18, event.resolution.getScaledHeight() - 20, 16777215 + (i << 24));
+						GL11.glDisable(GL11.GL_BLEND);
+						GL11.glPopMatrix();
+					}
 				}
 				else
 				{
@@ -208,13 +224,13 @@ public class CaveEventHooks
 
 					if (highlight == 40)
 					{
-						item.highlightTicks = 800;
+						item.highlightStart = System.currentTimeMillis();
 					}
 				}
 			}
 
-			if (CaveworldAPI.isEntityInCaveworld(mc.thePlayer) && (mc.currentScreen == null || mc.gameSettings.chatVisibility != EnumChatVisibility.HIDDEN) &&
-				(mc.thePlayer.capabilities.isCreativeMode || mc.gameSettings.advancedItemTooltips || CaveUtils.isItemPickaxe(current) || CaveUtils.isMiningPointValidItem(current)))
+			if (CaveworldAPI.isEntityInCaveworld(player) && (mc.currentScreen == null || GuiChat.class.isInstance(mc.currentScreen)) &&
+				(player.capabilities.isCreativeMode || mc.gameSettings.advancedItemTooltips || CaveUtils.isItemPickaxe(current) || CaveUtils.isMiningPointValidItem(current)))
 			{
 				String str = Integer.toString(CaveworldAPI.getMiningPoint(mc.thePlayer));
 				int x = event.resolution.getScaledWidth() - 20;
@@ -245,14 +261,21 @@ public class CaveEventHooks
 				}
 				else
 				{
-					icon = defaultMiningIconItem;
+					if (miningPointItemDefault == null)
+					{
+						miningPointItemDefault = new ItemStack(Items.stone_pickaxe);
+					}
+
+					icon = miningPointItemDefault;
 				}
 
-				GL11.glPushMatrix();
 				CaveUtils.renderItemStack(mc, icon, x, y, true, false, null);
+
+				GL11.glPushMatrix();
 				GL11.glDisable(GL11.GL_LIGHTING);
 				GL11.glDisable(GL11.GL_DEPTH_TEST);
-				GL11.glDisable(GL11.GL_BLEND);
+				GL11.glEnable(GL11.GL_BLEND);
+				OpenGlHelper.glBlendFunc(770, 771, 1, 0);
 
 				if (left)
 				{
@@ -265,6 +288,7 @@ public class CaveEventHooks
 
 				GL11.glEnable(GL11.GL_LIGHTING);
 				GL11.glEnable(GL11.GL_DEPTH_TEST);
+				GL11.glDisable(GL11.GL_BLEND);
 				GL11.glPopMatrix();
 			}
 		}
@@ -275,18 +299,47 @@ public class CaveEventHooks
 	public void onRenderGameTextOverlay(RenderGameOverlayEvent.Text event)
 	{
 		Minecraft mc = FMLClientHandler.instance().getClient();
+		EntityPlayer player = mc.thePlayer;
 
-		if (CaveworldAPI.isEntityInCaveworld(mc.thePlayer))
+		if (CaveworldAPI.isEntityInCaveworld(player))
 		{
 			if (mc.gameSettings.showDebugInfo)
 			{
-				if (mc.thePlayer.dimension == CaveworldAPI.getDimension())
+				if (player.dimension == CaveworldAPI.getDimension())
 				{
 					event.left.add("dim: Caveworld");
 				}
-				else if (mc.thePlayer.dimension == CaveworldAPI.getDeepDimension())
+				else if (player.dimension == CaveworldAPI.getDeepDimension())
 				{
 					event.left.add("dim: Deep Caveworld");
+				}
+			}
+		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
+	public void onMouse(MouseEvent event)
+	{
+		Minecraft mc = FMLClientHandler.instance().getClient();
+		EntityClientPlayerMP player = mc.thePlayer;
+
+		if (player != null)
+		{
+			ItemStack current = player.getCurrentEquippedItem();
+
+			if (current != null && current.getItem() == CaveItems.mining_pickaxe)
+			{
+				ItemMiningPickaxe pickaxe = (ItemMiningPickaxe)current.getItem();
+
+				if (pickaxe.getMode(current) != BreakMode.NORMAL)
+				{
+					if (event.button == java.awt.event.MouseEvent.BUTTON2)
+					{
+						mc.displayGuiScreen(new GuiSelectBreakable(current));
+
+						event.setCanceled(true);
+					}
 				}
 			}
 		}
@@ -320,8 +373,10 @@ public class CaveEventHooks
 	@SubscribeEvent
 	public void onServerConnected(ServerConnectionFromClientEvent event)
 	{
-		event.manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new DimSyncMessage(CaveworldAPI.getDimension(), WorldProviderCaveworld.getDimData())));
-		event.manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new DimDeepSyncMessage(CaveworldAPI.getDeepDimension(), WorldProviderDeepCaveworld.getDimData())));
+		NetworkManager manager = event.manager;
+
+		manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new DimSyncMessage(CaveworldAPI.getDimension(), WorldProviderCaveworld.getDimData())));
+		manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new DimDeepSyncMessage(CaveworldAPI.getDeepDimension(), WorldProviderDeepCaveworld.getDimData())));
 	}
 
 	@SubscribeEvent
@@ -361,9 +416,9 @@ public class CaveEventHooks
 
 					bonus.add(new ItemStack(Blocks.crafting_table));
 
-					for (ItemStack stack : bonus)
+					for (ItemStack itemstack : bonus)
 					{
-						player.inventory.addItemStackToInventory(stack);
+						player.inventory.addItemStackToInventory(itemstack);
 					}
 
 					CaveUtils.teleportPlayer(player, CaveworldAPI.getDimension());
@@ -384,9 +439,10 @@ public class CaveEventHooks
 
 		firstJoinPlayers.remove(player.getGameProfile().getId().toString());
 
-		QuickBreakExecutor.executors.remove(player);
-		AditBreakExecutor.executors.remove(player);
-		RangedBreakExecutor.executors.remove(player);
+		for (BreakMode mode : BreakMode.values())
+		{
+			mode.clear(player);
+		}
 	}
 
 	@SubscribeEvent
@@ -450,7 +506,7 @@ public class CaveEventHooks
 		ItemStack itemstack = entity.getEntityItem();
 		EntityPlayer thrower = null;
 
-		if (entity.func_145800_j() != null)
+		if (!Strings.isNullOrEmpty(entity.func_145800_j()))
 		{
 			thrower = world.getPlayerEntityByName(entity.func_145800_j());
 		}
@@ -467,15 +523,17 @@ public class CaveEventHooks
 	@SubscribeEvent
 	public void onPlayerLoadFromFile(PlayerEvent.LoadFromFile event)
 	{
+		String uuid = event.playerUUID;
+
 		for (String str : event.playerDirectory.list())
 		{
-			if (str.startsWith(event.playerUUID))
+			if (str.startsWith(uuid))
 			{
 				return;
 			}
 		}
 
-		firstJoinPlayers.add(event.playerUUID);
+		firstJoinPlayers.add(uuid);
 	}
 
 	@SubscribeEvent
@@ -547,16 +605,16 @@ public class CaveEventHooks
 								int size = executor.getBreakPositions().size();
 
 								MultiBreakExecutor.positionsCount.set(size);
-
 								Caveworld.network.sendTo(new MultiBreakCountMessage(size), player);
 							}
 						}
 					}
 					else
 					{
-						QuickBreakExecutor.getExecutor(player).clear();
-						AditBreakExecutor.getExecutor(player).clear();
-						RangedBreakExecutor.getExecutor(player).clear();
+						pickaxe.getMode(current).clear(player);
+
+						MultiBreakExecutor.positionsCount.set(0);
+						Caveworld.network.sendTo(new MultiBreakCountMessage(0), player);
 					}
 				}
 			}
@@ -564,29 +622,26 @@ public class CaveEventHooks
 			{
 				if (!player.isSneaking() && current != null && current.getItem() == Item.getItemFromBlock(Blocks.ender_chest))
 				{
-					if (face == 0)
+					switch (face)
 					{
-						--y;
-					}
-					else if (face == 1)
-					{
-						++y;
-					}
-					else if (face == 2)
-					{
-						--z;
-					}
-					else if (face == 3)
-					{
-						++z;
-					}
-					else if (face == 4)
-					{
-						--x;
-					}
-					else if (face == 5)
-					{
-						++x;
+						case 0:
+							--y;
+							break;
+						case 1:
+							++y;
+							break;
+						case 2:
+							--z;
+							break;
+						case 3:
+							++z;
+							break;
+						case 4:
+							--x;
+							break;
+						case 5:
+							++x;
+							break;
 					}
 
 					if (CaveBlocks.caveworld_portal.func_150000_e(world, x, y, z))

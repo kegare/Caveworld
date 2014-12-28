@@ -72,6 +72,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	public static boolean generateDungeons;
 	public static boolean generateAnimalDungeons;
 	public static boolean decorateVines;
+	public static boolean underPeaceful;
 
 	private final World worldObj;
 	private final Random random;
@@ -454,7 +455,14 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	@Override
 	public List getPossibleCreatures(EnumCreatureType creature, int x, int y, int z)
 	{
-		return worldObj.getBiomeGenForCoords(x, z).getSpawnableList(creature);
+		if (y <= 0 || y >= worldObj.getActualHeight() || underPeaceful && creature == EnumCreatureType.monster && y < 64)
+		{
+			return null;
+		}
+
+		BiomeGenBase biome = worldObj.getBiomeGenForCoords(x, z);
+
+		return biome == null ? null : biome.getSpawnableList(creature);
 	}
 
 	@Override

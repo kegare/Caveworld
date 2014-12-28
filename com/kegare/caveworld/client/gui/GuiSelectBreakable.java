@@ -16,16 +16,11 @@ import java.util.Set;
 import java.util.concurrent.RecursiveAction;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockOre;
-import net.minecraft.block.BlockRedstoneOre;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
 import org.lwjgl.input.Keyboard;
@@ -38,7 +33,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.client.config.CaveConfigGui;
-import com.kegare.caveworld.client.config.GuiSelectBlock;
 import com.kegare.caveworld.client.config.GuiSelectBlock.BlockFilter;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.item.CaveItems;
@@ -52,9 +46,14 @@ import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
 import cpw.mods.fml.client.config.HoverChecker;
 import cpw.mods.fml.common.registry.GameData;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
+@SideOnly(Side.CLIENT)
 public class GuiSelectBreakable extends GuiScreen
 {
+	private static final Map<String, List<BlockEntry>> filterCache = Maps.newHashMap();
+
 	protected final ItemStack parentTool;
 
 	protected BlockList blockList;
@@ -77,7 +76,7 @@ public class GuiSelectBreakable extends GuiScreen
 	{
 		if (blockList == null)
 		{
-			blockList = new BlockList(this);
+			blockList = new BlockList();
 		}
 
 		blockList.func_148122_a(width, height, 32, height - 28);
@@ -139,12 +138,14 @@ public class GuiSelectBreakable extends GuiScreen
 						selected.add(CaveUtils.toStringHelper(entry.getBlock(), entry.getMetadata()));
 					}
 
+					String key = CaveItems.mining_pickaxe.getMode(parentTool).name() + ":Blocks";
 					String value = Joiner.on("|").join(selected);
 
-					parentTool.getTagCompound().setString("Blocks", value);
-					Caveworld.network.sendToServer(new SelectBreakableMessage(value));
+					parentTool.getTagCompound().setString(key, value);
+					Caveworld.network.sendToServer(new SelectBreakableMessage(key, value));
 
 					mc.displayGuiScreen(null);
+					mc.setIngameFocus();
 					break;
 				case 1:
 					CaveConfigGui.detailInfo = detailInfo.isChecked();
@@ -169,7 +170,7 @@ public class GuiSelectBreakable extends GuiScreen
 	{
 		blockList.drawScreen(mouseX, mouseY, ticks);
 
-		drawCenteredString(fontRendererObj, I18n.format(Caveworld.CONFIG_LANG + "select.block.multiple"), width / 2, 15, 0xFFFFFF);
+		drawCenteredString(fontRendererObj, I18n.format(Caveworld.CONFIG_LANG + "select.block.multiple.breakable", CaveItems.mining_pickaxe.getModeName(parentTool)), width / 2, 15, 0xFFFFFF);
 
 		super.drawScreen(mouseX, mouseY, ticks);
 
@@ -281,96 +282,27 @@ public class GuiSelectBreakable extends GuiScreen
 		return false;
 	}
 
-	protected static class BlockList extends GuiListSlot
+	class BlockList extends GuiListSlot
 	{
-		protected static final ArrayListExtended<BlockEntry> blocks = new ArrayListExtended();
-
-		private static final Map<String, List<BlockEntry>> filterCache = Maps.newHashMap();
-
-		static
-		{
-			List list = Lists.newArrayList();
-
-			for (Block block : GuiSelectBlock.raws)
-			{
-				try
-				{
-					Item item = Item.getItemFromBlock(block);
-
-					if (item == null)
-					{
-						continue;
-					}
-
-					list.clear();
-
-					CreativeTabs tab = block.getCreativeTabToDisplayOn();
-
-					if (tab == null)
-					{
-						tab = CreativeTabs.tabAllSearch;
-					}
-
-					block.getSubBlocks(item, tab, list);
-
-					if (list.isEmpty())
-					{
-						if (Strings.nullToEmpty(block.getHarvestTool(0)).equalsIgnoreCase("pickaxe") || CaveItems.mining_pickaxe.func_150897_b(block) ||
-							block instanceof BlockOre || block instanceof BlockRedstoneOre)
-						{
-							blocks.addIfAbsent(new BlockEntry(block, 0));
-						}
-					}
-					else for (Object obj : list)
-					{
-						ItemStack itemstack = (ItemStack)obj;
-
-						if (itemstack != null && itemstack.getItem() != null)
-						{
-							Block sub = Block.getBlockFromItem(itemstack.getItem());
-							int meta = itemstack.getItemDamage();
-
-							if (meta < 0 || meta >= 16 || sub == Blocks.air)
-							{
-								continue;
-							}
-
-							if (Strings.nullToEmpty(sub.getHarvestTool(meta)).equalsIgnoreCase("pickaxe") ||
-								CaveItems.mining_pickaxe.func_150897_b(sub) || block instanceof BlockOre || block instanceof BlockRedstoneOre)
-							{
-								blocks.addIfAbsent(new BlockEntry(sub, meta));
-							}
-						}
-					}
-				}
-				catch (Throwable e) {}
-			}
-		}
-
-		protected final GuiSelectBreakable parent;
-		protected final ArrayListExtended<BlockEntry> contents = new ArrayListExtended(blocks);
+		protected final ArrayListExtended<BlockEntry> contents = new ArrayListExtended(ItemMiningPickaxe.breakableBlocks);
 		protected final Set<BlockEntry> selected = Sets.newHashSet();
 
 		protected int nameType;
 
-		private BlockList(final GuiSelectBreakable parent)
+		private BlockList()
 		{
-			super(parent.mc, 0, 0, 0, 0, 18);
-			this.parent = parent;
+			super(GuiSelectBreakable.this.mc, 0, 0, 0, 0, 18);
 
 			CaveUtils.getPool().execute(new RecursiveAction()
 			{
 				@Override
 				protected void compute()
 				{
-					if (parent.parentTool.getItem() instanceof ItemMiningPickaxe)
+					for (BlockEntry entry : ItemMiningPickaxe.breakableBlocks)
 					{
-						for (BlockEntry entry : blocks)
+						if (CaveItems.mining_pickaxe.canBreak(parentTool, entry.getBlock(), entry.getMetadata()))
 						{
-							if (((ItemMiningPickaxe)parent.parentTool.getItem()).canBreak(parent.parentTool, entry.getBlock(), entry.getMetadata()))
-							{
-								selected.add(entry);
-							}
+							selected.add(entry);
 						}
 					}
 				}
@@ -414,7 +346,7 @@ public class GuiSelectBreakable extends GuiScreen
 		@Override
 		protected void drawBackground()
 		{
-			parent.drawDefaultBackground();
+			drawDefaultBackground();
 		}
 
 		@Override
@@ -464,9 +396,9 @@ public class GuiSelectBreakable extends GuiScreen
 				}
 			}
 
-			parent.drawCenteredString(parent.fontRendererObj, name, width / 2, par3 + 1, 0xFFFFFF);
+			drawCenteredString(fontRendererObj, name, width / 2, par3 + 1, 0xFFFFFF);
 
-			if (parent.detailInfo.isChecked() && itemstack.getItem() != null)
+			if (detailInfo.isChecked() && itemstack.getItem() != null)
 			{
 				CaveUtils.renderItemStack(mc, itemstack, width / 2 - 100, par3 - 1, false, false, null);
 			}
@@ -502,13 +434,13 @@ public class GuiSelectBreakable extends GuiScreen
 
 					if (Strings.isNullOrEmpty(filter))
 					{
-						result = blocks;
+						result = ItemMiningPickaxe.breakableBlocks;
 					}
 					else
 					{
 						if (!filterCache.containsKey(filter))
 						{
-							filterCache.put(filter, Lists.newArrayList(Collections2.filter(blocks, new BlockFilter(filter))));
+							filterCache.put(filter, Lists.newArrayList(Collections2.filter(ItemMiningPickaxe.breakableBlocks, new BlockFilter(filter))));
 						}
 
 						result = filterCache.get(filter);

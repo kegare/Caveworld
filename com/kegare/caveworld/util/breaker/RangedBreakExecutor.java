@@ -9,36 +9,17 @@
 
 package com.kegare.caveworld.util.breaker;
 
-import java.util.Map;
-
 import net.minecraft.block.BlockPistonBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 
-import com.google.common.collect.Maps;
 import com.kegare.caveworld.item.ItemMiningPickaxe;
 
 public class RangedBreakExecutor extends MultiBreakExecutor
 {
-	public static final Map<EntityPlayer, RangedBreakExecutor> executors = Maps.newHashMap();
-
-	private RangedBreakExecutor(EntityPlayer player)
+	public RangedBreakExecutor(EntityPlayer player)
 	{
 		super(player);
-	}
-
-	public static RangedBreakExecutor getExecutor(EntityPlayer player)
-	{
-		RangedBreakExecutor executor = executors.get(player);
-
-		if (executor == null)
-		{
-			executor = new RangedBreakExecutor(player);
-
-			executors.put(player, executor);
-		}
-
-		return executor;
 	}
 
 	@Override

@@ -233,6 +233,11 @@ public class CaveVeinManager implements ICaveVeinManager
 		private BlockEntry genTargetBlock;
 		private int[] genBiomes;
 
+		public CaveVein()
+		{
+			super(0);
+		}
+
 		public CaveVein(BlockEntry block, int count, int weight, int rate, int min, int max)
 		{
 			super(weight);

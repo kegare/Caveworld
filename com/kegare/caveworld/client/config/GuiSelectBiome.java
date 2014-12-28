@@ -64,6 +64,8 @@ public class GuiSelectBiome extends GuiScreen
 {
 	protected static final ArrayListExtended<BiomeGenBase> biomes = new ArrayListExtended<BiomeGenBase>().addAllObject(BiomeGenBase.getBiomeGenArray());
 
+	private static final Map<String, List<BiomeGenBase>> filterCache = Maps.newHashMap();
+
 	public interface SelectListener
 	{
 		public void setResult(Set<BiomeGenBase> result);
@@ -126,7 +128,7 @@ public class GuiSelectBiome extends GuiScreen
 	{
 		if (biomeList == null)
 		{
-			biomeList = new BiomeList(this);
+			biomeList = new BiomeList();
 		}
 
 		biomeList.func_148122_a(width, height, 32, height - 28);
@@ -445,25 +447,20 @@ public class GuiSelectBiome extends GuiScreen
 		}
 	}
 
-	protected static class BiomeList extends GuiListSlot
+	class BiomeList extends GuiListSlot
 	{
-		private static final Map<String, List<BiomeGenBase>> filterCache = Maps.newHashMap();
-
-		protected final GuiSelectBiome parent;
-
 		protected final ArrayListExtended<BiomeGenBase> contents = new ArrayListExtended(biomes);
 		protected final Set<BiomeGenBase> selected = Sets.newTreeSet(CaveUtils.biomeComparator);
 
-		private BiomeList(GuiSelectBiome parent)
+		private BiomeList()
 		{
-			super(parent.mc, 0, 0, 0, 0, 18);
-			this.parent = parent;
+			super(GuiSelectBiome.this.mc, 0, 0, 0, 0, 18);
 
-			if (parent.parentTextField != null)
+			if (parentTextField != null)
 			{
 				Set<Integer> ids = Sets.newHashSet();
 
-				for (String str : Splitter.on(',').trimResults().omitEmptyStrings().split(parent.parentTextField.getText()))
+				for (String str : Splitter.on(',').trimResults().omitEmptyStrings().split(parentTextField.getText()))
 				{
 					if (NumberUtils.isNumber(str))
 					{
@@ -477,9 +474,9 @@ public class GuiSelectBiome extends GuiScreen
 				}
 			}
 
-			if (parent.parentElement != null)
+			if (parentElement != null)
 			{
-				for (Object obj : parent.parentElement.getCurrentValues())
+				for (Object obj : parentElement.getCurrentValues())
 				{
 					selected.add(BiomeGenBase.getBiome(Integer.parseInt(String.valueOf(obj))));
 				}
@@ -523,7 +520,7 @@ public class GuiSelectBiome extends GuiScreen
 		@Override
 		protected void drawBackground()
 		{
-			parent.drawDefaultBackground();
+			drawDefaultBackground();
 		}
 
 		@Override
@@ -536,11 +533,11 @@ public class GuiSelectBiome extends GuiScreen
 				return;
 			}
 
-			parent.drawCenteredString(parent.fontRendererObj, biome.biomeName, width / 2, par3 + 1, 0xFFFFFF);
+			drawCenteredString(fontRendererObj, biome.biomeName, width / 2, par3 + 1, 0xFFFFFF);
 
-			if (parent.detailInfo.isChecked() || Keyboard.isKeyDown(Keyboard.KEY_TAB))
+			if (detailInfo.isChecked() || Keyboard.isKeyDown(Keyboard.KEY_TAB))
 			{
-				parent.drawString(parent.fontRendererObj, Integer.toString(biome.biomeID), width / 2 - 100, par3 + 1, 0xE0E0E0);
+				drawString(fontRendererObj, Integer.toString(biome.biomeID), width / 2 - 100, par3 + 1, 0xE0E0E0);
 
 				if (Keyboard.isKeyDown(Keyboard.KEY_TAB))
 				{

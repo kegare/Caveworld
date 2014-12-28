@@ -110,7 +110,7 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 
 		if (biomeList == null)
 		{
-			biomeList = new BiomeList(this);
+			biomeList = new BiomeList();
 		}
 
 		biomeList.func_148122_a(width, height, 32, height - (editMode ? 105 : 28));
@@ -881,21 +881,18 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 		biomeList.currentPanoramaPaths = null;
 	}
 
-	protected static class BiomeList extends GuiListSlot implements Comparator<ICaveBiome>
+	class BiomeList extends GuiListSlot implements Comparator<ICaveBiome>
 	{
-		protected final GuiBiomesEntry parent;
-
 		protected final ArrayListExtended<ICaveBiome> biomes = new ArrayListExtended();
 		protected final ArrayListExtended<ICaveBiome> contents = new ArrayListExtended();
 		protected final Set<ICaveBiome> selected = Sets.newTreeSet(this);
 
 		private final Map<String, List<ICaveBiome>> filterCache = Maps.newHashMap();
 
-		private BiomeList(GuiBiomesEntry parent)
+		private BiomeList()
 		{
-			super(parent.mc, 0, 0, 0, 0, 22);
-			this.parent = parent;
-			this.biomes.addAll(parent.biomeManager.getCaveBiomes());
+			super(GuiBiomesEntry.this.mc, 0, 0, 0, 0, 22);
+			this.biomes.addAll(biomeManager.getCaveBiomes());
 			this.contents.addAll(biomes);
 		}
 
@@ -930,7 +927,7 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 		@Override
 		protected void drawBackground()
 		{
-			parent.drawDefaultBackground();
+			drawDefaultBackground();
 		}
 
 		@Override
@@ -943,9 +940,9 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 				return;
 			}
 
-			parent.drawCenteredString(parent.fontRendererObj, entry.getBiome().biomeName, width / 2, par3 + 3, 0xFFFFFF);
+			drawCenteredString(fontRendererObj, entry.getBiome().biomeName, width / 2, par3 + 3, 0xFFFFFF);
 
-			if (parent.detailInfo.isChecked() || Keyboard.isKeyDown(Keyboard.KEY_TAB))
+			if (detailInfo.isChecked() || Keyboard.isKeyDown(Keyboard.KEY_TAB))
 			{
 				BlockEntry block = entry.getTerrainBlock();
 
@@ -966,7 +963,7 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 		@Override
 		protected void elementClicked(int index, boolean flag, int mouseX, int mouseY)
 		{
-			if (parent.editMode)
+			if (editMode)
 			{
 				return;
 			}

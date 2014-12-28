@@ -104,7 +104,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 
 		if (productList == null)
 		{
-			productList = new ProductList(this);
+			productList = new ProductList();
 		}
 
 		productList.func_148122_a(width, height, 32, height - (editMode ? 90 : 28));
@@ -898,10 +898,8 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 		productList.currentPanoramaPaths = null;
 	}
 
-	protected static class ProductList extends GuiListSlot implements Comparator<ShopProduct>
+	class ProductList extends GuiListSlot implements Comparator<ShopProduct>
 	{
-		protected final GuiShopEntry parent;
-
 		protected final ArrayListExtended<ShopProduct> products = new ArrayListExtended(ShopProductManager.instance().getShopProducts());
 		protected final ArrayListExtended<ShopProduct> contents = new ArrayListExtended(products);
 		protected final List<ShopProduct> selected = Lists.newArrayList();
@@ -911,10 +909,9 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 
 		protected int nameType;
 
-		private ProductList(GuiShopEntry parent)
+		private ProductList()
 		{
-			super(parent.mc, 0, 0, 0, 0, 22);
-			this.parent = parent;
+			super(GuiShopEntry.this.mc, 0, 0, 0, 0, 22);
 		}
 
 		@Override
@@ -948,7 +945,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 		@Override
 		protected void drawBackground()
 		{
-			parent.drawDefaultBackground();
+			drawDefaultBackground();
 		}
 
 		@Override
@@ -984,22 +981,22 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 
 			if (!Strings.isNullOrEmpty(name))
 			{
-				parent.drawCenteredString(parent.fontRendererObj, name, width / 2, par3 + 3, 0xFFFFFF);
+				drawCenteredString(fontRendererObj, name, width / 2, par3 + 3, 0xFFFFFF);
 			}
 
-			if (parent.detailInfo.isChecked())
+			if (detailInfo.isChecked())
 			{
 				CaveUtils.renderItemStack(mc, itemstack, width / 2 - 100, par3 + 1, false, true, null);
 
 				name = Integer.toString(entry.getcost());
-				parent.drawString(parent.fontRendererObj, name, width / 2 + 107 - parent.fontRendererObj.getStringWidth(name), par3 + 8, 0xD0D0D0);
+				drawString(fontRendererObj, name, width / 2 + 107 - fontRendererObj.getStringWidth(name), par3 + 8, 0xD0D0D0);
 			}
 		}
 
 		@Override
 		protected void elementClicked(int index, boolean flag, int mouseX, int mouseY)
 		{
-			if (parent.editMode)
+			if (editMode)
 			{
 				return;
 			}

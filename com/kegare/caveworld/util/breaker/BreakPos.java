@@ -25,14 +25,26 @@ import com.kegare.caveworld.util.CaveUtils;
 
 public class BreakPos implements Comparable
 {
-	public final World world;
+	public World world;
 	public int x;
 	public int y;
 	public int z;
-	public final Block prevBlock;
-	public final int prevMeta;
+	public Block prevBlock;
+	public int prevMeta;
+
+	public BreakPos() {}
 
 	public BreakPos(World world, int x, int y, int z)
+	{
+		this.refresh(world, x, y, z);
+	}
+
+	public BreakPos(BreakPos pos)
+	{
+		this.refresh(pos.world, pos.x, pos.y, pos.z);
+	}
+
+	public void refresh(World world, int x, int y, int z)
 	{
 		this.world = world;
 		this.x = x;
@@ -40,6 +52,16 @@ public class BreakPos implements Comparable
 		this.z = z;
 		this.prevBlock = getCurrentBlock();
 		this.prevMeta = getCurrentMetadata();
+	}
+
+	public void clear()
+	{
+		world = null;
+		x = 0;
+		y = 0;
+		z = 0;
+		prevBlock = null;
+		prevMeta = 0;
 	}
 
 	public boolean isPlaced()

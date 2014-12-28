@@ -72,6 +72,7 @@ public class ChunkProviderDeepCaveworld implements IChunkProvider
 	public static boolean generateDungeons;
 	public static boolean generateAnimalDungeons;
 	public static boolean decorateVines;
+	public static boolean underPeaceful;
 
 	private final World worldObj;
 	private final Random random;
@@ -430,7 +431,7 @@ public class ChunkProviderDeepCaveworld implements IChunkProvider
 	@Override
 	public List getPossibleCreatures(EnumCreatureType creature, int x, int y, int z)
 	{
-		if (y <= 0 || y >= worldObj.getActualHeight() || creature == EnumCreatureType.monster && y < 64)
+		if (y <= 0 || y >= worldObj.getActualHeight() || underPeaceful && creature == EnumCreatureType.monster && y < 64)
 		{
 			return null;
 		}

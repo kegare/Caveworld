@@ -290,6 +290,24 @@ public class CaveUtils
 		return mod;
 	}
 
+	public static boolean isItemPickaxe(Item item)
+	{
+		if (item != null)
+		{
+			if (item instanceof ItemPickaxe)
+			{
+				return true;
+			}
+
+			if (item.getToolClasses(new ItemStack(item)).contains("pickaxe"))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public static boolean isItemPickaxe(ItemStack itemstack)
 	{
 		if (itemstack != null && itemstack.getItem() != null && itemstack.stackSize > 0)

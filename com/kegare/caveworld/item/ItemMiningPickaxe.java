@@ -9,7 +9,11 @@
 
 package com.kegare.caveworld.item;
 
+import java.util.Collection;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.block.Block;
@@ -21,22 +25,28 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.IIcon;
+import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.EnumHelper;
 
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.kegare.caveworld.client.gui.GuiSelectBreakable;
+import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.recipe.RecipeMiningPickaxe;
+import com.kegare.caveworld.util.ArrayListExtended;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Roman;
 import com.kegare.caveworld.util.breaker.AditBreakExecutor;
@@ -53,37 +63,77 @@ public class ItemMiningPickaxe extends ItemPickaxe
 {
 	public enum BreakMode
 	{
-		NORMAL(MultiBreakExecutor.class),
-		QUICK(QuickBreakExecutor.class),
-		ADIT(AditBreakExecutor.class),
-		RANGED(RangedBreakExecutor.class);
+		NORMAL(MultiBreakExecutor.class, false),
+		QUICK(QuickBreakExecutor.class, false),
+		ADIT(AditBreakExecutor.class, true),
+		RANGED(RangedBreakExecutor.class, true);
+
+		public static final EnumMap<BreakMode, Map<EntityPlayer, MultiBreakExecutor>> executors = Maps.newEnumMap(BreakMode.class);
 
 		private final Class<? extends MultiBreakExecutor> executor;
+		private final boolean fullDefault;
 
-		private BreakMode(Class<? extends MultiBreakExecutor> executor)
+		private BreakMode(Class<? extends MultiBreakExecutor> executor, boolean fullDefault)
 		{
 			this.executor = executor;
+			this.fullDefault = fullDefault;
 		}
 
 		public MultiBreakExecutor getExecutor(EntityPlayer player)
 		{
-			try
-			{
-				Object obj = executor.getMethod("getExecutor", EntityPlayer.class).invoke(null, player);
+			Map<EntityPlayer, MultiBreakExecutor> map = executors.get(this);
 
-				if (obj != null && obj instanceof MultiBreakExecutor)
+			if (map == null)
+			{
+				map = Maps.newHashMap();
+
+				executors.put(this, map);
+			}
+
+			MultiBreakExecutor result = map.get(player);
+
+			if (result == null)
+			{
+				try
 				{
-					return (MultiBreakExecutor)obj;
+					result = executor.getConstructor(EntityPlayer.class).newInstance(player);
+				}
+				catch (Exception ignored) {}
+
+				if (result != null)
+				{
+					map.put(player, result);
 				}
 			}
-			catch (Exception ignored) {}
 
-			return null;
+			return result;
+		}
+
+		public boolean clear(EntityPlayer player)
+		{
+			Map<EntityPlayer, MultiBreakExecutor> map = executors.get(this);
+
+			if (map == null || map.isEmpty())
+			{
+				return false;
+			}
+
+			MultiBreakExecutor result = map.get(player);
+
+			if (result != null)
+			{
+				result.clear();
+
+				return true;
+			}
+
+			return false;
 		}
 	}
 
 	public static final ToolMaterial MINING = EnumHelper.addToolMaterial("MINING", 3, 300, 5.0F, 1.5F, 10);
 
+	public static final ArrayListExtended<BlockEntry> breakableBlocks = new ArrayListExtended();
 	public static final Set<String> defaultBreakables = Sets.newHashSet();
 
 	static
@@ -91,7 +141,7 @@ public class ItemMiningPickaxe extends ItemPickaxe
 		MINING.customCraftingMaterial = CaveItems.cavenium;
 	}
 
-	public int highlightTicks;
+	public long highlightStart;
 
 	public ItemMiningPickaxe(String name)
 	{
@@ -114,10 +164,40 @@ public class ItemMiningPickaxe extends ItemPickaxe
 		}
 
 		NBTTagCompound data = itemstack.getTagCompound();
+		String full = null;
 
-		if (!data.hasKey("Blocks") || Strings.isNullOrEmpty(data.getString("Blocks")))
+		for (BreakMode mode : BreakMode.values())
 		{
-			data.setString("Blocks", Joiner.on("|").join(defaultBreakables));
+			if (mode != BreakMode.NORMAL)
+			{
+				String key = mode.name() + ":Blocks";
+
+				if (!data.hasKey(key))
+				{
+					if (mode.fullDefault)
+					{
+						if (Strings.isNullOrEmpty(full))
+						{
+							Collection<String> blocks = Collections2.transform(breakableBlocks, new Function<BlockEntry, String>()
+							{
+								@Override
+								public String apply(BlockEntry entry)
+								{
+									return CaveUtils.toStringHelper(entry.getBlock(), entry.getMetadata());
+								}
+							});
+
+							full = Joiner.on("|").join(blocks);
+						}
+
+						data.setString(key, full);
+					}
+					else
+					{
+						data.setString(key, Joiner.on("|").join(defaultBreakables));
+					}
+				}
+			}
 		}
 	}
 
@@ -150,7 +230,7 @@ public class ItemMiningPickaxe extends ItemPickaxe
 			return false;
 		}
 
-		return itemstack.getTagCompound().getString("Blocks").contains(CaveUtils.toStringHelper(block, metadata));
+		return itemstack.getTagCompound().getString(getMode(itemstack).name() + ":Blocks").contains(CaveUtils.toStringHelper(block, metadata));
 	}
 
 	public BreakMode getMode(ItemStack itemstack)
@@ -369,33 +449,28 @@ public class ItemMiningPickaxe extends ItemPickaxe
 	@Override
 	public ItemStack onItemRightClick(ItemStack itemstack, World world, EntityPlayer player)
 	{
-		if (player.isSneaking())
+		if (player.isSneaking() && getMode(itemstack) == BreakMode.NORMAL)
 		{
-			if (getMode(itemstack) == BreakMode.NORMAL)
-			{
-				return getBaseTool(itemstack).onItemRightClick(itemstack, world, player);
-			}
+			Item base = getBaseTool(itemstack);
 
-			if (world.isRemote)
+			if (base != this)
 			{
-				Caveworld.proxy.displayClientGuiScreen(new GuiSelectBreakable(itemstack));
+				return base.onItemRightClick(itemstack, world, player);
 			}
 		}
-		else
+
+		int i = itemstack.getTagCompound().getInteger("Mode");
+
+		if (++i > BreakMode.values().length - 1 || i > getRefined(itemstack) + 2)
 		{
-			int i = itemstack.getTagCompound().getInteger("Mode");
+			i = 0;
+		}
 
-			if (++i > BreakMode.values().length - 1 || i > getRefined(itemstack) + 2)
-			{
-				i = 0;
-			}
+		itemstack.getTagCompound().setInteger("Mode", i);
 
-			itemstack.getTagCompound().setInteger("Mode", i);
-
-			if (world.isRemote)
-			{
-				highlightTicks = 800;
-			}
+		if (world.isRemote)
+		{
+			highlightStart = System.currentTimeMillis();
 		}
 
 		world.playSoundAtEntity(player, "random.click", 0.6F, 1.7F);
@@ -410,22 +485,25 @@ public class ItemMiningPickaxe extends ItemPickaxe
 
 		if (entity.isSneaking() && mode == BreakMode.NORMAL)
 		{
-			return getBaseTool(itemstack).onBlockDestroyed(itemstack, world, block, x, y, z, entity);
+			Item base = getBaseTool(itemstack);
+
+			if (base != this)
+			{
+				return base.onBlockDestroyed(itemstack, world, block, x, y, z, entity);
+			}
 		}
 
-		if (!world.isRemote && entity instanceof EntityPlayer)
+		if (entity instanceof EntityPlayerMP)
 		{
-			MultiBreakExecutor executor = mode.getExecutor((EntityPlayer)entity);
+			MultiBreakExecutor executor = mode.getExecutor((EntityPlayerMP)entity);
 
 			if (executor != null && !executor.getBreakPositions().isEmpty())
 			{
 				BreakPos origin = executor.getOriginPos();
 
-				if (origin != null && x == origin.x && y == origin.y && z == origin.z)
+				if (x == origin.x && y == origin.y && z == origin.z)
 				{
 					executor.breakAll();
-
-					return true;
 				}
 			}
 		}
@@ -465,6 +543,30 @@ public class ItemMiningPickaxe extends ItemPickaxe
 		return super.getEntityLifespan(itemstack, world);
 	}
 
+	@Override
+	public boolean onBlockStartBreak(ItemStack itemstack, int x, int y, int z, EntityPlayer player)
+	{
+		Item item = getBaseTool(itemstack);
+
+		if (item != this)
+		{
+			return item.onBlockStartBreak(itemstack, x, y, z, player);
+		}
+
+		return super.onBlockStartBreak(itemstack, x, y, z, player);
+	}
+
+	@Override
+	public void onUsingTick(ItemStack itemstack, EntityPlayer player, int count)
+	{
+		Item item = getBaseTool(itemstack);
+
+		if (item != this)
+		{
+			item.onUsingTick(itemstack, player, count);
+		}
+	}
+
 	@SideOnly(Side.CLIENT)
 	@Override
 	public boolean hasEffect(ItemStack itemstack, int pass)
@@ -493,22 +595,14 @@ public class ItemMiningPickaxe extends ItemPickaxe
 		return super.getFontRenderer(itemstack);
 	}
 
-	@SideOnly(Side.CLIENT)
+	public String getModeName(ItemStack itemstack)
+	{
+		return StatCollector.translateToLocal(getUnlocalizedName() + ".mode." + getMode(itemstack).name().toLowerCase(Locale.ENGLISH));
+	}
+
 	public String getModeInfomation(ItemStack itemstack)
 	{
-		String mode = I18n.format(getUnlocalizedName() + ".mode");
-
-		switch (getMode(itemstack))
-		{
-			case QUICK:
-				return mode + ": " + I18n.format(getUnlocalizedName() + ".mode.quick");
-			case ADIT:
-				return mode + ": " + I18n.format(getUnlocalizedName() + ".mode.adit");
-			case RANGED:
-				return mode + ": " + I18n.format(getUnlocalizedName() + ".mode.ranged");
-			default:
-				return mode + ": " + I18n.format(getUnlocalizedName() + ".mode.normal");
-		}
+		return StatCollector.translateToLocal(getUnlocalizedName() + ".mode") + ": " + getModeName(itemstack);
 	}
 
 	@SideOnly(Side.CLIENT)

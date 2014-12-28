@@ -13,11 +13,15 @@ import static com.kegare.caveworld.core.Caveworld.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.RecursiveAction;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockOre;
+import net.minecraft.block.BlockRedstoneOre;
+import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
@@ -31,7 +35,10 @@ import net.minecraftforge.common.config.Property;
 
 import org.apache.logging.log4j.Level;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.entity.EntityArcherZombie;
@@ -41,6 +48,7 @@ import com.kegare.caveworld.handler.CaveEventHooks;
 import com.kegare.caveworld.handler.CaveFuelHandler;
 import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.item.ItemMiningPickaxe;
+import com.kegare.caveworld.item.ItemMiningPickaxe.BreakMode;
 import com.kegare.caveworld.network.client.CaveworldMenuMessage;
 import com.kegare.caveworld.network.client.DimDeepSyncMessage;
 import com.kegare.caveworld.network.client.DimSyncMessage;
@@ -63,9 +71,6 @@ import com.kegare.caveworld.plugin.thaumcraft.ThaumcraftPlugin;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Version;
-import com.kegare.caveworld.util.breaker.AditBreakExecutor;
-import com.kegare.caveworld.util.breaker.QuickBreakExecutor;
-import com.kegare.caveworld.util.breaker.RangedBreakExecutor;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 import com.kegare.caveworld.world.WorldProviderDeepCaveworld;
 import com.kegare.caveworld.world.gen.MapGenStrongholdCaveworld;
@@ -85,6 +90,7 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import cpw.mods.fml.common.registry.EntityRegistry;
+import cpw.mods.fml.common.registry.FMLControlledNamespacedRegistry;
 import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.Side;
@@ -166,7 +172,7 @@ public class Caveworld
 		EntityRegistry.registerGlobalEntityID(EntityCaveman.class, "Caveman", EntityRegistry.findGlobalUniqueEntityId(), 0xAAAAAA, 0xCCCCCC);
 		EntityRegistry.registerModEntity(EntityCaveman.class, "Caveman", id++, this, 128, 1, true);
 		EntityRegistry.registerGlobalEntityID(EntityArcherZombie.class, "ArcherZombie", EntityRegistry.findGlobalUniqueEntityId(), 0x00A0A0, 0xAAAAAA);
-		EntityRegistry.registerModEntity(EntityArcherZombie.class, "ArcherZombie", id++, this, 128, 1, true);
+		EntityRegistry.registerModEntity(EntityArcherZombie.class, "ArcherZombie", id, this, 128, 1, true);
 
 		proxy.registerRenderers();
 
@@ -245,10 +251,8 @@ public class Caveworld
 				CaveworldAPI.setMiningPointAmount("oreCavenium", 2);
 				CaveworldAPI.setMiningPointAmount("caveniumOre", 2);
 
-				for (Object obj : GameData.getBlockRegistry().getKeys())
+				for (Block block : GameData.getBlockRegistry().typeSafeIterable())
 				{
-					Block block = GameData.getBlockRegistry().getObject((String)obj);
-
 					for (int i = 0; i < 16; ++i)
 					{
 						if (CaveworldAPI.getMiningPointAmount(block, i) > 0)
@@ -265,30 +269,82 @@ public class Caveworld
 			@Override
 			protected void compute()
 			{
-				List<String> items = Lists.newArrayList();
+				List list = Lists.newArrayList();
 
-				for (Object obj : GameData.getItemRegistry().getKeys())
+				for (Block block : GameData.getBlockRegistry().typeSafeIterable())
 				{
-					String key = String.valueOf(obj);
-					Item item = GameData.getItemRegistry().getObject(key);
-
-					if (item != null)
+					try
 					{
-						if (CaveUtils.isItemPickaxe(new ItemStack(item)))
+						Item item = Item.getItemFromBlock(block);
+
+						if (item == null)
 						{
-							items.add(key);
+							continue;
 						}
+
+						list.clear();
+
+						CreativeTabs tab = block.getCreativeTabToDisplayOn();
+
+						if (tab == null)
+						{
+							tab = CreativeTabs.tabAllSearch;
+						}
+
+						block.getSubBlocks(item, tab, list);
+
+						if (list.isEmpty())
+						{
+							if (Strings.nullToEmpty(block.getHarvestTool(0)).equalsIgnoreCase("pickaxe") || CaveItems.mining_pickaxe.func_150897_b(block) ||
+								block instanceof BlockOre || block instanceof BlockRedstoneOre)
+							{
+								ItemMiningPickaxe.breakableBlocks.addIfAbsent(new BlockEntry(block, 0));
+							}
+						}
+						else for (Object obj : list)
+						{
+							ItemStack itemstack = (ItemStack)obj;
+
+							if (itemstack != null && itemstack.getItem() != null)
+							{
+								Block sub = Block.getBlockFromItem(itemstack.getItem());
+								int meta = itemstack.getItemDamage();
+
+								if (meta < 0 || meta >= 16 || sub == Blocks.air)
+								{
+									continue;
+								}
+
+								if (Strings.nullToEmpty(sub.getHarvestTool(meta)).equalsIgnoreCase("pickaxe") ||
+									CaveItems.mining_pickaxe.func_150897_b(sub) || block instanceof BlockOre || block instanceof BlockRedstoneOre)
+								{
+									ItemMiningPickaxe.breakableBlocks.addIfAbsent(new BlockEntry(sub, meta));
+								}
+							}
+						}
+					}
+					catch (Throwable e) {}
+				}
+			}
+		});
+
+		CaveUtils.getPool().execute(new RecursiveAction()
+		{
+			@Override
+			protected void compute()
+			{
+				Set<String> items = Sets.newTreeSet();
+				FMLControlledNamespacedRegistry<Item> registry = GameData.getItemRegistry();
+
+				for (Item item : registry.typeSafeIterable())
+				{
+					if (CaveUtils.isItemPickaxe(item))
+					{
+						items.add(registry.getNameForObject(item));
 					}
 				}
 
-				Collections.sort(items);
-
-				Config.miningPointValidItemsDefault = new String[items.size()];
-
-				for (int i = 0; i < items.size(); ++i)
-				{
-					Config.miningPointValidItemsDefault[i] = items.get(i);
-				}
+				Config.miningPointValidItemsDefault = items.toArray(new String[items.size()]);
 
 				Property prop = Config.generalCfg.getCategory(Configuration.CATEGORY_GENERAL).get("miningPointValidItems");
 				prop.setDefaultValues(Config.miningPointValidItemsDefault);
@@ -429,29 +485,24 @@ public class Caveworld
 	public void serverStopping(FMLServerStoppedEvent event)
 	{
 		CaveEventHooks.firstJoinPlayers.clear();
-
-		QuickBreakExecutor.executors.clear();
-		AditBreakExecutor.executors.clear();
-		RangedBreakExecutor.executors.clear();
+		BreakMode.executors.clear();
 
 		File dir = Config.getConfigDir();
 
-		if (dir == null)
+		if (dir != null && dir.exists())
 		{
-			return;
-		}
+			try (FileOutputStream output = new FileOutputStream(new File(dir, "UniversalChest.dat")))
+			{
+				NBTTagCompound data = CaveBlocks.universal_chest.getData();
 
-		try (FileOutputStream output = new FileOutputStream(new File(dir, "UniversalChest.dat")))
-		{
-			NBTTagCompound data = CaveBlocks.universal_chest.getData();
+				data.setTag("ChestItems", CaveBlocks.universal_chest.inventory.saveInventoryToNBT());
 
-			data.setTag("ChestItems", CaveBlocks.universal_chest.inventory.saveInventoryToNBT());
-
-			CompressedStreamTools.writeCompressed(data, output);
-		}
-		catch (Exception e)
-		{
-			CaveLog.log(Level.ERROR, e, "An error occurred trying to writing Universal Chest data");
+				CompressedStreamTools.writeCompressed(data, output);
+			}
+			catch (Exception e)
+			{
+				CaveLog.log(Level.ERROR, e, "An error occurred trying to writing Universal Chest data");
+			}
 		}
 	}
 }

@@ -49,14 +49,46 @@ import cpw.mods.fml.client.config.GuiCheckBox;
 import cpw.mods.fml.client.config.GuiConfigEntries.ArrayEntry;
 import cpw.mods.fml.client.config.HoverChecker;
 import cpw.mods.fml.common.registry.GameData;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
+@SideOnly(Side.CLIENT)
 public class GuiSelectItem extends GuiScreen
 {
-	public static final ArrayListExtended<Item> raws = new ArrayListExtended().addAllObject(GameData.getItemRegistry());
+	protected static final ArrayListExtended<ItemEntry> items = new ArrayListExtended();
+
+	private static final Map<String, List<ItemEntry>> filterCache = Maps.newHashMap();
 
 	static
 	{
-		Collections.sort(raws, CaveUtils.itemComparator);
+		refreshItems();
+	}
+
+	private static void refreshItems()
+	{
+		items.clear();
+
+		List list = Lists.newArrayList();
+
+		for (Item item : GameData.getItemRegistry().typeSafeIterable())
+		{
+			list.clear();
+			item.getSubItems(item, item.getCreativeTab(), list);
+
+			if (list.isEmpty())
+			{
+				items.addIfAbsent(new ItemEntry(item, 0));
+			}
+			else for (Object obj : list)
+			{
+				ItemStack itemstack = (ItemStack)obj;
+
+				if (itemstack != null && itemstack.getItem() != null)
+				{
+					items.addIfAbsent(new ItemEntry(itemstack.getItem(), itemstack.getItemDamage()));
+				}
+			}
+		}
 	}
 
 	public interface SelectListener
@@ -112,7 +144,7 @@ public class GuiSelectItem extends GuiScreen
 	{
 		if (itemList == null)
 		{
-			itemList = new ItemList(this);
+			itemList = new ItemList();
 		}
 
 		itemList.func_148122_a(width, height, 32, height - 28);
@@ -428,65 +460,34 @@ public class GuiSelectItem extends GuiScreen
 	{
 		if (hideBlocks)
 		{
-			ItemList.initializeItems();
+			CaveUtils.getPool().execute(new RecursiveAction()
+			{
+				@Override
+				protected void compute()
+				{
+					refreshItems();
+				}
+			});
 		}
 	}
 
-	protected static class ItemList extends GuiListSlot
+	class ItemList extends GuiListSlot
 	{
-		protected static final ArrayListExtended<ItemEntry> items = new ArrayListExtended();
-
-		private static final Map<String, List<ItemEntry>> filterCache = Maps.newHashMap();
-
-		static
-		{
-			initializeItems();
-		}
-
-		private static void initializeItems()
-		{
-			items.clear();
-
-			List list = Lists.newArrayList();
-
-			for (Item item : raws)
-			{
-				list.clear();
-				item.getSubItems(item, item.getCreativeTab(), list);
-
-				if (list.isEmpty())
-				{
-					items.addIfAbsent(new ItemEntry(item, 0));
-				}
-				else for (Object obj : list)
-				{
-					ItemStack itemstack = (ItemStack)obj;
-
-					if (itemstack != null && itemstack.getItem() != null)
-					{
-						items.addIfAbsent(new ItemEntry(itemstack.getItem(), itemstack.getItemDamage()));
-					}
-				}
-			}
-		}
-
-		protected final GuiSelectItem parent;
 		protected final ArrayListExtended<ItemEntry> contents = new ArrayListExtended(items);
 		protected final Set<ItemEntry> selected = Sets.newHashSet();
 
 		protected int nameType;
 
-		private ItemList(final GuiSelectItem parent)
+		private ItemList()
 		{
-			super(parent.mc, 0, 0, 0, 0, 18);
-			this.parent = parent;
+			super(GuiSelectItem.this.mc, 0, 0, 0, 0, 18);
 
 			CaveUtils.getPool().execute(new RecursiveAction()
 			{
 				@Override
 				protected void compute()
 				{
-					if (parent.hideBlocks)
+					if (hideBlocks)
 					{
 						Set<ItemEntry> hidden = Sets.newHashSet();
 
@@ -505,27 +506,27 @@ public class GuiSelectItem extends GuiScreen
 						}
 					}
 
-					if (parent.parentNameField != null)
+					if (parentNameField != null)
 					{
 						int damage = 0;
 
-						if (parent.parentDamageField != null)
+						if (parentDamageField != null)
 						{
-							damage = NumberUtils.toInt(parent.parentDamageField.getText());
+							damage = NumberUtils.toInt(parentDamageField.getText());
 						}
 
 						for (ItemEntry entry : items)
 						{
-							if (GameData.getItemRegistry().getNameForObject(entry.item).equals(parent.parentNameField.getText()) && entry.damage == damage)
+							if (GameData.getItemRegistry().getNameForObject(entry.item).equals(parentNameField.getText()) && entry.damage == damage)
 							{
 								selected.add(entry);
 							}
 						}
 					}
 
-					if (parent.parentElement != null)
+					if (parentElement != null)
 					{
-						for (Object obj : parent.parentElement.getCurrentValues())
+						for (Object obj : parentElement.getCurrentValues())
 						{
 							String str = String.valueOf(obj);
 
@@ -584,7 +585,7 @@ public class GuiSelectItem extends GuiScreen
 		@Override
 		protected void drawBackground()
 		{
-			parent.drawDefaultBackground();
+			drawDefaultBackground();
 		}
 
 		@Override
@@ -620,10 +621,10 @@ public class GuiSelectItem extends GuiScreen
 
 			if (!Strings.isNullOrEmpty(name))
 			{
-				parent.drawCenteredString(parent.fontRendererObj, name, width / 2, par3 + 1, 0xFFFFFF);
+				drawCenteredString(fontRendererObj, name, width / 2, par3 + 1, 0xFFFFFF);
 			}
 
-			if (parent.detailInfo.isChecked())
+			if (detailInfo.isChecked())
 			{
 				CaveUtils.renderItemStack(mc, itemstack, width / 2 - 100, par3 - 1, false, false, null);
 			}
@@ -636,7 +637,7 @@ public class GuiSelectItem extends GuiScreen
 
 			if (entry != null && !selected.remove(entry))
 			{
-				if (parent.parentNameField != null || parent.parentDamageField != null)
+				if (parentNameField != null || parentDamageField != null)
 				{
 					selected.clear();
 				}

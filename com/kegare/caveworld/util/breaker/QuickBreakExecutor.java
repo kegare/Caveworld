@@ -9,40 +9,21 @@
 
 package com.kegare.caveworld.util.breaker;
 
-import java.util.Map;
-
 import net.minecraft.entity.player.EntityPlayer;
 
-import com.google.common.collect.Maps;
 import com.kegare.caveworld.core.Config;
 
 public class QuickBreakExecutor extends MultiBreakExecutor
 {
-	public static final Map<EntityPlayer, QuickBreakExecutor> executors = Maps.newHashMap();
-
-	private QuickBreakExecutor(EntityPlayer player)
+	public QuickBreakExecutor(EntityPlayer player)
 	{
 		super(player);
-	}
-
-	public static QuickBreakExecutor getExecutor(EntityPlayer player)
-	{
-		QuickBreakExecutor executor = executors.get(player);
-
-		if (executor == null)
-		{
-			executor = new QuickBreakExecutor(player);
-
-			executors.put(player, executor);
-		}
-
-		return executor;
 	}
 
 	@Override
 	public boolean canBreak(int x, int y, int z)
 	{
-		return originPos.getDistance(x, y, z) <= 64.0D && (Config.quickBreakLimit <= 0 || breakPositions.size() < Config.quickBreakLimit) && super.canBreak(x, y, z);
+		return (Config.quickBreakLimit <= 0 || breakPositions.size() < Config.quickBreakLimit) && super.canBreak(x, y, z);
 	}
 
 	@Override

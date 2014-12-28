@@ -22,24 +22,27 @@ import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 
 public class SelectBreakableMessage implements IMessage, IMessageHandler<SelectBreakableMessage, IMessage>
 {
-	private String selected;
+	private String key, selected;
 
 	public SelectBreakableMessage() {}
 
-	public SelectBreakableMessage(String selected)
+	public SelectBreakableMessage(String key, String selected)
 	{
+		this.key = key;
 		this.selected = selected;
 	}
 
 	@Override
 	public void fromBytes(ByteBuf buffer)
 	{
+		key = ByteBufUtils.readUTF8String(buffer);
 		selected = ByteBufUtils.readUTF8String(buffer);
 	}
 
 	@Override
 	public void toBytes(ByteBuf buffer)
 	{
+		ByteBufUtils.writeUTF8String(buffer, key);
 		ByteBufUtils.writeUTF8String(buffer, selected);
 	}
 
@@ -51,7 +54,7 @@ public class SelectBreakableMessage implements IMessage, IMessageHandler<SelectB
 
 		if (current != null && current.getItem() instanceof ItemMiningPickaxe)
 		{
-			current.getTagCompound().setString("Blocks", message.selected);
+			current.getTagCompound().setString(message.key, message.selected);
 		}
 
 		return null;

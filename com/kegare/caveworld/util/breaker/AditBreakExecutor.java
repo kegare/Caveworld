@@ -9,37 +9,18 @@
 
 package com.kegare.caveworld.util.breaker;
 
-import java.util.Map;
-
 import net.minecraft.block.BlockPistonBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
 
-import com.google.common.collect.Maps;
 import com.kegare.caveworld.item.ItemMiningPickaxe;
 
 public class AditBreakExecutor extends MultiBreakExecutor
 {
-	public static final Map<EntityPlayer, AditBreakExecutor> executors = Maps.newHashMap();
-
-	private AditBreakExecutor(EntityPlayer player)
+	public AditBreakExecutor(EntityPlayer player)
 	{
 		super(player);
-	}
-
-	public static AditBreakExecutor getExecutor(EntityPlayer player)
-	{
-		AditBreakExecutor executor = executors.get(player);
-
-		if (executor == null)
-		{
-			executor = new AditBreakExecutor(player);
-
-			executors.put(player, executor);
-		}
-
-		return executor;
 	}
 
 	@Override

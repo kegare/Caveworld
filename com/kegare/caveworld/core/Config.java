@@ -71,9 +71,10 @@ public class Config
 	public static boolean veinsAutoRegister;
 	public static boolean deathLoseMiningPoint;
 	public static int miningPointRenderType;
-	public static boolean fakeMiningPickaxe;
 	public static String[] miningPointValidItems;
 	public static String[] miningPointValidItemsDefault;
+	public static boolean fakeMiningPickaxe;
+	public static int modeDisplayTime;
 	public static int quickBreakLimit;
 
 	public static boolean portalCraftRecipe;
@@ -212,13 +213,6 @@ public class Config
 
 			propOrder.add(prop.getName());
 			miningPointRenderType = MathHelper.clamp_int(prop.getInt(miningPointRenderType), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
-
-			prop = generalCfg.get(category, "fakeMiningPickaxe", false);
-			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
-			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-			prop.comment += " [default: " + prop.getDefault() + "]";
-			propOrder.add(prop.getName());
-			fakeMiningPickaxe = prop.getBoolean(fakeMiningPickaxe);
 		}
 
 		prop = generalCfg.get(category, "miningPointValidItems", miningPointValidItemsDefault == null ? new String[0] : miningPointValidItemsDefault);
@@ -226,10 +220,28 @@ public class Config
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		propOrder.add(prop.getName());
 		miningPointValidItems = prop.getStringList();
+
+		if (side.isClient())
+		{
+			prop = generalCfg.get(category, "fakeMiningPickaxe", false);
+			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+			prop.comment += " [default: " + prop.getDefault() + "]";
+			propOrder.add(prop.getName());
+			fakeMiningPickaxe = prop.getBoolean(fakeMiningPickaxe);
+			prop = generalCfg.get(category, "modeDisplayTime", 2200);
+			prop.setMinValue(0).setMaxValue(Integer.MAX_VALUE).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+			prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+			propOrder.add(prop.getName());
+			modeDisplayTime = MathHelper.clamp_int(prop.getInt(modeDisplayTime), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		}
+
 		prop = generalCfg.get(category, "quickBreakLimit", 100);
 		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
 		quickBreakLimit = MathHelper.clamp_int(prop.getInt(quickBreakLimit), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 
 		generalCfg.setCategoryPropertyOrder(category, propOrder);
@@ -583,6 +595,12 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		ChunkProviderCaveworld.decorateVines = prop.getBoolean(ChunkProviderCaveworld.decorateVines);
+		prop = dimensionCfg.get(category, "underPeaceful", false);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderCaveworld.underPeaceful = prop.getBoolean(ChunkProviderCaveworld.underPeaceful);
 
 		dimensionCfg.setCategoryPropertyOrder(category, propOrder);
 
@@ -681,6 +699,12 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		ChunkProviderDeepCaveworld.decorateVines = prop.getBoolean(ChunkProviderDeepCaveworld.decorateVines);
+		prop = dimensionCfg.get(category, "underPeaceful", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderDeepCaveworld.underPeaceful = prop.getBoolean(ChunkProviderDeepCaveworld.underPeaceful);
 
 		dimensionCfg.setCategoryPropertyOrder(category, propOrder);
 
