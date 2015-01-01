@@ -18,10 +18,11 @@ import net.minecraft.block.BlockBed;
 import net.minecraft.block.BlockOre;
 import net.minecraft.block.BlockRedstoneOre;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
@@ -84,9 +85,11 @@ import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.entity.EntityCaveman;
 import com.kegare.caveworld.item.CaveItems;
+import com.kegare.caveworld.item.ICaveniumTool;
 import com.kegare.caveworld.item.ItemCavenium;
+import com.kegare.caveworld.item.ItemDiggingShovel;
+import com.kegare.caveworld.item.ItemLumberingAxe;
 import com.kegare.caveworld.item.ItemMiningPickaxe;
-import com.kegare.caveworld.item.ItemMiningPickaxe.BreakMode;
 import com.kegare.caveworld.network.client.DimDeepSyncMessage;
 import com.kegare.caveworld.network.client.DimSyncMessage;
 import com.kegare.caveworld.network.client.MultiBreakCountMessage;
@@ -193,17 +196,17 @@ public class CaveEventHooks
 		{
 			ItemStack current = player.getCurrentEquippedItem();
 
-			if (current != null && current.getItem() != null && current.getItem() instanceof ItemMiningPickaxe)
+			if (current != null && current.getItem() != null && current.getItem() instanceof ICaveniumTool)
 			{
-				ItemMiningPickaxe item = (ItemMiningPickaxe)current.getItem();
+				ICaveniumTool tool = (ICaveniumTool)current.getItem();
 
-				if (item.highlightStart > 0 && System.currentTimeMillis() - item.highlightStart < Config.modeDisplayTime)
+				if (tool.getHighlightStart() > 0 && System.currentTimeMillis() - tool.getHighlightStart() < Config.modeDisplayTime)
 				{
-					long time = System.currentTimeMillis() - item.highlightStart;
+					long time = System.currentTimeMillis() - tool.getHighlightStart();
 
 					if (time > Config.modeDisplayTime - 255)
 					{
-						time = item.highlightStart + Config.modeDisplayTime - System.currentTimeMillis();
+						time = tool.getHighlightStart() + Config.modeDisplayTime - System.currentTimeMillis();
 					}
 
 					int i = MathHelper.clamp_int((int)time, 0, 255);
@@ -213,7 +216,7 @@ public class CaveEventHooks
 						GL11.glPushMatrix();
 						GL11.glEnable(GL11.GL_BLEND);
 						OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-						mc.fontRenderer.drawStringWithShadow(item.getModeInfomation(current), 18, event.resolution.getScaledHeight() - 20, 16777215 + (i << 24));
+						mc.fontRenderer.drawStringWithShadow(tool.getModeInfomation(current), 18, event.resolution.getScaledHeight() - 20, 16777215 + (i << 24));
 						GL11.glDisable(GL11.GL_BLEND);
 						GL11.glPopMatrix();
 					}
@@ -224,7 +227,7 @@ public class CaveEventHooks
 
 					if (highlight == 40)
 					{
-						item.highlightStart = System.currentTimeMillis();
+						tool.setHighlightStart(System.currentTimeMillis());
 					}
 				}
 			}
@@ -322,17 +325,15 @@ public class CaveEventHooks
 	public void onMouse(MouseEvent event)
 	{
 		Minecraft mc = FMLClientHandler.instance().getClient();
-		EntityClientPlayerMP player = mc.thePlayer;
+		EntityPlayer player = mc.thePlayer;
 
 		if (player != null)
 		{
 			ItemStack current = player.getCurrentEquippedItem();
 
-			if (current != null && current.getItem() == CaveItems.mining_pickaxe)
+			if (current != null && current.getItem() != null && current.getItem() instanceof ICaveniumTool)
 			{
-				ItemMiningPickaxe pickaxe = (ItemMiningPickaxe)current.getItem();
-
-				if (pickaxe.getMode(current) != BreakMode.NORMAL)
+				if (!((ICaveniumTool)current.getItem()).getModeName(current).equalsIgnoreCase("NORMAL"))
 				{
 					if (event.button == java.awt.event.MouseEvent.BUTTON2)
 					{
@@ -368,6 +369,8 @@ public class CaveEventHooks
 	public void onClientDisconnected(ClientDisconnectionFromServerEvent event)
 	{
 		Caveworld.tabCaveworld.tabIconItem = null;
+
+		CaveItems.ore_compass.resetFinder();
 	}
 
 	@SubscribeEvent
@@ -439,7 +442,17 @@ public class CaveEventHooks
 
 		firstJoinPlayers.remove(player.getGameProfile().getId().toString());
 
-		for (BreakMode mode : BreakMode.values())
+		for (ItemMiningPickaxe.BreakMode mode : ItemMiningPickaxe.BreakMode.values())
+		{
+			mode.clear(player);
+		}
+
+		for (ItemLumberingAxe.BreakMode mode : ItemLumberingAxe.BreakMode.values())
+		{
+			mode.clear(player);
+		}
+
+		for (ItemDiggingShovel.BreakMode mode : ItemDiggingShovel.BreakMode.values())
 		{
 			mode.clear(player);
 		}
@@ -584,13 +597,13 @@ public class CaveEventHooks
 
 			if (event.action == Action.LEFT_CLICK_BLOCK)
 			{
-				if (current != null && current.getItem() != null && current.getItem() instanceof ItemMiningPickaxe && current.getItemDamage() < current.getMaxDamage())
+				if (current != null && current.getItem() != null && current.getItem() instanceof ICaveniumTool && current.getItemDamage() < current.getMaxDamage())
 				{
-					ItemMiningPickaxe pickaxe = (ItemMiningPickaxe)current.getItem();
+					ICaveniumTool tool = (ICaveniumTool)current.getItem();
 
-					if (pickaxe.canBreak(current, world.getBlock(x, y, z), world.getBlockMetadata(x, y, z)))
+					if (tool.canBreak(current, world.getBlock(x, y, z), world.getBlockMetadata(x, y, z)))
 					{
-						MultiBreakExecutor executor = pickaxe.getMode(current).getExecutor(player);
+						MultiBreakExecutor executor = tool.getMode(current).getExecutor(player);
 
 						if (executor != null)
 						{
@@ -602,18 +615,14 @@ public class CaveEventHooks
 							}
 							else
 							{
-								int size = executor.getBreakPositions().size();
-
-								MultiBreakExecutor.positionsCount.set(size);
-								Caveworld.network.sendTo(new MultiBreakCountMessage(size), player);
+								Caveworld.network.sendTo(new MultiBreakCountMessage(executor.getBreakPositions().size()), player);
 							}
 						}
 					}
 					else
 					{
-						pickaxe.getMode(current).clear(player);
+						tool.getMode(current).clear(player);
 
-						MultiBreakExecutor.positionsCount.set(0);
 						Caveworld.network.sendTo(new MultiBreakCountMessage(0), player);
 					}
 				}
@@ -726,6 +735,35 @@ public class CaveEventHooks
 	public void onBreakSpeed(BreakSpeed event)
 	{
 		EntityPlayer player = event.entityPlayer;
+		ItemStack current = player.getCurrentEquippedItem();
+
+		if (current != null && current.getItem() != null && current.getItem() instanceof ICaveniumTool)
+		{
+			ICaveniumTool tool = (ICaveniumTool)current.getItem();
+
+			if (!tool.getModeName(current).equalsIgnoreCase("NORMAL"))
+			{
+				int refined = tool.getRefined(current);
+
+				if (refined >= 4 || current.getItem().getHarvestLevel(current, tool.getToolClass()) >= 3 && EnchantmentHelper.getEnchantmentLevel(Enchantment.efficiency.effectId, current) >= 4)
+				{
+					return;
+				}
+
+				int count;
+
+				if (player.worldObj.isRemote)
+				{
+					count = MultiBreakExecutor.positionsCount.get();
+				}
+				else
+				{
+					count = tool.getMode(current).getExecutor(player).getBreakPositions().size();
+				}
+
+				event.newSpeed = Math.min(event.originalSpeed / (count * (0.5F - refined * 0.1245F)), event.originalSpeed);
+			}
+		}
 
 		if (CaveworldAPI.isEntityInCaveworld(player))
 		{

@@ -16,9 +16,11 @@ import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraftforge.common.ChestGenHooks;
 import net.minecraftforge.oredict.OreDictionary;
 
+import com.google.common.base.Predicate;
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.core.Config;
-import com.kegare.caveworld.recipe.RecipeMiningPickaxe;
+import com.kegare.caveworld.recipe.RecipeCaveniumTool;
+import com.kegare.caveworld.util.CaveUtils;
 
 import cpw.mods.fml.common.registry.GameRegistry;
 
@@ -26,6 +28,8 @@ public class CaveItems
 {
 	public static final ItemCavenium cavenium = new ItemCavenium("cavenium");
 	public static final ItemMiningPickaxe mining_pickaxe = new ItemMiningPickaxe("pickaxeMining");
+	public static final ItemLumberingAxe lumbering_axe = new ItemLumberingAxe("axeLumbering");
+	public static final ItemDiggingShovel digging_shovel = new ItemDiggingShovel("shovelDigging");
 	public static final ItemOreCompass ore_compass = new ItemOreCompass("oreCompass");
 
 	public static void registerItems()
@@ -79,7 +83,48 @@ public class CaveItems
 			OreDictionary.registerOre("pickaxeMining", mining_pickaxe);
 			OreDictionary.registerOre("miningPickaxe", mining_pickaxe);
 
-			GameRegistry.addRecipe(RecipeMiningPickaxe.instance);
+			GameRegistry.addRecipe(new RecipeCaveniumTool(new ItemStack(mining_pickaxe), new Predicate<ItemStack>()
+			{
+				@Override
+				public boolean apply(ItemStack itemstack)
+				{
+					return CaveUtils.isItemPickaxe(itemstack);
+				}
+			}));
+		}
+
+		if (Config.axeLumbering)
+		{
+			GameRegistry.registerItem(lumbering_axe, "lumbering_axe");
+
+			OreDictionary.registerOre("axeLumbering", lumbering_axe);
+			OreDictionary.registerOre("lumberingAxe", lumbering_axe);
+
+			GameRegistry.addRecipe(new RecipeCaveniumTool(new ItemStack(lumbering_axe), new Predicate<ItemStack>()
+			{
+				@Override
+				public boolean apply(ItemStack itemstack)
+				{
+					return CaveUtils.isItemAxe(itemstack);
+				}
+			}));
+		}
+
+		if (Config.shovelDigging)
+		{
+			GameRegistry.registerItem(digging_shovel, "digging_shovel");
+
+			OreDictionary.registerOre("shovelDigging", digging_shovel);
+			OreDictionary.registerOre("diggingShovel", digging_shovel);
+
+			GameRegistry.addRecipe(new RecipeCaveniumTool(new ItemStack(digging_shovel), new Predicate<ItemStack>()
+			{
+				@Override
+				public boolean apply(ItemStack itemstack)
+				{
+					return CaveUtils.isItemShovel(itemstack);
+				}
+			}));
 		}
 
 		if (Config.oreCompass)

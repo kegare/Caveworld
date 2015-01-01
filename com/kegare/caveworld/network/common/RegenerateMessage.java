@@ -14,11 +14,11 @@ import net.minecraft.client.Minecraft;
 
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.client.gui.GuiRegeneration;
-import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.util.CaveUtils;
 
 import cpw.mods.fml.client.FMLClientHandler;
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
@@ -65,7 +65,7 @@ public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMe
 	{
 		if (ctx.side.isClient())
 		{
-			Caveworld.proxy.displayClientGuiScreen(new GuiRegeneration(message.backup));
+			FMLCommonHandler.instance().showGuiScreen(new GuiRegeneration(message.backup));
 		}
 		else
 		{

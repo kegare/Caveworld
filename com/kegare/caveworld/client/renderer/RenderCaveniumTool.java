@@ -19,9 +19,8 @@ import net.minecraftforge.client.IItemRenderer;
 import org.lwjgl.opengl.GL11;
 
 import com.google.common.base.Strings;
-import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.item.CaveItems;
-import com.kegare.caveworld.item.ItemMiningPickaxe;
+import com.kegare.caveworld.item.ICaveniumTool;
 import com.kegare.caveworld.util.Roman;
 
 import cpw.mods.fml.client.FMLClientHandler;
@@ -29,7 +28,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class RenderMiningPickaxe implements IItemRenderer
+public class RenderCaveniumTool implements IItemRenderer
 {
 	private final Minecraft mc = FMLClientHandler.instance().getClient();
 	private final RenderItem itemRender = RenderItem.getInstance();
@@ -58,22 +57,19 @@ public class RenderMiningPickaxe implements IItemRenderer
 
 		itemRender.renderItemIntoGUI(renderer, mc.getTextureManager(), item, 0, 0, true);
 
-		if (!Config.fakeMiningPickaxe)
-		{
-			Item base = ((ItemMiningPickaxe)item.getItem()).getBaseTool(item);
+		Item base = ((ICaveniumTool)item.getItem()).getBase(item);
 
-			if (base != CaveItems.mining_pickaxe)
-			{
-				GL11.glPushMatrix();
-				GL11.glTranslatef(-9.0F, 14.0F, -1.0F);
-				GL11.glScalef(0.6F, 0.6F, 1.0F);
-				GL11.glRotatef(-90.0F, 0.0F, 0.0F, 1.0F);
-				itemRender.renderItemIntoGUI(renderer, mc.getTextureManager(), new ItemStack(base), 0, item.isItemDamaged() ? 13 : 16, true);
-				GL11.glPopMatrix();
-			}
+		if (base != CaveItems.mining_pickaxe && base.getIconIndex(item) != item.getIconIndex())
+		{
+			GL11.glPushMatrix();
+			GL11.glTranslatef(-9.0F, 14.0F, -1.0F);
+			GL11.glScalef(0.6F, 0.6F, 1.0F);
+			GL11.glRotatef(-90.0F, 0.0F, 0.0F, 1.0F);
+			itemRender.renderItemIntoGUI(renderer, mc.getTextureManager(), new ItemStack(base), 0, item.isItemDamaged() ? 13 : 16, true);
+			GL11.glPopMatrix();
 		}
 
-		String refined = Roman.toRoman(((ItemMiningPickaxe)item.getItem()).getRefined(item));
+		String refined = Roman.toRoman(((ICaveniumTool)item.getItem()).getRefined(item));
 
 		if (!Strings.isNullOrEmpty(refined))
 		{

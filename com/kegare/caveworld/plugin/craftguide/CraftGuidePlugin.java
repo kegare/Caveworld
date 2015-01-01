@@ -9,6 +9,10 @@
 
 package com.kegare.caveworld.plugin.craftguide;
 
+import net.minecraft.item.ItemStack;
+
+import com.kegare.caveworld.item.CaveItems;
+
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Optional.Method;
 
@@ -24,6 +28,8 @@ public class CraftGuidePlugin
 	@Method(modid = MODID)
 	public static void invoke()
 	{
-		new MiningPickaxeRecipeProvider();
+		new CaveniumToolRecipeProvider(new ItemStack(CaveItems.mining_pickaxe));
+		new CaveniumToolRecipeProvider(new ItemStack(CaveItems.lumbering_axe));
+		new CaveniumToolRecipeProvider(new ItemStack(CaveItems.digging_shovel));
 	}
 }

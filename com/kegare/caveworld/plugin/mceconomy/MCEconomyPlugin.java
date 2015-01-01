@@ -24,6 +24,9 @@ import shift.mceconomy2.api.MCEconomyAPI;
 
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.core.Config;
+import com.kegare.caveworld.entity.EntityArcherZombie;
+import com.kegare.caveworld.entity.EntityCaveman;
+import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.plugin.mceconomy.ShopProductManager.ShopProduct;
 
 import cpw.mods.fml.common.Loader;
@@ -145,6 +148,43 @@ public final class MCEconomyPlugin
 		{
 			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.rope), 2);
 		}
+
+		if (Config.oreCavenium)
+		{
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.cavenium_ore, 1, 0), 400);
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.cavenium_ore, 1, 1), 1000);
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.cavenium_ore, 1, 2), 1800);
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.cavenium_ore, 1, 3), 4500);
+		}
+
+		if (Config.universalChest)
+		{
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.universal_chest), -1);
+		}
+
+		if (Config.cavenium)
+		{
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.cavenium, 1, 0), 200);
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.cavenium, 1, 1), 500);
+		}
+
+		if (Config.pickaxeMining)
+		{
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.mining_pickaxe), -1);
+		}
+
+		if (Config.axeLumbering)
+		{
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.lumbering_axe), -1);
+		}
+
+		if (Config.oreCompass)
+		{
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.ore_compass), 2200);
+		}
+
+		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCaveman.class, 10);
+		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityArcherZombie.class, 4);
 
 		SHOP = MCEconomyAPI.registerProductList(ShopProductManager.instance());
 	}

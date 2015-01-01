@@ -13,15 +13,9 @@ import net.minecraft.util.ResourceLocation;
 
 import com.google.common.base.Objects;
 
-public final class PanoramaPaths
+public class PanoramaPaths
 {
-	public final ResourceLocation
-	north,
-	east,
-	south,
-	west,
-	top,
-	bottom;
+	public final ResourceLocation north, east, south, west, top, bottom;
 
 	public PanoramaPaths(ResourceLocation north, ResourceLocation east , ResourceLocation south, ResourceLocation west, ResourceLocation top, ResourceLocation bottom)
 	{

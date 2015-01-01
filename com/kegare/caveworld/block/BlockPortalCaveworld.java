@@ -503,7 +503,7 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 		int y = coord.posY;
 		int z = coord.posZ;
 
-		if (player.worldObj.getBlock(x, y, z) != CaveBlocks.caveworld_portal)
+		if (player.worldObj.getBlock(x, y, z) != this)
 		{
 			return false;
 		}
@@ -585,7 +585,7 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 	@Override
 	public void closeInventory() {}
 
-	public static class Size
+	private class Size
 	{
 		private final World worldObj;
 		private final int portalMetadata;
@@ -679,7 +679,7 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 						break outside;
 					}
 
-					if (block == CaveBlocks.caveworld_portal)
+					if (block == BlockPortalCaveworld.this)
 					{
 						++portalBlockCount;
 					}
@@ -735,7 +735,7 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 
 		protected boolean isReplaceablePortal(Block block)
 		{
-			return block.getMaterial() == Material.air || block == CaveBlocks.caveworld_portal;
+			return block.getMaterial() == Material.air || block == BlockPortalCaveworld.this;
 		}
 
 		public boolean canCreatePortal()
@@ -751,22 +751,22 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 					{
 						if (portalDiffer)
 						{
-							if (worldObj.getBlock(x + 1, portalCoord.posY + j, z) == CaveBlocks.caveworld_portal)
+							if (worldObj.getBlock(x + 1, portalCoord.posY + j, z) == BlockPortalCaveworld.this)
 							{
 								return false;
 							}
-							else if (worldObj.getBlock(x - 1, portalCoord.posY + j, z) == CaveBlocks.caveworld_portal)
+							else if (worldObj.getBlock(x - 1, portalCoord.posY + j, z) == BlockPortalCaveworld.this)
 							{
 								return false;
 							}
 						}
 						else
 						{
-							if (worldObj.getBlock(x, portalCoord.posY + j, z + 1) == CaveBlocks.caveworld_portal)
+							if (worldObj.getBlock(x, portalCoord.posY + j, z + 1) == BlockPortalCaveworld.this)
 							{
 								return false;
 							}
-							else if (worldObj.getBlock(x, portalCoord.posY + j, z - 1) == CaveBlocks.caveworld_portal)
+							else if (worldObj.getBlock(x, portalCoord.posY + j, z - 1) == BlockPortalCaveworld.this)
 							{
 								return false;
 							}
@@ -791,13 +791,13 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 
 				for (int j = 0; j < portalHeight; ++j)
 				{
-					worldObj.setBlock(x, portalCoord.posY + j, z, CaveBlocks.caveworld_portal, portalMetadata, 2);
+					worldObj.setBlock(x, portalCoord.posY + j, z, BlockPortalCaveworld.this, portalMetadata, 2);
 				}
 			}
 		}
 	}
 
-	public static class DispencePortal extends BehaviorDefaultDispenseItem
+	public class DispencePortal extends BehaviorDefaultDispenseItem
 	{
 		@Override
 		public ItemStack dispenseStack(IBlockSource blockSource, ItemStack itemstack)
@@ -808,7 +808,7 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 			int y = blockSource.getYInt() + facing.getFrontOffsetY();
 			int z = blockSource.getZInt() + facing.getFrontOffsetZ();
 
-			if (CaveBlocks.caveworld_portal.func_150000_e(world, x, y, z))
+			if (func_150000_e(world, x, y, z))
 			{
 				--itemstack.stackSize;
 			}
@@ -821,7 +821,7 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 		{
 			super.playDispenseSound(blockSource);
 
-			blockSource.getWorld().playSoundEffect(blockSource.getXInt(), blockSource.getYInt(), blockSource.getZInt(), CaveBlocks.caveworld_portal.stepSound.func_150496_b(), 1.0F, 2.0F);
+			blockSource.getWorld().playSoundEffect(blockSource.getXInt(), blockSource.getYInt(), blockSource.getZInt(), stepSound.func_150496_b(), 1.0F, 2.0F);
 		}
 	}
 }

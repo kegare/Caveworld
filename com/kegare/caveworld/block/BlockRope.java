@@ -194,7 +194,7 @@ public class BlockRope extends Block
 		return true;
 	}
 
-	public static class DispenceRope extends BehaviorDefaultDispenseItem
+	public class DispenceRope extends BehaviorDefaultDispenseItem
 	{
 		@Override
 		public ItemStack dispenseStack(IBlockSource blockSource, ItemStack itemstack)
@@ -205,9 +205,9 @@ public class BlockRope extends Block
 			int y = blockSource.getYInt() + facing.getFrontOffsetY();
 			int z = blockSource.getZInt() + facing.getFrontOffsetZ();
 
-			if (world.isAirBlock(x, y, z) && world.setBlock(x, y, z, CaveBlocks.rope, 1, 3))
+			if (world.isAirBlock(x, y, z) && world.setBlock(x, y, z, BlockRope.this, 1, 3))
 			{
-				CaveBlocks.rope.setUnderRopes(world, x, y, z);
+				setUnderRopes(world, x, y, z);
 
 				--itemstack.stackSize;
 
@@ -215,11 +215,11 @@ public class BlockRope extends Block
 				{
 					int next = y - 5 * i;
 
-					if (world.getBlock(x, next, z) == CaveBlocks.rope && world.isAirBlock(x, --next, z) && next > 0)
+					if (world.getBlock(x, next, z) == BlockRope.this && world.isAirBlock(x, --next, z) && next > 0)
 					{
-						if (world.setBlock(x, next, z, CaveBlocks.rope, 1, 3))
+						if (world.setBlock(x, next, z, BlockRope.this, 1, 3))
 						{
-							CaveBlocks.rope.setUnderRopes(world, x, next, z);
+							setUnderRopes(world, x, next, z);
 
 							--itemstack.stackSize;
 						}

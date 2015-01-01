@@ -11,7 +11,6 @@ package com.kegare.caveworld.item;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.RecursiveTask;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockOre;
@@ -30,7 +29,6 @@ import net.minecraft.world.World;
 import com.google.common.collect.Lists;
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.core.Caveworld;
-import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.breaker.BreakPos;
 import com.kegare.caveworld.util.breaker.BreakPos.NearestBreakPosComparator;
 
@@ -40,6 +38,9 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public class ItemOreCompass extends Item
 {
+	@SideOnly(Side.CLIENT)
+	private static ThreadFinder finderThread;
+
 	@SideOnly(Side.CLIENT)
 	protected IIcon[] compassIcons;
 
@@ -52,6 +53,9 @@ public class ItemOreCompass extends Item
 
 	private static final BreakPos failedPos = new BreakPos(null, 0, 0, 0)
 	{
+		@Override
+		public void refresh(World world, int x, int y, int z) {}
+
 		@Override
 		public boolean isPlaced()
 		{
@@ -81,6 +85,15 @@ public class ItemOreCompass extends Item
 
 	@SideOnly(Side.CLIENT)
 	@Override
+	public ItemStack onItemRightClick(ItemStack itemstack, World world, EntityPlayer player)
+	{
+		resetFinder();
+
+		return super.onItemRightClick(itemstack, world, player);
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
 	public void registerIcons(IIconRegister iconRegister)
 	{
 		compassIcons = new IIcon[32];
@@ -101,6 +114,14 @@ public class ItemOreCompass extends Item
 		if (mc.theWorld == null || mc.thePlayer == null)
 		{
 			return -1;
+		}
+
+		if (finderThread == null || !finderThread.isAlive())
+		{
+			finderThread = CaveItems.ore_compass.new ThreadFinder();
+			finderThread.setDaemon(true);
+			finderThread.setPriority(Thread.MIN_PRIORITY);
+			finderThread.start();
 		}
 
 		if (nearestOrePos != null && nearestOrePos.world != null && !nearestOrePos.isPlaced())
@@ -190,19 +211,6 @@ public class ItemOreCompass extends Item
 	@Override
 	public IIcon getIcon(ItemStack itemstack, int pass)
 	{
-		boolean first = false;
-
-		if (prevFindTime <= 0)
-		{
-			prevFindTime = System.currentTimeMillis();
-			first = true;
-		}
-
-		if (first || nearestOrePos != null && nearestOrePos.isPlaced() || System.currentTimeMillis() - prevFindTime >= 1500L)
-		{
-			findNearestOre();
-		}
-
 		if (pass == 0)
 		{
 			int i = getCompassIconIndex(itemstack);
@@ -218,83 +226,6 @@ public class ItemOreCompass extends Item
 
 	@SideOnly(Side.CLIENT)
 	@Override
-	public ItemStack onItemRightClick(ItemStack itemstack, World world, EntityPlayer player)
-	{
-		findNearestOre();
-
-		return super.onItemRightClick(itemstack, world, player);
-	}
-
-	@SideOnly(Side.CLIENT)
-	public void findNearestOre()
-	{
-		if (findFailedCount > 10 && System.currentTimeMillis() - prevFindTime < 10000L)
-		{
-			return;
-		}
-
-		prevFindTime = System.currentTimeMillis();
-
-		nearestOrePos = CaveUtils.getPool().invoke(new RecursiveTask<BreakPos>()
-		{
-			@Override
-			protected BreakPos compute()
-			{
-				Minecraft mc = FMLClientHandler.instance().getClient();
-
-				if (mc.theWorld == null || mc.thePlayer == null)
-				{
-					return null;
-				}
-
-				int findDistance = 64;
-				int originX = MathHelper.floor_double(mc.thePlayer.posX);
-				int originY = MathHelper.floor_double(mc.thePlayer.posY);
-				int originZ = MathHelper.floor_double(mc.thePlayer.posZ);
-				List<BreakPos> result = Lists.newArrayList();
-
-				for (int x = originX - findDistance - 1; x <= originX + findDistance; ++x)
-				{
-					for (int z = originZ - findDistance - 1; z <= originZ + findDistance; ++z)
-					{
-						for (int y = originY - 3; y <= originY + 3; ++y)
-						{
-							Block block = mc.theWorld.getBlock(x, y, z);
-							int meta = mc.theWorld.getBlockMetadata(x, y, z);
-
-							if (block instanceof BlockOre || block instanceof BlockRedstoneOre || CaveworldAPI.getMiningPointAmount(block, meta) > 0)
-							{
-								result.add(new BreakPos(mc.theWorld, x, y, z));
-							}
-						}
-					}
-				}
-
-				if (!result.isEmpty())
-				{
-					Collections.sort(result, new NearestBreakPosComparator(new BreakPos(mc.theWorld, originX, originY, originZ)));
-
-					return result.get(0);
-				}
-
-				return null;
-			}
-		});
-
-		if (nearestOrePos == null)
-		{
-			nearestOrePos = failedPos;
-
-			++findFailedCount;
-		}
-		else
-		{
-			findFailedCount = 0;
-		}
-	}
-
-	@SideOnly(Side.CLIENT)
-	@Override
 	public boolean requiresMultipleRenderPasses()
 	{
 		return true;
@@ -304,5 +235,124 @@ public class ItemOreCompass extends Item
 	public int getRenderPasses(int metadata)
 	{
 		return 1;
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
+	public void addInformation(ItemStack itemstack, EntityPlayer player, List list, boolean advanced)
+	{
+		if (player.capabilities.isCreativeMode && nearestOrePos != null)
+		{
+			Block block = nearestOrePos.getCurrentBlock();
+			int meta = nearestOrePos.getCurrentMetadata();
+			ItemStack nearest = new ItemStack(block, meta);
+
+			if (nearest != null && nearest.getItem() != null)
+			{
+				int x = MathHelper.floor_double(player.posX);
+				int y = MathHelper.floor_double(player.posY);
+				int z = MathHelper.floor_double(player.posZ);
+
+				list.add(nearest.getDisplayName() + ": " + (int)(Math.ceil(Math.abs(nearestOrePos.getDistance(x, y, z))) - 1));
+			}
+		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	public void resetFinder()
+	{
+		if (finderThread != null)
+		{
+			finderThread.result.clear();
+		}
+
+		prevFindTime = 0;
+		nearestOrePos = null;
+		findFailedCount = 0;
+	}
+
+	@SideOnly(Side.CLIENT)
+	public class ThreadFinder extends Thread
+	{
+		private final List<BreakPos> result = Lists.newArrayList();
+
+		@Override
+		public void run()
+		{
+			while (true)
+			{
+				Minecraft mc = FMLClientHandler.instance().getClient();
+				World world = mc.theWorld;
+				EntityPlayer player = mc.thePlayer;
+
+				if (world == null || player == null || findFailedCount > 10 && System.currentTimeMillis() - prevFindTime < 10000L)
+				{
+					continue;
+				}
+
+				boolean first = false;
+
+				if (prevFindTime <= 0)
+				{
+					prevFindTime = System.currentTimeMillis();
+					first = true;
+				}
+
+				if (first || nearestOrePos != null && nearestOrePos.isPlaced() || System.currentTimeMillis() - prevFindTime >= 1500L)
+				{
+					prevFindTime = System.currentTimeMillis();
+					result.clear();
+
+					int findDistance = 1;
+					int originX = MathHelper.floor_double(player.posX);
+					int originY = MathHelper.floor_double(player.posY);
+					int originZ = MathHelper.floor_double(player.posZ);
+
+					do
+					{
+						if (++findDistance > 50)
+						{
+							break;
+						}
+
+						for (int x = originX - findDistance - 1; x <= originX + findDistance; ++x)
+						{
+							for (int z = originZ - findDistance - 1; z <= originZ + findDistance; ++z)
+							{
+								for (int y = originY - 3; y <= originY + 3; ++y)
+								{
+									Block block = world.getBlock(x, y, z);
+									int meta = world.getBlockMetadata(x, y, z);
+
+									if (block instanceof BlockOre || block instanceof BlockRedstoneOre || CaveworldAPI.getMiningPointAmount(block, meta) > 0)
+									{
+										result.add(new BreakPos(world, x, y, z));
+									}
+								}
+							}
+						}
+					}
+					while (result.isEmpty());
+
+					if (!result.isEmpty())
+					{
+						Collections.sort(result, new NearestBreakPosComparator(new BreakPos(mc.theWorld, originX, originY, originZ)));
+
+						nearestOrePos = result.get(0);
+					}
+				}
+
+				if (nearestOrePos == null)
+				{
+					nearestOrePos = failedPos;
+
+					++findFailedCount;
+				}
+				else
+				{
+					findFailedCount = 0;
+				}
+			}
+		}
 	}
 }

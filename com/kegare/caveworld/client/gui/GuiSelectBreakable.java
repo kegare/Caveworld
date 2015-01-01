@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.concurrent.RecursiveAction;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockRotatedPillar;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
@@ -35,8 +36,7 @@ import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.client.config.CaveConfigGui;
 import com.kegare.caveworld.client.config.GuiSelectBlock.BlockFilter;
 import com.kegare.caveworld.core.Caveworld;
-import com.kegare.caveworld.item.CaveItems;
-import com.kegare.caveworld.item.ItemMiningPickaxe;
+import com.kegare.caveworld.item.ICaveniumTool;
 import com.kegare.caveworld.network.server.SelectBreakableMessage;
 import com.kegare.caveworld.util.ArrayListExtended;
 import com.kegare.caveworld.util.CaveUtils;
@@ -54,7 +54,8 @@ public class GuiSelectBreakable extends GuiScreen
 {
 	private static final Map<String, List<BlockEntry>> filterCache = Maps.newHashMap();
 
-	protected final ItemStack parentTool;
+	protected final ItemStack parentItemStack;
+	protected final ICaveniumTool parentTool;
 
 	protected BlockList blockList;
 
@@ -68,12 +69,15 @@ public class GuiSelectBreakable extends GuiScreen
 
 	public GuiSelectBreakable(ItemStack itemstack)
 	{
-		this.parentTool = itemstack;
+		this.parentItemStack = itemstack;
+		this.parentTool = (ICaveniumTool)itemstack.getItem();
 	}
 
 	@Override
 	public void initGui()
 	{
+		Keyboard.enableRepeatEvents(true);
+
 		if (blockList == null)
 		{
 			blockList = new BlockList();
@@ -119,8 +123,15 @@ public class GuiSelectBreakable extends GuiScreen
 		filterTextField.xPosition = width / 2 - filterTextField.width - 5;
 		filterTextField.yPosition = height - filterTextField.height - 6;
 
-		detailHoverChecker = new HoverChecker(detailInfo, 800);
-		instantHoverChecker = new HoverChecker(instantFilter, 800);
+		if (detailHoverChecker == null)
+		{
+			detailHoverChecker = new HoverChecker(detailInfo, 800);
+		}
+
+		if (instantHoverChecker == null)
+		{
+			instantHoverChecker = new HoverChecker(instantFilter, 800);
+		}
 	}
 
 	@Override
@@ -138,10 +149,10 @@ public class GuiSelectBreakable extends GuiScreen
 						selected.add(CaveUtils.toStringHelper(entry.getBlock(), entry.getMetadata()));
 					}
 
-					String key = CaveItems.mining_pickaxe.getMode(parentTool).name() + ":Blocks";
+					String key = parentTool.getModeName(parentItemStack) + ":Blocks";
 					String value = Joiner.on("|").join(selected);
 
-					parentTool.getTagCompound().setString(key, value);
+					parentItemStack.getTagCompound().setString(key, value);
 					Caveworld.network.sendToServer(new SelectBreakableMessage(key, value));
 
 					mc.displayGuiScreen(null);
@@ -170,7 +181,7 @@ public class GuiSelectBreakable extends GuiScreen
 	{
 		blockList.drawScreen(mouseX, mouseY, ticks);
 
-		drawCenteredString(fontRendererObj, I18n.format(Caveworld.CONFIG_LANG + "select.block.multiple.breakable", CaveItems.mining_pickaxe.getModeName(parentTool)), width / 2, 15, 0xFFFFFF);
+		drawCenteredString(fontRendererObj, I18n.format(Caveworld.CONFIG_LANG + "select.block.multiple.breakable", parentTool.getModeDisplayName(parentItemStack)), width / 2, 15, 0xFFFFFF);
 
 		super.drawScreen(mouseX, mouseY, ticks);
 
@@ -282,9 +293,17 @@ public class GuiSelectBreakable extends GuiScreen
 		return false;
 	}
 
+	@Override
+	public void onGuiClosed()
+	{
+		super.onGuiClosed();
+
+		Keyboard.enableRepeatEvents(false);
+	}
+
 	class BlockList extends GuiListSlot
 	{
-		protected final ArrayListExtended<BlockEntry> contents = new ArrayListExtended(ItemMiningPickaxe.breakableBlocks);
+		protected final ArrayListExtended<BlockEntry> contents = new ArrayListExtended(parentTool.getBreakableBlocks());
 		protected final Set<BlockEntry> selected = Sets.newHashSet();
 
 		protected int nameType;
@@ -298,9 +317,9 @@ public class GuiSelectBreakable extends GuiScreen
 				@Override
 				protected void compute()
 				{
-					for (BlockEntry entry : ItemMiningPickaxe.breakableBlocks)
+					for (BlockEntry entry : parentTool.getBreakableBlocks())
 					{
-						if (CaveItems.mining_pickaxe.canBreak(parentTool, entry.getBlock(), entry.getMetadata()))
+						if (parentTool.canBreak(parentItemStack, entry.getBlock(), entry.getMetadata()))
 						{
 							selected.add(entry);
 						}
@@ -360,7 +379,21 @@ public class GuiSelectBreakable extends GuiScreen
 			}
 
 			Block block = entry.getBlock();
-			ItemStack itemstack = new ItemStack(block, 1, entry.getMetadata());
+			int meta = entry.getMetadata();
+			ItemStack itemstack = new ItemStack(block, 1, meta);
+
+			if (block instanceof BlockRotatedPillar)
+			{
+				if (meta >= 8)
+				{
+					itemstack.setItemDamage(meta - 8);
+				}
+				else if (meta >= 4)
+				{
+					itemstack.setItemDamage(meta - 4);
+				}
+			}
+
 			String name = null;
 
 			if (itemstack.getItem() == null)
@@ -395,6 +428,8 @@ public class GuiSelectBreakable extends GuiScreen
 						break;
 				}
 			}
+
+			itemstack.setItemDamage(meta);
 
 			drawCenteredString(fontRendererObj, name, width / 2, par3 + 1, 0xFFFFFF);
 
@@ -434,13 +469,13 @@ public class GuiSelectBreakable extends GuiScreen
 
 					if (Strings.isNullOrEmpty(filter))
 					{
-						result = ItemMiningPickaxe.breakableBlocks;
+						result = parentTool.getBreakableBlocks();
 					}
 					else
 					{
 						if (!filterCache.containsKey(filter))
 						{
-							filterCache.put(filter, Lists.newArrayList(Collections2.filter(ItemMiningPickaxe.breakableBlocks, new BlockFilter(filter))));
+							filterCache.put(filter, Lists.newArrayList(Collections2.filter(parentTool.getBreakableBlocks(), new BlockFilter(filter))));
 						}
 
 						result = filterCache.get(filter);

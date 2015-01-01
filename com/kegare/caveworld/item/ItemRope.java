@@ -27,13 +27,20 @@ public class ItemRope extends ItemBlock
 	@Override
 	public boolean onItemUse(ItemStack itemstack, EntityPlayer player, World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ)
 	{
-		switch (side)
+		if (side == 1)
+		{
+			return false;
+		}
+
+		if (world.getBlock(x, y, z) == field_150939_a)
+		{
+			--y;
+		}
+		else switch (side)
 		{
 			case 0:
 				--y;
 				break;
-			case 1:
-				return false;
 			case 2:
 				--z;
 				break;

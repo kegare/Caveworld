@@ -9,34 +9,29 @@
 
 package com.kegare.caveworld.recipe;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
 import net.minecraft.inventory.InventoryCrafting;
-import net.minecraft.item.EnumRarity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.kegare.caveworld.item.CaveItems;
+import com.google.common.base.Predicate;
+import com.kegare.caveworld.item.ICaveniumTool;
 import com.kegare.caveworld.item.ItemCavenium;
-import com.kegare.caveworld.item.ItemMiningPickaxe;
-import com.kegare.caveworld.util.CaveUtils;
 
 import cpw.mods.fml.common.registry.GameData;
 
-public class RecipeMiningPickaxe implements IRecipe
+public class RecipeCaveniumTool implements IRecipe
 {
-	public static final RecipeMiningPickaxe instance = new RecipeMiningPickaxe();
+	private final ItemStack output;
+	private final Predicate<ItemStack> filter;
 
-	public static final Set<Item> pickaxeWhitelist = Sets.newHashSet();
-	private static final List<ItemStack> centerItems = Lists.newArrayList();
+	public RecipeCaveniumTool(ItemStack output, Predicate<ItemStack> filter)
+	{
+		this.output = output;
+		this.filter = filter;
+	}
 
 	@Override
 	public boolean matches(InventoryCrafting crafting, World world)
@@ -61,9 +56,9 @@ public class RecipeMiningPickaxe implements IRecipe
 				{
 					ItemStack itemstack = crafting.getStackInRowAndColumn(row, column);
 
-					if (itemstack != null && itemstack.getItem() != null && (pickaxeWhitelist.contains(itemstack.getItem()) || CaveUtils.isItemPickaxe(itemstack)))
+					if (itemstack != null && itemstack.getItem() != null && filter.apply(itemstack))
 					{
-						if (itemstack.getItem() instanceof ItemMiningPickaxe)
+						if (itemstack.getItem() instanceof ICaveniumTool)
 						{
 							flag = true;
 						}
@@ -82,7 +77,7 @@ public class RecipeMiningPickaxe implements IRecipe
 	@Override
 	public ItemStack getCraftingResult(InventoryCrafting crafting)
 	{
-		ItemStack result = getRecipeOutput();
+		ItemStack result = getRecipeOutput().copy();
 		ItemStack center = crafting.getStackInRowAndColumn(1, 1);
 		int rare = 0;
 
@@ -90,9 +85,16 @@ public class RecipeMiningPickaxe implements IRecipe
 		{
 			for (int column = 0; column < 3; ++column)
 			{
-				if (row != 1 && column == 1 || row == 1 && column != 1)
+				if (row == 1 && column == 1)
 				{
-					if (crafting.getStackInRowAndColumn(row, column).getRarity() != EnumRarity.common)
+					continue;
+				}
+
+				ItemStack itemstack = crafting.getStackInRowAndColumn(row, column);
+
+				if (itemstack != null && itemstack.getItem() != null && itemstack.getItem() instanceof ItemCavenium)
+				{
+					if (itemstack.getItemDamage() == 1)
 					{
 						++rare;
 					}
@@ -114,16 +116,16 @@ public class RecipeMiningPickaxe implements IRecipe
 			result.setTagCompound(data);
 		}
 
-		if (center.getItem() instanceof ItemMiningPickaxe)
+		if (center.getItem() instanceof ICaveniumTool)
 		{
-			int refined = ((ItemMiningPickaxe)center.getItem()).getRefined(center);
+			int refined = ((ICaveniumTool)center.getItem()).getRefined(center);
 
 			data.setInteger("Refined", MathHelper.clamp_int(refined + rare, 0, 4));
 		}
 		else
 		{
 			data.setString("BaseName", GameData.getItemRegistry().getNameForObject(center.getItem()));
-			data.setInteger("Refined", rare);
+			data.setInteger("Refined", MathHelper.clamp_int(rare, 0, 4));
 		}
 
 		return result;
@@ -138,31 +140,6 @@ public class RecipeMiningPickaxe implements IRecipe
 	@Override
 	public ItemStack getRecipeOutput()
 	{
-		return new ItemStack(CaveItems.mining_pickaxe);
-	}
-
-	public List<ItemStack> getCenterItems()
-	{
-		if (centerItems.isEmpty())
-		{
-			for (Object obj : GameData.getItemRegistry().getKeys())
-			{
-				Item item = GameData.getItemRegistry().getObject(String.valueOf(obj));
-
-				if (item == null)
-				{
-					continue;
-				}
-
-				ItemStack itemstack = new ItemStack(item);
-
-				if (pickaxeWhitelist.contains(item) || CaveUtils.isItemPickaxe(itemstack))
-				{
-					centerItems.add(itemstack);
-				}
-			}
-		}
-
-		return Collections.unmodifiableList(centerItems);
+		return output;
 	}
 }

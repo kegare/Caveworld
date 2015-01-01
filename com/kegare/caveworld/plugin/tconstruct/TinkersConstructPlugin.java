@@ -11,7 +11,7 @@ package com.kegare.caveworld.plugin.tconstruct;
 
 import net.minecraft.item.Item;
 
-import com.kegare.caveworld.recipe.RecipeMiningPickaxe;
+import com.kegare.caveworld.util.CaveUtils;
 
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Optional.Method;
@@ -33,7 +33,21 @@ public class TinkersConstructPlugin
 
 		if (item != null)
 		{
-			RecipeMiningPickaxe.pickaxeWhitelist.add(item);
+			CaveUtils.pickaxeItems.add(item);
+		}
+
+		item = GameRegistry.findItem(MODID, "axe");
+
+		if (item != null)
+		{
+			CaveUtils.axeItems.add(item);
+		}
+
+		item = GameRegistry.findItem(MODID, "shovel");
+
+		if (item != null)
+		{
+			CaveUtils.shovelItems.add(item);
 		}
 	}
 }

@@ -12,8 +12,8 @@ package com.kegare.caveworld.network.client;
 import io.netty.buffer.ByteBuf;
 
 import com.kegare.caveworld.client.gui.GuiIngameCaveworldMenu;
-import com.kegare.caveworld.core.Caveworld;
 
+import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
@@ -32,7 +32,7 @@ public class CaveworldMenuMessage implements IMessage, IMessageHandler<Caveworld
 	@Override
 	public IMessage onMessage(CaveworldMenuMessage message, MessageContext ctx)
 	{
-		Caveworld.proxy.displayClientGuiScreen(new GuiIngameCaveworldMenu());
+		FMLClientHandler.instance().getClient().displayGuiScreen(new GuiIngameCaveworldMenu());
 
 		return null;
 	}

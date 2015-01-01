@@ -30,6 +30,8 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.regex.Pattern;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockLog;
+import net.minecraft.block.BlockWood;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderBlocks;
@@ -42,7 +44,9 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemAxe;
 import net.minecraft.item.ItemPickaxe;
+import net.minecraft.item.ItemSpade;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
@@ -273,6 +277,11 @@ public class CaveUtils
 		}
 	};
 
+	public static final Set<Item>
+	pickaxeItems = Sets.newLinkedHashSet(),
+	axeItems = Sets.newLinkedHashSet(),
+	shovelItems = Sets.newLinkedHashSet();
+
 	public static ModContainer getModContainer()
 	{
 		ModContainer mod = Loader.instance().getIndexedModList().get(Caveworld.MODID);
@@ -294,13 +303,22 @@ public class CaveUtils
 	{
 		if (item != null)
 		{
+			if (pickaxeItems.contains(item))
+			{
+				return true;
+			}
+
 			if (item instanceof ItemPickaxe)
 			{
+				pickaxeItems.add(item);
+
 				return true;
 			}
 
 			if (item.getToolClasses(new ItemStack(item)).contains("pickaxe"))
 			{
+				pickaxeItems.add(item);
+
 				return true;
 			}
 		}
@@ -314,13 +332,134 @@ public class CaveUtils
 		{
 			Item item = itemstack.getItem();
 
+			if (pickaxeItems.contains(item))
+			{
+				return true;
+			}
+
 			if (item instanceof ItemPickaxe)
 			{
+				pickaxeItems.add(item);
+
 				return true;
 			}
 
 			if (item.getToolClasses(itemstack).contains("pickaxe"))
 			{
+				pickaxeItems.add(item);
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public static boolean isItemAxe(Item item)
+	{
+		if (item != null)
+		{
+			if (axeItems.contains(item))
+			{
+				return true;
+			}
+
+			if (item instanceof ItemAxe)
+			{
+				axeItems.add(item);
+
+				return true;
+			}
+
+			if (item.getToolClasses(new ItemStack(item)).contains("axe"))
+			{
+				axeItems.add(item);
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public static boolean isItemAxe(ItemStack itemstack)
+	{
+		if (itemstack != null && itemstack.getItem() != null && itemstack.stackSize > 0)
+		{
+			Item item = itemstack.getItem();
+
+			if (axeItems.contains(item))
+			{
+				return true;
+			}
+
+			if (item instanceof ItemAxe)
+			{
+				axeItems.add(item);
+
+				return true;
+			}
+
+			if (item.getToolClasses(itemstack).contains("axe"))
+			{
+				axeItems.add(item);
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public static boolean isItemShovel(Item item)
+	{
+		if (item != null)
+		{
+			if (shovelItems.contains(item))
+			{
+				return true;
+			}
+
+			if (item instanceof ItemSpade)
+			{
+				shovelItems.add(item);
+
+				return true;
+			}
+
+			if (item.getToolClasses(new ItemStack(item)).contains("shovel"))
+			{
+				shovelItems.add(item);
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public static boolean isItemShovel(ItemStack itemstack)
+	{
+		if (itemstack != null && itemstack.getItem() != null && itemstack.stackSize > 0)
+		{
+			Item item = itemstack.getItem();
+
+			if (shovelItems.contains(item))
+			{
+				return true;
+			}
+
+			if (item instanceof ItemSpade)
+			{
+				shovelItems.add(item);
+
+				return true;
+			}
+
+			if (item.getToolClasses(itemstack).contains("shovel"))
+			{
+				shovelItems.add(item);
+
 				return true;
 			}
 		}
@@ -341,6 +480,30 @@ public class CaveUtils
 			}
 
 			return Config.miningPointValidItems != null && ArrayUtils.contains(Config.miningPointValidItems, name);
+		}
+
+		return false;
+	}
+
+	public static boolean isWood(Block block, int meta)
+	{
+		if (Strings.nullToEmpty(block.getHarvestTool(meta)).equalsIgnoreCase("axe") || block instanceof BlockLog || block instanceof BlockWood)
+		{
+			return true;
+		}
+
+		ItemStack itemstack = new ItemStack(block, 1, meta);
+
+		if (CaveUtils.containsOreDict(itemstack, "logWood") || CaveUtils.containsOreDict(itemstack, "plankWood") || CaveUtils.containsOreDict(itemstack, "slabWood") || CaveUtils.containsOreDict(itemstack, "stairWood"))
+		{
+			return true;
+		}
+
+		itemstack.setItemDamage(OreDictionary.WILDCARD_VALUE);
+
+		if (CaveUtils.containsOreDict(itemstack, "logWood") || CaveUtils.containsOreDict(itemstack, "plankWood") || CaveUtils.containsOreDict(itemstack, "slabWood") || CaveUtils.containsOreDict(itemstack, "stairWood"))
+		{
+			return true;
 		}
 
 		return false;
@@ -862,6 +1025,19 @@ public class CaveUtils
 		}
 
 		return Pattern.compile(Pattern.quote(s2), Pattern.CASE_INSENSITIVE).matcher(s1).find();
+	}
+
+	public static boolean containsOreDict(ItemStack itemstack, String oredict)
+	{
+		int[] ids = OreDictionary.getOreIDs(itemstack);
+		String[] names = new String[ids.length];
+
+		for (int i = 0; i < ids.length; ++i)
+		{
+			names[i] = OreDictionary.getOreName(ids[i]);
+		}
+
+		return ArrayUtils.contains(names, oredict);
 	}
 
 	public static boolean blockFilter(BlockEntry entry, String filter)

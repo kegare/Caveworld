@@ -13,7 +13,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 
-import com.kegare.caveworld.item.ItemMiningPickaxe;
+import com.kegare.caveworld.item.ICaveniumTool;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
@@ -52,7 +52,7 @@ public class SelectBreakableMessage implements IMessage, IMessageHandler<SelectB
 		EntityPlayerMP player = ctx.getServerHandler().playerEntity;
 		ItemStack current = player.getCurrentEquippedItem();
 
-		if (current != null && current.getItem() instanceof ItemMiningPickaxe)
+		if (current != null && current.getItem() instanceof ICaveniumTool)
 		{
 			current.getTagCompound().setString(message.key, message.selected);
 		}

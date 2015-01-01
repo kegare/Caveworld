@@ -9,16 +9,15 @@
 
 package com.kegare.caveworld.client;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.entity.RenderZombie;
+import net.minecraftforge.client.IItemRenderer;
 import net.minecraftforge.client.MinecraftForgeClient;
 
 import com.kegare.caveworld.client.config.CycleIntegerEntry;
 import com.kegare.caveworld.client.config.SelectBiomeEntry;
 import com.kegare.caveworld.client.config.SelectItemEntry;
 import com.kegare.caveworld.client.renderer.RenderCaveman;
-import com.kegare.caveworld.client.renderer.RenderMiningPickaxe;
+import com.kegare.caveworld.client.renderer.RenderCaveniumTool;
 import com.kegare.caveworld.client.renderer.RenderPortalCaveworld;
 import com.kegare.caveworld.client.renderer.TileEntityUniversalChestRenderer;
 import com.kegare.caveworld.core.CommonProxy;
@@ -28,7 +27,6 @@ import com.kegare.caveworld.entity.EntityCaveman;
 import com.kegare.caveworld.entity.TileEntityUniversalChest;
 import com.kegare.caveworld.item.CaveItems;
 
-import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.relauncher.Side;
@@ -54,7 +52,10 @@ public class ClientProxy extends CommonProxy
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityUniversalChest.class, chestRenderer);
 		RenderingRegistry.registerBlockHandler(Config.RENDER_TYPE_CHEST, chestRenderer);
 
-		MinecraftForgeClient.registerItemRenderer(CaveItems.mining_pickaxe, new RenderMiningPickaxe());
+		IItemRenderer itemRenderer = new RenderCaveniumTool();
+		MinecraftForgeClient.registerItemRenderer(CaveItems.mining_pickaxe, itemRenderer);
+		MinecraftForgeClient.registerItemRenderer(CaveItems.lumbering_axe, itemRenderer);
+		MinecraftForgeClient.registerItemRenderer(CaveItems.digging_shovel, itemRenderer);
 
 		RenderingRegistry.registerEntityRenderingHandler(EntityCaveman.class, new RenderCaveman());
 		RenderingRegistry.registerEntityRenderingHandler(EntityArcherZombie.class, new RenderZombie());
@@ -64,16 +65,5 @@ public class ClientProxy extends CommonProxy
 	public int getUniqueRenderType()
 	{
 		return RenderingRegistry.getNextAvailableRenderId();
-	}
-
-	@Override
-	public void displayClientGuiScreen(Object obj)
-	{
-		Minecraft mc = FMLClientHandler.instance().getClient();
-
-		if (obj instanceof GuiScreen && (mc.currentScreen == null || mc.currentScreen.getClass() != obj.getClass()))
-		{
-			mc.displayGuiScreen((GuiScreen)obj);
-		}
 	}
 }

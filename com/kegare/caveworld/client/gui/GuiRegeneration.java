@@ -95,7 +95,10 @@ public class GuiRegeneration extends GuiScreen
 		buttonList.add(deepCheckBox);
 		buttonList.add(backupCheckBox);
 
-		backupHoverChecker = new HoverChecker(backupCheckBox, 800);
+		if (backupCheckBox == null)
+		{
+			backupHoverChecker = new HoverChecker(backupCheckBox, 800);
+		}
 	}
 
 	@Override
@@ -116,6 +119,7 @@ public class GuiRegeneration extends GuiScreen
 		if (code == Keyboard.KEY_ESCAPE)
 		{
 			mc.displayGuiScreen(null);
+			mc.setIngameFocus();
 		}
 	}
 

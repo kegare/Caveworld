@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.concurrent.RecursiveAction;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockRotatedPillar;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
@@ -80,6 +81,12 @@ public class GuiSelectBlock extends GuiScreen
 					if (!block.hasTileEntity(0))
 					{
 						blocks.addIfAbsent(new BlockEntry(block, 0));
+
+						if (block instanceof BlockRotatedPillar)
+						{
+							blocks.addIfAbsent(new BlockEntry(block, 4));
+							blocks.addIfAbsent(new BlockEntry(block, 8));
+						}
 					}
 				}
 				else for (Object obj : list)
@@ -97,6 +104,12 @@ public class GuiSelectBlock extends GuiScreen
 						}
 
 						blocks.addIfAbsent(new BlockEntry(sub, meta));
+
+						if (sub instanceof BlockRotatedPillar)
+						{
+							blocks.addIfAbsent(new BlockEntry(sub, meta + 4));
+							blocks.addIfAbsent(new BlockEntry(sub, meta + 8));
+						}
 					}
 				}
 			}
@@ -310,6 +323,20 @@ public class GuiSelectBlock extends GuiScreen
 					{
 						ItemStack itemstack = new ItemStack(entry.getBlock(), 1, entry.getMetadata());
 
+						if (entry.getBlock() instanceof BlockRotatedPillar)
+						{
+							int i = entry.getMetadata();
+
+							if (i >= 8)
+							{
+								itemstack.setItemDamage(i - 8);
+							}
+							else if (i >= 4)
+							{
+								itemstack.setItemDamage(i - 4);
+							}
+						}
+
 						switch (blockList.nameType)
 						{
 							case 1:
@@ -512,7 +539,21 @@ public class GuiSelectBlock extends GuiScreen
 			}
 
 			Block block = entry.getBlock();
-			ItemStack itemstack = new ItemStack(block, 1, entry.getMetadata());
+			int meta = entry.getMetadata();
+			ItemStack itemstack = new ItemStack(block, 1, meta);
+
+			if (block instanceof BlockRotatedPillar)
+			{
+				if (meta >= 8)
+				{
+					itemstack.setItemDamage(meta - 8);
+				}
+				else if (meta >= 4)
+				{
+					itemstack.setItemDamage(meta - 4);
+				}
+			}
+
 			String name = null;
 
 			try
@@ -551,6 +592,8 @@ public class GuiSelectBlock extends GuiScreen
 				}
 			}
 			catch (Throwable e) {}
+
+			itemstack.setItemDamage(meta);
 
 			if (!Strings.isNullOrEmpty(name))
 			{

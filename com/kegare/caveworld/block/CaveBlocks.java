@@ -27,8 +27,6 @@ import net.minecraftforge.oredict.OreDictionary;
 import org.apache.logging.log4j.Level;
 
 import com.kegare.caveworld.api.CaveworldAPI;
-import com.kegare.caveworld.block.BlockPortalCaveworld.DispencePortal;
-import com.kegare.caveworld.block.BlockRope.DispenceRope;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.entity.TileEntityUniversalChest;
 import com.kegare.caveworld.item.ItemCaveniumOre;
@@ -43,6 +41,7 @@ public class CaveBlocks
 {
 	public static final BlockPortalCaveworld caveworld_portal = new BlockPortalCaveworld("portalCaveworld");
 	public static final BlockRope rope = new BlockRope("rope");
+	public static final BlockRopeLadder rope_ladder = new BlockRopeLadder("ladderRope");
 	public static final BlockCaveniumOre cavenium_ore = new BlockCaveniumOre("oreCavenium");
 	public static final BlockUniversalChest universal_chest = new BlockUniversalChest("universalChest");
 
@@ -62,7 +61,7 @@ public class CaveBlocks
 			);
 		}
 
-		BlockDispenser.dispenseBehaviorRegistry.putObject(Item.getItemFromBlock(caveworld_portal), new DispencePortal());
+		BlockDispenser.dispenseBehaviorRegistry.putObject(Item.getItemFromBlock(caveworld_portal), caveworld_portal.new DispencePortal());
 
 		if (Config.rope)
 		{
@@ -79,7 +78,7 @@ public class CaveBlocks
 			ChestGenHooks.addItem(ChestGenHooks.MINESHAFT_CORRIDOR, new WeightedRandomChestContent(item, 0, 3, 6, 10));
 			ChestGenHooks.addItem(ChestGenHooks.PYRAMID_JUNGLE_CHEST, new WeightedRandomChestContent(item, 0, 3, 6, 10));
 
-			BlockDispenser.dispenseBehaviorRegistry.putObject(Item.getItemFromBlock(rope), new DispenceRope());
+			BlockDispenser.dispenseBehaviorRegistry.putObject(Item.getItemFromBlock(rope), rope.new DispenceRope());
 		}
 
 		if (Config.oreCavenium)

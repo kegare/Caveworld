@@ -25,7 +25,17 @@ public class NEIPlugin
 	@Method(modid = MODID)
 	public static void invoke()
 	{
-		MiningPickaxeRecipeHandler handler = new MiningPickaxeRecipeHandler();
+		CaveniumToolRecipeHandler handler = new MiningPickaxeRecipeHandler();
+
+		API.registerRecipeHandler(handler);
+		API.registerUsageHandler(handler);
+
+		handler = new LumberingAxeRecipeHandler();
+
+		API.registerRecipeHandler(handler);
+		API.registerUsageHandler(handler);
+
+		handler = new DiggingShovelRecipeHandler();
 
 		API.registerRecipeHandler(handler);
 		API.registerUsageHandler(handler);

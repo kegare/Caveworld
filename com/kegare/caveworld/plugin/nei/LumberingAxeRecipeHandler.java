@@ -14,17 +14,17 @@ import net.minecraft.item.Item;
 import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.item.ICaveniumTool;
 
-public class MiningPickaxeRecipeHandler extends CaveniumToolRecipeHandler
+public class LumberingAxeRecipeHandler extends CaveniumToolRecipeHandler
 {
 	@Override
 	public ICaveniumTool getTool()
 	{
-		return CaveItems.mining_pickaxe;
+		return CaveItems.lumbering_axe;
 	}
 
 	@Override
 	public Item getToolItem()
 	{
-		return CaveItems.mining_pickaxe;
+		return CaveItems.lumbering_axe;
 	}
 }

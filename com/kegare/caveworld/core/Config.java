@@ -74,6 +74,8 @@ public class Config
 	public static String[] miningPointValidItems;
 	public static String[] miningPointValidItemsDefault;
 	public static boolean fakeMiningPickaxe;
+	public static boolean fakeLumberingAxe;
+	public static boolean fakeDiggingShovel;
 	public static int modeDisplayTime;
 	public static int quickBreakLimit;
 
@@ -90,6 +92,8 @@ public class Config
 
 	public static boolean cavenium;
 	public static boolean pickaxeMining;
+	public static boolean axeLumbering;
+	public static boolean shovelDigging;
 	public static boolean oreCompass;
 
 	public static Class<? extends IConfigEntry> selectItems;
@@ -229,6 +233,18 @@ public class Config
 			prop.comment += " [default: " + prop.getDefault() + "]";
 			propOrder.add(prop.getName());
 			fakeMiningPickaxe = prop.getBoolean(fakeMiningPickaxe);
+			prop = generalCfg.get(category, "fakeLumberingAxe", false);
+			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+			prop.comment += " [default: " + prop.getDefault() + "]";
+			propOrder.add(prop.getName());
+			fakeLumberingAxe = prop.getBoolean(fakeLumberingAxe);
+			prop = generalCfg.get(category, "fakeDiggingShovel", false);
+			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+			prop.comment += " [default: " + prop.getDefault() + "]";
+			propOrder.add(prop.getName());
+			fakeDiggingShovel = prop.getBoolean(fakeDiggingShovel);
 			prop = generalCfg.get(category, "modeDisplayTime", 2200);
 			prop.setMinValue(0).setMaxValue(Integer.MAX_VALUE).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -356,6 +372,16 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		pickaxeMining = prop.getBoolean(pickaxeMining);
+		prop = itemsCfg.get(category, "axeLumbering", true).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocalFormatted(Caveworld.CONFIG_LANG + "whether", StatCollector.translateToLocal("item." + prop.getName() + ".name"));
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		axeLumbering = prop.getBoolean(axeLumbering);
+		prop = itemsCfg.get(category, "shovelDigging", true).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocalFormatted(Caveworld.CONFIG_LANG + "whether", StatCollector.translateToLocal("item." + prop.getName() + ".name"));
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		shovelDigging = prop.getBoolean(shovelDigging);
 		prop = itemsCfg.get(category, "oreCompass", true).setRequiresMcRestart(true);
 		prop.comment = StatCollector.translateToLocalFormatted(Caveworld.CONFIG_LANG + "whether", StatCollector.translateToLocal("item." + prop.getName() + ".name"));
 		prop.comment += " [default: " + prop.getDefault() + "]";

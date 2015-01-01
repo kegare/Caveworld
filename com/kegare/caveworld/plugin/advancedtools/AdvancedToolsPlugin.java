@@ -11,7 +11,7 @@ package com.kegare.caveworld.plugin.advancedtools;
 
 import net.minecraft.item.Item;
 
-import com.kegare.caveworld.recipe.RecipeMiningPickaxe;
+import com.kegare.caveworld.util.CaveUtils;
 
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Optional.Method;
@@ -33,35 +33,35 @@ public class AdvancedToolsPlugin
 
 		if (item != null)
 		{
-			RecipeMiningPickaxe.pickaxeWhitelist.add(item);
+			CaveUtils.pickaxeItems.add(item);
 		}
 
 		item = GameRegistry.findItem(MODID, "ugstonepickaxe");
 
 		if (item != null)
 		{
-			RecipeMiningPickaxe.pickaxeWhitelist.add(item);
+			CaveUtils.pickaxeItems.add(item);
 		}
 
 		item = GameRegistry.findItem(MODID, "ugironpickaxe");
 
 		if (item != null)
 		{
-			RecipeMiningPickaxe.pickaxeWhitelist.add(item);
+			CaveUtils.pickaxeItems.add(item);
 		}
 
 		item = GameRegistry.findItem(MODID, "ugdiamondpickaxe");
 
 		if (item != null)
 		{
-			RecipeMiningPickaxe.pickaxeWhitelist.add(item);
+			CaveUtils.pickaxeItems.add(item);
 		}
 
 		item = GameRegistry.findItem(MODID, "uggoldpickaxe");
 
 		if (item != null)
 		{
-			RecipeMiningPickaxe.pickaxeWhitelist.add(item);
+			CaveUtils.pickaxeItems.add(item);
 		}
 	}
 }

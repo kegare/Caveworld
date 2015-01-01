@@ -27,27 +27,24 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemPickaxe;
+import net.minecraft.item.ItemSpade;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.EnumHelper;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.BlockEntry;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.util.ArrayListExtended;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Roman;
-import com.kegare.caveworld.util.breaker.AditBreakExecutor;
 import com.kegare.caveworld.util.breaker.BreakPos;
 import com.kegare.caveworld.util.breaker.MultiBreakExecutor;
 import com.kegare.caveworld.util.breaker.QuickBreakExecutor;
@@ -57,24 +54,21 @@ import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class ItemMiningPickaxe extends ItemPickaxe implements ICaveniumTool
+public class ItemDiggingShovel extends ItemSpade implements ICaveniumTool
 {
 	public enum BreakMode implements IBreakMode
 	{
-		NORMAL(MultiBreakExecutor.class, false),
-		QUICK(QuickBreakExecutor.class, false),
-		ADIT(AditBreakExecutor.class, true),
-		RANGED(RangedBreakExecutor.class, true);
+		NORMAL(MultiBreakExecutor.class),
+		QUICK(QuickBreakExecutor.class),
+		RANGED(RangedBreakExecutor.class);
 
 		public static final EnumMap<BreakMode, Map<EntityPlayer, MultiBreakExecutor>> executors = Maps.newEnumMap(BreakMode.class);
 
 		private final Class<? extends MultiBreakExecutor> executor;
-		private final boolean fullDefault;
 
-		private BreakMode(Class<? extends MultiBreakExecutor> executor, boolean fullDefault)
+		private BreakMode(Class<? extends MultiBreakExecutor> executor)
 		{
 			this.executor = executor;
-			this.fullDefault = fullDefault;
 		}
 
 		@Override
@@ -131,30 +125,22 @@ public class ItemMiningPickaxe extends ItemPickaxe implements ICaveniumTool
 		}
 	}
 
-	public static final ToolMaterial CAVENIUM = EnumHelper.addToolMaterial("CAVENIUM", 3, 300, 5.0F, 1.5F, 10);
-
 	public static final ArrayListExtended<BlockEntry> breakableBlocks = new ArrayListExtended();
-	public static final Set<String> defaultBreakables = Sets.newHashSet();
-
-	static
-	{
-		CAVENIUM.customCraftingMaterial = CaveItems.cavenium;
-	}
 
 	public long highlightStart;
 
-	public ItemMiningPickaxe(String name)
+	public ItemDiggingShovel(String name)
 	{
-		super(CAVENIUM);
+		super(ItemMiningPickaxe.CAVENIUM);
 		this.setUnlocalizedName(name);
-		this.setTextureName("caveworld:mining_pickaxe");
+		this.setTextureName("caveworld:digging_shovel");
 		this.setCreativeTab(Caveworld.tabCaveworld);
 	}
 
 	@Override
 	public String getToolClass()
 	{
-		return "pickaxe";
+		return "shovel";
 	}
 
 	protected void initializeItemStackNBT(ItemStack itemstack)
@@ -180,28 +166,21 @@ public class ItemMiningPickaxe extends ItemPickaxe implements ICaveniumTool
 
 				if (!data.hasKey(key))
 				{
-					if (mode.fullDefault)
+					if (Strings.isNullOrEmpty(full))
 					{
-						if (Strings.isNullOrEmpty(full))
+						Collection<String> blocks = Collections2.transform(breakableBlocks, new Function<BlockEntry, String>()
 						{
-							Collection<String> blocks = Collections2.transform(breakableBlocks, new Function<BlockEntry, String>()
+							@Override
+							public String apply(BlockEntry entry)
 							{
-								@Override
-								public String apply(BlockEntry entry)
-								{
-									return CaveUtils.toStringHelper(entry.getBlock(), entry.getMetadata());
-								}
-							});
+								return CaveUtils.toStringHelper(entry.getBlock(), entry.getMetadata());
+							}
+						});
 
-							full = Joiner.on("|").join(blocks);
-						}
+						full = Joiner.on("|").join(blocks);
+					}
 
-						data.setString(key, full);
-					}
-					else
-					{
-						data.setString(key, Joiner.on("|").join(defaultBreakables));
-					}
+					data.setString(key, full);
 				}
 			}
 		}
@@ -294,8 +273,6 @@ public class ItemMiningPickaxe extends ItemPickaxe implements ICaveniumTool
 			case 1:
 				return BreakMode.QUICK;
 			case 2:
-				return BreakMode.ADIT;
-			case 3:
 				return BreakMode.RANGED;
 			default:
 				return BreakMode.NORMAL;
@@ -629,7 +606,7 @@ public class ItemMiningPickaxe extends ItemPickaxe implements ICaveniumTool
 	@Override
 	public Set<Item> getBaseableItems()
 	{
-		return Collections.unmodifiableSet(CaveUtils.pickaxeItems);
+		return Collections.unmodifiableSet(CaveUtils.shovelItems);
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -642,7 +619,7 @@ public class ItemMiningPickaxe extends ItemPickaxe implements ICaveniumTool
 
 		if (item != this)
 		{
-			list.add(I18n.format(getUnlocalizedName() + ".base") + ": " + item.getItemStackDisplayName(itemstack));
+			list.add(I18n.format(CaveItems.mining_pickaxe.getUnlocalizedName() + ".base") + ": " + item.getItemStackDisplayName(itemstack));
 
 			item.addInformation(itemstack, player, list, advanced);
 		}
@@ -654,7 +631,7 @@ public class ItemMiningPickaxe extends ItemPickaxe implements ICaveniumTool
 	@Override
 	public void getSubItems(Item item, CreativeTabs tab, List list)
 	{
-		for (Item base : CaveUtils.pickaxeItems)
+		for (Item base : CaveUtils.shovelItems)
 		{
 			String name = GameData.getItemRegistry().getNameForObject(base);
 
@@ -682,7 +659,7 @@ public class ItemMiningPickaxe extends ItemPickaxe implements ICaveniumTool
 	@Override
 	public IIcon getIcon(ItemStack itemstack, int pass)
 	{
-		if (!Config.fakeMiningPickaxe)
+		if (!Config.fakeDiggingShovel)
 		{
 			return super.getIcon(itemstack, pass);
 		}
@@ -701,7 +678,7 @@ public class ItemMiningPickaxe extends ItemPickaxe implements ICaveniumTool
 	@Override
 	public IIcon getIconIndex(ItemStack itemstack)
 	{
-		if (!Config.fakeMiningPickaxe)
+		if (!Config.fakeDiggingShovel)
 		{
 			return super.getIconIndex(itemstack);
 		}

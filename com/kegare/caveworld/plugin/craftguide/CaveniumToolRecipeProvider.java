@@ -9,8 +9,10 @@
 
 package com.kegare.caveworld.plugin.craftguide;
 
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.oredict.OreDictionary;
 import uristqwerty.CraftGuide.api.CraftGuideAPIObject;
 import uristqwerty.CraftGuide.api.ItemSlot;
 import uristqwerty.CraftGuide.api.RecipeGenerator;
@@ -20,15 +22,18 @@ import uristqwerty.CraftGuide.api.Slot;
 import uristqwerty.CraftGuide.api.SlotType;
 
 import com.kegare.caveworld.item.CaveItems;
-import com.kegare.caveworld.recipe.RecipeMiningPickaxe;
+import com.kegare.caveworld.item.ICaveniumTool;
 
 import cpw.mods.fml.common.registry.GameData;
 
-public class MiningPickaxeRecipeProvider extends CraftGuideAPIObject implements RecipeProvider
+public class CaveniumToolRecipeProvider extends CraftGuideAPIObject implements RecipeProvider
 {
 	private final Slot[] slots;
 
-	public MiningPickaxeRecipeProvider()
+	private ItemStack output;
+	private ICaveniumTool tool;
+
+	public CaveniumToolRecipeProvider()
 	{
 		super();
 		this.slots = new ItemSlot[]
@@ -46,13 +51,20 @@ public class MiningPickaxeRecipeProvider extends CraftGuideAPIObject implements 
 		};
 	}
 
+	public CaveniumToolRecipeProvider(ItemStack output)
+	{
+		this();
+		this.output = output;
+		this.tool = (ICaveniumTool)output.getItem();
+	}
+
 	@Override
 	public void generateRecipes(RecipeGenerator generator)
 	{
 		RecipeTemplate template = generator.createRecipeTemplate(slots, null, "/gui/CraftGuideRecipe.png", 1, 1, 82, 1);
 		Object[] items = null;
 
-		for (ItemStack item : RecipeMiningPickaxe.instance.getCenterItems())
+		for (Item item : tool.getBaseableItems())
 		{
 			for (int i = 0; i <= 4; ++i)
 			{
@@ -74,18 +86,25 @@ public class MiningPickaxeRecipeProvider extends CraftGuideAPIObject implements 
 					}
 					else if (slot == 4)
 					{
-						items[slot] = item;
+						if (item == output.getItem())
+						{
+							items[slot] = new ItemStack(item, 1, OreDictionary.WILDCARD_VALUE);
+						}
+						else
+						{
+							items[slot] = new ItemStack(item);
+						}
 					}
 					else if (slot == 9)
 					{
-						ItemStack result = RecipeMiningPickaxe.instance.getRecipeOutput();
+						ItemStack result = output.copy();
 
 						if (result.getTagCompound() == null)
 						{
 							result.setTagCompound(new NBTTagCompound());
 						}
 
-						result.getTagCompound().setString("BaseName", GameData.getItemRegistry().getNameForObject(item.getItem()));
+						result.getTagCompound().setString("BaseName", GameData.getItemRegistry().getNameForObject(item));
 						result.getTagCompound().setInteger("Refined", i);
 
 						items[slot] = result;

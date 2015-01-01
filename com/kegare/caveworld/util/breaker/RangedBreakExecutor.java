@@ -13,7 +13,7 @@ import net.minecraft.block.BlockPistonBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 
-import com.kegare.caveworld.item.ItemMiningPickaxe;
+import com.kegare.caveworld.item.ICaveniumTool;
 
 public class RangedBreakExecutor extends MultiBreakExecutor
 {
@@ -32,11 +32,9 @@ public class RangedBreakExecutor extends MultiBreakExecutor
 
 		ItemStack current = player.getCurrentEquippedItem();
 
-		if (current != null && current.getItem() != null && current.getItem() instanceof ItemMiningPickaxe)
+		if (current != null && current.getItem() != null && current.getItem() instanceof ICaveniumTool)
 		{
-			ItemMiningPickaxe pickaxe = (ItemMiningPickaxe)current.getItem();
-
-			if (pickaxe.canBreak(current, originPos.world.getBlock(x, y, z), originPos.world.getBlockMetadata(x, y, z)))
+			if (((ICaveniumTool)current.getItem()).canBreak(current, originPos.world.getBlock(x, y, z), originPos.world.getBlockMetadata(x, y, z)))
 			{
 				return true;
 			}
