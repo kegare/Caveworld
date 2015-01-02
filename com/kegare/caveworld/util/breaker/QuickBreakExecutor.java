@@ -9,6 +9,7 @@
 
 package com.kegare.caveworld.util.breaker;
 
+import net.minecraft.block.BlockRedstoneOre;
 import net.minecraft.entity.player.EntityPlayer;
 
 import com.kegare.caveworld.core.Config;
@@ -23,7 +24,17 @@ public class QuickBreakExecutor extends MultiBreakExecutor
 	@Override
 	public boolean canBreak(int x, int y, int z)
 	{
-		return (Config.quickBreakLimit <= 0 || breakPositions.size() < Config.quickBreakLimit) && super.canBreak(x, y, z);
+		if (Config.quickBreakLimit > 0 && breakPositions.size() >= Config.quickBreakLimit)
+		{
+			return false;
+		}
+
+		if (originPos.getCurrentBlock() instanceof BlockRedstoneOre && originPos.world.getBlock(x, y, z) instanceof BlockRedstoneOre)
+		{
+			return true;
+		}
+
+		return super.canBreak(x, y, z);
 	}
 
 	@Override

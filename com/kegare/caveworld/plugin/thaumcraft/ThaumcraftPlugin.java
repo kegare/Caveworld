@@ -38,6 +38,7 @@ public final class ThaumcraftPlugin
 	{
 		ThaumcraftApi.registerObjectTag(new ItemStack(CaveBlocks.caveworld_portal, 1, OreDictionary.WILDCARD_VALUE), new AspectList().add(Aspect.TRAVEL, 4).add(Aspect.MINE, 4));
 		ThaumcraftApi.registerObjectTag(new ItemStack(CaveBlocks.rope, 1, OreDictionary.WILDCARD_VALUE), new AspectList().add(Aspect.MOTION, 1).add(Aspect.CLOTH, 1));
+		ThaumcraftApi.registerObjectTag(new ItemStack(CaveBlocks.rope_ladder, 1, OreDictionary.WILDCARD_VALUE), new AspectList().add(Aspect.MOTION, 1).add(Aspect.CLOTH, 1));
 		ThaumcraftApi.registerObjectTag(new ItemStack(CaveBlocks.cavenium_ore, 1, 0), new AspectList().add(Aspect.EARTH, 3).add(Aspect.CRYSTAL, 2));
 		ThaumcraftApi.registerObjectTag(new ItemStack(CaveBlocks.cavenium_ore, 1, 1), new AspectList().add(Aspect.EARTH, 3).add(Aspect.CRYSTAL, 3));
 		ThaumcraftApi.registerObjectTag(new ItemStack(CaveBlocks.cavenium_ore, 1, 2), new AspectList().add(Aspect.CRYSTAL, 5));

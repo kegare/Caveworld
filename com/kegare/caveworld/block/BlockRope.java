@@ -21,6 +21,7 @@ import net.minecraft.dispenser.BehaviorDefaultDispenseItem;
 import net.minecraft.dispenser.IBlockSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.server.S23PacketBlockChange;
@@ -36,7 +37,7 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class BlockRope extends Block
+public class BlockRope extends Block implements IRope
 {
 	public static final Material rope = new MaterialLogic(MapColor.airColor)
 	{
@@ -129,7 +130,7 @@ public class BlockRope extends Block
 	{
 		AxisAlignedBB result = super.getSelectedBoundingBoxFromPool(world, x, y, z);
 
-		if (world.getBlockMetadata(x, y, z) != 0)
+		if (world.getBlockMetadata(x, y, z) == 1)
 		{
 			return result == null ? null : result.expand(0.05D, 0.0D, 0.05D);
 		}
@@ -156,6 +157,13 @@ public class BlockRope extends Block
 		}
 	}
 
+	@Override
+	public int getKnotMetadata(ItemStack itemstack, EntityPlayer player, World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ)
+	{
+		return 1;
+	}
+
+	@Override
 	public void setUnderRopes(World world, int x, int y, int z)
 	{
 		if (world.getBlockMetadata(x, y, z) != 0 && world.getBlock(x, y, z) == this && world.isAirBlock(x, y - 1, z) && y - 1 > 0)
@@ -166,7 +174,7 @@ public class BlockRope extends Block
 				{
 					if (!world.isRemote)
 					{
-						FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager().sendToAllNear(x, y -1, z, 64.0D, world.provider.dimensionId, new S23PacketBlockChange(x, y - 1, z, world));
+						FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager().sendToAllNear(x, y - 1, z, 64.0D, world.provider.dimensionId, new S23PacketBlockChange(x, y - 1, z, world));
 					}
 
 					++count;

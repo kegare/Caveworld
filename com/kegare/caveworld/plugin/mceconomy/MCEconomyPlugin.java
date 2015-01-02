@@ -149,6 +149,11 @@ public final class MCEconomyPlugin
 			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.rope), 2);
 		}
 
+		if (Config.ropeLadder)
+		{
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.rope_ladder), 5);
+		}
+
 		if (Config.oreCavenium)
 		{
 			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.cavenium_ore, 1, 0), 400);

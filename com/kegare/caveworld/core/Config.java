@@ -87,6 +87,7 @@ public class Config
 	public static boolean caveborn;
 
 	public static boolean rope;
+	public static boolean ropeLadder;
 	public static boolean oreCavenium;
 	public static boolean universalChest;
 
@@ -197,7 +198,7 @@ public class Config
 		if (side.isClient())
 		{
 			prop = generalCfg.get(category, "miningPointRenderType", 0);
-			prop.setMinValue(0).setMaxValue(3).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(cycleInteger);
+			prop.setMinValue(0).setMaxValue(4).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(cycleInteger);
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 			prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 
@@ -329,6 +330,11 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		rope = prop.getBoolean(rope);
+		prop = blocksCfg.get(category, "ropeLadder", true).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocalFormatted(Caveworld.CONFIG_LANG + "whether", StatCollector.translateToLocal("tile." + prop.getName() + ".name"));
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ropeLadder = prop.getBoolean(ropeLadder);
 		prop = blocksCfg.get(category, "oreCavenium", true).setRequiresMcRestart(true);
 		prop.comment = StatCollector.translateToLocalFormatted(Caveworld.CONFIG_LANG + "whether", StatCollector.translateToLocal("tile." + prop.getName() + ".name"));
 		prop.comment += " [default: " + prop.getDefault() + "]";

@@ -190,6 +190,7 @@ caveworld.breakmode.lumbering=LUMBERING
 
 tile.portalCaveworld.name=Caveworld Portal Block
 tile.rope.name=Rope
+tile.ropeLadder.name=Rope Ladder
 tile.oreCavenium.name=Cavenium Ore
 tile.oreCavenium.refined.name=Refined Cavenium Ore
 tile.blockCavenium.name=Block of Cavenium

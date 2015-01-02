@@ -9,22 +9,32 @@
 
 package com.kegare.caveworld.block;
 
-import static net.minecraftforge.common.util.ForgeDirection.*;
+import java.util.Random;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.play.server.S23PacketBlockChange;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.IIcon;
+import net.minecraft.util.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import com.kegare.caveworld.core.Caveworld;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class BlockRopeLadder extends Block
+public class BlockRopeLadder extends Block implements IRope
 {
+	@SideOnly(Side.CLIENT)
+	private IIcon sideIcon;
+
 	public BlockRopeLadder(String name)
 	{
 		super(BlockRope.rope);
@@ -39,7 +49,7 @@ public class BlockRopeLadder extends Block
 	@Override
 	public String getItemIconName()
 	{
-		return null;
+		return getTextureName();
 	}
 
 	@Override
@@ -62,7 +72,44 @@ public class BlockRopeLadder extends Block
 	{
 		setBlockBoundsBasedOnState(world, x, y, z);
 
-		return super.getSelectedBoundingBoxFromPool(world, x, y, z);
+		AxisAlignedBB result = super.getSelectedBoundingBoxFromPool(world, x, y, z);
+
+		if (world.getBlockMetadata(x, y, z) > 5)
+		{
+			return result == null ? null : result.expand(0.05D, 0.0D, 0.05D);
+		}
+
+		return result;
+	}
+
+	public void updateBlockBounds(int meta)
+	{
+		float f = 0.3F;
+
+		if (meta > 5)
+		{
+			meta -= 4;
+		}
+
+		if (meta == 2)
+		{
+			setBlockBounds(0.0F, 0.0F, 1.0F - f, 1.0F, 1.0F, 0.65F);
+		}
+
+		if (meta == 3)
+		{
+			setBlockBounds(0.0F, 0.0F, 0.35F, 1.0F, 1.0F, f);
+		}
+
+		if (meta == 4)
+		{
+			setBlockBounds(1.0F - f, 0.0F, 0.0F, 0.65F, 1.0F, 1.0F);
+		}
+
+		if (meta == 5)
+		{
+			setBlockBounds(0.35F, 0.0F, 0.0F, f, 1.0F, 1.0F);
+		}
 	}
 
 	@Override
@@ -74,31 +121,6 @@ public class BlockRopeLadder extends Block
 		}
 
 		return true;
-	}
-
-	public void updateBlockBounds(int meta)
-	{
-		float f = 0.125F;
-
-		if (meta == 2)
-		{
-			setBlockBounds(0.0F, 0.0F, 1.0F - f, 1.0F, 1.0F, 1.0F);
-		}
-
-		if (meta == 3)
-		{
-			setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, f);
-		}
-
-		if (meta == 4)
-		{
-			setBlockBounds(1.0F - f, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-		}
-
-		if (meta == 5)
-		{
-			setBlockBounds(0.0F, 0.0F, 0.0F, f, 1.0F, 1.0F);
-		}
 	}
 
 	@Override
@@ -118,27 +140,110 @@ public class BlockRopeLadder extends Block
 	{
 		int i = meta;
 
-		if ((meta == 0 || side == 2) && world.isSideSolid(x, y, z + 1, NORTH))
+		if ((meta == 0 || side == 2) && world.isSideSolid(x, y, z + 1, ForgeDirection.NORTH))
 		{
 			i = 2;
 		}
 
-		if ((i == 0 || side == 3) && world.isSideSolid(x, y, z - 1, SOUTH))
+		if ((i == 0 || side == 3) && world.isSideSolid(x, y, z - 1, ForgeDirection.SOUTH))
 		{
 			i = 3;
 		}
 
-		if ((i == 0 || side == 4) && world.isSideSolid(x + 1, y, z, WEST))
+		if ((i == 0 || side == 4) && world.isSideSolid(x + 1, y, z, ForgeDirection.WEST))
 		{
 			i = 4;
 		}
 
-		if ((i == 0 || side == 5) && world.isSideSolid(x - 1, y, z, EAST))
+		if ((i == 0 || side == 5) && world.isSideSolid(x - 1, y, z, ForgeDirection.EAST))
 		{
 			i = 5;
 		}
 
 		return i;
+	}
+
+	@Override
+	public int quantityDropped(int metadata, int fortune, Random random)
+	{
+		return metadata > 5 ? 1 : 0;
+	}
+
+	@Override
+	public void onNeighborBlockChange(World world, int x, int y, int z, Block neighbor)
+	{
+		if (world.getBlockMetadata(x, y, z) <= 5 && world.getBlock(x, y + 1, z) != this)
+		{
+			world.setBlockToAir(x, y, z);
+		}
+		else if (world.isAirBlock(x, y + 1, z) && world.setBlockToAir(x, y, z))
+		{
+			dropBlockAsItem(world, x, y, z, new ItemStack(this));
+		}
+	}
+
+	@Override
+	public int getKnotMetadata(ItemStack itemstack, EntityPlayer player, World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ)
+	{
+		if (world.getBlock(x, y + 1, z) == this)
+		{
+			int meta = world.getBlockMetadata(x, y + 1, z);
+
+			if (meta > 5)
+			{
+				return meta;
+			}
+
+			return meta + 4;
+		}
+
+		if (side < 2)
+		{
+			int meta;
+
+			switch (MathHelper.floor_double(player.rotationYaw * 4.0F / 360.0F + 0.5D) & 3)
+			{
+				case 1:
+					meta = 5;
+					break;
+				case 2:
+					meta = 3;
+					break;
+				case 3:
+					meta = 4;
+					break;
+				default:
+					meta = 2;
+					break;
+			}
+
+			return meta + 4;
+		}
+
+		return onBlockPlaced(world, x, y, z, side, hitX, hitY, hitZ, 1) + 4;
+	}
+
+	@Override
+	public void setUnderRopes(World world, int x, int y, int z)
+	{
+		int meta = world.getBlockMetadata(x, y, z);
+
+		if (meta > 5 && world.getBlock(x, y, z) == this && world.isAirBlock(x, y - 1, z) && y - 1 > 0)
+		{
+			for (int count = 0; count < 5 && world.isAirBlock(x, y - 1, z) && y - 1 > 0; --y)
+			{
+				if (world.isAirBlock(x, y - 2, z) && world.setBlock(x, y - 1, z, this, meta - 4, 3))
+				{
+					if (!world.isRemote)
+					{
+						FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager().sendToAllNear(x, y - 1, z, 64.0D, world.provider.dimensionId, new S23PacketBlockChange(x, y - 1, z, world));
+					}
+
+					++count;
+				}
+				else return;
+			}
+		}
 	}
 
 	@Override
@@ -160,9 +265,6 @@ public class BlockRopeLadder extends Block
 	}
 
 	@SideOnly(Side.CLIENT)
-	private IIcon sideIcon;
-
-	@SideOnly(Side.CLIENT)
 	@Override
 	public void registerBlockIcons(IIconRegister iconRegister)
 	{
@@ -176,6 +278,11 @@ public class BlockRopeLadder extends Block
 	public IIcon getIcon(IBlockAccess world, int x, int y, int z, int side)
 	{
 		int meta = world.getBlockMetadata(x, y, z);
+
+		if (meta > 5)
+		{
+			meta -= 4;
+		}
 
 		if (meta == 2 || meta == 3)
 		{

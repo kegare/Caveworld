@@ -12,7 +12,6 @@ package com.kegare.caveworld.util.breaker;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import net.minecraft.block.BlockRedstoneOre;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 
@@ -55,8 +54,7 @@ public abstract class MultiBreakExecutor
 			return false;
 		}
 
-		return originPos.getCurrentBlock() == originPos.world.getBlock(x, y, z) && originPos.getCurrentMetadata() == originPos.world.getBlockMetadata(x, y, z) ||
-			originPos.getCurrentBlock() instanceof BlockRedstoneOre && originPos.world.getBlock(x, y, z) instanceof BlockRedstoneOre;
+		return originPos.getCurrentBlock() == originPos.world.getBlock(x, y, z) && originPos.getCurrentMetadata() == originPos.world.getBlockMetadata(x, y, z);
 	}
 
 	public abstract MultiBreakExecutor setBreakPositions();

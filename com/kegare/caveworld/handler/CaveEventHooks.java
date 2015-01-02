@@ -241,6 +241,11 @@ public class CaveEventHooks
 				boolean left = false;
 				int type = Config.miningPointRenderType;
 
+				if (type > 3)
+				{
+					return;
+				}
+
 				if (type == 2 || type == 3)
 				{
 					x = 5;

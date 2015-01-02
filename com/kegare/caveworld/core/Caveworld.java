@@ -220,6 +220,7 @@ public class Caveworld
 				CaveworldAPI.setMiningPointAmount("oreIron", 1);
 				CaveworldAPI.setMiningPointAmount("oreGold", 1);
 				CaveworldAPI.setMiningPointAmount("oreRedstone", 1);
+				CaveworldAPI.setMiningPointAmount(Blocks.lit_redstone_ore, 0, 1);
 				CaveworldAPI.setMiningPointAmount("oreLapis", 1);
 				CaveworldAPI.setMiningPointAmount("oreEmerald", 2);
 				CaveworldAPI.setMiningPointAmount("oreDiamond", 3);
@@ -285,11 +286,6 @@ public class Caveworld
 					{
 						Item item = Item.getItemFromBlock(block);
 
-						if (item == null)
-						{
-							continue;
-						}
-
 						list.clear();
 
 						CreativeTabs tab = block.getCreativeTabToDisplayOn();
@@ -299,7 +295,10 @@ public class Caveworld
 							tab = CreativeTabs.tabAllSearch;
 						}
 
-						block.getSubBlocks(item, tab, list);
+						if (item != null)
+						{
+							block.getSubBlocks(item, tab, list);
+						}
 
 						if (list.isEmpty())
 						{

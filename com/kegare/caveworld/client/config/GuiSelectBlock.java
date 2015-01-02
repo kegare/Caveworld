@@ -541,19 +541,6 @@ public class GuiSelectBlock extends GuiScreen
 			Block block = entry.getBlock();
 			int meta = entry.getMetadata();
 			ItemStack itemstack = new ItemStack(block, 1, meta);
-
-			if (block instanceof BlockRotatedPillar)
-			{
-				if (meta >= 8)
-				{
-					itemstack.setItemDamage(meta - 8);
-				}
-				else if (meta >= 4)
-				{
-					itemstack.setItemDamage(meta - 4);
-				}
-			}
-
 			String name = null;
 
 			try
@@ -576,6 +563,18 @@ public class GuiSelectBlock extends GuiScreen
 				}
 				else
 				{
+					if (block instanceof BlockRotatedPillar)
+					{
+						if (meta >= 8)
+						{
+							itemstack.setItemDamage(meta - 8);
+						}
+						else if (meta >= 4)
+						{
+							itemstack.setItemDamage(meta - 4);
+						}
+					}
+
 					switch (nameType)
 					{
 						case 1:
@@ -589,11 +588,11 @@ public class GuiSelectBlock extends GuiScreen
 							name = itemstack.getDisplayName();
 							break;
 					}
+
+					itemstack.setItemDamage(meta);
 				}
 			}
 			catch (Throwable e) {}
-
-			itemstack.setItemDamage(meta);
 
 			if (!Strings.isNullOrEmpty(name))
 			{

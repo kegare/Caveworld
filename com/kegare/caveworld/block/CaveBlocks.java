@@ -23,6 +23,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraftforge.common.ChestGenHooks;
 import net.minecraftforge.oredict.OreDictionary;
+import net.minecraftforge.oredict.ShapedOreRecipe;
 
 import org.apache.logging.log4j.Level;
 
@@ -41,7 +42,7 @@ public class CaveBlocks
 {
 	public static final BlockPortalCaveworld caveworld_portal = new BlockPortalCaveworld("portalCaveworld");
 	public static final BlockRope rope = new BlockRope("rope");
-	public static final BlockRopeLadder rope_ladder = new BlockRopeLadder("ladderRope");
+	public static final BlockRopeLadder rope_ladder = new BlockRopeLadder("ropeLadder");
 	public static final BlockCaveniumOre cavenium_ore = new BlockCaveniumOre("oreCavenium");
 	public static final BlockUniversalChest universal_chest = new BlockUniversalChest("universalChest");
 
@@ -79,6 +80,22 @@ public class CaveBlocks
 			ChestGenHooks.addItem(ChestGenHooks.PYRAMID_JUNGLE_CHEST, new WeightedRandomChestContent(item, 0, 3, 6, 10));
 
 			BlockDispenser.dispenseBehaviorRegistry.putObject(Item.getItemFromBlock(rope), rope.new DispenceRope());
+		}
+
+		if (Config.ropeLadder)
+		{
+			GameRegistry.registerBlock(rope_ladder, ItemRope.class, "rope_ladder");
+
+			Blocks.fire.setFireInfo(rope_ladder, 15, 80);
+
+			OreDictionary.registerOre("ladder", new ItemStack(rope_ladder));
+			OreDictionary.registerOre("ropeLadder", new ItemStack(rope_ladder));
+			OreDictionary.registerOre("ladderRope", new ItemStack(rope_ladder));
+
+			GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(rope_ladder, 4),
+				"R R", "RRR", "R R",
+				'R', "rope"
+			));
 		}
 
 		if (Config.oreCavenium)

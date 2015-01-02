@@ -190,6 +190,7 @@ caveworld.breakmode.lumbering=伐採
 
 tile.portalCaveworld.name=Caveworld ポータルブロック
 tile.rope.name=ロープ
+tile.ropeLadder.name=ロープはしご
 tile.oreCavenium.name=ケイブニウム鉱石
 tile.oreCavenium.refined.name=上質なケイブニウム鉱石
 tile.blockCavenium.name=ケイブニウムブロック
