@@ -47,6 +47,7 @@ caveworld.config.general.miningPointRenderType.0=右上
 caveworld.config.general.miningPointRenderType.1=右下
 caveworld.config.general.miningPointRenderType.2=左上
 caveworld.config.general.miningPointRenderType.3=左下
+caveworld.config.general.miningPointRenderType.4=非表示
 caveworld.config.general.miningPointValidItems=採掘ポイントの有効なアイテム
 caveworld.config.general.miningPointValidItems.tooltip=鉱石採掘時に採掘ポイントを獲得できるアイテムを指定します。
 caveworld.config.general.fakeMiningPickaxe=採掘ツルハシの偽装
@@ -207,6 +208,7 @@ item.oreCompass.name=鉱石コンパス
 
 entity.Caveman.name=ケイブマン
 entity.ArcherZombie.name=弓兵ゾンビ
+entity.CavenicSkeleton.name=ケイブニックスケルトン
 
 inventory.caveworld.portal=Caveworld ポータル
 

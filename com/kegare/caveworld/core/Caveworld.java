@@ -47,6 +47,7 @@ import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.entity.EntityArcherZombie;
 import com.kegare.caveworld.entity.EntityCaveman;
+import com.kegare.caveworld.entity.EntityCavenicSkeleton;
 import com.kegare.caveworld.handler.CaveAPIHandler;
 import com.kegare.caveworld.handler.CaveEventHooks;
 import com.kegare.caveworld.handler.CaveFuelHandler;
@@ -180,7 +181,9 @@ public class Caveworld
 		EntityRegistry.registerGlobalEntityID(EntityCaveman.class, "Caveman", EntityRegistry.findGlobalUniqueEntityId(), 0xAAAAAA, 0xCCCCCC);
 		EntityRegistry.registerModEntity(EntityCaveman.class, "Caveman", id++, this, 128, 1, true);
 		EntityRegistry.registerGlobalEntityID(EntityArcherZombie.class, "ArcherZombie", EntityRegistry.findGlobalUniqueEntityId(), 0x00A0A0, 0xAAAAAA);
-		EntityRegistry.registerModEntity(EntityArcherZombie.class, "ArcherZombie", id, this, 128, 1, true);
+		EntityRegistry.registerModEntity(EntityArcherZombie.class, "ArcherZombie", id++, this, 128, 1, true);
+		EntityRegistry.registerGlobalEntityID(EntityCavenicSkeleton.class, "CavenicSkeleton", EntityRegistry.findGlobalUniqueEntityId(), 0xAAAAAA, 0xDDDDDD);
+		EntityRegistry.registerModEntity(EntityCavenicSkeleton.class, "CavenicSkeleton", id, this, 128, 1, true);
 
 		proxy.registerRenderers();
 

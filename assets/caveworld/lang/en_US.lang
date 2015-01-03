@@ -47,6 +47,7 @@ caveworld.config.general.miningPointRenderType.0=Top Right
 caveworld.config.general.miningPointRenderType.1=Buttom Right
 caveworld.config.general.miningPointRenderType.2=Top Left
 caveworld.config.general.miningPointRenderType.3=Buttom Left
+caveworld.config.general.miningPointRenderType.4=Hidden
 caveworld.config.general.miningPointValidItems=Mining Point Valid Items
 caveworld.config.general.miningPointValidItems.tooltip=Specify the valid items that can getting mining point.
 caveworld.config.general.fakeMiningPickaxe=Fake Mining Pickaxe
@@ -207,6 +208,7 @@ item.oreCompass.name=Ore Compass
 
 entity.Caveman.name=Caveman
 entity.ArcherZombie.name=Archer Zombie
+entity.CavenicSkeleton.name=Cavenic Skeleton
 
 inventory.caveworld.portal=Caveworld Portal
 

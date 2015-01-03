@@ -40,6 +40,7 @@ import com.kegare.caveworld.core.CaveBiomeManager.CaveBiome;
 import com.kegare.caveworld.core.CaveVeinManager.CaveVein;
 import com.kegare.caveworld.entity.EntityArcherZombie;
 import com.kegare.caveworld.entity.EntityCaveman;
+import com.kegare.caveworld.entity.EntityCavenicSkeleton;
 import com.kegare.caveworld.util.CaveConfiguration;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.CaveUtils;
@@ -480,7 +481,7 @@ public class Config
 		entitiesCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
 		entitiesCfg.setCategoryPropertyOrder(category, propOrder);
 
-		propOrder.clear();
+		propOrder = Lists.newArrayList();
 		category = "ArcherZombie";
 		prop = entitiesCfg.get(category, "spawnWeight", 100);
 		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
@@ -512,6 +513,42 @@ public class Config
 		propOrder.add(prop.getName());
 		EntityArcherZombie.spawnBiomes = prop.getIntList();
 		EntityArcherZombie.refreshSpawn();
+
+		entitiesCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
+		entitiesCfg.setCategoryPropertyOrder(category, propOrder);
+
+		propOrder = Lists.newArrayList();
+		category = "CavenicSkeleton";
+		prop = entitiesCfg.get(category, "spawnWeight", 10);
+		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		EntityCavenicSkeleton.spawnWeight = MathHelper.clamp_int(prop.getInt(EntityCavenicSkeleton.spawnWeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		prop = entitiesCfg.get(category, "spawnMinHeight", 30);
+		prop.setMinValue(1).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		EntityCavenicSkeleton.spawnMinHeight = MathHelper.clamp_int(prop.getInt(EntityCavenicSkeleton.spawnMinHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		prop = entitiesCfg.get(category, "spawnMaxHeight", 100);
+		prop.setMinValue(1).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		EntityCavenicSkeleton.spawnMaxHeight = MathHelper.clamp_int(prop.getInt(EntityCavenicSkeleton.spawnMaxHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		prop = entitiesCfg.get(category, "spawnInChunks", 2);
+		prop.setMinValue(1).setMaxValue(500).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		EntityCavenicSkeleton.spawnInChunks = MathHelper.clamp_int(prop.getInt(EntityCavenicSkeleton.spawnInChunks), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		prop = entitiesCfg.get(category, "spawnBiomes", new int[0]);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName()).setConfigEntryClass(selectBiomes);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		propOrder.add(prop.getName());
+		EntityCavenicSkeleton.spawnBiomes = prop.getIntList();
+		EntityCavenicSkeleton.refreshSpawn();
 
 		entitiesCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
 		entitiesCfg.setCategoryPropertyOrder(category, propOrder);
@@ -636,7 +673,7 @@ public class Config
 
 		dimensionCfg.setCategoryPropertyOrder(category, propOrder);
 
-		propOrder.clear();
+		propOrder = Lists.newArrayList();
 		category = "Deep Caveworld";
 
 		dimensionCfg.addCustomCategoryComment(category, "If multiplayer, server-side only.");
@@ -787,7 +824,7 @@ public class Config
 				topMeta = terrainMeta;
 			}
 
-			propOrder.clear();
+			propOrder = Lists.newArrayList();
 			prop = biomesCfg.get(name, "genWeight", weight);
 			prop.setMinValue(0).setMaxValue(100).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -864,9 +901,9 @@ public class Config
 
 		if (veinsCfg.getCategoryNames().isEmpty())
 		{
-			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 0), 4, 7, 100, 128, 255));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 0), 5, 8, 100, 128, 255));
 			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 0), 20, 1, 8, 128, 255));
-			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 1), 1, 3, 100, 150, 255));
+			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 1), 2, 4, 100, 150, 255));
 			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 17, 20, 100, 0, 255));
 			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 85, 1, 10, 0, 255));
 			CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 18, 20, 100, 200, 255));
@@ -980,7 +1017,7 @@ public class Config
 				topMeta = terrainMeta;
 			}
 
-			propOrder.clear();
+			propOrder = Lists.newArrayList();
 			prop = biomesDeepCfg.get(name, "genWeight", weight);
 			prop.setMinValue(0).setMaxValue(100).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");

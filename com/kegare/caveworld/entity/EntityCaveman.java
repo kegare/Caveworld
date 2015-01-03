@@ -466,6 +466,11 @@ public class EntityCaveman extends EntityTameable implements IInventory
 
 		if (isTamed())
 		{
+			if (!isOwner(player))
+			{
+				return false;
+			}
+
 			if (itemstack != null && itemstack.getItem() == Items.name_tag)
 			{
 				return super.interact(player);
@@ -477,7 +482,7 @@ public class EntityCaveman extends EntityTameable implements IInventory
 
 				setCurrentItemOrArmor(0, itemstack);
 			}
-			else if (!worldObj.isRemote && isOwner(player))
+			else if (!worldObj.isRemote)
 			{
 				player.displayGUIChest(this);
 			}

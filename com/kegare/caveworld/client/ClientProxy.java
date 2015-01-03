@@ -17,6 +17,7 @@ import com.kegare.caveworld.client.config.CycleIntegerEntry;
 import com.kegare.caveworld.client.config.SelectBiomeEntry;
 import com.kegare.caveworld.client.config.SelectItemEntry;
 import com.kegare.caveworld.client.renderer.RenderCaveman;
+import com.kegare.caveworld.client.renderer.RenderCavenicSkeleton;
 import com.kegare.caveworld.client.renderer.RenderCaveniumTool;
 import com.kegare.caveworld.client.renderer.RenderPortalCaveworld;
 import com.kegare.caveworld.client.renderer.TileEntityUniversalChestRenderer;
@@ -24,6 +25,7 @@ import com.kegare.caveworld.core.CommonProxy;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.entity.EntityArcherZombie;
 import com.kegare.caveworld.entity.EntityCaveman;
+import com.kegare.caveworld.entity.EntityCavenicSkeleton;
 import com.kegare.caveworld.entity.TileEntityUniversalChest;
 import com.kegare.caveworld.item.CaveItems;
 
@@ -59,6 +61,7 @@ public class ClientProxy extends CommonProxy
 
 		RenderingRegistry.registerEntityRenderingHandler(EntityCaveman.class, new RenderCaveman());
 		RenderingRegistry.registerEntityRenderingHandler(EntityArcherZombie.class, new RenderZombie());
+		RenderingRegistry.registerEntityRenderingHandler(EntityCavenicSkeleton.class, new RenderCavenicSkeleton());
 	}
 
 	@Override
