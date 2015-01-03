@@ -96,6 +96,7 @@ public class Config
 	public static boolean pickaxeMining;
 	public static boolean axeLumbering;
 	public static boolean shovelDigging;
+	public static boolean bowCavenic;
 	public static boolean oreCompass;
 
 	public static Class<? extends IConfigEntry> selectItems;
@@ -389,6 +390,11 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		shovelDigging = prop.getBoolean(shovelDigging);
+		prop = itemsCfg.get(category, "bowCavenic", true).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocalFormatted(Caveworld.CONFIG_LANG + "whether", StatCollector.translateToLocal("item." + prop.getName() + ".name"));
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		bowCavenic = prop.getBoolean(bowCavenic);
 		prop = itemsCfg.get(category, "oreCompass", true).setRequiresMcRestart(true);
 		prop.comment = StatCollector.translateToLocalFormatted(Caveworld.CONFIG_LANG + "whether", StatCollector.translateToLocal("item." + prop.getName() + ".name"));
 		prop.comment += " [default: " + prop.getDefault() + "]";

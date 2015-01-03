@@ -17,6 +17,7 @@ import com.kegare.caveworld.client.config.CycleIntegerEntry;
 import com.kegare.caveworld.client.config.SelectBiomeEntry;
 import com.kegare.caveworld.client.config.SelectItemEntry;
 import com.kegare.caveworld.client.renderer.RenderCaveman;
+import com.kegare.caveworld.client.renderer.RenderCavenicBow;
 import com.kegare.caveworld.client.renderer.RenderCavenicSkeleton;
 import com.kegare.caveworld.client.renderer.RenderCaveniumTool;
 import com.kegare.caveworld.client.renderer.RenderPortalCaveworld;
@@ -58,6 +59,7 @@ public class ClientProxy extends CommonProxy
 		MinecraftForgeClient.registerItemRenderer(CaveItems.mining_pickaxe, itemRenderer);
 		MinecraftForgeClient.registerItemRenderer(CaveItems.lumbering_axe, itemRenderer);
 		MinecraftForgeClient.registerItemRenderer(CaveItems.digging_shovel, itemRenderer);
+		MinecraftForgeClient.registerItemRenderer(CaveItems.cavenic_bow, new RenderCavenicBow());
 
 		RenderingRegistry.registerEntityRenderingHandler(EntityCaveman.class, new RenderCaveman());
 		RenderingRegistry.registerEntityRenderingHandler(EntityArcherZombie.class, new RenderZombie());

@@ -59,6 +59,7 @@ import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.EntityEvent.EntityConstructing;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
@@ -84,8 +85,10 @@ import com.kegare.caveworld.core.CaveAchievementList;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.entity.EntityCaveman;
+import com.kegare.caveworld.entity.EntityCavenicSkeleton;
 import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.item.ICaveniumTool;
+import com.kegare.caveworld.item.ItemCavenicBow;
 import com.kegare.caveworld.item.ItemCavenium;
 import com.kegare.caveworld.item.ItemDiggingShovel;
 import com.kegare.caveworld.item.ItemLumberingAxe;
@@ -196,38 +199,76 @@ public class CaveEventHooks
 		{
 			ItemStack current = player.getCurrentEquippedItem();
 
-			if (current != null && current.getItem() != null && current.getItem() instanceof ICaveniumTool)
+			if (current != null && current.getItem() != null)
 			{
-				ICaveniumTool tool = (ICaveniumTool)current.getItem();
-
-				if (tool.getHighlightStart() > 0 && System.currentTimeMillis() - tool.getHighlightStart() < Config.modeDisplayTime)
+				if (current.getItem() instanceof ICaveniumTool)
 				{
-					long time = System.currentTimeMillis() - tool.getHighlightStart();
+					ICaveniumTool tool = (ICaveniumTool)current.getItem();
 
-					if (time > Config.modeDisplayTime - 255)
+					if (tool.getHighlightStart() > 0 && System.currentTimeMillis() - tool.getHighlightStart() < Config.modeDisplayTime)
 					{
-						time = tool.getHighlightStart() + Config.modeDisplayTime - System.currentTimeMillis();
+						long time = System.currentTimeMillis() - tool.getHighlightStart();
+
+						if (time > Config.modeDisplayTime - 255)
+						{
+							time = tool.getHighlightStart() + Config.modeDisplayTime - System.currentTimeMillis();
+						}
+
+						int i = MathHelper.clamp_int((int)time, 0, 255);
+
+						if (i > 0)
+						{
+							GL11.glPushMatrix();
+							GL11.glEnable(GL11.GL_BLEND);
+							OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+							mc.fontRenderer.drawStringWithShadow(tool.getModeInfomation(current), 18, event.resolution.getScaledHeight() - 20, 16777215 + (i << 24));
+							GL11.glDisable(GL11.GL_BLEND);
+							GL11.glPopMatrix();
+						}
 					}
-
-					int i = MathHelper.clamp_int((int)time, 0, 255);
-
-					if (i > 0)
+					else
 					{
-						GL11.glPushMatrix();
-						GL11.glEnable(GL11.GL_BLEND);
-						OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-						mc.fontRenderer.drawStringWithShadow(tool.getModeInfomation(current), 18, event.resolution.getScaledHeight() - 20, 16777215 + (i << 24));
-						GL11.glDisable(GL11.GL_BLEND);
-						GL11.glPopMatrix();
+						int highlight = ObfuscationReflectionHelper.getPrivateValue(GuiIngame.class, mc.ingameGUI, "remainingHighlightTicks", "field_92017_k");
+
+						if (highlight == 40)
+						{
+							tool.setHighlightStart(System.currentTimeMillis());
+						}
 					}
 				}
-				else
+				else if (current.getItem() instanceof ItemCavenicBow)
 				{
-					int highlight = ObfuscationReflectionHelper.getPrivateValue(GuiIngame.class, mc.ingameGUI, "remainingHighlightTicks", "field_92017_k");
+					ItemCavenicBow bow = (ItemCavenicBow)current.getItem();
 
-					if (highlight == 40)
+					if (bow.highlightStart > 0 && System.currentTimeMillis() - bow.highlightStart < Config.modeDisplayTime)
 					{
-						tool.setHighlightStart(System.currentTimeMillis());
+						long time = System.currentTimeMillis() - bow.highlightStart;
+
+						if (time > Config.modeDisplayTime - 255)
+						{
+							time = bow.highlightStart + Config.modeDisplayTime - System.currentTimeMillis();
+						}
+
+						int i = MathHelper.clamp_int((int)time, 0, 255);
+
+						if (i > 0)
+						{
+							GL11.glPushMatrix();
+							GL11.glEnable(GL11.GL_BLEND);
+							OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+							mc.fontRenderer.drawStringWithShadow(bow.getModeInfomation(current), 18, event.resolution.getScaledHeight() - 20, 16777215 + (i << 24));
+							GL11.glDisable(GL11.GL_BLEND);
+							GL11.glPopMatrix();
+						}
+					}
+					else
+					{
+						int highlight = ObfuscationReflectionHelper.getPrivateValue(GuiIngame.class, mc.ingameGUI, "remainingHighlightTicks", "field_92017_k");
+
+						if (highlight == 40)
+						{
+							bow.highlightStart = System.currentTimeMillis();
+						}
 					}
 				}
 			}
@@ -914,15 +955,46 @@ public class CaveEventHooks
 	}
 
 	@SubscribeEvent
+	public void onLivingAttack(LivingAttackEvent event)
+	{
+		if (event.source.getDamageType().equals("arrow"))
+		{
+			Entity entity = event.source.getEntity();
+
+			if (entity != null && entity instanceof EntityLivingBase)
+			{
+				EntityLivingBase living = (EntityLivingBase)entity;
+
+				if (living.getHeldItem() != null && living.getHeldItem().getItem() == CaveItems.cavenic_bow)
+				{
+					event.entityLiving.hurtResistantTime = 0;
+				}
+			}
+		}
+	}
+
+	@SubscribeEvent
 	public void onLivingDeathEvent(LivingDeathEvent event)
 	{
-		if (event.entityLiving instanceof EntityPlayerMP)
+		EntityLivingBase entity = event.entityLiving;
+
+		if (entity instanceof EntityPlayerMP)
 		{
-			EntityPlayerMP player = (EntityPlayerMP)event.entityLiving;
+			EntityPlayerMP player = (EntityPlayerMP)entity;
 
 			if (!Config.deathLoseMiningPoint)
 			{
 				CaveworldAPI.saveMiningData(player, null);
+			}
+		}
+
+		if (entity instanceof EntityCavenicSkeleton)
+		{
+			Entity source = event.source.getEntity();
+
+			if (source != null && source instanceof EntityPlayerMP)
+			{
+				((EntityPlayerMP)source).triggerAchievement(CaveAchievementList.cavenicSkeletonSlayer);
 			}
 		}
 	}

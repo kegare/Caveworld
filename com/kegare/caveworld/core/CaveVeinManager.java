@@ -410,7 +410,7 @@ public class CaveVeinManager implements ICaveVeinManager
 			BlockEntry target = getGenTargetBlock();
 			int[] biomes = getGenBiomes();
 
-			if (weight > 0 && min < worldHeight && min < max)
+			if (weight > 0 && min < worldHeight && max < worldHeight && min < max)
 			{
 				for (int i = 0; i < weight; ++i)
 				{

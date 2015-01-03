@@ -283,7 +283,7 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 	@Override
 	public ChunkCoordinates getSpawnPoint()
 	{
-		return new ChunkCoordinates(0, getAverageGroundLevel(), 0);
+		return new ChunkCoordinates(0, 50, 0);
 	}
 
 	@Override
@@ -345,6 +345,8 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 		if (!worldObj.isRemote && dimData == null)
 		{
 			loadDimData(getDimData());
+
+			Caveworld.network.sendToAll(new DimSyncMessage(dimensionId, getDimData()));
 		}
 
 		return subsurfaceHeight + 1;

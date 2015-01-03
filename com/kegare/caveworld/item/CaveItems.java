@@ -30,6 +30,7 @@ public class CaveItems
 	public static final ItemMiningPickaxe mining_pickaxe = new ItemMiningPickaxe("pickaxeMining");
 	public static final ItemLumberingAxe lumbering_axe = new ItemLumberingAxe("axeLumbering");
 	public static final ItemDiggingShovel digging_shovel = new ItemDiggingShovel("shovelDigging");
+	public static final ItemCavenicBow cavenic_bow = new ItemCavenicBow("bowCavenic");
 	public static final ItemOreCompass ore_compass = new ItemOreCompass("oreCompass");
 
 	public static void registerItems()
@@ -125,6 +126,15 @@ public class CaveItems
 					return CaveUtils.isItemShovel(itemstack);
 				}
 			}));
+		}
+
+		if (Config.bowCavenic)
+		{
+			GameRegistry.registerItem(cavenic_bow, "cavenic_bow");
+
+			OreDictionary.registerOre("bow", cavenic_bow);
+			OreDictionary.registerOre("bowCavenic", cavenic_bow);
+			OreDictionary.registerOre("cavenicBow", cavenic_bow);
 		}
 
 		if (Config.oreCompass)

@@ -188,6 +188,9 @@ caveworld.breakmode.quick=一括破壊
 caveworld.breakmode.ranged=範囲破壊
 caveworld.breakmode.adit=坑道堀り
 caveworld.breakmode.lumbering=伐採
+caveworld.bowmode=モード
+caveworld.bowmode.normal=ノーマル
+caveworld.bowmode.rapid=速射
 
 tile.portalCaveworld.name=Caveworld ポータルブロック
 tile.rope.name=ロープ
@@ -204,6 +207,7 @@ item.pickaxeMining.name=採掘ツルハシ
 item.pickaxeMining.base=ベース
 item.axeLumbering.name=伐採斧
 item.shovelDigging.name=掘削シャベル
+item.bowCavenic.name=ケイブニックボウ
 item.oreCompass.name=鉱石コンパス
 
 entity.Caveman.name=ケイブマン
@@ -224,10 +228,12 @@ achievement.caveworld.caveman=ケイブマン
 achievement.caveworld.caveman.desc=野生のケイブマンと遭遇する
 achievement.caveworld.compCaving=洞窟探索のお供
 achievement.caveworld.compCaving.desc=ケイブマンを手懐ける
+achievement.caveworld.cavenicSkeletonSlayer=ケイブニックスケルトン退治
+achievement.caveworld.cavenicSkeletonSlayer.desc=ケイブニックスケルトンを倒す
 achievement.caveworld.deepCaves=深き洞窟
 achievement.caveworld.deepCaves.desc=Deep Caveworldへ行く
 achievement.caveworld.underCaves=深淵なる洞窟
-achievement.caveworld.underCaves.desc=Deep Caveworldの深淵部の湖へ到達する
+achievement.caveworld.underCaves.desc=深淵部の湖へ到達する
 
 caveworld.shop.title=Caveworld ショップ
 caveworld.config.shop=ショップの製品のカスタマイズ

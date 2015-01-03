@@ -610,7 +610,7 @@ public class CaveUtils
 			{
 				for (z = spawn.posZ - range; z < spawn.posZ + range; ++z)
 				{
-					for (y = world.getActualHeight() - 3; y > world.provider.getAverageGroundLevel(); --y)
+					for (y = world.getActualHeight() - 5; y > 1; --y)
 					{
 						if (world.isAirBlock(x, y, z) && world.isAirBlock(x, y + 1, z) &&
 							world.isAirBlock(x - 1, y, z) && world.isAirBlock(x - 1, y + 1, z) &&

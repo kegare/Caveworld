@@ -31,6 +31,7 @@ import net.minecraft.item.ItemSpade;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.IIcon;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 
@@ -263,20 +264,15 @@ public class ItemDiggingShovel extends ItemSpade implements ICaveniumTool
 	@Override
 	public BreakMode getMode(ItemStack itemstack)
 	{
-		if (itemstack.getItem() != this || itemstack.getTagCompound() == null)
+		if (itemstack.getTagCompound() == null)
 		{
 			return BreakMode.NORMAL;
 		}
 
-		switch (itemstack.getTagCompound().getInteger("Mode"))
-		{
-			case 1:
-				return BreakMode.QUICK;
-			case 2:
-				return BreakMode.RANGED;
-			default:
-				return BreakMode.NORMAL;
-		}
+		BreakMode[] modes = BreakMode.values();
+		int mode = MathHelper.clamp_int(itemstack.getTagCompound().getInteger("Mode"), 0, modes.length - 1);
+
+		return modes[mode];
 	}
 
 	@Override

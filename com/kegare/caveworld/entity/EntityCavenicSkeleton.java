@@ -13,6 +13,7 @@ import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIArrowAttack;
 import net.minecraft.entity.monster.EntitySkeleton;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
@@ -68,12 +69,14 @@ public class EntityCavenicSkeleton extends EntitySkeleton
 		}
 	}
 
+	private EntityAIArrowAttack aiArrowAttack = new EntityAIArrowAttack(this, 0.975D, 1, 3, 8.0F);
+
 	public EntityCavenicSkeleton(World world)
 	{
 		super(world);
 		this.experienceValue = rand.nextInt(10) + 3;
 
-		ObfuscationReflectionHelper.setPrivateValue(EntitySkeleton.class, this, new EntityAIArrowAttack(this, 0.95D, 1, 3, 6.0F), "aiArrowAttack", "field_85037_d");
+		ObfuscationReflectionHelper.setPrivateValue(EntitySkeleton.class, this, aiArrowAttack, "aiArrowAttack", "field_85037_d");
 	}
 
 	@Override
@@ -81,8 +84,38 @@ public class EntityCavenicSkeleton extends EntitySkeleton
 	{
 		super.applyEntityAttributes();
 
-		getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(50.0D + rand.nextInt(15));
+		getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(50.0D + rand.nextInt(20));
+		getEntityAttribute(SharedMonsterAttributes.knockbackResistance).setBaseValue(2.0D);
 		getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.2D);
+	}
+
+	@Override
+	protected void addRandomArmor()
+	{
+		super.addRandomArmor();
+
+		if (Config.bowCavenic && rand.nextInt(20) == 0)
+		{
+			setCurrentItemOrArmor(0, new ItemStack(CaveItems.cavenic_bow));
+			setEquipmentDropChance(0, 2.0F);
+		}
+		else
+		{
+			setCurrentItemOrArmor(0, new ItemStack(Items.bow));
+		}
+	}
+
+	@Override
+	public void setCombatTask()
+	{
+		tasks.removeTask(aiArrowAttack);
+
+		ItemStack itemstack = getHeldItem();
+
+		if (itemstack != null && (itemstack.getItem() == Items.bow || itemstack.getItem() == CaveItems.cavenic_bow))
+		{
+			tasks.addTask(4, aiArrowAttack);
+		}
 	}
 
 	@Override

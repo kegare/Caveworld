@@ -188,6 +188,9 @@ caveworld.breakmode.quick=QUICK
 caveworld.breakmode.ranged=RANGED
 caveworld.breakmode.adit=ADIT
 caveworld.breakmode.lumbering=LUMBERING
+caveworld.bowmode=Mode
+caveworld.bowmode.normal=NORMAL
+caveworld.bowmode.rapid=RAPID
 
 tile.portalCaveworld.name=Caveworld Portal Block
 tile.rope.name=Rope
@@ -204,6 +207,7 @@ item.pickaxeMining.name=Mining Pickaxe
 item.pickaxeMining.base=Base
 item.axeLumbering.name=Lumbering Axe
 item.shovelDigging.name=Digging Shovel
+item.bowCavenic.name=Cavenic Bow
 item.oreCompass.name=Ore Compass
 
 entity.Caveman.name=Caveman
@@ -224,6 +228,8 @@ achievement.caveworld.caveman=Caveman
 achievement.caveworld.caveman.desc=Encounter with an untamed Caveman
 achievement.caveworld.compCaving=Companion of Caving
 achievement.caveworld.compCaving.desc=Tame a Caveman
+achievement.caveworld.cavenicSkeletonSlayer=Cavenic Skeleton Slayer
+achievement.caveworld.cavenicSkeletonSlayer.desc=Kills the Cavenic Skeleton
 achievement.caveworld.deepCaves=Deep Caves
 achievement.caveworld.deepCaves.desc=Visit to the Deep Caveworld
 achievement.caveworld.underCaves=Under Caves

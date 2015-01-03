@@ -71,6 +71,7 @@ import com.kegare.caveworld.plugin.ic2.IC2Plugin;
 import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.plugin.miningmod.MiningmodPlugin;
 import com.kegare.caveworld.plugin.more.MOrePlugin;
+import com.kegare.caveworld.plugin.moreinventory.MIMPlugin;
 import com.kegare.caveworld.plugin.nei.NEIPlugin;
 import com.kegare.caveworld.plugin.tconstruct.TinkersConstructPlugin;
 import com.kegare.caveworld.plugin.thaumcraft.ThaumcraftPlugin;
@@ -513,6 +514,18 @@ public class Caveworld
 		catch (Throwable e)
 		{
 			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: TinkersConstructPlugin");
+		}
+
+		try
+		{
+			if (MIMPlugin.enabled())
+			{
+				MIMPlugin.invoke();
+			}
+		}
+		catch (Throwable e)
+		{
+			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: MIMPlugin");
 		}
 	}
 
