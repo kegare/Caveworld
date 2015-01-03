@@ -124,6 +124,9 @@ public class Caveworld
 	public static final SimpleNetworkWrapper network = new SimpleNetworkWrapper(MODID);
 
 	public static final CreativeTabCaveworld tabCaveworld = new CreativeTabCaveworld();
+	public static final CreativeTabMiningPickaxe tabMiningPickaxe = new CreativeTabMiningPickaxe();
+	public static final CreativeTabLumberingAxe tabLumberingAxe = new CreativeTabLumberingAxe();
+	public static final CreativeTabDiggingShovel tabDiggingShovel = new CreativeTabDiggingShovel();
 
 	@EventHandler
 	public void construct(FMLConstructionEvent event)

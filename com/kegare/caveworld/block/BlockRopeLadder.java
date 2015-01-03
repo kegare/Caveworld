@@ -74,7 +74,7 @@ public class BlockRopeLadder extends Block implements IRope
 
 		AxisAlignedBB result = super.getSelectedBoundingBoxFromPool(world, x, y, z);
 
-		if (world.getBlockMetadata(x, y, z) > 5)
+		if (isKnot(world.getBlockMetadata(x, y, z)))
 		{
 			return result == null ? null : result.expand(0.05D, 0.0D, 0.05D);
 		}
@@ -82,45 +82,48 @@ public class BlockRopeLadder extends Block implements IRope
 		return result;
 	}
 
+	public boolean isKnot(int meta)
+	{
+		return meta >= 4 && meta < 8 || meta >= 12 && meta < 16;
+	}
+
 	public void updateBlockBounds(int meta)
 	{
-		float f = 0.3F;
+		float f1 = 0.3F;
+		float f2 = 0.1F;
 
-		if (meta > 5)
+		if (isKnot(meta))
 		{
 			meta -= 4;
 		}
 
-		if (meta == 2)
+		switch (meta)
 		{
-			setBlockBounds(0.0F, 0.0F, 1.0F - f, 1.0F, 1.0F, 0.65F);
+			case 0:
+				setBlockBounds(0.0F, 0.0F, 1.0F - f1, 1.0F, 1.0F, 0.65F);
+				break;
+			case 1:
+				setBlockBounds(0.0F, 0.0F, 0.35F, 1.0F, 1.0F, f1);
+				break;
+			case 2:
+				setBlockBounds(1.0F - f1, 0.0F, 0.0F, 0.65F, 1.0F, 1.0F);
+				break;
+			case 3:
+				setBlockBounds(0.35F, 0.0F, 0.0F, f1, 1.0F, 1.0F);
+				break;
+			case 8:
+				setBlockBounds(0.0F, 0.0F, 1.0F - f2, 1.0F, 1.0F, 1.0F);
+				break;
+			case 9:
+				setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, f2);
+				break;
+			case 10:
+				setBlockBounds(1.0F - f2, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+				break;
+			case 11:
+				setBlockBounds(0.0F, 0.0F, 0.0F, f2, 1.0F, 1.0F);
+				break;
 		}
-
-		if (meta == 3)
-		{
-			setBlockBounds(0.0F, 0.0F, 0.35F, 1.0F, 1.0F, f);
-		}
-
-		if (meta == 4)
-		{
-			setBlockBounds(1.0F - f, 0.0F, 0.0F, 0.65F, 1.0F, 1.0F);
-		}
-
-		if (meta == 5)
-		{
-			setBlockBounds(0.35F, 0.0F, 0.0F, f, 1.0F, 1.0F);
-		}
-	}
-
-	@Override
-	public boolean shouldSideBeRendered(IBlockAccess world, int x, int y, int z, int side)
-	{
-		if (side <= 1)
-		{
-			return false;
-		}
-
-		return true;
 	}
 
 	@Override
@@ -138,41 +141,39 @@ public class BlockRopeLadder extends Block implements IRope
 	@Override
 	public int onBlockPlaced(World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ, int meta)
 	{
-		int i = meta;
-
-		if ((meta == 0 || side == 2) && world.isSideSolid(x, y, z + 1, ForgeDirection.NORTH))
+		if (side == 2 && world.isSideSolid(x, y, z + 1, ForgeDirection.NORTH))
 		{
-			i = 2;
+			return 8;
 		}
 
-		if ((i == 0 || side == 3) && world.isSideSolid(x, y, z - 1, ForgeDirection.SOUTH))
+		if (side == 3 && world.isSideSolid(x, y, z - 1, ForgeDirection.SOUTH))
 		{
-			i = 3;
+			return 9;
 		}
 
-		if ((i == 0 || side == 4) && world.isSideSolid(x + 1, y, z, ForgeDirection.WEST))
+		if (side == 4 && world.isSideSolid(x + 1, y, z, ForgeDirection.WEST))
 		{
-			i = 4;
+			return 10;
 		}
 
-		if ((i == 0 || side == 5) && world.isSideSolid(x - 1, y, z, ForgeDirection.EAST))
+		if (side == 5 && world.isSideSolid(x - 1, y, z, ForgeDirection.EAST))
 		{
-			i = 5;
+			return 11;
 		}
 
-		return i;
+		return 0;
 	}
 
 	@Override
 	public int quantityDropped(int metadata, int fortune, Random random)
 	{
-		return metadata > 5 ? 1 : 0;
+		return isKnot(metadata) ? 1 : 0;
 	}
 
 	@Override
 	public void onNeighborBlockChange(World world, int x, int y, int z, Block neighbor)
 	{
-		if (world.getBlockMetadata(x, y, z) <= 5 && world.getBlock(x, y + 1, z) != this)
+		if (!isKnot(world.getBlockMetadata(x, y, z)) && world.getBlock(x, y + 1, z) != this)
 		{
 			world.setBlockToAir(x, y, z);
 		}
@@ -189,7 +190,7 @@ public class BlockRopeLadder extends Block implements IRope
 		{
 			int meta = world.getBlockMetadata(x, y + 1, z);
 
-			if (meta > 5)
+			if (isKnot(meta))
 			{
 				return meta;
 			}
@@ -197,30 +198,30 @@ public class BlockRopeLadder extends Block implements IRope
 			return meta + 4;
 		}
 
-		if (side < 2)
+		if (side < 2 || !player.isSneaking())
 		{
 			int meta;
 
 			switch (MathHelper.floor_double(player.rotationYaw * 4.0F / 360.0F + 0.5D) & 3)
 			{
 				case 1:
-					meta = 5;
-					break;
-				case 2:
 					meta = 3;
 					break;
+				case 2:
+					meta = 1;
+					break;
 				case 3:
-					meta = 4;
+					meta = 2;
 					break;
 				default:
-					meta = 2;
+					meta = 0;
 					break;
 			}
 
 			return meta + 4;
 		}
 
-		return onBlockPlaced(world, x, y, z, side, hitX, hitY, hitZ, 1) + 4;
+		return onBlockPlaced(world, x, y, z, side, hitX, hitY, hitZ, 0) + 4;
 	}
 
 	@Override
@@ -228,7 +229,7 @@ public class BlockRopeLadder extends Block implements IRope
 	{
 		int meta = world.getBlockMetadata(x, y, z);
 
-		if (meta > 5 && world.getBlock(x, y, z) == this && world.isAirBlock(x, y - 1, z) && y - 1 > 0)
+		if (isKnot(meta) && world.getBlock(x, y, z) == this && world.isAirBlock(x, y - 1, z) && y - 1 > 0)
 		{
 			for (int count = 0; count < 5 && world.isAirBlock(x, y - 1, z) && y - 1 > 0; --y)
 			{
@@ -279,12 +280,12 @@ public class BlockRopeLadder extends Block implements IRope
 	{
 		int meta = world.getBlockMetadata(x, y, z);
 
-		if (meta > 5)
+		if (isKnot(meta))
 		{
 			meta -= 4;
 		}
 
-		if (meta == 2 || meta == 3)
+		if (meta == 0 || meta == 1 || meta == 8 || meta == 9)
 		{
 			if (side == 2 || side == 3)
 			{
@@ -294,7 +295,7 @@ public class BlockRopeLadder extends Block implements IRope
 			return sideIcon;
 		}
 
-		if (meta == 4 || meta == 5)
+		if (meta == 2 || meta == 3 || meta == 10 || meta == 11)
 		{
 			if (side == 4 || side == 5)
 			{

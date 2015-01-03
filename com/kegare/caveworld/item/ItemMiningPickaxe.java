@@ -148,7 +148,7 @@ public class ItemMiningPickaxe extends ItemPickaxe implements ICaveniumTool
 		super(CAVENIUM);
 		this.setUnlocalizedName(name);
 		this.setTextureName("caveworld:mining_pickaxe");
-		this.setCreativeTab(Caveworld.tabCaveworld);
+		this.setCreativeTab(Caveworld.tabMiningPickaxe);
 	}
 
 	@Override

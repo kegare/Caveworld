@@ -52,6 +52,7 @@ public final class ThaumcraftPlugin
 
 		ThaumcraftApi.registerEntityTag("Caveman", new AspectList().add(Aspect.LIFE, 3).add(Aspect.VOID, 3).add(Aspect.ELDRITCH, 2));
 		ThaumcraftApi.registerEntityTag("ArcherZombie", new AspectList().add(Aspect.LIFE, 2).add(Aspect.TOOL, 1));
+		ThaumcraftApi.registerEntityTag("CavenicSkeleton", new AspectList().add(Aspect.LIFE, 5).add(Aspect.VOID, 4).add(Aspect.TOOL, 1));
 
 		ItemStack key = new ItemStack(CaveItems.cavenium, 1, 0);
 		ItemStack result = new ItemStack(CaveItems.cavenium, 1, 1);

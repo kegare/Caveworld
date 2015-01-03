@@ -37,7 +37,11 @@ public class ItemRope extends ItemBlock
 
 		if (world.getBlock(x, y, z) == field_150939_a)
 		{
-			--y;
+			do
+			{
+				--y;
+			}
+			while (world.getBlock(x, y, z) == field_150939_a);
 		}
 		else switch (side)
 		{
@@ -60,22 +64,28 @@ public class ItemRope extends ItemBlock
 
 		if (itemstack.stackSize > 0 && player.canPlayerEdit(x, y, z, side, itemstack) &&
 			world.isAirBlock(x, y, z) && (world.getBlock(x, y + 1, z).getMaterial().isSolid() || world.getBlock(x, y + 1, z) == field_150939_a) &&
-			world.canPlaceEntityOnSide(field_150939_a, x, y, z, false, side, player, itemstack) &&
-			placeBlockAt(itemstack, player, world, x, y, z, side, hitX, hitY, hitZ, ((IRope)field_150939_a).getKnotMetadata(itemstack, player, world, x, y, z, side, hitX, hitY, hitZ)))
+			world.canPlaceEntityOnSide(field_150939_a, x, y, z, false, side, player, itemstack))
 		{
+			int meta = ((IRope)field_150939_a).getKnotMetadata(itemstack, player, world, x, y, z, side, hitX, hitY, hitZ);
+
+			if (!placeBlockAt(itemstack, player, world, x, y, z, side, hitX, hitY, hitZ, meta))
+			{
+				return false;
+			}
+
 			world.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, field_150939_a.stepSound.func_150496_b(), (field_150939_a.stepSound.getVolume() + 1.0F) / 2.0F, field_150939_a.stepSound.getPitch() * 0.8F);
 
 			--itemstack.stackSize;
 
-			if (player.isSneaking() && !player.isOnLadder())
+			if (player.isSneaking())
 			{
 				for (int i = 1; itemstack.stackSize > 0 && i < itemstack.stackSize + 1; ++i)
 				{
-					int next = y - 5 * i;
+					int next = y - 6 * i;
 
-					if (world.getBlock(x, next, z) == field_150939_a && world.isAirBlock(x, --next, z) && next > 0)
+					if (next > 0 && world.getBlock(x, next + 1, z) == field_150939_a && world.isAirBlock(x, next, z))
 					{
-						if (placeBlockAt(itemstack, player, world, x, next, z, side, hitX, hitY, hitZ, ((IRope)field_150939_a).getKnotMetadata(itemstack, player, world, next, y, z, side, hitX, hitY, hitZ)))
+						if (placeBlockAt(itemstack, player, world, x, next, z, side, hitX, hitY, hitZ, meta))
 						{
 							--itemstack.stackSize;
 						}
@@ -101,7 +111,11 @@ public class ItemRope extends ItemBlock
 
 		if (world.getBlock(x, y, z) == field_150939_a)
 		{
-			--y;
+			do
+			{
+				--y;
+			}
+			while (world.getBlock(x, y, z) == field_150939_a);
 		}
 		else switch (side)
 		{

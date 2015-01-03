@@ -82,7 +82,7 @@ public class EntityCavenicSkeleton extends EntitySkeleton
 		super.applyEntityAttributes();
 
 		getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(50.0D + rand.nextInt(15));
-		getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.175D);
+		getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.2D);
 	}
 
 	@Override

@@ -99,7 +99,7 @@ public class BlockUniversalChest extends BlockContainer
 	}
 
 	@Override
-	public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase entity, ItemStack player)
+	public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase entity, ItemStack itemstack)
 	{
 		byte metadata = 0;
 

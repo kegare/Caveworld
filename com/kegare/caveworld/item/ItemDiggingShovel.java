@@ -134,7 +134,7 @@ public class ItemDiggingShovel extends ItemSpade implements ICaveniumTool
 		super(ItemMiningPickaxe.CAVENIUM);
 		this.setUnlocalizedName(name);
 		this.setTextureName("caveworld:digging_shovel");
-		this.setCreativeTab(Caveworld.tabCaveworld);
+		this.setCreativeTab(Caveworld.tabDiggingShovel);
 	}
 
 	@Override

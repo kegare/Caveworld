@@ -26,6 +26,7 @@ import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.entity.EntityArcherZombie;
 import com.kegare.caveworld.entity.EntityCaveman;
+import com.kegare.caveworld.entity.EntityCavenicSkeleton;
 import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.plugin.mceconomy.ShopProductManager.ShopProduct;
 
@@ -188,8 +189,9 @@ public final class MCEconomyPlugin
 			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.ore_compass), 2200);
 		}
 
-		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCaveman.class, 10);
+		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCaveman.class, 20);
 		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityArcherZombie.class, 4);
+		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCavenicSkeleton.class, 100);
 
 		SHOP = MCEconomyAPI.registerProductList(ShopProductManager.instance());
 	}
