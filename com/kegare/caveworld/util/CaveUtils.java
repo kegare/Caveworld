@@ -54,6 +54,7 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.StatCollector;
 import net.minecraft.util.Vec3;
@@ -61,6 +62,7 @@ import net.minecraft.world.MinecraftException;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
@@ -546,24 +548,53 @@ public class CaveUtils
 		return result;
 	}
 
-	public static boolean teleportPlayer(EntityPlayerMP player, int dim)
+	public static void setPlayerLocation(EntityPlayerMP player, double posX, double posY, double posZ)
 	{
-		if (!DimensionManager.isDimensionRegistered(dim))
-		{
-			return false;
-		}
+		setPlayerLocation(player, posX, posY, posZ, player.rotationYaw, player.rotationPitch);
+	}
 
+	public static void setPlayerLocation(EntityPlayerMP player, double posX, double posY, double posZ, float yaw, float pitch)
+	{
+		int x = MathHelper.floor_double(posX);
+		int z = MathHelper.floor_double(posZ);
+		IChunkProvider provider = player.getServerForPlayer().getChunkProvider();
+
+		provider.loadChunk(x - 3 >> 4, z - 3 >> 4);
+		provider.loadChunk(x + 3 >> 4, z - 3 >> 4);
+		provider.loadChunk(x - 3 >> 4, z + 3 >> 4);
+		provider.loadChunk(x + 3 >> 4, z + 3 >> 4);
+
+		player.mountEntity(null);
+		player.playerNetServerHandler.setPlayerLocation(posX, posY, posZ, yaw, pitch);
+	}
+
+	public static boolean transferPlayer(EntityPlayerMP player, int dim)
+	{
 		if (dim != player.dimension)
 		{
+			if (!DimensionManager.isDimensionRegistered(dim))
+			{
+				return false;
+			}
+
 			player.isDead = false;
 			player.forceSpawn = true;
 			player.timeUntilPortal = player.getPortalCooldown();
 			player.mcServer.getConfigurationManager().transferPlayerToDimension(player, dim, new TeleporterDummy(player.mcServer.worldServerForDimension(dim)));
 			player.addExperienceLevel(0);
+
+			return true;
 		}
 
+		return false;
+	}
+
+	public static boolean teleportPlayer(EntityPlayerMP player, int dim)
+	{
+		transferPlayer(player, dim);
+
 		WorldServer world = player.getServerForPlayer();
-		ChunkCoordinates spawn;
+		ChunkCoordinates spawn = null;
 		String key = "Caveworld:LastForceTeleport." + dim;
 		int x, y, z;
 
@@ -573,9 +604,10 @@ public class CaveUtils
 			x = data.getInteger("PosX");
 			y = data.getInteger("PosY");
 			z = data.getInteger("PosZ");
-			spawn = new ChunkCoordinates(x, y, z);
+			spawn = EntityPlayer.verifyRespawnCoordinates(world, new ChunkCoordinates(x, y, z), true);
 		}
-		else
+
+		if (spawn == null)
 		{
 			spawn = world.getSpawnPoint();
 		}
@@ -593,7 +625,7 @@ public class CaveUtils
 
 			if (!world.isAirBlock(x, y - 1, z) && !world.getBlock(x, y - 1, z).getMaterial().isLiquid())
 			{
-				player.playerNetServerHandler.setPlayerLocation(x + 0.5D, y + 0.5D, z + 0.5D, player.rotationYaw, player.rotationPitch);
+				setPlayerLocation(player, x + 0.5D, y + 0.5D, z + 0.5D);
 
 				NBTTagCompound data = new NBTTagCompound();
 				data.setInteger("PosX", x);
@@ -625,7 +657,7 @@ public class CaveUtils
 
 							if (!world.isAirBlock(x, y - 1, z) && !world.getBlock(x, y - 1, z).getMaterial().isLiquid())
 							{
-								player.playerNetServerHandler.setPlayerLocation(x + 0.5D, y + 0.5D, z + 0.5D, player.rotationYaw, player.rotationPitch);
+								setPlayerLocation(player, x + 0.5D, y + 0.5D, z + 0.5D);
 
 								NBTTagCompound data = new NBTTagCompound();
 								data.setInteger("PosX", x);
@@ -643,13 +675,52 @@ public class CaveUtils
 			x = 0;
 			y = 30;
 			z = 0;
-			player.playerNetServerHandler.setPlayerLocation(x + 0.5D, y + 0.5D, z + 0.5D, player.rotationYaw, player.rotationPitch);
+			setPlayerLocation(player, x + 0.5D, y + 0.5D, z + 0.5D);
 			world.setBlockToAir(x, y, z);
 			world.setBlockToAir(x, y + 1, z);
-			world.setBlock(x, y - 1, z, Blocks.stone);
+			world.setBlock(x, y - 1, z, Blocks.stone, 0, 2);
 		}
 
 		return false;
+	}
+
+	public static boolean respawnPlayer(EntityPlayerMP player, int dim)
+	{
+		transferPlayer(player, dim);
+
+		WorldServer world = player.getServerForPlayer();
+		ChunkCoordinates spawn = player.getBedLocation(player.dimension);
+
+		if (spawn != null)
+		{
+			spawn = EntityPlayer.verifyRespawnCoordinates(world, spawn, true);
+		}
+
+		if (spawn == null)
+		{
+			spawn = world.getSpawnPoint();
+		}
+
+		int x = spawn.posX;
+		int y = spawn.posY;
+		int z = spawn.posZ;
+
+		if (world.isAirBlock(x, y, z) && world.isAirBlock(x, y + 1, z))
+		{
+			while (world.isAirBlock(x, y - 1, z))
+			{
+				--y;
+			}
+
+			if (!world.isAirBlock(x, y - 1, z) && !world.getBlock(x, y - 1, z).getMaterial().isLiquid())
+			{
+				setPlayerLocation(player, x + 0.5D, y + 0.5D, z + 0.5D);
+
+				return true;
+			}
+		}
+
+		return teleportPlayer(player, dim);
 	}
 
 	public static MovingObjectPosition rayTrace(EntityPlayer player, double distance)

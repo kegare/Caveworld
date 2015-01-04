@@ -32,6 +32,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.WorldGenDungeons;
 import net.minecraftforge.common.ChestGenHooks;
 
+import com.kegare.caveworld.entity.EntityArcherZombie;
 import com.kegare.caveworld.util.ArrayListExtended;
 
 public class WorldGenDungeonsCaveworld extends WorldGenDungeons
@@ -42,7 +43,8 @@ public class WorldGenDungeonsCaveworld extends WorldGenDungeons
 		Class[] classes =
 		{
 			EntityZombie.class, EntitySkeleton.class, EntitySpider.class, EntityCaveSpider.class,
-			EntityCreeper.class, EntityEnderman.class, EntitySilverfish.class, EntityBat.class, EntitySnowman.class
+			EntityCreeper.class, EntityEnderman.class, EntitySilverfish.class, EntityBat.class, EntitySnowman.class,
+			EntityArcherZombie.class
 		};
 
 		for (Class clazz : classes)
@@ -183,11 +185,11 @@ public class WorldGenDungeonsCaveworld extends WorldGenDungeons
 			}
 
 			world.setBlock(x, y, z, Blocks.mob_spawner, 0, 2);
-			TileEntityMobSpawner tileentitymobspawner = (TileEntityMobSpawner)world.getTileEntity(x, y, z);
+			TileEntityMobSpawner spawner = (TileEntityMobSpawner)world.getTileEntity(x, y, z);
 
-			if (tileentitymobspawner != null)
+			if (spawner != null)
 			{
-				tileentitymobspawner.func_145881_a().setEntityName(spawnerMobs.get(random.nextInt(spawnerMobs.size()), "Zombie"));
+				spawner.func_145881_a().setEntityName(spawnerMobs.get(random.nextInt(spawnerMobs.size()), "Zombie"));
 			}
 			else
 			{

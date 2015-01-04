@@ -110,6 +110,7 @@ import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
 import cpw.mods.fml.common.ObfuscationReflectionHelper;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.PlayerEvent.ItemCraftedEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
@@ -557,6 +558,15 @@ public class CaveEventHooks
 	}
 
 	@SubscribeEvent
+	public void onCrafted(ItemCraftedEvent event)
+	{
+		if (event.crafting.getItem() == CaveItems.ore_compass)
+		{
+			event.player.triggerAchievement(CaveAchievementList.oreFinder);
+		}
+	}
+
+	@SubscribeEvent
 	public void onItemPickup(ItemPickupEvent event)
 	{
 		EntityPlayer player = event.player;
@@ -892,14 +902,12 @@ public class CaveEventHooks
 		{
 			EntityPlayerMP player = (EntityPlayerMP)living;
 
-			if (player.ticksExisted % 20 == 0)
+			if (player.isPlayerSleeping() && player.getSleepTimer() >= 80)
 			{
-				if (player.isPlayerSleeping() && player.getSleepTimer() >= 80)
-				{
-					player.wakeUpPlayer(true, true, false);
+				player.wakeUpPlayer(true, true, true);
+				player.setSpawnChunk(player.getBedLocation(player.dimension), true);
 
-					player.setSpawnChunk(player.playerLocation, true);
-				}
+				return;
 			}
 
 			if (CaveworldAPI.isDeepExist())
@@ -908,7 +916,7 @@ public class CaveEventHooks
 				{
 					if (player.boundingBox.maxY >= player.worldObj.provider.getActualHeight())
 					{
-						CaveUtils.teleportPlayer(player, CaveworldAPI.getDimension());
+						CaveUtils.respawnPlayer(player, CaveworldAPI.getDimension());
 					}
 				}
 				else
@@ -917,11 +925,11 @@ public class CaveEventHooks
 					{
 						if (player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.theMiner))
 						{
-							CaveUtils.teleportPlayer(player, CaveworldAPI.getDeepDimension());
+							CaveUtils.respawnPlayer(player, CaveworldAPI.getDeepDimension());
 						}
 						else
 						{
-							CaveUtils.teleportPlayer(player, player.dimension);
+							CaveUtils.respawnPlayer(player, player.dimension);
 						}
 					}
 				}

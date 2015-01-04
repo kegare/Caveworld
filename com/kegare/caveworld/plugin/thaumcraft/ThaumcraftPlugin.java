@@ -48,6 +48,8 @@ public final class ThaumcraftPlugin
 		ThaumcraftApi.registerObjectTag(new ItemStack(CaveItems.cavenium, 1, 1), new AspectList().add(Aspect.CRYSTAL, 3));
 		ThaumcraftApi.registerObjectTag(new ItemStack(CaveItems.mining_pickaxe, 1, OreDictionary.WILDCARD_VALUE), new AspectList().add(Aspect.CRYSTAL, 2).add(Aspect.MINE, 2).add(Aspect.TOOL, 2));
 		ThaumcraftApi.registerObjectTag(new ItemStack(CaveItems.lumbering_axe, 1, OreDictionary.WILDCARD_VALUE), new AspectList().add(Aspect.CRYSTAL, 2).add(Aspect.TOOL, 2));
+		ThaumcraftApi.registerObjectTag(new ItemStack(CaveItems.digging_shovel, 1, OreDictionary.WILDCARD_VALUE), new AspectList().add(Aspect.CRYSTAL, 2).add(Aspect.TOOL, 2));
+		ThaumcraftApi.registerObjectTag(new ItemStack(CaveItems.cavenic_bow, 1, OreDictionary.WILDCARD_VALUE), new AspectList().add(Aspect.CRYSTAL, 5).add(Aspect.VOID, 3).add(Aspect.TOOL, 3));
 		ThaumcraftApi.registerObjectTag(new ItemStack(CaveItems.ore_compass, 1, 0), new AspectList().add(Aspect.CRYSTAL, 2).add(Aspect.MECHANISM, 2));
 
 		ThaumcraftApi.registerEntityTag("Caveman", new AspectList().add(Aspect.LIFE, 3).add(Aspect.VOID, 3).add(Aspect.ELDRITCH, 2));

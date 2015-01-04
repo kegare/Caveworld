@@ -75,6 +75,7 @@ public class EntityCavenicSkeleton extends EntitySkeleton
 	{
 		super(world);
 		this.experienceValue = rand.nextInt(10) + 3;
+		this.setSize(0.68F, 2.0F);
 
 		ObfuscationReflectionHelper.setPrivateValue(EntitySkeleton.class, this, aiArrowAttack, "aiArrowAttack", "field_85037_d");
 	}
@@ -116,6 +117,14 @@ public class EntityCavenicSkeleton extends EntitySkeleton
 		{
 			tasks.addTask(4, aiArrowAttack);
 		}
+	}
+
+	@Override
+	public void setSkeletonType(int type)
+	{
+		super.setSkeletonType(type);
+
+		setSize(0.68F, 2.0F);
 	}
 
 	@Override

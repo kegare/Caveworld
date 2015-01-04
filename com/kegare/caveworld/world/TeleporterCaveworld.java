@@ -28,6 +28,7 @@ import net.minecraft.world.WorldServer;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.block.CaveBlocks;
+import com.kegare.caveworld.util.CaveUtils;
 
 public class TeleporterCaveworld extends Teleporter
 {
@@ -243,7 +244,7 @@ public class TeleporterCaveworld extends Teleporter
 
 			if (entity instanceof EntityPlayerMP)
 			{
-				((EntityPlayerMP)entity).playerNetServerHandler.setPlayerLocation(var2, var3, var4, entity.rotationYaw, entity.rotationPitch);
+				CaveUtils.setPlayerLocation((EntityPlayerMP)entity, var2, var3, var4);
 			}
 			else
 			{

@@ -21,19 +21,22 @@ import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.util.ArrayListExtended;
 
+import cpw.mods.fml.common.registry.GameData;
+
 public class CaveAchievementList
 {
 	private static final ArrayListExtended<Achievement> achievementList = new ArrayListExtended();
 
-	public static final Achievement portal = new CaveAchievement("portal", 0, -2, Blocks.mossy_cobblestone, null).initIndependentStat().registerStat();
-	public static final Achievement caveworld = new CaveAchievement("caveworld", 0, 0, CaveBlocks.caveworld_portal, null).initIndependentStat().registerStat();
-	public static final Achievement cavenium = new CaveAchievement("cavenium", -1, 3, CaveItems.cavenium, caveworld).registerStat();
-	public static final Achievement theMiner = new CaveAchievement("theMiner", 3, 2, Items.iron_pickaxe, caveworld).registerStat();
-	public static final Achievement caveman = new CaveAchievement("caveman", -4, -1, Blocks.stone, caveworld).registerStat();
-	public static final Achievement compCaving = new CaveAchievement("compCaving", -5, -3, Items.egg, caveman).registerStat();
-	public static final Achievement cavenicSkeletonSlayer = new CaveAchievement("cavenicSkeletonSlayer", 3, -3, new ItemStack(CaveItems.cavenium, 1, 1), caveworld).registerStat();
-	public static final Achievement deepCaves = new CaveAchievement("deepCaves", 0, 7, new ItemStack(Blocks.stonebrick, 1, 1), caveworld).registerStat();
-	public static final Achievement underCaves = new CaveAchievement("underCaves", 2, 8, Blocks.water, caveworld).registerStat();
+	public static final Achievement portal = CaveAchievement.of("portal", 0, -2, Blocks.mossy_cobblestone, null, true).initIndependentStat();
+	public static final Achievement caveworld = CaveAchievement.of("caveworld", 0, 0, CaveBlocks.caveworld_portal, null, true).initIndependentStat();
+	public static final Achievement cavenium = CaveAchievement.of("cavenium", -1, 3, CaveItems.cavenium, caveworld, Config.cavenium);
+	public static final Achievement oreFinder = CaveAchievement.of("oreFinder", -3, 5, CaveItems.ore_compass, cavenium, Config.oreCompass);
+	public static final Achievement theMiner = CaveAchievement.of("theMiner", 3, 2, Items.iron_pickaxe, caveworld, true);
+	public static final Achievement caveman = CaveAchievement.of("caveman", -4, -1, Blocks.stone, caveworld, true);
+	public static final Achievement compCaving = CaveAchievement.of("compCaving", -5, -3, Items.egg, caveman, true);
+	public static final Achievement cavenicSkeletonSlayer = CaveAchievement.of("cavenicSkeletonSlayer", 3, -3, new ItemStack(CaveItems.cavenium, 1, 1), caveworld, true);
+	public static final Achievement deepCaves = CaveAchievement.of("deepCaves", 0, 7, new ItemStack(Blocks.stonebrick, 1, 1), caveworld, true);
+	public static final Achievement underCaves = CaveAchievement.of("underCaves", 2, 8, Blocks.water, caveworld, true);
 
 	public static void registerAchievements()
 	{
@@ -63,21 +66,38 @@ public class CaveAchievementList
 		return achievementList.get(index, null);
 	}
 
-	private static class CaveAchievement extends Achievement
+	public static class CaveAchievement extends Achievement
 	{
-		public CaveAchievement(String name, int column, int row, Block block, Achievement parent)
-		{
-			this(name, column, row, new ItemStack(block), parent);
-		}
-
-		public CaveAchievement(String name, int column, int row, Item item, Achievement parent)
-		{
-			this(name, column, row, new ItemStack(item), parent);
-		}
-
-		public CaveAchievement(String name, int column, int row, ItemStack itemstack, Achievement parent)
+		private CaveAchievement(String name, int column, int row, ItemStack itemstack, Achievement parent)
 		{
 			super("achievement.caveworld." + name, "caveworld." + name, column, row, itemstack, parent);
+		}
+
+		private static CaveAchievement of(String name, int column, int row, Block block, Achievement parent, boolean register)
+		{
+			return of(name, column, row, new ItemStack(block), parent, register);
+		}
+
+		private static CaveAchievement of(String name, int column, int row, Item item, Achievement parent, boolean register)
+		{
+			return of(name, column, row, new ItemStack(item), parent, register);
+		}
+
+		private static CaveAchievement of(String name, int column, int row, ItemStack itemstack, Achievement parent, boolean register)
+		{
+			if (itemstack.getItem() == null || GameData.getItemRegistry().getNameForObject(itemstack.getItem()) == null)
+			{
+				itemstack = new ItemStack(Blocks.stone);
+			}
+
+			CaveAchievement achievement = new CaveAchievement(name, column, row, itemstack, parent);
+
+			if (register)
+			{
+				achievement.registerStat();
+			}
+
+			return achievement;
 		}
 
 		@Override

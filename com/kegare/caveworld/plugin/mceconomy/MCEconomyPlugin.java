@@ -184,6 +184,16 @@ public final class MCEconomyPlugin
 			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.lumbering_axe), -1);
 		}
 
+		if (Config.shovelDigging)
+		{
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.digging_shovel), -1);
+		}
+
+		if (Config.bowCavenic)
+		{
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.cavenic_bow), -1);
+		}
+
 		if (Config.oreCompass)
 		{
 			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.ore_compass), 2200);
