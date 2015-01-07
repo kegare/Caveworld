@@ -289,7 +289,7 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 	@Override
 	public boolean isDaytime()
 	{
-		return worldObj.getWorldInfo().getWorldTime() < 12500;
+		return false;
 	}
 
 	@Override
@@ -299,6 +299,11 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 		{
 			ambientTickCountdown = worldObj.rand.nextInt(4000) + 10000;
 		}
+
+		worldObj.prevRainingStrength = 0.0F;
+		worldObj.rainingStrength = 0.0F;
+		worldObj.prevThunderingStrength = 0.0F;
+		worldObj.thunderingStrength = 0.0F;
 	}
 
 	@Override
@@ -310,7 +315,7 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 			{
 				String name;
 
-				if (worldObj.rand.nextInt(4) == 0)
+				if (worldObj.rand.nextInt(3) == 0)
 				{
 					name = "ambient.cave";
 				}
@@ -324,6 +329,11 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 				ambientTickCountdown = worldObj.rand.nextInt(5000) + 10000;
 			}
 		}
+
+		worldObj.prevRainingStrength = 0.0F;
+		worldObj.rainingStrength = 0.0F;
+		worldObj.prevThunderingStrength = 0.0F;
+		worldObj.thunderingStrength = 0.0F;
 	}
 
 	@Override

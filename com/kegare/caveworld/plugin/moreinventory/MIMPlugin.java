@@ -18,6 +18,7 @@ public class MIMPlugin
 {
 	public static final String MODID = "MoreInventoryMod";
 
+	public static Item torchHolder;
 	public static Item arrowHolder;
 
 	public static boolean enabled()
@@ -28,6 +29,7 @@ public class MIMPlugin
 	@Method(modid = MODID)
 	public static void invoke()
 	{
+		torchHolder = GameRegistry.findItem(MODID, "torchholder");
 		arrowHolder = GameRegistry.findItem(MODID, "arrowholder");
 	}
 }

@@ -535,7 +535,7 @@ public class CaveUtils
 
 	public static Set<BiomeGenBase> getBiomes()
 	{
-		Set<BiomeGenBase> result = Sets.newHashSet();
+		Set<BiomeGenBase> result = Sets.newLinkedHashSet();
 
 		for (BiomeGenBase biome : BiomeGenBase.getBiomeGenArray())
 		{
@@ -594,92 +594,46 @@ public class CaveUtils
 		transferPlayer(player, dim);
 
 		WorldServer world = player.getServerForPlayer();
-		ChunkCoordinates spawn = null;
-		String key = "Caveworld:LastForceTeleport." + dim;
+		int originX = MathHelper.floor_double(player.posX);
+		int originZ = MathHelper.floor_double(player.posZ);
+		int range = 16;
 		int x, y, z;
 
-		if (player.getEntityData().hasKey(key))
+		for (x = originX - range; x < originX + range; ++x)
 		{
-			NBTTagCompound data = player.getEntityData().getCompoundTag(key);
-			x = data.getInteger("PosX");
-			y = data.getInteger("PosY");
-			z = data.getInteger("PosZ");
-			spawn = EntityPlayer.verifyRespawnCoordinates(world, new ChunkCoordinates(x, y, z), true);
-		}
-
-		if (spawn == null)
-		{
-			spawn = world.getSpawnPoint();
-		}
-
-		x = spawn.posX;
-		y = spawn.posY;
-		z = spawn.posZ;
-
-		if (world.isAirBlock(x, y, z) && world.isAirBlock(x, y + 1, z))
-		{
-			while (world.isAirBlock(x, y - 1, z))
+			for (z = originZ - range; z < originZ + range; ++z)
 			{
-				--y;
-			}
-
-			if (!world.isAirBlock(x, y - 1, z) && !world.getBlock(x, y - 1, z).getMaterial().isLiquid())
-			{
-				setPlayerLocation(player, x + 0.5D, y + 0.5D, z + 0.5D);
-
-				NBTTagCompound data = new NBTTagCompound();
-				data.setInteger("PosX", x);
-				data.setInteger("PosY", y);
-				data.setInteger("PosZ", z);
-				player.getEntityData().setTag(key, data);
-			}
-		}
-		else
-		{
-			int range = 16;
-
-			for (x = spawn.posX - range; x < spawn.posX + range; ++x)
-			{
-				for (z = spawn.posZ - range; z < spawn.posZ + range; ++z)
+				for (y = 1; y < world.getActualHeight() - 5; ++y)
 				{
-					for (y = world.getActualHeight() - 5; y > 1; --y)
+					if (world.isAirBlock(x, y, z) && world.isAirBlock(x, y + 1, z) &&
+						world.isAirBlock(x - 1, y, z) && world.isAirBlock(x - 1, y + 1, z) &&
+						world.isAirBlock(x + 1, y, z) && world.isAirBlock(x + 1, y + 1, z) &&
+						world.isAirBlock(x, y, z - 1) && world.isAirBlock(x, y + 1, z - 1) &&
+						world.isAirBlock(x, y, z + 1) && world.isAirBlock(x, y + 1, z + 1))
 					{
-						if (world.isAirBlock(x, y, z) && world.isAirBlock(x, y + 1, z) &&
-							world.isAirBlock(x - 1, y, z) && world.isAirBlock(x - 1, y + 1, z) &&
-							world.isAirBlock(x + 1, y, z) && world.isAirBlock(x + 1, y + 1, z) &&
-							world.isAirBlock(x, y, z - 1) && world.isAirBlock(x, y + 1, z - 1) &&
-							world.isAirBlock(x, y, z + 1) && world.isAirBlock(x, y + 1, z + 1))
+						while (y > 1 && world.isAirBlock(x, y - 1, z))
 						{
-							while (world.isAirBlock(x, y - 1, z))
-							{
-								--y;
-							}
+							--y;
+						}
 
-							if (!world.isAirBlock(x, y - 1, z) && !world.getBlock(x, y - 1, z).getMaterial().isLiquid())
-							{
-								setPlayerLocation(player, x + 0.5D, y + 0.5D, z + 0.5D);
+						if (!world.isAirBlock(x, y - 1, z) && !world.getBlock(x, y - 1, z).getMaterial().isLiquid())
+						{
+							setPlayerLocation(player, x + 0.5D, y + 0.5D, z + 0.5D);
 
-								NBTTagCompound data = new NBTTagCompound();
-								data.setInteger("PosX", x);
-								data.setInteger("PosY", y);
-								data.setInteger("PosZ", z);
-								player.getEntityData().setTag(key, data);
-
-								return true;
-							}
+							return true;
 						}
 					}
 				}
 			}
-
-			x = 0;
-			y = 30;
-			z = 0;
-			setPlayerLocation(player, x + 0.5D, y + 0.5D, z + 0.5D);
-			world.setBlockToAir(x, y, z);
-			world.setBlockToAir(x, y + 1, z);
-			world.setBlock(x, y - 1, z, Blocks.stone, 0, 2);
 		}
+
+		x = 0;
+		y = 30;
+		z = 0;
+		setPlayerLocation(player, x + 0.5D, y + 0.5D, z + 0.5D);
+		world.setBlockToAir(x, y, z);
+		world.setBlockToAir(x, y + 1, z);
+		world.setBlock(x, y - 1, z, Blocks.stone, 0, 2);
 
 		return false;
 	}
@@ -707,7 +661,7 @@ public class CaveUtils
 
 		if (world.isAirBlock(x, y, z) && world.isAirBlock(x, y + 1, z))
 		{
-			while (world.isAirBlock(x, y - 1, z))
+			while (y > 1 && world.isAirBlock(x, y - 1, z))
 			{
 				--y;
 			}

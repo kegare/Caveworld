@@ -52,6 +52,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.client.event.FOVUpdateEvent;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
@@ -89,6 +90,7 @@ import com.kegare.caveworld.entity.EntityCavenicSkeleton;
 import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.item.ICaveniumTool;
 import com.kegare.caveworld.item.ItemCavenicBow;
+import com.kegare.caveworld.item.ItemCavenicBow.BowMode;
 import com.kegare.caveworld.item.ItemCavenium;
 import com.kegare.caveworld.item.ItemDiggingShovel;
 import com.kegare.caveworld.item.ItemLumberingAxe;
@@ -115,6 +117,7 @@ import cpw.mods.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
+import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent;
 import cpw.mods.fml.common.gameevent.TickEvent.ClientTickEvent;
 import cpw.mods.fml.common.gameevent.TickEvent.Phase;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
@@ -395,6 +398,35 @@ public class CaveEventHooks
 
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
+	public void onFOVUpdate(FOVUpdateEvent event)
+	{
+		EntityPlayer player = event.entity;
+		ItemStack using = player.getItemInUse();
+
+		if (using != null && using.getItem() instanceof ItemCavenicBow)
+		{
+			ItemCavenicBow bow = (ItemCavenicBow)using.getItem();
+
+			if (bow.getMode(using) != BowMode.RAPID)
+			{
+				float f = player.getItemInUseDuration() / 20.0F;
+
+				if (f > 1.0F)
+				{
+					 f = 1.0F;
+				}
+				else
+				{
+					 f *= f;
+				}
+
+				event.newfov *= 1.0F - f * 0.15F;
+			}
+		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
 	public void onClientConnected(ClientConnectedToServerEvent event)
 	{
 		if (Version.getStatus() == Status.PENDING || Version.getStatus() == Status.FAILED)
@@ -554,6 +586,17 @@ public class CaveEventHooks
 					player.triggerAchievement(CaveAchievementList.caveworld);
 				}
 			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onPlayerRespawn(PlayerRespawnEvent event)
+	{
+		EntityPlayer player = event.player;
+
+		if (CaveworldAPI.isEntityInCaveworld(player))
+		{
+			player.timeUntilPortal = player.getPortalCooldown();
 		}
 	}
 

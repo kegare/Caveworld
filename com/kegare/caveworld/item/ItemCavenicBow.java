@@ -17,8 +17,10 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.EnumRarity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemBow;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -28,6 +30,7 @@ import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 
 import com.kegare.caveworld.core.Caveworld;
+import com.kegare.caveworld.entity.EntityTorchArrow;
 import com.kegare.caveworld.plugin.moreinventory.MIMPlugin;
 
 import cpw.mods.fml.relauncher.Side;
@@ -38,7 +41,8 @@ public class ItemCavenicBow extends ItemBow
 	public enum BowMode
 	{
 		NORMAL,
-		RAPID
+		RAPID,
+		TORCH
 	}
 
 	public long highlightStart;
@@ -173,6 +177,99 @@ public class ItemCavenicBow extends ItemBow
 						else
 						{
 							player.inventory.consumeInventoryItem(Items.arrow);
+						}
+					}
+
+					if (!world.isRemote)
+					{
+						world.spawnEntityInWorld(arrow);
+					}
+				}
+
+				break;
+			case TORCH:
+				if (flag || player.inventory.hasItem(Items.arrow) || holder)
+				{
+					boolean holder2 = MIMPlugin.torchHolder != null && player.inventory.hasItem(MIMPlugin.torchHolder);
+					boolean flag2 = flag || player.inventory.hasItem(Item.getItemFromBlock(Blocks.torch)) || holder2;
+					EntityArrow arrow;
+
+					if (flag2)
+					{
+						arrow = new EntityTorchArrow(world, player, power * 1.5F);
+					}
+					else
+					{
+						arrow = createEntityArrow(world, player, power * 1.85F);
+					}
+
+					int j = EnchantmentHelper.getEnchantmentLevel(Enchantment.power.effectId, itemstack);
+
+					if (j > 0)
+					{
+						arrow.setDamage(arrow.getDamage() + j * 0.5D + 0.25D);
+					}
+
+					j = EnchantmentHelper.getEnchantmentLevel(Enchantment.punch.effectId, itemstack);
+
+					if (j > 0)
+					{
+						arrow.setKnockbackStrength(j);
+					}
+
+					if (EnchantmentHelper.getEnchantmentLevel(Enchantment.flame.effectId, itemstack) > 0)
+					{
+						arrow.setFire(100);
+					}
+
+					itemstack.damageItem(1, player);
+					world.playSoundAtEntity(player, "random.bow", 1.0F, 1.0F / (itemRand.nextFloat() * 0.4F + 1.2F) + power * 0.5F);
+
+					if (flag)
+					{
+						arrow.canBePickedUp = 2;
+					}
+					else
+					{
+						if (holder)
+						{
+							for (int i = 0; i < player.inventory.getSizeInventory(); ++i)
+							{
+								ItemStack item = player.inventory.getStackInSlot(i);
+
+								if (item != null && item.getItem() == MIMPlugin.arrowHolder && item.getMaxDamage() - item.getItemDamage() - 2 > 0)
+								{
+									item.damageItem(1, player);
+
+									break;
+								}
+							}
+						}
+						else
+						{
+							player.inventory.consumeInventoryItem(Items.arrow);
+						}
+
+						if (flag2)
+						{
+							if (holder2)
+							{
+								for (int i = 0; i < player.inventory.getSizeInventory(); ++i)
+								{
+									ItemStack item = player.inventory.getStackInSlot(i);
+
+									if (item != null && item.getItem() == MIMPlugin.torchHolder && item.getMaxDamage() - item.getItemDamage() - 2 > 0)
+									{
+										item.damageItem(1, player);
+
+										break;
+									}
+								}
+							}
+							else
+							{
+								player.inventory.consumeInventoryItem(Item.getItemFromBlock(Blocks.torch));
+							}
 						}
 					}
 

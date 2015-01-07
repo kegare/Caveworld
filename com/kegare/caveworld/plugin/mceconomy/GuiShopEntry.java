@@ -895,6 +895,8 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 	@Override
 	public void onGuiClosed()
 	{
+		Keyboard.enableRepeatEvents(false);
+
 		productList.currentPanoramaPaths = null;
 	}
 

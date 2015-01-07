@@ -60,12 +60,7 @@ public class ItemEntry
 	@Override
 	public int hashCode()
 	{
-		if (item == null)
-		{
-			return Objects.hashCode(damage);
-		}
-
-		return Objects.hashCode(GameData.getItemRegistry().getNameForObject(item), damage);
+		return Objects.hashCode(item, damage);
 	}
 
 	@Override

@@ -191,6 +191,7 @@ caveworld.breakmode.lumbering=伐採
 caveworld.bowmode=モード
 caveworld.bowmode.normal=ノーマル
 caveworld.bowmode.rapid=速射
+caveworld.bowmode.torch=松明
 
 tile.portalCaveworld.name=Caveworld ポータルブロック
 tile.rope.name=ロープ
