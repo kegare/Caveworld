@@ -95,7 +95,7 @@ public class GuiRegeneration extends GuiScreen
 		buttonList.add(deepCheckBox);
 		buttonList.add(backupCheckBox);
 
-		if (backupCheckBox == null)
+		if (backupHoverChecker == null)
 		{
 			backupHoverChecker = new HoverChecker(backupCheckBox, 800);
 		}

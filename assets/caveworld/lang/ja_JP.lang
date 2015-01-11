@@ -214,6 +214,7 @@ item.oreCompass.name=鉱石コンパス
 entity.Caveman.name=ケイブマン
 entity.ArcherZombie.name=弓兵ゾンビ
 entity.CavenicSkeleton.name=ケイブニックスケルトン
+entity.MasterCavenicSkeleton.name=マスターケイブニックスケルトン
 
 inventory.caveworld.portal=Caveworld ポータル
 
@@ -233,6 +234,8 @@ achievement.caveworld.compCaving=洞窟探索のお供
 achievement.caveworld.compCaving.desc=ケイブマンを手懐ける
 achievement.caveworld.cavenicSkeletonSlayer=ケイブニックスケルトン退治
 achievement.caveworld.cavenicSkeletonSlayer.desc=ケイブニックスケルトンを倒す
+achievement.caveworld.masterCavenicSkeletonSlayer=マスターケイブニックスケルトン退治
+achievement.caveworld.masterCavenicSkeletonSlayer.desc=マスターケイブニックスケルトンを倒す
 achievement.caveworld.deepCaves=深き洞窟
 achievement.caveworld.deepCaves.desc=Deep Caveworldへ行く
 achievement.caveworld.underCaves=深淵なる洞窟

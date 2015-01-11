@@ -214,6 +214,7 @@ item.oreCompass.name=Ore Compass
 entity.Caveman.name=Caveman
 entity.ArcherZombie.name=Archer Zombie
 entity.CavenicSkeleton.name=Cavenic Skeleton
+entity.MasterCavenicSkeleton.name=Master Cavenic Skeleton
 
 inventory.caveworld.portal=Caveworld Portal
 
@@ -233,6 +234,8 @@ achievement.caveworld.compCaving=Companion of Caving
 achievement.caveworld.compCaving.desc=Tame a Caveman
 achievement.caveworld.cavenicSkeletonSlayer=Cavenic Skeleton Slayer
 achievement.caveworld.cavenicSkeletonSlayer.desc=Kills the Cavenic Skeleton
+achievement.caveworld.masterCavenicSkeletonSlayer=Master Cavenic Skeleton Slayer
+achievement.caveworld.masterCavenicSkeletonSlayer.desc=Kills the Master Cavenic Skeleton
 achievement.caveworld.deepCaves=Deep Caves
 achievement.caveworld.deepCaves.desc=Visit to the Deep Caveworld
 achievement.caveworld.underCaves=Under Caves

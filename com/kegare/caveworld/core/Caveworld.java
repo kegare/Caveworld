@@ -23,12 +23,14 @@ import net.minecraft.block.BlockRedstoneOre;
 import net.minecraft.block.BlockRotatedPillar;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.StatCollector;
+import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.gen.structure.MapGenStructureIO;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
@@ -48,6 +50,7 @@ import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.entity.EntityArcherZombie;
 import com.kegare.caveworld.entity.EntityCaveman;
 import com.kegare.caveworld.entity.EntityCavenicSkeleton;
+import com.kegare.caveworld.entity.EntityMasterCavenicSkeleton;
 import com.kegare.caveworld.handler.CaveAPIHandler;
 import com.kegare.caveworld.handler.CaveEventHooks;
 import com.kegare.caveworld.handler.CaveFuelHandler;
@@ -187,7 +190,9 @@ public class Caveworld
 		EntityRegistry.registerGlobalEntityID(EntityArcherZombie.class, "ArcherZombie", EntityRegistry.findGlobalUniqueEntityId(), 0x00A0A0, 0xAAAAAA);
 		EntityRegistry.registerModEntity(EntityArcherZombie.class, "ArcherZombie", id++, this, 128, 1, true);
 		EntityRegistry.registerGlobalEntityID(EntityCavenicSkeleton.class, "CavenicSkeleton", EntityRegistry.findGlobalUniqueEntityId(), 0xAAAAAA, 0xDDDDDD);
-		EntityRegistry.registerModEntity(EntityCavenicSkeleton.class, "CavenicSkeleton", id, this, 128, 1, true);
+		EntityRegistry.registerModEntity(EntityCavenicSkeleton.class, "CavenicSkeleton", id++, this, 128, 1, true);
+		EntityRegistry.registerGlobalEntityID(EntityMasterCavenicSkeleton.class, "MasterCavenicSkeleton", EntityRegistry.findGlobalUniqueEntityId());
+		EntityRegistry.registerModEntity(EntityMasterCavenicSkeleton.class, "MasterCavenicSkeleton", id, this, 128, 1, true);
 
 		proxy.registerRenderers();
 
@@ -213,6 +218,8 @@ public class Caveworld
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent event)
 	{
+		EntityRegistry.addSpawn(EntityMasterCavenicSkeleton.class, 1, 1, 1, EnumCreatureType.monster, CaveUtils.getBiomes().toArray(new BiomeGenBase[0]));
+
 		Config.syncBiomesCfg();
 		Config.syncVeinsCfg();
 		Config.syncBiomesDeepCfg();
@@ -226,9 +233,9 @@ public class Caveworld
 				CaveworldAPI.setMiningPointAmount("oreCoal", 1);
 				CaveworldAPI.setMiningPointAmount("oreIron", 1);
 				CaveworldAPI.setMiningPointAmount("oreGold", 1);
-				CaveworldAPI.setMiningPointAmount("oreRedstone", 1);
-				CaveworldAPI.setMiningPointAmount(Blocks.lit_redstone_ore, 0, 1);
-				CaveworldAPI.setMiningPointAmount("oreLapis", 1);
+				CaveworldAPI.setMiningPointAmount("oreRedstone", 2);
+				CaveworldAPI.setMiningPointAmount(Blocks.lit_redstone_ore, 0, 2);
+				CaveworldAPI.setMiningPointAmount("oreLapis", 2);
 				CaveworldAPI.setMiningPointAmount("oreEmerald", 2);
 				CaveworldAPI.setMiningPointAmount("oreDiamond", 3);
 				CaveworldAPI.setMiningPointAmount("oreQuartz", 1);
@@ -266,6 +273,7 @@ public class Caveworld
 				CaveworldAPI.setMiningPointAmount("titaniumOre", 1);
 				CaveworldAPI.setMiningPointAmount("oreCavenium", 2);
 				CaveworldAPI.setMiningPointAmount("caveniumOre", 2);
+				CaveworldAPI.setMiningPointAmount(CaveBlocks.cavenium_ore, 1, 3);
 
 				for (Block block : GameData.getBlockRegistry().typeSafeIterable())
 				{

@@ -87,6 +87,7 @@ import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.entity.EntityCaveman;
 import com.kegare.caveworld.entity.EntityCavenicSkeleton;
+import com.kegare.caveworld.entity.EntityMasterCavenicSkeleton;
 import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.item.ICaveniumTool;
 import com.kegare.caveworld.item.ItemCavenicBow;
@@ -1039,7 +1040,16 @@ public class CaveEventHooks
 			}
 		}
 
-		if (entity instanceof EntityCavenicSkeleton)
+		if (entity instanceof EntityMasterCavenicSkeleton)
+		{
+			Entity source = event.source.getEntity();
+
+			if (source != null && source instanceof EntityPlayerMP)
+			{
+				((EntityPlayerMP)source).triggerAchievement(CaveAchievementList.masterCavenicSkeletonSlayer);
+			}
+		}
+		else if (entity instanceof EntityCavenicSkeleton)
 		{
 			Entity source = event.source.getEntity();
 

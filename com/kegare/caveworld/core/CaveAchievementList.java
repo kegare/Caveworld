@@ -35,6 +35,7 @@ public class CaveAchievementList
 	public static final Achievement caveman = CaveAchievement.of("caveman", -4, -1, Blocks.stone, caveworld, true);
 	public static final Achievement compCaving = CaveAchievement.of("compCaving", -5, -3, Items.egg, caveman, true);
 	public static final Achievement cavenicSkeletonSlayer = CaveAchievement.of("cavenicSkeletonSlayer", 3, -3, new ItemStack(CaveItems.cavenium, 1, 1), caveworld, true);
+	public static final Achievement masterCavenicSkeletonSlayer = CaveAchievement.of("masterCavenicSkeletonSlayer", 5, -3, new ItemStack(CaveItems.cavenium, 1, 1), cavenicSkeletonSlayer, true).setSpecial();
 	public static final Achievement deepCaves = CaveAchievement.of("deepCaves", 0, 7, new ItemStack(Blocks.stonebrick, 1, 1), caveworld, true);
 	public static final Achievement underCaves = CaveAchievement.of("underCaves", 2, 8, Blocks.water, caveworld, true);
 
