@@ -166,11 +166,11 @@ public class CommandCaveworld implements ICommand
 		}
 		else if (args[0].equalsIgnoreCase("mp") && args.length > 1 && sender instanceof EntityPlayerMP)
 		{
-			EntityPlayerMP player = CommandBase.getCommandSenderAsPlayer(sender);
+			EntityPlayerMP player = (EntityPlayerMP)sender;
 
-			if (player.mcServer.isSinglePlayer() && player.getServerForPlayer().getWorldInfo().areCommandsAllowed())
+			if (player.getServerForPlayer().getWorldInfo().areCommandsAllowed())
 			{
-				int value = Integer.parseInt(args[1]);
+				int value = CommandBase.parseInt(sender, args[1]);
 
 				if (value != 0)
 				{

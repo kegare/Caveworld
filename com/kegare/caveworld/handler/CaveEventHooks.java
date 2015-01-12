@@ -14,7 +14,6 @@ import java.util.Random;
 import java.util.Set;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockBed;
 import net.minecraft.block.BlockOre;
 import net.minecraft.block.BlockRedstoneOre;
 import net.minecraft.client.Minecraft;
@@ -767,66 +766,6 @@ public class CaveEventHooks
 						event.setCanceled(true);
 					}
 				}
-				else if (CaveworldAPI.isEntityInCaveworld(player) && world.getBlock(x, y, z).isBed(world, x, y, z, player))
-				{
-					int metadata = world.getBlockMetadata(x, y, z);
-
-					if (!BlockBed.isBlockHeadOfBed(metadata))
-					{
-						int var1 = BlockBed.getDirection(metadata);
-						x += BlockBed.field_149981_a[var1][0];
-						z += BlockBed.field_149981_a[var1][1];
-
-						if (!world.getBlock(x, y, z).isBed(world, x, y, z, player))
-						{
-							return;
-						}
-
-						metadata = world.getBlockMetadata(x, y, z);
-					}
-
-					if (BlockBed.func_149976_c(metadata))
-					{
-						for (Object obj : world.playerEntities)
-						{
-							EntityPlayer target = (EntityPlayer)obj;
-
-							if (target.isPlayerSleeping())
-							{
-								ChunkCoordinates coord = target.playerLocation;
-
-								if (coord.posX == x && coord.posY == y && coord.posZ == z)
-								{
-									player.addChatComponentMessage(new ChatComponentTranslation("tile.bed.occupied"));
-
-									return;
-								}
-							}
-						}
-
-						BlockBed.func_149979_a(world, x, y, z, false);
-					}
-
-					EnumStatus status = player.sleepInBedAt(x, y, z);
-
-					if (status == EnumStatus.OK)
-					{
-						BlockBed.func_149979_a(world, x, y, z, true);
-					}
-					else
-					{
-						if (status == EnumStatus.NOT_POSSIBLE_NOW)
-						{
-							player.addChatComponentMessage(new ChatComponentTranslation("tile.bed.noSleep"));
-						}
-						else if (status == EnumStatus.NOT_SAFE)
-						{
-							player.addChatComponentMessage(new ChatComponentTranslation("tile.bed.notSafe"));
-						}
-					}
-
-					event.setCanceled(true);
-				}
 			}
 		}
 	}
@@ -945,14 +884,6 @@ public class CaveEventHooks
 		if (CaveworldAPI.isEntityInCaveworld(living) && living instanceof EntityPlayerMP)
 		{
 			EntityPlayerMP player = (EntityPlayerMP)living;
-
-			if (player.isPlayerSleeping() && player.getSleepTimer() >= 80)
-			{
-				player.wakeUpPlayer(true, true, true);
-				player.setSpawnChunk(player.getBedLocation(player.dimension), true);
-
-				return;
-			}
 
 			if (CaveworldAPI.isDeepExist())
 			{

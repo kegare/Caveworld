@@ -71,6 +71,7 @@ import com.kegare.caveworld.network.server.SelectBreakableMessage;
 import com.kegare.caveworld.plugin.advancedtools.AdvancedToolsPlugin;
 import com.kegare.caveworld.plugin.craftguide.CraftGuidePlugin;
 import com.kegare.caveworld.plugin.ic2.IC2Plugin;
+import com.kegare.caveworld.plugin.mapletree.MapleTreePlugin;
 import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.plugin.miningmod.MiningmodPlugin;
 import com.kegare.caveworld.plugin.more.MOrePlugin;
@@ -271,20 +272,13 @@ public class Caveworld
 				CaveworldAPI.setMiningPointAmount("platinumOre", 1);
 				CaveworldAPI.setMiningPointAmount("oreTitanium", 1);
 				CaveworldAPI.setMiningPointAmount("titaniumOre", 1);
+				CaveworldAPI.setMiningPointAmount("oreTofu", 1);
+				CaveworldAPI.setMiningPointAmount("tofuOre", 1);
+				CaveworldAPI.setMiningPointAmount("oreTofuDiamond", 3);
+				CaveworldAPI.setMiningPointAmount("tofuDiamondOre", 3);
 				CaveworldAPI.setMiningPointAmount("oreCavenium", 2);
 				CaveworldAPI.setMiningPointAmount("caveniumOre", 2);
 				CaveworldAPI.setMiningPointAmount(CaveBlocks.cavenium_ore, 1, 3);
-
-				for (Block block : GameData.getBlockRegistry().typeSafeIterable())
-				{
-					for (int i = 0; i < 16; ++i)
-					{
-						if (CaveworldAPI.getMiningPointAmount(block, i) > 0)
-						{
-							ItemMiningPickaxe.defaultBreakables.add(CaveUtils.toStringHelper(block, i));
-						}
-					}
-				}
 			}
 		});
 
@@ -535,6 +529,18 @@ public class Caveworld
 		{
 			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: MIMPlugin");
 		}
+
+		try
+		{
+			if (MapleTreePlugin.enabled())
+			{
+				MapleTreePlugin.invoke();
+			}
+		}
+		catch (Throwable e)
+		{
+			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: MapleTreePlugin");
+		}
 	}
 
 	@EventHandler
@@ -565,6 +571,24 @@ public class Caveworld
 				if (Config.generalCfg.hasChanged())
 				{
 					Config.generalCfg.save();
+				}
+			}
+		});
+
+		CaveUtils.getPool().execute(new RecursiveAction()
+		{
+			@Override
+			protected void compute()
+			{
+				for (Block block : GameData.getBlockRegistry().typeSafeIterable())
+				{
+					for (int i = 0; i < 16; ++i)
+					{
+						if (CaveworldAPI.getMiningPointAmount(block, i) > 0)
+						{
+							ItemMiningPickaxe.defaultBreakables.add(CaveUtils.toStringHelper(block, i));
+						}
+					}
 				}
 			}
 		});

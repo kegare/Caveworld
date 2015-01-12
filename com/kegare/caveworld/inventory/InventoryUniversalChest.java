@@ -111,12 +111,12 @@ public class InventoryUniversalChest extends InventoryBasic
 	@Override
 	public String getInventoryName()
 	{
-		return CaveBlocks.universal_chest.getLocalizedName();
+		return CaveBlocks.universal_chest.getUnlocalizedName() + ".name";
 	}
 
 	@Override
 	public boolean hasCustomInventoryName()
 	{
-		return true;
+		return false;
 	}
 }

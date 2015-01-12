@@ -19,9 +19,9 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraftforge.common.ChestGenHooks;
+import net.minecraftforge.common.util.Constants.NBT;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 
@@ -153,7 +153,7 @@ public class CaveBlocks
 
 				if (data.hasKey("ChestItems"))
 				{
-					universal_chest.inventory.loadInventoryFromNBT((NBTTagList)data.getTag("ChestItems"));
+					universal_chest.inventory.loadInventoryFromNBT(data.getTagList("ChestItems", NBT.TAG_COMPOUND));
 				}
 			}
 		}

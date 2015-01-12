@@ -287,6 +287,12 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 	}
 
 	@Override
+	public ChunkCoordinates getRandomizedSpawnPoint()
+	{
+		return getSpawnPoint();
+	}
+
+	@Override
 	public boolean isDaytime()
 	{
 		return false;

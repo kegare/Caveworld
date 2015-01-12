@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import net.minecraft.block.BlockBed;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
@@ -66,7 +67,11 @@ public class TeleporterCaveworld extends Teleporter
 
 			if (CaveworldAPI.isEntityInCaveworld(player) && player.getBedLocation(player.dimension) == null)
 			{
-				player.setSpawnChunk(player.getPlayerCoordinates(), true);
+				int x = MathHelper.floor_double(player.posX);
+				int y = MathHelper.floor_double(player.posY + 0.5D);
+				int z = MathHelper.floor_double(player.posZ);
+
+				player.setSpawnChunk(BlockBed.func_149977_a(worldObj, x, y, z, 0), true);
 			}
 		}
 	}

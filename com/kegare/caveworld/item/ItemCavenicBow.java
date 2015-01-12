@@ -52,7 +52,7 @@ public class ItemCavenicBow extends ItemBow
 		super();
 		this.setUnlocalizedName(name);
 		this.setTextureName("caveworld:cavenic_bow");
-		this.setMaxDamage(852);
+		this.setMaxDamage(768);
 		this.setCreativeTab(Caveworld.tabCaveworld);
 	}
 
