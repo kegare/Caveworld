@@ -153,7 +153,7 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 
 			return true;
 		}
-		if (size3.canCreatePortal() && size3.portalBlockCount == 0)
+		else if (size3.canCreatePortal() && size3.portalBlockCount == 0)
 		{
 			size3.setPortalBlocks();
 

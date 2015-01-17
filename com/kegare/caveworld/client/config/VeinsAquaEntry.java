@@ -24,9 +24,9 @@ import cpw.mods.fml.client.config.GuiConfigEntries;
 import cpw.mods.fml.client.config.GuiConfigEntries.CategoryEntry;
 import cpw.mods.fml.client.config.IConfigElement;
 
-public class VeinsDeepEntry extends CategoryEntry
+public class VeinsAquaEntry extends CategoryEntry
 {
-	public VeinsDeepEntry(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement configElement)
+	public VeinsAquaEntry(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement configElement)
 	{
 		super(owningScreen, owningEntryList, configElement);
 	}
@@ -34,7 +34,7 @@ public class VeinsDeepEntry extends CategoryEntry
 	@Override
 	protected GuiScreen buildChildScreen()
 	{
-		return new GuiVeinsEntry(owningScreen, CaveworldAPI.veinDeepManager);
+		return new GuiVeinsEntry(owningScreen, CaveworldAPI.veinAquaManager);
 	}
 
 	@Override
@@ -48,7 +48,7 @@ public class VeinsDeepEntry extends CategoryEntry
 	{
 		try
 		{
-			FileUtils.forceDelete(new File(Config.veinsDeepCfg.toString()));
+			FileUtils.forceDelete(new File(Config.veinsAquaCfg.toString()));
 		}
 		catch (IOException e)
 		{
@@ -57,10 +57,10 @@ public class VeinsDeepEntry extends CategoryEntry
 			return;
 		}
 
-		CaveworldAPI.clearCaveDeepVeins();
+		CaveworldAPI.clearCaveAquaVeins();
 
-		Config.veinsDeepCfg = null;
-		Config.syncVeinsDeepCfg();
+		Config.veinsAquaCfg = null;
+		Config.syncVeinsAquaCfg();
 
 		if (childScreen instanceof GuiVeinsEntry)
 		{
@@ -69,7 +69,7 @@ public class VeinsDeepEntry extends CategoryEntry
 			if (gui.veinList != null)
 			{
 				gui.veinList.veins.clear();
-				gui.veinList.veins.addAll(CaveworldAPI.getCaveDeepVeins());
+				gui.veinList.veins.addAll(CaveworldAPI.getCaveAquaVeins());
 				gui.veinList.contents.clear();
 				gui.veinList.contents.addAll(gui.veinList.veins);
 			}

@@ -45,7 +45,6 @@ public class BlockCaveniumOre extends BlockOre
 		this.setBlockTextureName("caveworld:cavenium_ore");
 		this.setHardness(3.5F);
 		this.setResistance(5.0F);
-		this.setStepSound(soundTypePiston);
 		this.setHarvestLevel("pickaxe", 2);
 		this.setCreativeTab(Caveworld.tabCaveworld);
 	}

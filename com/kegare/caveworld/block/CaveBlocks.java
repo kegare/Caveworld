@@ -31,6 +31,7 @@ import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.entity.TileEntityUniversalChest;
 import com.kegare.caveworld.item.ItemCaveniumOre;
+import com.kegare.caveworld.item.ItemGemOre;
 import com.kegare.caveworld.item.ItemPortalCaveworld;
 import com.kegare.caveworld.item.ItemRope;
 import com.kegare.caveworld.item.ItemUniversalChest;
@@ -45,6 +46,7 @@ public class CaveBlocks
 	public static final BlockRopeLadder rope_ladder = new BlockRopeLadder("ropeLadder");
 	public static final BlockCaveniumOre cavenium_ore = new BlockCaveniumOre("oreCavenium");
 	public static final BlockUniversalChest universal_chest = new BlockUniversalChest("universalChest");
+	public static final BlockGemOre gem_ore = new BlockGemOre("oreGem");
 
 	public static void registerBlocks()
 	{
@@ -111,8 +113,29 @@ public class CaveBlocks
 
 			item = new ItemStack(cavenium_ore, 1, 2);
 			OreDictionary.registerOre("blockCavenium", item);
+			OreDictionary.registerOre("caveniumBlock", item);
+
+			GameRegistry.addRecipe(new ShapedOreRecipe(item,
+				"CCC", "CCC", "CCC",
+				'C', "cavenium"
+			));
+			GameRegistry.addRecipe(new ShapedOreRecipe(item,
+				"CCC", "CCC", "CCC",
+				'C', "gemCavenium"
+			));
+
 			item = new ItemStack(cavenium_ore, 1, 3);
 			OreDictionary.registerOre("blockRefinedCavenium", item);
+			OreDictionary.registerOre("refinedCaveniumBlock", item);
+
+			GameRegistry.addRecipe(new ShapedOreRecipe(item,
+				"CCC", "CCC", "CCC",
+				'C', "refinedCavenium"
+			));
+			GameRegistry.addRecipe(new ShapedOreRecipe(item,
+				"CCC", "CCC", "CCC",
+				'C', "gemRefinedCavenium"
+			));
 
 			CaveworldAPI.setMiningPointAmount(cavenium_ore, 0, 2);
 			CaveworldAPI.setMiningPointAmount(cavenium_ore, 1, 3);
@@ -158,13 +181,33 @@ public class CaveBlocks
 			}
 		}
 
+		if (Config.oreGem)
+		{
+			GameRegistry.registerBlock(gem_ore, ItemGemOre.class, "gem_ore");
+
+			ItemStack item = new ItemStack(gem_ore, 1, 0);
+			OreDictionary.registerOre("oreAquamarine", item);
+			OreDictionary.registerOre("aquamarineOre", item);
+
+			item = new ItemStack(gem_ore, 1, 1);
+			OreDictionary.registerOre("blockAquamarine", item);
+			OreDictionary.registerOre("aquamarineBlock", item);
+
+			GameRegistry.addRecipe(new ShapedOreRecipe(item,
+				"AAA", "AAA", "AAA",
+				'A', "aquamarine"
+			));
+
+			CaveworldAPI.setMiningPointAmount(gem_ore, 0, 2);
+		}
+
 		if (Config.mossStoneCraftRecipe)
 		{
-			GameRegistry.addShapedRecipe(new ItemStack(Blocks.mossy_cobblestone),
+			GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(Blocks.mossy_cobblestone),
 				" V ", "VCV", " V ",
 				'V', Blocks.vine,
-				'C', Blocks.cobblestone
-			);
+				'C', "cobblestone"
+			));
 		}
 	}
 }

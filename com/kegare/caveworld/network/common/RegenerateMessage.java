@@ -28,7 +28,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMessage, IMessage>
 {
 	private boolean backup = true;
-	private boolean caveworld = true, deep = true;
+	private boolean caveworld = true, deep = true, aqua = true;
 
 	public RegenerateMessage() {}
 
@@ -37,11 +37,12 @@ public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMe
 		this.backup = backup;
 	}
 
-	public RegenerateMessage(boolean backup, boolean caveworld, boolean deep)
+	public RegenerateMessage(boolean backup, boolean caveworld, boolean deep, boolean aqua)
 	{
 		this(backup);
 		this.caveworld = caveworld;
 		this.deep = deep;
+		this.aqua = aqua;
 	}
 
 	@Override
@@ -50,6 +51,7 @@ public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMe
 		backup = buffer.readBoolean();
 		caveworld = buffer.readBoolean();
 		deep = buffer.readBoolean();
+		aqua = buffer.readBoolean();
 	}
 
 	@Override
@@ -58,6 +60,7 @@ public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMe
 		buffer.writeBoolean(backup);
 		buffer.writeBoolean(caveworld);
 		buffer.writeBoolean(deep);
+		buffer.writeBoolean(aqua);
 	}
 
 	@Override
@@ -76,9 +79,14 @@ public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMe
 				CaveUtils.regenerateDimension(CaveworldAPI.getDimension(), message.backup, ret);
 			}
 
-			if (message.deep)
+			if (message.deep && CaveworldAPI.isDeepExist())
 			{
 				CaveUtils.regenerateDimension(CaveworldAPI.getDeepDimension(), message.backup, ret);
+			}
+
+			if (message.aqua && CaveworldAPI.isAquaExist())
+			{
+				CaveUtils.regenerateDimension(CaveworldAPI.getAquaDimension(), message.backup, ret);
 			}
 		}
 

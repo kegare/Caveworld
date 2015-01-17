@@ -175,7 +175,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 				{
 					for (int y = 1; y < worldHeight - 4; ++y)
 					{
-						if (blocks[i + y] != null && blocks[i + y + 1] == null)
+						if (blocks[i + y] != null && blocks[i + y].getMaterial().isSolid() && blocks[i + y + 1] == null)
 						{
 							blocks[i + y] = entry.getTopBlock().getBlock();
 							metadata[i + y] = (byte)entry.getTopBlock().getMetadata();
@@ -199,11 +199,8 @@ public class ChunkProviderCaveworld implements IChunkProvider
 		}
 
 		Chunk chunk = new Chunk(worldObj, blocks, metadata, chunkX, chunkZ);
-		byte[] biomes = new byte[256];
+		Arrays.fill(chunk.getBiomeArray(), (byte)biome.biomeID);
 
-		Arrays.fill(biomes, (byte)biome.biomeID);
-
-		chunk.setBiomeArray(biomes);
 		chunk.resetRelightChecks();
 
 		return chunk;

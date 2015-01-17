@@ -17,6 +17,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.stats.Achievement;
 import net.minecraftforge.common.AchievementPage;
 
+import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.block.CaveBlocks;
 import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.util.ArrayListExtended;
@@ -36,8 +37,10 @@ public class CaveAchievementList
 	public static final Achievement compCaving = CaveAchievement.of("compCaving", -5, -3, Items.egg, caveman, true);
 	public static final Achievement cavenicSkeletonSlayer = CaveAchievement.of("cavenicSkeletonSlayer", 3, -3, new ItemStack(CaveItems.cavenium, 1, 1), caveworld, true);
 	public static final Achievement masterCavenicSkeletonSlayer = CaveAchievement.of("masterCavenicSkeletonSlayer", 5, -3, new ItemStack(CaveItems.cavenium, 1, 1), cavenicSkeletonSlayer, true).setSpecial();
-	public static final Achievement deepCaves = CaveAchievement.of("deepCaves", 0, 7, new ItemStack(Blocks.stonebrick, 1, 1), caveworld, true);
+	public static final Achievement deepCaves = CaveAchievement.of("deepCaves", 0, 7, new ItemStack(Blocks.stonebrick, 1, 1), caveworld, CaveworldAPI.isDeepExist());
 	public static final Achievement underCaves = CaveAchievement.of("underCaves", 2, 8, Blocks.water, caveworld, true);
+	public static final Achievement aquaCaves = CaveAchievement.of("aquaCaves", 2, 11, Blocks.water, underCaves, CaveworldAPI.isAquaExist());
+	public static final Achievement aquamarine = CaveAchievement.of("aquamarine", 5, 11, new ItemStack(CaveItems.gem, 1, 0), caveworld, Config.gem);
 
 	public static void registerAchievements()
 	{

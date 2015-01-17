@@ -24,9 +24,9 @@ import cpw.mods.fml.client.config.GuiConfigEntries;
 import cpw.mods.fml.client.config.GuiConfigEntries.CategoryEntry;
 import cpw.mods.fml.client.config.IConfigElement;
 
-public class VeinsDeepEntry extends CategoryEntry
+public class BiomesAquaEntry extends CategoryEntry
 {
-	public VeinsDeepEntry(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement configElement)
+	public BiomesAquaEntry(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement configElement)
 	{
 		super(owningScreen, owningEntryList, configElement);
 	}
@@ -34,7 +34,7 @@ public class VeinsDeepEntry extends CategoryEntry
 	@Override
 	protected GuiScreen buildChildScreen()
 	{
-		return new GuiVeinsEntry(owningScreen, CaveworldAPI.veinDeepManager);
+		return new GuiBiomesEntry(owningScreen, CaveworldAPI.biomeAquaManager);
 	}
 
 	@Override
@@ -48,7 +48,7 @@ public class VeinsDeepEntry extends CategoryEntry
 	{
 		try
 		{
-			FileUtils.forceDelete(new File(Config.veinsDeepCfg.toString()));
+			FileUtils.forceDelete(new File(Config.biomesAquaCfg.toString()));
 		}
 		catch (IOException e)
 		{
@@ -57,21 +57,21 @@ public class VeinsDeepEntry extends CategoryEntry
 			return;
 		}
 
-		CaveworldAPI.clearCaveDeepVeins();
+		CaveworldAPI.clearCaveAquaBiomes();
 
-		Config.veinsDeepCfg = null;
-		Config.syncVeinsDeepCfg();
+		Config.biomesAquaCfg = null;
+		Config.syncBiomesAquaCfg();
 
-		if (childScreen instanceof GuiVeinsEntry)
+		if (childScreen instanceof GuiBiomesEntry)
 		{
-			GuiVeinsEntry gui = (GuiVeinsEntry)childScreen;
+			GuiBiomesEntry gui = (GuiBiomesEntry)childScreen;
 
-			if (gui.veinList != null)
+			if (gui.biomeList != null)
 			{
-				gui.veinList.veins.clear();
-				gui.veinList.veins.addAll(CaveworldAPI.getCaveDeepVeins());
-				gui.veinList.contents.clear();
-				gui.veinList.contents.addAll(gui.veinList.veins);
+				gui.biomeList.biomes.clear();
+				gui.biomeList.biomes.addAll(CaveworldAPI.getCaveAquaBiomes());
+				gui.biomeList.contents.clear();
+				gui.biomeList.contents.addAll(gui.biomeList.biomes);
 			}
 		}
 	}

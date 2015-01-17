@@ -86,6 +86,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.kegare.caveworld.api.BlockEntry;
+import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.core.Caveworld;
 import com.kegare.caveworld.core.Config;
 import com.kegare.caveworld.network.common.RegenerateMessage;
@@ -638,6 +639,55 @@ public class CaveUtils
 		return false;
 	}
 
+	public static boolean teleportPlayerAqua(EntityPlayerMP player, int dim)
+	{
+		transferPlayer(player, dim);
+
+		WorldServer world = player.getServerForPlayer();
+		int originX = MathHelper.floor_double(player.posX);
+		int originZ = MathHelper.floor_double(player.posZ);
+		int range = 16;
+		int x, y, z;
+
+		for (x = originX - range; x < originX + range; ++x)
+		{
+			for (z = originZ - range; z < originZ + range; ++z)
+			{
+				for (y = 1; y < world.getActualHeight() - 5; ++y)
+				{
+					if ((world.isAirBlock(x, y, z) || world.getBlock(x, y, z) == Blocks.water) && (world.isAirBlock(x, y + 1, z) || world.getBlock(x, y + 1, z) == Blocks.water) &&
+						(world.isAirBlock(x - 1, y, z) || world.getBlock(x - 1, y, z) == Blocks.water) && (world.isAirBlock(x - 1, y + 1, z) || world.getBlock(x - 1, y + 1, z) == Blocks.water) &&
+						(world.isAirBlock(x + 1, y, z) || world.getBlock(x + 1, y, z) == Blocks.water) && (world.isAirBlock(x + 1, y + 1, z) || world.getBlock(x + 1, y + 1, z) == Blocks.water) &&
+						(world.isAirBlock(x, y, z - 1) || world.getBlock(x, y, z - 1) == Blocks.water) && (world.isAirBlock(x, y + 1, z - 1) || world.getBlock(x, y + 1, z - 1) == Blocks.water) &&
+						(world.isAirBlock(x, y, z + 1) || world.getBlock(x, y, z + 1) == Blocks.water) && (world.isAirBlock(x, y + 1, z + 1) || world.getBlock(x, y + 1, z + 1) == Blocks.water))
+					{
+						while (y > 1 && world.isAirBlock(x, y - 1, z))
+						{
+							--y;
+						}
+
+						if (!world.isAirBlock(x, y - 1, z))
+						{
+							setPlayerLocation(player, x + 0.5D, y + 0.5D, z + 0.5D);
+
+							return true;
+						}
+					}
+				}
+			}
+		}
+
+		x = 0;
+		y = 30;
+		z = 0;
+		setPlayerLocation(player, x + 0.5D, y + 0.5D, z + 0.5D);
+		world.setBlockToAir(x, y, z);
+		world.setBlockToAir(x, y + 1, z);
+		world.setBlock(x, y - 1, z, Blocks.stone, 0, 2);
+
+		return false;
+	}
+
 	public static boolean respawnPlayer(EntityPlayerMP player, int dim)
 	{
 		transferPlayer(player, dim);
@@ -672,6 +722,11 @@ public class CaveUtils
 
 				return true;
 			}
+		}
+
+		if (CaveworldAPI.isAquaExist() && dim == CaveworldAPI.getAquaDimension())
+		{
+			return teleportPlayerAqua(player, dim);
 		}
 
 		return teleportPlayer(player, dim);

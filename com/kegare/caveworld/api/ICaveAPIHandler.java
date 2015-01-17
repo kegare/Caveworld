@@ -26,6 +26,17 @@ public interface ICaveAPIHandler
 	public boolean isDeepExist();
 
 	/**
+	 * Returns dimension id of the Aqua Caveworld dimension.
+	 */
+	public int getAquaDimension();
+
+	/**
+	 * Checks if the Aqua Caveworld dimension is exist.
+	 * @return <tt>true</tt> if the Aqua Caveworld dimension is exist.
+	 */
+	public boolean isAquaExist();
+
+	/**
 	 * Checks if entity is in Caveworld.
 	 * @param entity The entity
 	 * @return <tt>true</tt> if the entity is in the Caveworld dimension.

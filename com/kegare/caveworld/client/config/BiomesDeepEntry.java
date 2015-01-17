@@ -69,7 +69,7 @@ public class BiomesDeepEntry extends CategoryEntry
 			if (gui.biomeList != null)
 			{
 				gui.biomeList.biomes.clear();
-				gui.biomeList.biomes.addAll(CaveworldAPI.getCaveBiomes());
+				gui.biomeList.biomes.addAll(CaveworldAPI.getCaveDeepBiomes());
 				gui.biomeList.contents.clear();
 				gui.biomeList.contents.addAll(gui.biomeList.biomes);
 			}

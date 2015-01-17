@@ -134,7 +134,7 @@ public class ItemLumberingAxe extends ItemAxe implements ICaveniumTool
 
 	public ItemLumberingAxe(String name)
 	{
-		super(ItemMiningPickaxe.CAVENIUM);
+		super(CaveItems.CAVENIUM);
 		this.setUnlocalizedName(name);
 		this.setTextureName("caveworld:lumbering_axe");
 		this.setCreativeTab(Caveworld.tabLumberingAxe);

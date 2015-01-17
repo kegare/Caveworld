@@ -161,7 +161,16 @@ public class CommandCaveworld implements ICommand
 				boolean ret = Config.hardcore || Config.caveborn;
 
 				CaveUtils.regenerateDimension(CaveworldAPI.getDimension(), backup, ret);
-				CaveUtils.regenerateDimension(CaveworldAPI.getDeepDimension(), backup, ret);
+
+				if (CaveworldAPI.isDeepExist())
+				{
+					CaveUtils.regenerateDimension(CaveworldAPI.getDeepDimension(), backup, ret);
+				}
+
+				if (CaveworldAPI.isAquaExist())
+				{
+					CaveUtils.regenerateDimension(CaveworldAPI.getAquaDimension(), backup, ret);
+				}
 			}
 		}
 		else if (args[0].equalsIgnoreCase("mp") && args.length > 1 && sender instanceof EntityPlayerMP)

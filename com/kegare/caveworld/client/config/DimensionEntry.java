@@ -46,10 +46,9 @@ public class DimensionEntry extends CaveCategoryEntry
 	{
 		List<IConfigElement> list = Lists.newArrayList();
 
-		for (String category : getConfig().getCategoryNames())
-		{
-			list.add(new DimensionElement(getConfig().getCategory(category)));
-		}
+		list.add(new DimensionElement(getConfig().getCategory("Caveworld")));
+		list.add(new DimensionElement(getConfig().getCategory("Deep Caveworld")));
+		list.add(new DimensionElement(getConfig().getCategory("Aqua Caveworld")));
 
 		return list;
 	}
@@ -76,6 +75,10 @@ public class DimensionEntry extends CaveCategoryEntry
 					case "Deep Caveworld":
 						result.add(new CaveCategoryElement("biomesDeep", BiomesDeepEntry.class));
 						result.add(new CaveCategoryElement("veinsDeep", VeinsDeepEntry.class));
+						break;
+					case "Aqua Caveworld":
+						result.add(new CaveCategoryElement("biomesAqua", BiomesAquaEntry.class));
+						result.add(new CaveCategoryElement("veinsAqua", VeinsAquaEntry.class));
 						break;
 					default:
 						result.add(new CaveCategoryElement("biomes", BiomesEntry.class));

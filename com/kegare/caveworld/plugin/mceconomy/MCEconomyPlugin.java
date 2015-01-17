@@ -157,8 +157,8 @@ public final class MCEconomyPlugin
 
 		if (Config.oreCavenium)
 		{
-			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.cavenium_ore, 1, 0), 400);
-			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.cavenium_ore, 1, 1), 1000);
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.cavenium_ore, 1, 0), 300);
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.cavenium_ore, 1, 1), 800);
 			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.cavenium_ore, 1, 2), 1800);
 			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.cavenium_ore, 1, 3), 4500);
 		}
@@ -166,6 +166,12 @@ public final class MCEconomyPlugin
 		if (Config.universalChest)
 		{
 			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.universal_chest), -1);
+		}
+
+		if (Config.oreGem)
+		{
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.gem_ore, 1, 0), 60);
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.gem_ore, 1, 1), 315);
 		}
 
 		if (Config.cavenium)
@@ -197,6 +203,26 @@ public final class MCEconomyPlugin
 		if (Config.oreCompass)
 		{
 			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.ore_compass), 2200);
+		}
+
+		if (Config.gem)
+		{
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.gem, 1, 0), 35);
+		}
+
+		if (Config.pickaxeAquamarine)
+		{
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.aquamarine_pickaxe), 110);
+		}
+
+		if (Config.axeAquamarine)
+		{
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.aquamarine_axe), 110);
+		}
+
+		if (Config.shovelAquamarine)
+		{
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.aquamarine_shovel), 40);
 		}
 
 		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCaveman.class, 20);

@@ -34,7 +34,6 @@ import net.minecraft.util.IIcon;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.EnumHelper;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -132,21 +131,14 @@ public class ItemMiningPickaxe extends ItemPickaxe implements ICaveniumTool
 		}
 	}
 
-	public static final ToolMaterial CAVENIUM = EnumHelper.addToolMaterial("CAVENIUM", 3, 300, 5.0F, 1.5F, 10);
-
 	public static final ArrayListExtended<BlockEntry> breakableBlocks = new ArrayListExtended();
 	public static final Set<String> defaultBreakables = Sets.newHashSet();
-
-	static
-	{
-		CAVENIUM.customCraftingMaterial = CaveItems.cavenium;
-	}
 
 	public long highlightStart;
 
 	public ItemMiningPickaxe(String name)
 	{
-		super(CAVENIUM);
+		super(CaveItems.CAVENIUM);
 		this.setUnlocalizedName(name);
 		this.setTextureName("caveworld:mining_pickaxe");
 		this.setCreativeTab(Caveworld.tabMiningPickaxe);

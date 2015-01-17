@@ -14,6 +14,7 @@ import net.minecraftforge.common.DimensionManager;
 
 import com.kegare.caveworld.api.ICaveAPIHandler;
 import com.kegare.caveworld.util.Version;
+import com.kegare.caveworld.world.ChunkProviderAquaCaveworld;
 import com.kegare.caveworld.world.ChunkProviderCaveworld;
 import com.kegare.caveworld.world.ChunkProviderDeepCaveworld;
 
@@ -44,8 +45,20 @@ public class CaveAPIHandler implements ICaveAPIHandler
 	}
 
 	@Override
+	public int getAquaDimension()
+	{
+		return ChunkProviderAquaCaveworld.dimensionId;
+	}
+
+	@Override
+	public boolean isAquaExist()
+	{
+		return getDimension() != 0 && getDimension() != getAquaDimension() && DimensionManager.isDimensionRegistered(getAquaDimension());
+	}
+
+	@Override
 	public boolean isEntityInCaveworld(Entity entity)
 	{
-		return entity != null && (entity.dimension == getDimension() || entity.dimension == getDeepDimension());
+		return entity != null && (entity.dimension == getDimension() || isDeepExist() && entity.dimension == getDeepDimension() || isAquaExist() && entity.dimension == getAquaDimension());
 	}
 }

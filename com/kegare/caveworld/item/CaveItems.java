@@ -10,11 +10,15 @@
 package com.kegare.caveworld.item;
 
 import net.minecraft.init.Items;
+import net.minecraft.item.Item.ToolMaterial;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraftforge.common.ChestGenHooks;
+import net.minecraftforge.common.util.EnumHelper;
 import net.minecraftforge.oredict.OreDictionary;
+import net.minecraftforge.oredict.ShapedOreRecipe;
+import net.minecraftforge.oredict.ShapelessOreRecipe;
 
 import com.google.common.base.Predicate;
 import com.kegare.caveworld.block.CaveBlocks;
@@ -26,12 +30,19 @@ import cpw.mods.fml.common.registry.GameRegistry;
 
 public class CaveItems
 {
+	public static final ToolMaterial CAVENIUM = EnumHelper.addToolMaterial("CAVENIUM", 3, 300, 5.0F, 1.5F, 10);
+	public static final ToolMaterial AQUAMARINE = EnumHelper.addToolMaterial("AQUAMARINE", 2, 200, 8.0F, 1.5F, 15);
+
 	public static final ItemCavenium cavenium = new ItemCavenium("cavenium");
 	public static final ItemMiningPickaxe mining_pickaxe = new ItemMiningPickaxe("pickaxeMining");
 	public static final ItemLumberingAxe lumbering_axe = new ItemLumberingAxe("axeLumbering");
 	public static final ItemDiggingShovel digging_shovel = new ItemDiggingShovel("shovelDigging");
 	public static final ItemCavenicBow cavenic_bow = new ItemCavenicBow("bowCavenic");
 	public static final ItemOreCompass ore_compass = new ItemOreCompass("oreCompass");
+	public static final ItemGem gem = new ItemGem("gem");
+	public static final ItemAquamarinePickaxe aquamarine_pickaxe = new ItemAquamarinePickaxe("pickaxeAquamarine");
+	public static final ItemAquamarineAxe aquamarine_axe = new ItemAquamarineAxe("axeAquamarine");
+	public static final ItemAquamarineShovel aquamarine_shovel = new ItemAquamarineShovel("shovelAquamarine");
 
 	public static void registerItems()
 	{
@@ -53,17 +64,12 @@ public class CaveItems
 			ChestGenHooks.addItem(ChestGenHooks.MINESHAFT_CORRIDOR, new WeightedRandomChestContent(item, 1, 3, 3));
 			ChestGenHooks.addItem(ChestGenHooks.DUNGEON_CHEST, new WeightedRandomChestContent(item, 1, 3, 3));
 
-			GameRegistry.addShapelessRecipe(new ItemStack(cavenium, 9, 0), new ItemStack(CaveBlocks.cavenium_ore, 1, 2));
-			GameRegistry.addShapelessRecipe(new ItemStack(cavenium, 9, 1), new ItemStack(CaveBlocks.cavenium_ore, 1, 3));
-
-			GameRegistry.addShapedRecipe(new ItemStack(CaveBlocks.cavenium_ore, 1, 2),
-				"CCC", "CCC", "CCC",
-				'C', new ItemStack(cavenium, 1, 0)
-			);
-			GameRegistry.addShapedRecipe(new ItemStack(CaveBlocks.cavenium_ore, 1, 3),
-				"CCC", "CCC", "CCC",
-				'C', new ItemStack(cavenium, 1, 1)
-			);
+			item = new ItemStack(cavenium, 9, 0);
+			GameRegistry.addRecipe(new ShapelessOreRecipe(item, "blockCavenium"));
+			GameRegistry.addRecipe(new ShapelessOreRecipe(item, "caveniumBlock"));
+			item = new ItemStack(cavenium, 9, 1);
+			GameRegistry.addRecipe(new ShapelessOreRecipe(item, "blockRefinedCavenium"));
+			GameRegistry.addRecipe(new ShapelessOreRecipe(item, "refinedCaveniumBlock"));
 
 			if (Config.refinedCaveniumCraftRecipe)
 			{
@@ -75,6 +81,8 @@ public class CaveItems
 
 			FurnaceRecipes.smelting().func_151394_a(new ItemStack(CaveBlocks.cavenium_ore, 1, 0), new ItemStack(cavenium, 1, 0), 0.5F);
 			FurnaceRecipes.smelting().func_151394_a(new ItemStack(CaveBlocks.cavenium_ore, 1, 1), new ItemStack(cavenium, 1, 1), 0.75F);
+
+			CAVENIUM.customCraftingMaterial = cavenium;
 		}
 
 		if (Config.pickaxeMining)
@@ -141,13 +149,89 @@ public class CaveItems
 		{
 			GameRegistry.registerItem(ore_compass, "ore_compass");
 
+			OreDictionary.registerOre("oreCompass", ore_compass);
 			OreDictionary.registerOre("compassOre", ore_compass);
 
-			GameRegistry.addShapedRecipe(new ItemStack(ore_compass),
+			GameRegistry.addRecipe(new ShapedOreRecipe(ore_compass,
 				" C ", "CXC", " C ",
-				'C', new ItemStack(cavenium, 1, 1),
+				'C', "refinedCavenium",
 				'X', Items.compass
-			);
+			));
+			GameRegistry.addRecipe(new ShapedOreRecipe(ore_compass,
+				" C ", "CXC", " C ",
+				'C', "gemRefinedCavenium",
+				'X', Items.compass
+			));
+		}
+
+		if (Config.gem)
+		{
+			GameRegistry.registerItem(gem, "gem");
+
+			ItemStack item = new ItemStack(gem, 1, 0);
+			OreDictionary.registerOre("aquamarine", item);
+			OreDictionary.registerOre("gemAquamarine", item);
+
+			item.stackSize = 9;
+			GameRegistry.addRecipe(new ShapelessOreRecipe(item, "blockAquamarine"));
+			GameRegistry.addRecipe(new ShapelessOreRecipe(item, "aquamarineBlock"));
+		}
+
+		if (Config.pickaxeAquamarine)
+		{
+			GameRegistry.registerItem(aquamarine_pickaxe, "aquamarine_pickaxe");
+
+			OreDictionary.registerOre("pickaxeAquamarine", aquamarine_pickaxe);
+			OreDictionary.registerOre("aquamarinePickaxe", aquamarine_pickaxe);
+
+			GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(aquamarine_pickaxe),
+				"AAA", " S ", " S ",
+				'A', "aquamarine",
+				'S', "stickWood"
+			));
+			GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(aquamarine_pickaxe),
+				"AAA", " S ", " S ",
+				'A', "gemAquamarine",
+				'S', "stickWood"
+			));
+		}
+
+		if (Config.axeAquamarine)
+		{
+			GameRegistry.registerItem(aquamarine_axe, "aquamarine_axe");
+
+			OreDictionary.registerOre("axeAquamarine", aquamarine_axe);
+			OreDictionary.registerOre("aquamarineAxe", aquamarine_axe);
+
+			GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(aquamarine_axe),
+				"AA", "AS", " S",
+				'A', "aquamarine",
+				'S', "stickWood"
+			));
+			GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(aquamarine_axe),
+				"AA", "AS", " S",
+				'A', "gemAquamarine",
+				'S', "stickWood"
+			));
+		}
+
+		if (Config.shovelAquamarine)
+		{
+			GameRegistry.registerItem(aquamarine_shovel, "aquamarine_shovel");
+
+			OreDictionary.registerOre("shovelAquamarine", aquamarine_shovel);
+			OreDictionary.registerOre("aquamarineShovel", aquamarine_shovel);
+
+			GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(aquamarine_shovel),
+				"A", "S", "S",
+				'A', "aquamarine",
+				'S', "stickWood"
+			));
+			GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(aquamarine_shovel),
+				"A", "S", "S",
+				'A', "gemAquamarine",
+				'S', "stickWood"
+			));
 		}
 	}
 }

@@ -23,10 +23,10 @@ import org.apache.logging.log4j.Level;
 
 import com.kegare.caveworld.api.CaveworldAPI;
 import com.kegare.caveworld.core.Caveworld;
-import com.kegare.caveworld.network.client.DimDeepSyncMessage;
+import com.kegare.caveworld.network.client.DimAquaSyncMessage;
 import com.kegare.caveworld.util.CaveLog;
 
-public class WorldProviderDeepCaveworld extends WorldProviderCaveworld
+public class WorldProviderAquaCaveworld extends WorldProviderCaveworld
 {
 	private static NBTTagCompound dimData;
 	private static long dimensionSeed;
@@ -51,7 +51,7 @@ public class WorldProviderDeepCaveworld extends WorldProviderCaveworld
 			return null;
 		}
 
-		File dir = new File(root, new WorldProviderDeepCaveworld().getSaveFolder());
+		File dir = new File(root, new WorldProviderAquaCaveworld().getSaveFolder());
 
 		if (!dir.exists())
 		{
@@ -121,7 +121,7 @@ public class WorldProviderDeepCaveworld extends WorldProviderCaveworld
 
 		if (!data.hasKey("SubsurfaceHeight"))
 		{
-			data.setInteger("SubsurfaceHeight", ChunkProviderDeepCaveworld.subsurfaceHeight);
+			data.setInteger("SubsurfaceHeight", ChunkProviderAquaCaveworld.subsurfaceHeight);
 		}
 
 		dimensionSeed = data.getLong("Seed");
@@ -138,28 +138,28 @@ public class WorldProviderDeepCaveworld extends WorldProviderCaveworld
 		}
 	}
 
-	public WorldProviderDeepCaveworld()
+	public WorldProviderAquaCaveworld()
 	{
-		this.dimensionId = CaveworldAPI.getDeepDimension();
+		this.dimensionId = CaveworldAPI.getAquaDimension();
 		this.hasNoSky = true;
 	}
 
 	@Override
 	protected void registerWorldChunkManager()
 	{
-		worldChunkMgr = new WorldChunkManagerCaveworld(worldObj, ChunkProviderDeepCaveworld.biomeSize, CaveworldAPI.biomeDeepManager);
+		worldChunkMgr = new WorldChunkManagerCaveworld(worldObj, ChunkProviderAquaCaveworld.biomeSize, CaveworldAPI.biomeAquaManager);
 	}
 
 	@Override
 	public IChunkProvider createChunkGenerator()
 	{
-		return new ChunkProviderDeepCaveworld(worldObj);
+		return new ChunkProviderAquaCaveworld(worldObj);
 	}
 
 	@Override
 	public String getDimensionName()
 	{
-		return "Deep Caveworld";
+		return "Aqua Caveworld";
 	}
 
 	@Override
@@ -169,7 +169,7 @@ public class WorldProviderDeepCaveworld extends WorldProviderCaveworld
 		{
 			loadDimData(getDimData());
 
-			Caveworld.network.sendToAll(new DimDeepSyncMessage(dimensionId, getDimData()));
+			Caveworld.network.sendToAll(new DimAquaSyncMessage(dimensionId, getDimData(), ChunkProviderAquaCaveworld.aquaLivingAssist));
 		}
 
 		return dimensionSeed;
@@ -182,7 +182,7 @@ public class WorldProviderDeepCaveworld extends WorldProviderCaveworld
 		{
 			loadDimData(getDimData());
 
-			Caveworld.network.sendToAll(new DimDeepSyncMessage(dimensionId, getDimData()));
+			Caveworld.network.sendToAll(new DimAquaSyncMessage(dimensionId, getDimData(), ChunkProviderAquaCaveworld.aquaLivingAssist));
 		}
 
 		return subsurfaceHeight + 1;

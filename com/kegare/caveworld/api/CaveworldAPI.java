@@ -25,6 +25,8 @@ public final class CaveworldAPI
 	public static ICaveVeinManager veinManager;
 	public static ICaveBiomeManager biomeDeepManager;
 	public static ICaveVeinManager veinDeepManager;
+	public static ICaveBiomeManager biomeAquaManager;
+	public static ICaveVeinManager veinAquaManager;
 	public static ICaveMiningManager miningManager;
 
 	private CaveworldAPI() {}
@@ -59,6 +61,22 @@ public final class CaveworldAPI
 	public static boolean isDeepExist()
 	{
 		return apiHandler != null && apiHandler.isDeepExist();
+	}
+
+	/**
+	 * @see ICaveAPIHandler#getAquaDimension()
+	 */
+	public static int getAquaDimension()
+	{
+		return apiHandler == null ? DimensionManager.getNextFreeDimId() : apiHandler.getAquaDimension();
+	}
+
+	/**
+	 * @see ICaveAPIHandler#isAquaExist()
+	 */
+	public static boolean isAquaExist()
+	{
+		return apiHandler != null && apiHandler.isAquaExist();
 	}
 
 	/**
@@ -216,6 +234,73 @@ public final class CaveworldAPI
 	}
 
 	/**
+	 * @see ICaveBiomeManager#addCaveBiome(ICaveBiome)
+	 */
+	public static boolean addCaveAquaBiome(ICaveBiome biome)
+	{
+		return biomeAquaManager != null && biomeAquaManager.addCaveBiome(biome);
+	}
+
+	/**
+	 * @see ICaveBiomeManager#removeCaveBiome(BiomeGenBase)
+	 */
+	public static boolean removeCaveAquaBiome(BiomeGenBase biome)
+	{
+		return biomeAquaManager != null && biomeAquaManager.removeCaveBiome(biome);
+	}
+
+	/**
+	 * @see ICaveBiomeManager#getActiveBiomeCount()
+	 */
+	public static int getActiveAquaBiomeCount()
+	{
+		return biomeAquaManager == null ? 0 : biomeAquaManager.getActiveBiomeCount();
+	}
+
+	/**
+	 * @see ICaveBiomeManager#getCaveBiome(BiomeGenBase)
+	 */
+	public static ICaveBiome getCaveAquaBiome(BiomeGenBase biome)
+	{
+		return biomeAquaManager == null ? new EmptyCaveBiome(biome) : biomeAquaManager.getCaveBiome(biome);
+	}
+
+	/**
+	 * @see ICaveBiomeManager#getRandomCaveBiome(Random)
+	 */
+	public static ICaveBiome getRandomCaveAquaBiome(Random random)
+	{
+		return biomeAquaManager == null ? null : biomeAquaManager.getRandomCaveBiome(random);
+	}
+
+	/**
+	 * @see ICaveBiomeManager#getCaveBiomes()
+	 */
+	public static Set<ICaveBiome> getCaveAquaBiomes()
+	{
+		return biomeAquaManager == null ? new HashSet<ICaveBiome>() : biomeAquaManager.getCaveBiomes();
+	}
+
+	/**
+	 * @see ICaveBiomeManager#getBiomeList()
+	 */
+	public static List<BiomeGenBase> getAquaBiomeList()
+	{
+		return biomeAquaManager == null ? new ArrayList<BiomeGenBase>() : biomeAquaManager.getBiomeList();
+	}
+
+	/**
+	 * @see ICaveBiomeManager#clearCaveBiomes()
+	 */
+	public static void clearCaveAquaBiomes()
+	{
+		if (biomeAquaManager != null)
+		{
+			biomeAquaManager.clearCaveBiomes();
+		}
+	}
+
+	/**
 	 * @see ICaveVeinManager#addCaveVein(ICaveVein)
 	 */
 	public static boolean addCaveVein(ICaveVein vein)
@@ -350,6 +435,54 @@ public final class CaveworldAPI
 		if (veinDeepManager != null)
 		{
 			veinDeepManager.clearCaveVeins();
+		}
+	}
+
+	/**
+	 * @see ICaveVeinManager#addCaveVein(ICaveVein)
+	 */
+	public static boolean addCaveAquaVein(ICaveVein vein)
+	{
+		return veinAquaManager != null && veinAquaManager.addCaveVein(vein);
+	}
+
+	/**
+	 * @see ICaveVeinManager#removeCaveVeins(ICaveVein)
+	 */
+	public static int removeCaveAquaVeins(ICaveVein vein)
+	{
+		return veinAquaManager == null ? 0 : veinAquaManager.removeCaveVeins(vein);
+	}
+
+	/**
+	 * @see ICaveVeinManager#removeCaveVeins(Block, int)
+	 */
+	public static int removeCaveAquaVeins(Block block, int metadata)
+	{
+		return veinAquaManager == null ? 0 : veinAquaManager.removeCaveVeins(block, metadata);
+	}
+
+	/**
+	 * @see ICaveVeinManager#getRandomCaveVein(Random)
+	 */
+	public static ICaveVein getRandomCaveAquaVein(Random random)
+	{
+		return veinAquaManager == null ? null : veinAquaManager.getRandomCaveVein(random);
+	}
+
+	public static List<ICaveVein> getCaveAquaVeins()
+	{
+		return veinAquaManager == null ? new ArrayList<ICaveVein>() : veinAquaManager.getCaveVeins();
+	}
+
+	/**
+	 * @see ICaveVeinManager#clearCaveVeins()
+	 */
+	public static void clearCaveAquaVeins()
+	{
+		if (veinAquaManager != null)
+		{
+			veinAquaManager.clearCaveVeins();
 		}
 	}
 

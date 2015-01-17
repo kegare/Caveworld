@@ -59,6 +59,7 @@ import com.kegare.caveworld.item.ItemDiggingShovel;
 import com.kegare.caveworld.item.ItemLumberingAxe;
 import com.kegare.caveworld.item.ItemMiningPickaxe;
 import com.kegare.caveworld.network.client.CaveworldMenuMessage;
+import com.kegare.caveworld.network.client.DimAquaSyncMessage;
 import com.kegare.caveworld.network.client.DimDeepSyncMessage;
 import com.kegare.caveworld.network.client.DimSyncMessage;
 import com.kegare.caveworld.network.client.MiningSyncMessage;
@@ -70,6 +71,7 @@ import com.kegare.caveworld.network.server.CaveAchievementMessage;
 import com.kegare.caveworld.network.server.SelectBreakableMessage;
 import com.kegare.caveworld.plugin.advancedtools.AdvancedToolsPlugin;
 import com.kegare.caveworld.plugin.craftguide.CraftGuidePlugin;
+import com.kegare.caveworld.plugin.enderstorage.EnderStoragePlugin;
 import com.kegare.caveworld.plugin.ic2.IC2Plugin;
 import com.kegare.caveworld.plugin.mapletree.MapleTreePlugin;
 import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
@@ -83,6 +85,7 @@ import com.kegare.caveworld.recipe.RecipeCaveniumTool;
 import com.kegare.caveworld.util.CaveLog;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Version;
+import com.kegare.caveworld.world.WorldProviderAquaCaveworld;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 import com.kegare.caveworld.world.WorldProviderDeepCaveworld;
 import com.kegare.caveworld.world.gen.MapGenStrongholdCaveworld;
@@ -143,6 +146,8 @@ public class Caveworld
 		CaveworldAPI.veinManager = new CaveVeinManager();
 		CaveworldAPI.biomeDeepManager = new CaveDeepBiomeManager();
 		CaveworldAPI.veinDeepManager = new CaveDeepVeinManager();
+		CaveworldAPI.biomeAquaManager = new CaveAquaBiomeManager();
+		CaveworldAPI.veinAquaManager = new CaveAquaVeinManager();
 		CaveworldAPI.miningManager = new CaveMiningManager();
 
 		Version.versionCheck();
@@ -157,6 +162,7 @@ public class Caveworld
 
 		network.registerMessage(DimSyncMessage.class, DimSyncMessage.class, id++, Side.CLIENT);
 		network.registerMessage(DimDeepSyncMessage.class, DimDeepSyncMessage.class, id++, Side.CLIENT);
+		network.registerMessage(DimAquaSyncMessage.class, DimAquaSyncMessage.class, id++, Side.CLIENT);
 		network.registerMessage(MiningSyncMessage.class, MiningSyncMessage.class, id++, Side.CLIENT);
 		network.registerMessage(OpenUrlMessage.class, OpenUrlMessage.class, id++, Side.CLIENT);
 		network.registerMessage(PlaySoundMessage.class, PlaySoundMessage.class, id++, Side.CLIENT);
@@ -174,7 +180,6 @@ public class Caveworld
 
 		CaveBlocks.registerBlocks();
 		CaveItems.registerItems();
-		CaveAchievementList.registerAchievements();
 
 		GameRegistry.registerFuelHandler(new CaveFuelHandler());
 	}
@@ -208,12 +213,22 @@ public class Caveworld
 			DimensionManager.registerDimension(id, id);
 		}
 
+		id = CaveworldAPI.getAquaDimension();
+
+		if (id != 0 && id != CaveworldAPI.getDimension())
+		{
+			DimensionManager.registerProviderType(id, WorldProviderAquaCaveworld.class, true);
+			DimensionManager.registerDimension(id, id);
+		}
+
 		MapGenStructureIO.registerStructure(MapGenStrongholdCaveworld.Start.class, "Caveworld.Stronghold");
 		StructureStrongholdPiecesCaveworld.registerStrongholdPieces();
 
 		FMLCommonHandler.instance().bus().register(CaveEventHooks.instance);
 
 		MinecraftForge.EVENT_BUS.register(CaveEventHooks.instance);
+
+		CaveAchievementList.registerAchievements();
 	}
 
 	@EventHandler
@@ -225,6 +240,8 @@ public class Caveworld
 		Config.syncVeinsCfg();
 		Config.syncBiomesDeepCfg();
 		Config.syncVeinsDeepCfg();
+		Config.syncBiomesAquaCfg();
+		Config.syncVeinsAquaCfg();
 
 		CaveUtils.getPool().execute(new RecursiveAction()
 		{
@@ -540,6 +557,18 @@ public class Caveworld
 		catch (Throwable e)
 		{
 			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: MapleTreePlugin");
+		}
+
+		try
+		{
+			if (EnderStoragePlugin.enabled())
+			{
+				EnderStoragePlugin.invoke();
+			}
+		}
+		catch (Throwable e)
+		{
+			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: EnderStoragePlugin");
 		}
 	}
 

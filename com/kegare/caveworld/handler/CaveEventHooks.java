@@ -9,6 +9,8 @@
 
 package com.kegare.caveworld.handler;
 
+import io.netty.util.concurrent.GenericFutureListener;
+
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -16,6 +18,7 @@ import java.util.Set;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockOre;
 import net.minecraft.block.BlockRedstoneOre;
+import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiIngame;
@@ -88,6 +91,7 @@ import com.kegare.caveworld.entity.EntityCaveman;
 import com.kegare.caveworld.entity.EntityCavenicSkeleton;
 import com.kegare.caveworld.entity.EntityMasterCavenicSkeleton;
 import com.kegare.caveworld.item.CaveItems;
+import com.kegare.caveworld.item.IAquamarineTool;
 import com.kegare.caveworld.item.ICaveniumTool;
 import com.kegare.caveworld.item.ItemCavenicBow;
 import com.kegare.caveworld.item.ItemCavenicBow.BowMode;
@@ -95,16 +99,22 @@ import com.kegare.caveworld.item.ItemCavenium;
 import com.kegare.caveworld.item.ItemDiggingShovel;
 import com.kegare.caveworld.item.ItemLumberingAxe;
 import com.kegare.caveworld.item.ItemMiningPickaxe;
+import com.kegare.caveworld.network.client.DimAquaSyncMessage;
 import com.kegare.caveworld.network.client.DimDeepSyncMessage;
 import com.kegare.caveworld.network.client.DimSyncMessage;
 import com.kegare.caveworld.network.client.MultiBreakCountMessage;
 import com.kegare.caveworld.network.client.PlaySoundMessage;
 import com.kegare.caveworld.network.server.CaveAchievementMessage;
+import com.kegare.caveworld.plugin.enderstorage.EnderStoragePlugin;
 import com.kegare.caveworld.plugin.mceconomy.MCEconomyPlugin;
 import com.kegare.caveworld.util.CaveUtils;
 import com.kegare.caveworld.util.Version;
 import com.kegare.caveworld.util.Version.Status;
 import com.kegare.caveworld.util.breaker.MultiBreakExecutor;
+import com.kegare.caveworld.world.ChunkProviderAquaCaveworld;
+import com.kegare.caveworld.world.ChunkProviderCaveworld;
+import com.kegare.caveworld.world.ChunkProviderDeepCaveworld;
+import com.kegare.caveworld.world.WorldProviderAquaCaveworld;
 import com.kegare.caveworld.world.WorldProviderCaveworld;
 import com.kegare.caveworld.world.WorldProviderDeepCaveworld;
 
@@ -184,6 +194,24 @@ public class CaveEventHooks
 					Caveworld.network.sendToServer(new CaveAchievementMessage(CaveAchievementList.caveman));
 				}
 			}
+		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
+	public void onPreRenderGameOverlay(RenderGameOverlayEvent.Pre event)
+	{
+		if (event.type != ElementType.AIR)
+		{
+			return;
+		}
+
+		Minecraft mc = FMLClientHandler.instance().getClient();
+		EntityPlayer player = mc.thePlayer;
+
+		if (ChunkProviderAquaCaveworld.aquaLivingAssist && player != null && CaveworldAPI.isAquaExist() && player.dimension == CaveworldAPI.getAquaDimension())
+		{
+			event.setCanceled(true);
 		}
 	}
 
@@ -366,6 +394,10 @@ public class CaveEventHooks
 				{
 					event.left.add("dim: Deep Caveworld");
 				}
+				else if (player.dimension == CaveworldAPI.getAquaDimension())
+				{
+					event.left.add("dim: Aqua Caveworld");
+				}
 			}
 		}
 	}
@@ -447,6 +479,9 @@ public class CaveEventHooks
 	@SubscribeEvent
 	public void onClientDisconnected(ClientDisconnectionFromServerEvent event)
 	{
+		Config.syncGeneralCfg();
+		Config.syncDimensionCfg();
+
 		Caveworld.tabCaveworld.tabIconItem = null;
 
 		CaveItems.ore_compass.resetFinder();
@@ -457,8 +492,9 @@ public class CaveEventHooks
 	{
 		NetworkManager manager = event.manager;
 
-		manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new DimSyncMessage(CaveworldAPI.getDimension(), WorldProviderCaveworld.getDimData())));
-		manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new DimDeepSyncMessage(CaveworldAPI.getDeepDimension(), WorldProviderDeepCaveworld.getDimData())));
+		manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new DimSyncMessage(CaveworldAPI.getDimension(), WorldProviderCaveworld.getDimData())), new GenericFutureListener[0]);
+		manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new DimDeepSyncMessage(CaveworldAPI.getDeepDimension(), WorldProviderDeepCaveworld.getDimData())), new GenericFutureListener[0]);
+		manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new DimAquaSyncMessage(CaveworldAPI.getAquaDimension(), WorldProviderAquaCaveworld.getDimData(), ChunkProviderAquaCaveworld.aquaLivingAssist)), new GenericFutureListener[0]);
 	}
 
 	@SubscribeEvent
@@ -545,7 +581,8 @@ public class CaveEventHooks
 			EntityPlayerMP player = (EntityPlayerMP)event.player;
 			WorldServer world = player.getServerForPlayer();
 
-			if (Config.hardcore && event.toDim != CaveworldAPI.getDimension() && (!CaveworldAPI.isDeepExist() || event.toDim != CaveworldAPI.getDeepDimension()))
+			if (Config.hardcore && event.toDim != CaveworldAPI.getDimension() &&
+				(!CaveworldAPI.isDeepExist() || event.toDim != CaveworldAPI.getDeepDimension()) && (!CaveworldAPI.isAquaExist() || event.toDim != CaveworldAPI.getAquaDimension()))
 			{
 				CaveUtils.teleportPlayer(player, event.fromDim);
 
@@ -585,6 +622,13 @@ public class CaveEventHooks
 				{
 					player.triggerAchievement(CaveAchievementList.caveworld);
 				}
+
+				return;
+			}
+
+			if (CaveworldAPI.isAquaExist() && event.toDim == CaveworldAPI.getAquaDimension())
+			{
+				player.triggerAchievement(CaveAchievementList.aquaCaves);
 			}
 		}
 	}
@@ -597,6 +641,11 @@ public class CaveEventHooks
 		if (CaveworldAPI.isEntityInCaveworld(player))
 		{
 			player.timeUntilPortal = player.getPortalCooldown();
+
+			if (player instanceof EntityPlayerMP && MathHelper.floor_double(player.posY) >= player.worldObj.getActualHeight() - 1)
+			{
+				CaveUtils.teleportPlayer((EntityPlayerMP)player, player.dimension);
+			}
 		}
 	}
 
@@ -628,6 +677,13 @@ public class CaveEventHooks
 			if (thrower == null)
 			{
 				player.triggerAchievement(CaveAchievementList.cavenium);
+			}
+		}
+		else if (itemstack.getItem() == CaveItems.gem && itemstack.getItemDamage() == 0)
+		{
+			if (thrower == null)
+			{
+				player.triggerAchievement(CaveAchievementList.aquamarine);
 			}
 		}
 	}
@@ -728,7 +784,8 @@ public class CaveEventHooks
 			}
 			else if (event.action == Action.RIGHT_CLICK_BLOCK)
 			{
-				if (!player.isSneaking() && current != null && current.getItem() == Item.getItemFromBlock(Blocks.ender_chest))
+				if (!player.isSneaking() && current != null && (current.getItem() == Item.getItemFromBlock(Blocks.ender_chest) ||
+					EnderStoragePlugin.enderChest != null && current.getItem() == Item.getItemFromBlock(EnderStoragePlugin.enderChest)))
 				{
 					switch (face)
 					{
@@ -767,6 +824,36 @@ public class CaveEventHooks
 					}
 				}
 			}
+			else if (event.action == Action.RIGHT_CLICK_AIR)
+			{
+				if (current != null && (current.getItem() == CaveItems.cavenium || current.getItem() == CaveItems.gem && current.getItemDamage() == 0))
+				{
+					if (CaveworldAPI.isAquaExist() && (ChunkProviderCaveworld.generateUnderCaves && player.dimension == CaveworldAPI.getDimension() ||
+						ChunkProviderDeepCaveworld.generateUnderCaves && CaveworldAPI.isDeepExist() && player.dimension == CaveworldAPI.getDeepDimension() ||
+						player.dimension == CaveworldAPI.getAquaDimension()) &&
+						player.dimension == CaveworldAPI.getAquaDimension() || player.boundingBox.maxY < 16.0D && player.isInsideOfMaterial(Material.water))
+					{
+						if (player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.masterCavenicSkeletonSlayer))
+						{
+							if (!player.capabilities.isCreativeMode && --current.stackSize <= 0)
+							{
+								player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
+							}
+
+							if (player.dimension == CaveworldAPI.getAquaDimension())
+							{
+								CaveUtils.respawnPlayer(player, CaveworldAPI.getDimension());
+							}
+							else
+							{
+								CaveUtils.teleportPlayerAqua(player, CaveworldAPI.getAquaDimension());
+							}
+
+							event.setCanceled(true);
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -775,6 +862,29 @@ public class CaveEventHooks
 	{
 		EntityPlayer player = event.entityPlayer;
 		ItemStack current = player.getCurrentEquippedItem();
+
+		if (CaveworldAPI.isAquaExist() && player.dimension == CaveworldAPI.getAquaDimension() || current != null && current.getItem() instanceof IAquamarineTool)
+		{
+			if (player.isInsideOfMaterial(Material.water) && !EnchantmentHelper.getAquaAffinityModifier(player))
+			{
+				if (!player.onGround)
+				{
+					event.newSpeed = event.originalSpeed * 10.0F;
+				}
+				else
+				{
+					event.newSpeed = event.originalSpeed * 5.0F;
+				}
+			}
+			else
+			{
+				event.newSpeed = event.originalSpeed;
+			}
+		}
+		else
+		{
+			event.newSpeed = event.originalSpeed;
+		}
 
 		if (current != null && current.getItem() != null && current.getItem() instanceof ICaveniumTool)
 		{
@@ -800,7 +910,7 @@ public class CaveEventHooks
 					count = tool.getMode(current).getExecutor(player).getBreakPositions().size();
 				}
 
-				event.newSpeed = Math.min(event.originalSpeed / (count * (0.5F - refined * 0.1245F)), event.originalSpeed);
+				event.newSpeed = Math.min(event.newSpeed / (count * (0.5F - refined * 0.1245F)), event.newSpeed);
 			}
 		}
 
@@ -881,6 +991,35 @@ public class CaveEventHooks
 	{
 		EntityLivingBase living = event.entityLiving;
 
+		if (ChunkProviderAquaCaveworld.aquaLivingAssist && CaveworldAPI.isAquaExist() && living.dimension == CaveworldAPI.getAquaDimension())
+		{
+			if (living.isInWater() || living.isInsideOfMaterial(Material.water))
+			{
+				living.setAir(300);
+
+				if (!(living instanceof EntityPlayer) || !((EntityPlayer)living).capabilities.isFlying)
+				{
+					double posY = living.posY;
+					float f1 = 1.165F;
+
+					living.motionX *= f1;
+					living.motionZ *= f1;
+
+					if (living.isCollidedHorizontally && living.isOffsetPositionInLiquid(living.motionX, living.motionY + 0.6000000238418579D - living.posY + posY, living.motionZ))
+					{
+						living.motionY = 0.30000001192092896D;
+					}
+
+					if (living.isSneaking())
+					{
+						living.motionY = 0.0D;
+					}
+				}
+			}
+
+			return;
+		}
+
 		if (CaveworldAPI.isEntityInCaveworld(living) && living instanceof EntityPlayerMP)
 		{
 			EntityPlayerMP player = (EntityPlayerMP)living;
@@ -892,11 +1031,13 @@ public class CaveEventHooks
 					if (player.boundingBox.maxY >= player.worldObj.provider.getActualHeight())
 					{
 						CaveUtils.respawnPlayer(player, CaveworldAPI.getDimension());
+
+						return;
 					}
 				}
 				else
 				{
-					if (player.boundingBox.minY <= 0)
+					if (player.boundingBox.minY < 0)
 					{
 						if (player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.theMiner))
 						{
@@ -906,11 +1047,15 @@ public class CaveEventHooks
 						{
 							CaveUtils.respawnPlayer(player, player.dimension);
 						}
+
+						return;
 					}
 				}
 			}
 
-			if (player.posY <= 30.0D && !player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.underCaves))
+			if ((ChunkProviderCaveworld.generateUnderCaves && player.dimension == CaveworldAPI.getDimension() ||
+				ChunkProviderDeepCaveworld.generateUnderCaves && CaveworldAPI.isDeepExist() && player.dimension == CaveworldAPI.getDeepDimension()) &&
+				player.posY <= 30.0D && !player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.underCaves))
 			{
 				MovingObjectPosition pos = CaveUtils.rayTrace(player, 64.0D);
 
@@ -1035,7 +1180,7 @@ public class CaveEventHooks
 	{
 		World world = event.world;
 
-		if (!world.isRemote && world.provider.dimensionId == CaveworldAPI.getDimension())
+		if (!world.isRemote && world.provider.dimensionId == 0)
 		{
 			CaveBlocks.caveworld_portal.loadInventoryFromDimData();
 		}
@@ -1049,16 +1194,22 @@ public class CaveEventHooks
 
 		if (!world.isRemote)
 		{
-			if (dim == CaveworldAPI.getDimension())
+			if (dim == 0)
 			{
 				CaveBlocks.caveworld_portal.saveInventoryToDimData();
 				CaveBlocks.caveworld_portal.clearInventory();
-
+			}
+			else if (dim == CaveworldAPI.getDimension())
+			{
 				WorldProviderCaveworld.saveDimData();
 			}
 			else if (CaveworldAPI.isDeepExist() && dim == CaveworldAPI.getDeepDimension())
 			{
 				WorldProviderDeepCaveworld.saveDimData();
+			}
+			else if (CaveworldAPI.isAquaExist() && dim == CaveworldAPI.getAquaDimension())
+			{
+				WorldProviderAquaCaveworld.saveDimData();
 			}
 		}
 	}

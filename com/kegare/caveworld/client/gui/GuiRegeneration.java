@@ -31,7 +31,7 @@ public class GuiRegeneration extends GuiScreen
 	private boolean backup;
 
 	protected GuiButton regenButton, openButton, cancelButton;
-	protected GuiCheckBox caveworldCheckBox, deepCheckBox, backupCheckBox;
+	protected GuiCheckBox caveworldCheckBox, deepCheckBox, aquaCheckBox, backupCheckBox;
 
 	private HoverChecker backupHoverChecker;
 
@@ -80,9 +80,14 @@ public class GuiRegeneration extends GuiScreen
 			deepCheckBox = new GuiCheckBox(4, 10, caveworldCheckBox.yPosition + caveworldCheckBox.height + 5, "Deep Caveworld", true);
 		}
 
+		if (aquaCheckBox == null)
+		{
+			aquaCheckBox = new GuiCheckBox(5, 10, deepCheckBox.yPosition + deepCheckBox.height + 5, "Aqua Caveworld", true);
+		}
+
 		if (backupCheckBox == null)
 		{
-			backupCheckBox = new GuiCheckBox(5, 10, 0, I18n.format("caveworld.regenerate.gui.backup"), backup);
+			backupCheckBox = new GuiCheckBox(6, 10, 0, I18n.format("caveworld.regenerate.gui.backup"), backup);
 		}
 
 		backupCheckBox.yPosition = height - 20;
@@ -93,6 +98,7 @@ public class GuiRegeneration extends GuiScreen
 		buttonList.add(cancelButton);
 		buttonList.add(caveworldCheckBox);
 		buttonList.add(deepCheckBox);
+		buttonList.add(aquaCheckBox);
 		buttonList.add(backupCheckBox);
 
 		if (backupHoverChecker == null)
@@ -133,13 +139,14 @@ public class GuiRegeneration extends GuiScreen
 				case 0:
 					boolean caveworld = caveworldCheckBox.isChecked();
 					boolean deep = deepCheckBox.isChecked();
+					boolean aqua = aquaCheckBox.isChecked();
 
-					if (!caveworld && !deep)
+					if (!caveworld && !deep && !aqua)
 					{
 						break;
 					}
 
-					Caveworld.network.sendToServer(new RegenerateMessage(backupCheckBox.isChecked(), caveworld, deep));
+					Caveworld.network.sendToServer(new RegenerateMessage(backupCheckBox.isChecked(), caveworld, deep, aqua));
 
 					regenButton.enabled = false;
 					cancelButton.visible = false;
