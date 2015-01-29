@@ -17,6 +17,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.oredict.OreDictionary;
 import codechicken.nei.recipe.ShapedRecipeHandler;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.item.ICaveniumTool;
@@ -39,6 +40,13 @@ public abstract class CaveniumToolRecipeHandler extends ShapedRecipeHandler
 
 			for (Item item : getTool().getBaseableItems())
 			{
+				String name = GameData.getItemRegistry().getNameForObject(item);
+
+				if (Strings.isNullOrEmpty(name))
+				{
+					continue;
+				}
+
 				for (int i = 0; i <= 4; ++i)
 				{
 					items = new Object[10];
@@ -77,7 +85,7 @@ public abstract class CaveniumToolRecipeHandler extends ShapedRecipeHandler
 								result.setTagCompound(new NBTTagCompound());
 							}
 
-							result.getTagCompound().setString("BaseName", GameData.getItemRegistry().getNameForObject(item));
+							result.getTagCompound().setString("BaseName", name);
 							result.getTagCompound().setInteger("Refined", i);
 
 							items[slot] = result;

@@ -84,13 +84,16 @@ public class ChunkProviderAquaCaveworld implements IChunkProvider
 		int worldHeight = worldObj.provider.getActualHeight();
 		BiomeGenBase biome = worldObj.getWorldChunkManager().getBiomeGenAt(chunkX * 16, chunkZ * 16);
 		Block[] blocks = new Block[65536];
-		byte[] metadata = new byte[65536];
+		byte[] metadata = new byte[blocks.length];
 		ICaveBiome entry = CaveworldAPI.getCaveAquaBiome(biome);
 		Block block = entry.getTerrainBlock().getBlock();
 		int meta = entry.getTerrainBlock().getMetadata();
 
-		Arrays.fill(blocks, block);
-		Arrays.fill(metadata, (byte)meta);
+		for (int i = 0; i < blocks.length; ++i)
+		{
+			blocks[i] = block;
+			metadata[i] = (byte)meta;
+		}
 
 		caveGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
 
@@ -165,11 +168,6 @@ public class ChunkProviderAquaCaveworld implements IChunkProvider
 		int worldZ = chunkZ * 16;
 		BiomeGenBase biome = worldObj.getBiomeGenForCoords(worldX, worldZ);
 		int worldHeight = worldObj.provider.getActualHeight();
-		long worldSeed = worldObj.getSeed();
-		random.setSeed(worldSeed);
-		long xSeed = random.nextLong() >> 2 + 1L;
-		long zSeed = random.nextLong() >> 2 + 1L;
-		random.setSeed(chunkX * xSeed + chunkZ * zSeed ^ worldSeed);
 
 		MinecraftForge.EVENT_BUS.post(new PopulateChunkEvent.Pre(chunkProvider, worldObj, random, chunkX, chunkZ, false));
 

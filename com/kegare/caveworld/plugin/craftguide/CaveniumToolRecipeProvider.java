@@ -21,6 +21,7 @@ import uristqwerty.CraftGuide.api.RecipeTemplate;
 import uristqwerty.CraftGuide.api.Slot;
 import uristqwerty.CraftGuide.api.SlotType;
 
+import com.google.common.base.Strings;
 import com.kegare.caveworld.item.CaveItems;
 import com.kegare.caveworld.item.ICaveniumTool;
 
@@ -66,6 +67,13 @@ public class CaveniumToolRecipeProvider extends CraftGuideAPIObject implements R
 
 		for (Item item : tool.getBaseableItems())
 		{
+			String name = GameData.getItemRegistry().getNameForObject(item);
+
+			if (Strings.isNullOrEmpty(name))
+			{
+				continue;
+			}
+
 			for (int i = 0; i <= 4; ++i)
 			{
 				items = new Object[10];
@@ -104,7 +112,7 @@ public class CaveniumToolRecipeProvider extends CraftGuideAPIObject implements R
 							result.setTagCompound(new NBTTagCompound());
 						}
 
-						result.getTagCompound().setString("BaseName", GameData.getItemRegistry().getNameForObject(item));
+						result.getTagCompound().setString("BaseName", name);
 						result.getTagCompound().setInteger("Refined", i);
 
 						items[slot] = result;

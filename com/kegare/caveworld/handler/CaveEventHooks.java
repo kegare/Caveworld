@@ -863,7 +863,8 @@ public class CaveEventHooks
 		EntityPlayer player = event.entityPlayer;
 		ItemStack current = player.getCurrentEquippedItem();
 
-		if (CaveworldAPI.isAquaExist() && player.dimension == CaveworldAPI.getAquaDimension() || current != null && current.getItem() instanceof IAquamarineTool)
+		if (CaveworldAPI.isAquaExist() && player.dimension == CaveworldAPI.getAquaDimension() || current != null && (current.getItem() instanceof IAquamarineTool ||
+			current.getItem() instanceof ICaveniumTool && ((ICaveniumTool)current.getItem()).getBase(current) instanceof IAquamarineTool))
 		{
 			if (player.isInsideOfMaterial(Material.water) && !EnchantmentHelper.getAquaAffinityModifier(player))
 			{

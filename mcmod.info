@@ -1,22 +1,20 @@
-[
-  {
+{
+  "modListVersion": 2,
+  "modList": [{
     "modid": "kegare.caveworld",
     "name": "Caveworld",
     "description": "Adds the Caveworld dimension. Caveworld is world for the subsurface, There's no surface there.",
+    "version": "1.9.6",
     "url": "http://forum.minecraftuser.jp/viewtopic.php?t=13399",
     "updateUrl": "https://dl.dropboxusercontent.com/u/51943112/kegare/caveworld.json",
+    "authorList": ["kegare"],
+    "credits": "Authored by kegare",
     "logoFile": "logo.png",
-    "version": "1.9.5",
-    "credits": "By kegare",
+    "screenshots": [],
     "parent": "",
-    "authors": [
-      "kegare"
-    ],
-    "requiredMods": [
-      "Forge"
-    ],
+    "requiredMods": ["Forge"],
     "dependencies": [],
     "dependants": [],
-    "useDependencyInformation": "true"
-  }
-]
+    "useDependencyInformation": true
+  }]
+}

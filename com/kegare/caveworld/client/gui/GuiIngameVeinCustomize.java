@@ -25,20 +25,48 @@ import cpw.mods.fml.relauncher.SideOnly;
 public class GuiIngameVeinCustomize extends GuiScreen
 {
 	private GuiButton backButton;
-	private GuiButton caveworldButton;
-	private GuiButton deepButton;
+	private GuiButton caveworldButton, deepButton, aquaButton;
 
 	@Override
 	public void initGui()
 	{
-		backButton = new GuiButtonExt(0, width / 2 - 100, height / 4 + 8, I18n.format("menu.returnToGame"));
-		caveworldButton = new GuiButtonExt(1, backButton.xPosition, backButton.yPosition + backButton.height + 5, "Caveworld");
-		deepButton = new GuiButtonExt(2, caveworldButton.xPosition, caveworldButton.yPosition + caveworldButton.height + 5, "Deep Caveworld");
+		if (backButton == null)
+		{
+			backButton = new GuiButtonExt(0, 0, 0, I18n.format("menu.returnToGame"));
+		}
+
+		backButton.xPosition = width / 2 - 100;
+		backButton.yPosition = height / 4 + 8;
+
+		if (caveworldButton == null)
+		{
+			caveworldButton = new GuiButtonExt(1, 0, 0, "Caveworld");
+		}
+
+		caveworldButton.xPosition = backButton.xPosition;
+		caveworldButton.yPosition = backButton.yPosition + backButton.height + 5;
+
+		if (deepButton == null)
+		{
+			deepButton = new GuiButtonExt(2, 0, 0, "Deep Caveworld");
+		}
+
+		deepButton.xPosition = caveworldButton.xPosition;
+		deepButton.yPosition = caveworldButton.yPosition + caveworldButton.height + 5;
+
+		if (aquaButton == null)
+		{
+			aquaButton = new GuiButtonExt(3, 0, 0, "Aqua Caveworld");
+		}
+
+		aquaButton.xPosition = deepButton.xPosition;
+		aquaButton.yPosition = deepButton.yPosition + deepButton.height + 5;
 
 		buttonList.clear();
 		buttonList.add(backButton);
 		buttonList.add(caveworldButton);
 		buttonList.add(deepButton);
+		buttonList.add(aquaButton);
 	}
 
 	@Override
@@ -57,6 +85,9 @@ public class GuiIngameVeinCustomize extends GuiScreen
 					break;
 				case 2:
 					mc.displayGuiScreen(new GuiVeinsEntry(this, CaveworldAPI.veinDeepManager));
+					break;
+				case 3:
+					mc.displayGuiScreen(new GuiVeinsEntry(this, CaveworldAPI.veinAquaManager));
 					break;
 			}
 		}

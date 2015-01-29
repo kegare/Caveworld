@@ -606,11 +606,7 @@ public class CaveUtils
 			{
 				for (y = 1; y < world.getActualHeight() - 5; ++y)
 				{
-					if (world.isAirBlock(x, y, z) && world.isAirBlock(x, y + 1, z) &&
-						world.isAirBlock(x - 1, y, z) && world.isAirBlock(x - 1, y + 1, z) &&
-						world.isAirBlock(x + 1, y, z) && world.isAirBlock(x + 1, y + 1, z) &&
-						world.isAirBlock(x, y, z - 1) && world.isAirBlock(x, y + 1, z - 1) &&
-						world.isAirBlock(x, y, z + 1) && world.isAirBlock(x, y + 1, z + 1))
+					if (world.isAirBlock(x, y, z) && world.isAirBlock(x, y + 1, z))
 					{
 						while (y > 1 && world.isAirBlock(x, y - 1, z))
 						{
@@ -655,11 +651,7 @@ public class CaveUtils
 			{
 				for (y = 1; y < world.getActualHeight() - 5; ++y)
 				{
-					if ((world.isAirBlock(x, y, z) || world.getBlock(x, y, z) == Blocks.water) && (world.isAirBlock(x, y + 1, z) || world.getBlock(x, y + 1, z) == Blocks.water) &&
-						(world.isAirBlock(x - 1, y, z) || world.getBlock(x - 1, y, z) == Blocks.water) && (world.isAirBlock(x - 1, y + 1, z) || world.getBlock(x - 1, y + 1, z) == Blocks.water) &&
-						(world.isAirBlock(x + 1, y, z) || world.getBlock(x + 1, y, z) == Blocks.water) && (world.isAirBlock(x + 1, y + 1, z) || world.getBlock(x + 1, y + 1, z) == Blocks.water) &&
-						(world.isAirBlock(x, y, z - 1) || world.getBlock(x, y, z - 1) == Blocks.water) && (world.isAirBlock(x, y + 1, z - 1) || world.getBlock(x, y + 1, z - 1) == Blocks.water) &&
-						(world.isAirBlock(x, y, z + 1) || world.getBlock(x, y, z + 1) == Blocks.water) && (world.isAirBlock(x, y + 1, z + 1) || world.getBlock(x, y + 1, z + 1) == Blocks.water))
+					if ((world.isAirBlock(x, y, z) || world.getBlock(x, y, z) == Blocks.water) && (world.isAirBlock(x, y + 1, z) || world.getBlock(x, y + 1, z) == Blocks.water))
 					{
 						while (y > 1 && world.isAirBlock(x, y - 1, z))
 						{
