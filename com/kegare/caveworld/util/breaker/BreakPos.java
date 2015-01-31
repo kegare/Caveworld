@@ -104,7 +104,7 @@ public class BreakPos implements Comparable
 
 			BreakEvent event = new BreakEvent(x, y, z, world, block, meta, player);
 
-			if (MinecraftForge.EVENT_BUS.post(event))
+			if (!MinecraftForge.EVENT_BUS.post(event))
 			{
 				block.dropXpOnBlockBreak(world, x, y, z, event.getExpToDrop());
 			}

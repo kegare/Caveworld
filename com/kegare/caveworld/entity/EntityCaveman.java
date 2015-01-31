@@ -20,7 +20,6 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAILookIdle;
 import net.minecraft.entity.ai.EntityAIRestrictSun;
 import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.ai.EntityAIWander;
@@ -159,7 +158,6 @@ public class EntityCaveman extends EntityTameable implements IInventory
 			}
 		});
 		this.tasks.addTask(8, new EntityAIWatchClosest(this, EntityPlayer.class, 10.0F));
-		this.tasks.addTask(9, new EntityAILookIdle(this));
 	}
 
 	@Override
@@ -169,7 +167,7 @@ public class EntityCaveman extends EntityTameable implements IInventory
 
 		getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(30.0D);
 		getEntityAttribute(SharedMonsterAttributes.knockbackResistance).setBaseValue(0.35D);
-		getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.399999988079071D);
+		getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.325D);
 	}
 
 	@Override
@@ -255,22 +253,13 @@ public class EntityCaveman extends EntityTameable implements IInventory
 
 			for (int i = 0; i < rand.nextInt(2) + 1; ++i)
 			{
-				if (rand.nextInt(3) == 0)
-				{
-					items.add(new ItemStack(Items.stone_pickaxe));
-				}
-				else
-				{
-					items.add(new ItemStack(Items.iron_pickaxe));
-				}
+				items.add(new ItemStack(Items.stone_pickaxe));
 			}
 
 			items.add(new ItemStack(Items.coal, MathHelper.getRandomIntegerInRange(rand, 16, 48)));
-			items.add(new ItemStack(Items.iron_ingot, MathHelper.getRandomIntegerInRange(rand, 4, 10)));
-			items.add(new ItemStack(Items.gold_ingot, MathHelper.getRandomIntegerInRange(rand, 1, 3)));
-			items.add(new ItemStack(CaveItems.cavenium, MathHelper.getRandomIntegerInRange(rand, 2, 3)));
+			items.add(new ItemStack(CaveItems.cavenium, 1));
 
-			if (rand.nextInt(10) == 0)
+			if (rand.nextInt(20) == 0)
 			{
 				items.add(new ItemStack(Items.diamond));
 			}

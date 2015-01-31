@@ -188,7 +188,7 @@ public class Config
 		prop.comment += "Note: If multiplayer, does not have to match client-side and server-side.";
 		propOrder.add(prop.getName());
 		versionNotify = prop.getBoolean(versionNotify);
-		prop = generalCfg.get(category, "veinsAutoRegister", false);
+		prop = generalCfg.get(category, "veinsAutoRegister", true);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";

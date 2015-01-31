@@ -42,9 +42,16 @@ public class RenderCaveman extends RenderBiped
 
 	public RenderCaveman()
 	{
-		super(new ModelCaveman(), 0.45F);
+		super(new ModelCaveman(), 0.45F, 1.0F);
 		this.cavemanModel = (ModelCaveman)super.mainModel;
 		this.setRenderPassModel(cavemanModel);
+	}
+
+	@Override
+	protected void func_82421_b()
+	{
+		field_82423_g = new ModelCaveman();
+		field_82425_h = new ModelCaveman();
 	}
 
 	@Override

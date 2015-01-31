@@ -33,31 +33,30 @@ public class ModelCaveman extends ModelBiped
 
 	public ModelCaveman()
 	{
-		this.textureWidth = 64;
-		this.textureHeight = 32;
-		this.bipedHead = new ModelRenderer(this, 0, 0).setTextureSize(textureWidth, textureHeight);
+		super();
+		this.bipedHead = new ModelRenderer(this, 0, 0);
 		this.bipedHead.addBox(-4.0F, -5.0F, -4.0F, 8, 8, 8);
 		this.bipedHead.setRotationPoint(0.0F, headPtY, 0.0F);
 		this.bipedHeadwear = bipedHead;
-		this.bipedBody = new ModelRenderer(this, 0, 16).setTextureSize(textureWidth, textureHeight);
+		this.bipedBody = new ModelRenderer(this, 0, 16);
 		this.bipedBody.addBox(-4.0F, 0.0F, -2.0F, 8, 12, 4);
 		this.bipedBody.setRotationPoint(0.0F, bodyPtY, 0.0F);
-		this.bipedBack = new ModelRenderer(this, 32, 0).setTextureSize(textureWidth, textureHeight);
+		this.bipedBack = new ModelRenderer(this, 32, 0);
 		this.bipedBack.addBox(0.0F, 0.0F, 0.0F, 6, 11, 3);
 		this.bipedBack.setRotationPoint(-3.0F, backPtY, 2.0F);
-		this.bipedRightArm = new ModelRenderer(this, 24, 18).setTextureSize(textureWidth, textureHeight);
+		this.bipedRightArm = new ModelRenderer(this, 24, 18);
 		this.bipedRightArm.addBox(-1.0F, -2.0F, -1.0F, 2, 12, 2);
 		this.bipedRightArm.setRotationPoint(-5.0F, armPtY, 0.0F);
 		this.bipedRightArm.rotateAngleZ = 1.5F;
-		this.bipedLeftArm = new ModelRenderer(this, 24, 18).setTextureSize(textureWidth, textureHeight);
+		this.bipedLeftArm = new ModelRenderer(this, 24, 18);
 		this.bipedLeftArm.addBox(-1.0F, -2.0F, -1.0F, 2, 12, 2);
 		this.bipedLeftArm.setRotationPoint(5.0F, armPtY, 0.0F);
 		this.bipedLeftArm.rotateAngleZ = -1.5F;
 		this.bipedLeftArm.mirror = true;
-		this.bipedRightLeg = new ModelRenderer(this, 24, 18).setTextureSize(textureWidth, textureHeight);
+		this.bipedRightLeg = new ModelRenderer(this, 24, 18);
 		this.bipedRightLeg.addBox(-1.0F, 0F, -1.0F, 2, 12, 2);
 		this.bipedRightLeg.setRotationPoint(-2.0F, legPtY, 0.0F);
-		this.bipedLeftLeg = new ModelRenderer(this, 24, 18).setTextureSize(textureWidth, textureHeight);
+		this.bipedLeftLeg = new ModelRenderer(this, 24, 18);
 		this.bipedLeftLeg.addBox(-1.0F, 0.0F, -1.0F, 2, 12, 2);
 		this.bipedLeftLeg.setRotationPoint(2.0F, legPtY, 0.0F);
 		this.bipedLeftLeg.mirror = true;
