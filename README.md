@@ -3,7 +3,7 @@ Minecraft mod. Adds the Caveworld dimension.
 
 ----
 ## Requires
-* [Minecraft Forge](http://files.minecraftforge.net/) 10.13.0.1180+
+* [Minecraft Forge](http://files.minecraftforge.net/) 10.13.4.1558+
 
 ----
 ## License
@@ -14,6 +14,4 @@ Minecraft mod. Adds the Caveworld dimension.
 
 ----
 ## Links
-* [kegare's Mods](http://kegare.github.io/)
 * [kegare's Forum](http://forum.minecraftuser.jp/viewtopic.php?t=13399)
-* [Caveworld Wiki](http://www26.atwiki.jp/minecraft/pages/1143.html)
