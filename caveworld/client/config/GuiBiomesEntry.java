@@ -788,6 +788,17 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 					}
 				}
 			}
+
+			if (code == Keyboard.KEY_TAB)
+			{
+				String terrainBlock = terrainBlockField.getText();
+				String terrainMeta = terrainMetaField.getText();
+
+				terrainBlockField.setText(topBlockField.getText());
+				terrainMetaField.setText(topMetaField.getText());
+				topBlockField.setText(terrainBlock);
+				topMetaField.setText(terrainMeta);
+			}
 		}
 		else
 		{

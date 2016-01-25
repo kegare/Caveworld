@@ -12,7 +12,8 @@ package caveworld.client;
 import caveworld.client.config.CycleIntegerEntry;
 import caveworld.client.config.SelectBiomeEntry;
 import caveworld.client.config.SelectItemEntry;
-import caveworld.client.gui.GuiIngameCavernMenu;
+import caveworld.client.gui.GuiIngameCaveworldMenu;
+import caveworld.client.gui.MenuType;
 import caveworld.client.renderer.RenderCaveman;
 import caveworld.client.renderer.RenderCavenicBow;
 import caveworld.client.renderer.RenderCavenicSkeleton;
@@ -76,8 +77,14 @@ public class ClientProxy extends CommonProxy
 	}
 
 	@Override
-	public void displayCavernMenu()
+	public void displayMenu(MenuType type)
 	{
-		FMLClientHandler.instance().showGuiScreen(new GuiIngameCavernMenu());
+		FMLClientHandler.instance().showGuiScreen(new GuiIngameCaveworldMenu().setMenuType(type));
+	}
+
+	@Override
+	public void displayPortalMenu(MenuType type, int x, int y, int z)
+	{
+		FMLClientHandler.instance().showGuiScreen(new GuiIngameCaveworldMenu().setMenuType(type).setPortalCoord(x, y, z));
 	}
 }

@@ -20,34 +20,30 @@ public class CaveworldGenLayerBiomes extends GenLayer
 
 	protected BiomeGenBase[] allowedBiomes;
 
-	public CaveworldGenLayerBiomes(long seed, ICaveBiomeManager manager)
+	public CaveworldGenLayerBiomes(long seed, GenLayer layer, ICaveBiomeManager manager)
 	{
 		super(seed);
 		this.biomeManager = manager;
 		this.allowedBiomes = biomeManager.getBiomeList().toArray(new BiomeGenBase[0]);
-	}
-
-	public CaveworldGenLayerBiomes(long seed, GenLayer layer, ICaveBiomeManager manager)
-	{
-		this(seed, manager);
 		this.parent = layer;
 	}
 
 	@Override
-	public int[] getInts(int x, int z, int width, int depth)
+	public int[] getInts(int x, int z, int sizeX, int sizeZ)
 	{
-		int[] dest = IntCache.getIntCache(width * depth);
+		parent.getInts(x, z, sizeX, sizeZ);
+		int[] ints = IntCache.getIntCache(sizeX * sizeZ);
 
-		for (int dz = 0; dz < depth; dz++)
+		for (int dz = 0; dz < sizeZ; ++dz)
 		{
-			for (int dx = 0; dx < width; dx++)
+			for (int dx = 0; dx < sizeX; ++dx)
 			{
 				initChunkSeed(dx + x, dz + z);
 
-				dest[dx + dz * width] = allowedBiomes[nextInt(allowedBiomes.length)].biomeID;
+				ints[dx + dz * sizeX] = allowedBiomes[nextInt(allowedBiomes.length)].biomeID;
 			}
 		}
 
-		return dest;
+		return ints;
 	}
 }

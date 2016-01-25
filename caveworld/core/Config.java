@@ -621,7 +621,7 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		ChunkProviderCavern.generateLakes = prop.getBoolean(ChunkProviderCavern.generateLakes);
-		prop = dimensionCfg.get(category, "caveType", 1);
+		prop = dimensionCfg.get(category, "caveType", 0);
 		prop.setMinValue(0).setMaxValue(1).setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName()).setConfigEntryClass(cycleInteger);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";

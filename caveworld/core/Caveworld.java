@@ -46,6 +46,7 @@ import caveworld.network.client.OpenUrlMessage;
 import caveworld.network.client.PlaySoundMessage;
 import caveworld.network.common.RegenerateMessage;
 import caveworld.network.server.CaveAchievementMessage;
+import caveworld.network.server.PortalInventoryMessage;
 import caveworld.network.server.SelectBreakableMessage;
 import caveworld.plugin.advancedtools.AdvancedToolsPlugin;
 import caveworld.plugin.craftguide.CraftGuidePlugin;
@@ -162,6 +163,7 @@ public class Caveworld
 		network.registerMessage(CaveAchievementMessage.class, CaveAchievementMessage.class, id++, Side.SERVER);
 		network.registerMessage(SelectBreakableMessage.class, SelectBreakableMessage.class, id++, Side.SERVER);
 		network.registerMessage(MultiBreakCountMessage.class, MultiBreakCountMessage.class, id, Side.CLIENT);
+		network.registerMessage(PortalInventoryMessage.class, PortalInventoryMessage.class, id++, Side.SERVER);
 
 		Config.syncGeneralCfg();
 

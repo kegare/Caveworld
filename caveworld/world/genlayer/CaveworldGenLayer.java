@@ -12,10 +12,12 @@ package caveworld.world.genlayer;
 import caveworld.api.ICaveBiomeManager;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.gen.layer.GenLayer;
+import net.minecraft.world.gen.layer.GenLayerFuzzyZoom;
+import net.minecraft.world.gen.layer.GenLayerIsland;
 import net.minecraft.world.gen.layer.GenLayerVoronoiZoom;
 import net.minecraft.world.gen.layer.GenLayerZoom;
 
-public class CaveworldGenLayer extends GenLayer
+public abstract class CaveworldGenLayer extends GenLayer
 {
 	public CaveworldGenLayer(long seed)
 	{
@@ -24,21 +26,18 @@ public class CaveworldGenLayer extends GenLayer
 
 	public static GenLayer[] makeWorldLayers(long seed, WorldType type, ICaveBiomeManager manager)
 	{
-		GenLayer biomes = new CaveworldGenLayerBiomes(1L, manager);
-		biomes = new GenLayerZoom(1000L, biomes);
-		biomes = new GenLayerZoom(1001L, biomes);
-		biomes = new GenLayerZoom(1002L, biomes);
-		biomes = new GenLayerZoom(1003L, biomes);
-		GenLayer genlayer = new GenLayerVoronoiZoom(10L, biomes);
-		biomes.initWorldGenSeed(seed);
-		genlayer.initWorldGenSeed(seed);
+		GenLayer genLayer = new GenLayerIsland(1L);
+		genLayer = new GenLayerFuzzyZoom(2000L, genLayer);
 
-		return new GenLayer[] {biomes, genlayer};
-	}
+		genLayer = new CaveworldGenLayerBiomes(100L, genLayer, manager);
+		genLayer = GenLayerZoom.magnify(2000L, genLayer, 1);
 
-	@Override
-	public int[] getInts(int x, int z, int width, int depth)
-	{
-		return null;
+		genLayer = new CaveworldGenLayerSubBiomes(101L, genLayer);
+		genLayer = GenLayerZoom.magnify(2100L, genLayer, 2);
+
+		genLayer = new GenLayerVoronoiZoom(10L, genLayer);
+		genLayer.initWorldGenSeed(seed);
+
+		return new GenLayer[] {null, genLayer, null};
 	}
 }

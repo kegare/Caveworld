@@ -222,7 +222,7 @@ entity.ArcherZombie.name=Archer Zombie
 entity.CavenicSkeleton.name=Cavenic Skeleton
 entity.MasterCavenicSkeleton.name=Master Cavenic Skeleton
 
-inventory.caveworld.portal=Caveworld Portal
+inventory.caveworld.portal=Portal Inventory
 
 achievement.caveworld.portal=Caveworld Portal
 achievement.caveworld.portal.desc=Create of the Caveworld Portal

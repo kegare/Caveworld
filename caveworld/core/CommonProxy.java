@@ -9,6 +9,7 @@
 
 package caveworld.core;
 
+import caveworld.client.gui.MenuType;
 
 public class CommonProxy
 {
@@ -21,5 +22,7 @@ public class CommonProxy
 		return -1;
 	}
 
-	public void displayCavernMenu() {}
+	public void displayMenu(MenuType type) {}
+
+	public void displayPortalMenu(MenuType type, int x, int y, int z) {}
 }

@@ -15,6 +15,7 @@ import cpw.mods.fml.client.config.GuiConfigEntries.ArrayEntry;
 import cpw.mods.fml.client.config.IConfigElement;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.client.gui.GuiScreen;
 
 @SideOnly(Side.CLIENT)
 public class SelectBiomeEntry extends ArrayEntry
@@ -27,7 +28,7 @@ public class SelectBiomeEntry extends ArrayEntry
 	@Override
 	public void valueButtonPressed(int index)
 	{
-		if (GuiConfig.isShiftKeyDown())
+		if (GuiScreen.isShiftKeyDown())
 		{
 			super.valueButtonPressed(index);
 		}

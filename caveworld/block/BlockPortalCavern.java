@@ -13,6 +13,7 @@ import java.util.Random;
 
 import caveworld.api.BlockEntry;
 import caveworld.api.CaveworldAPI;
+import caveworld.client.gui.MenuType;
 import caveworld.core.Caveworld;
 import caveworld.core.Config;
 import caveworld.plugin.mceconomy.MCEconomyPlugin;
@@ -252,25 +253,26 @@ public class BlockPortalCavern extends BlockPortal
 	{
 		if (side >= 2)
 		{
-			boolean shop = MCEconomyPlugin.enabled() && MCEconomyPlugin.SHOP >= 0 && (CaveworldAPI.isEntityInCaveworld(player) || CaveworldAPI.isEntityInCavern(player)) && CaveUtils.isItemPickaxe(player.getCurrentEquippedItem());
+			if (!world.isRemote)
+			{
+				world.playSoundAtEntity(player, "random.click", 0.8F, 1.5F);
+			}
+
+			boolean shop = MCEconomyPlugin.enabled() && MCEconomyPlugin.SHOP >= 0;
+
+			if (shop && CaveUtils.isItemPickaxe(player.getCurrentEquippedItem()))
+			{
+				if (!world.isRemote)
+				{
+					MCEconomyAPI.openShopGui(MCEconomyPlugin.SHOP, player, world, x, y, z);
+				}
+
+				return true;
+			}
 
 			if (world.isRemote)
 			{
-				if (!shop)
-				{
-					Caveworld.proxy.displayCavernMenu();
-				}
-			}
-			else
-			{
-				world.playSoundAtEntity(player, "random.click", 0.8F, 1.5F);
-
-				if (shop)
-				{
-					MCEconomyAPI.openShopGui(MCEconomyPlugin.SHOP, player, world, x, y, z);
-
-					return true;
-				}
+				Caveworld.proxy.displayPortalMenu(MenuType.CAVERN_PORTAL, x, y, z);
 			}
 		}
 

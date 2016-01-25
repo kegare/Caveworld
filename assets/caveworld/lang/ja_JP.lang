@@ -220,7 +220,7 @@ entity.ArcherZombie.name=弓兵ゾンビ
 entity.CavenicSkeleton.name=ケイブニックスケルトン
 entity.MasterCavenicSkeleton.name=マスターケイブニックスケルトン
 
-inventory.caveworld.portal=Caveworld ポータル
+inventory.caveworld.portal=ポータルインベントリ
 
 achievement.caveworld.portal=Caveworld ポータル
 achievement.caveworld.portal.desc=Caveworld ポータルを作成する
