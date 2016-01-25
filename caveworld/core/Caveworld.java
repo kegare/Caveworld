@@ -162,7 +162,7 @@ public class Caveworld
 		network.registerMessage(CaveworldMenuMessage.class, CaveworldMenuMessage.class, id++, Side.CLIENT);
 		network.registerMessage(CaveAchievementMessage.class, CaveAchievementMessage.class, id++, Side.SERVER);
 		network.registerMessage(SelectBreakableMessage.class, SelectBreakableMessage.class, id++, Side.SERVER);
-		network.registerMessage(MultiBreakCountMessage.class, MultiBreakCountMessage.class, id, Side.CLIENT);
+		network.registerMessage(MultiBreakCountMessage.class, MultiBreakCountMessage.class, id++, Side.CLIENT);
 		network.registerMessage(PortalInventoryMessage.class, PortalInventoryMessage.class, id++, Side.SERVER);
 
 		Config.syncGeneralCfg();
