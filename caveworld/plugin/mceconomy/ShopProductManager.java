@@ -16,7 +16,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 import caveworld.core.Caveworld;
-import caveworld.util.ArrayListExtended;
 import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -41,7 +40,7 @@ public class ShopProductManager implements IShop
 		return instance;
 	}
 
-	private final ArrayListExtended<ShopProduct> SHOP_PRODUCTS = new ArrayListExtended();
+	private final List<ShopProduct> PRODUCTS = Lists.newArrayList();
 
 	@Override
 	public String getShopName(World world, EntityPlayer player)
@@ -57,7 +56,7 @@ public class ShopProductManager implements IShop
 		int damage = flag ? -1 : product.getItem().getItemDamage();
 		int cost = flag ? -1 : product.productCost;
 
-		String name = Integer.toString(SHOP_PRODUCTS.size());
+		String name = Integer.toString(PRODUCTS.size());
 
 		if (flag && !MCEconomyPlugin.shopCfg.hasCategory(name))
 		{
@@ -101,7 +100,7 @@ public class ShopProductManager implements IShop
 			product = new ShopProduct(new ItemStack(GameData.getItemRegistry().getObject(item), stack, damage), cost);
 		}
 
-		return SHOP_PRODUCTS.addIfAbsent(product);
+		return PRODUCTS.add(product);
 	}
 
 	@Override
@@ -112,7 +111,7 @@ public class ShopProductManager implements IShop
 
 	public List<ShopProduct> getProducts()
 	{
-		return SHOP_PRODUCTS;
+		return PRODUCTS;
 	}
 
 	@Override
@@ -123,7 +122,7 @@ public class ShopProductManager implements IShop
 
 	public void clearShopProducts()
 	{
-		SHOP_PRODUCTS.clear();
+		PRODUCTS.clear();
 	}
 
 	public static class ShopProduct implements IProduct

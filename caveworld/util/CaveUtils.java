@@ -83,7 +83,6 @@ import net.minecraft.world.MinecraftException;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.BiomeGenBase;
-import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
@@ -591,15 +590,6 @@ public class CaveUtils
 
 	public static void setPlayerLocation(EntityPlayerMP player, double posX, double posY, double posZ, float yaw, float pitch)
 	{
-		int x = MathHelper.floor_double(posX);
-		int z = MathHelper.floor_double(posZ);
-		IChunkProvider provider = player.getServerForPlayer().getChunkProvider();
-
-		provider.loadChunk(x - 3 >> 4, z - 3 >> 4);
-		provider.loadChunk(x + 3 >> 4, z - 3 >> 4);
-		provider.loadChunk(x - 3 >> 4, z + 3 >> 4);
-		provider.loadChunk(x + 3 >> 4, z + 3 >> 4);
-
 		player.mountEntity(null);
 		player.playerNetServerHandler.setPlayerLocation(posX, posY, posZ, yaw, pitch);
 	}

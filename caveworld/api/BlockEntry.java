@@ -33,14 +33,18 @@ public class BlockEntry
 	@Override
 	public boolean equals(Object obj)
 	{
-		if (obj instanceof BlockEntry)
+		if (this == obj)
 		{
-			BlockEntry entry = (BlockEntry)obj;
-
-			return getBlock() == entry.getBlock() && getMetadata() == entry.getMetadata();
+			return true;
+		}
+		if (!(obj instanceof BlockEntry))
+		{
+			return false;
 		}
 
-		return false;
+		BlockEntry entry = (BlockEntry)obj;
+
+		return getBlock() == entry.getBlock() && getMetadata() == entry.getMetadata();
 	}
 
 	@Override

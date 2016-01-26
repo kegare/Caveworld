@@ -30,4 +30,10 @@ public class GeneralEntry extends CaveCategoryEntry
 	{
 		return Config.generalCfg;
 	}
+
+	@Override
+	protected String getEntryName()
+	{
+		return Configuration.CATEGORY_GENERAL;
+	}
 }

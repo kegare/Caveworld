@@ -10,6 +10,7 @@
 package caveworld.client;
 
 import caveworld.client.config.CycleIntegerEntry;
+import caveworld.client.config.MiningPointsEntry;
 import caveworld.client.config.SelectBiomeEntry;
 import caveworld.client.config.SelectItemEntry;
 import caveworld.client.gui.GuiIngameCaveworldMenu;
@@ -47,6 +48,7 @@ public class ClientProxy extends CommonProxy
 		Config.selectItems = SelectItemEntry.class;
 		Config.selectBiomes = SelectBiomeEntry.class;
 		Config.cycleInteger = CycleIntegerEntry.class;
+		Config.pointsEntry = MiningPointsEntry.class;
 	}
 
 	@Override

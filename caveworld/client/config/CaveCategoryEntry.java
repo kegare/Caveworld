@@ -13,7 +13,6 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
-import caveworld.core.Config;
 import cpw.mods.fml.client.config.GuiConfig;
 import cpw.mods.fml.client.config.GuiConfigEntries;
 import cpw.mods.fml.client.config.GuiConfigEntries.CategoryEntry;
@@ -34,6 +33,8 @@ public abstract class CaveCategoryEntry extends CategoryEntry
 
 	protected abstract Configuration getConfig();
 
+	protected abstract String getEntryName();
+
 	protected List<IConfigElement> getConfigElements()
 	{
 		List<IConfigElement> list = Lists.newArrayList();
@@ -49,7 +50,7 @@ public abstract class CaveCategoryEntry extends CategoryEntry
 	@Override
 	protected GuiScreen buildChildScreen()
 	{
-		return new GuiConfig(owningScreen, getConfigElements(), owningScreen.modID, Config.getConfigName(getConfig()),
+		return new GuiConfig(owningScreen, getConfigElements(), owningScreen.modID, getEntryName(),
 			configElement.requiresWorldRestart() || owningScreen.allRequireWorldRestart, configElement.requiresMcRestart() || owningScreen.allRequireMcRestart,
 			GuiConfig.getAbridgedConfigPath(getConfig().toString()));
 	}

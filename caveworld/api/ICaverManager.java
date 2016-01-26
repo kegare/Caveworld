@@ -48,6 +48,8 @@ public interface ICaverManager
 	 */
 	public void setMiningPointAmount(String oredict, int amount);
 
+	public void clearMiningPointAmounts();
+
 	public int getLastDimension(Entity entity);
 
 	public void setLastDimension(Entity entity, int dimension);

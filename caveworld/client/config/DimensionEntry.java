@@ -41,6 +41,12 @@ public class DimensionEntry extends CaveCategoryEntry
 	}
 
 	@Override
+	protected String getEntryName()
+	{
+		return "dimension";
+	}
+
+	@Override
 	protected List<IConfigElement> getConfigElements()
 	{
 		List<IConfigElement> list = Lists.newArrayList();

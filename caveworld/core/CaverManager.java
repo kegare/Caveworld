@@ -99,6 +99,12 @@ public class CaverManager implements ICaverManager
 	}
 
 	@Override
+	public void clearMiningPointAmounts()
+	{
+		pointAmounts.clear();
+	}
+
+	@Override
 	public int getLastDimension(Entity entity)
 	{
 		return getCaver(entity).getLastDimension();

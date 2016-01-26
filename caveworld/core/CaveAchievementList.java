@@ -27,6 +27,7 @@ public class CaveAchievementList
 
 	public static final Achievement portal = CaveAchievement.of("portal", 0, -2, Blocks.mossy_cobblestone, null, true).initIndependentStat();
 	public static final Achievement caveworld = CaveAchievement.of("caveworld", 0, 0, CaveBlocks.caveworld_portal, null, true).initIndependentStat();
+	public static final Achievement cavern = CaveAchievement.of("cavern", 2, 0, CaveBlocks.cavern_portal, null, true).initIndependentStat();
 	public static final Achievement cavenium = CaveAchievement.of("cavenium", -1, 3, CaveItems.cavenium, caveworld, true);
 	public static final Achievement oreFinder = CaveAchievement.of("oreFinder", -3, 5, CaveItems.ore_compass, cavenium, true);
 	public static final Achievement theMiner = CaveAchievement.of("theMiner", 3, 2, Items.iron_pickaxe, caveworld, true);

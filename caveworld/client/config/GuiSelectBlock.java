@@ -9,6 +9,7 @@
 
 package caveworld.client.config;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -53,8 +54,6 @@ import net.minecraft.item.ItemStack;
 public class GuiSelectBlock extends GuiScreen
 {
 	protected static final ArrayListExtended<BlockEntry> blocks = new ArrayListExtended();
-
-	private static final Map<String, List<BlockEntry>> filterCache = Maps.newHashMap();
 
 	static
 	{
@@ -125,6 +124,8 @@ public class GuiSelectBlock extends GuiScreen
 	protected GuiTextField parentNameField;
 	protected GuiTextField parentMetaField;
 
+	protected final Set<BlockEntry> excluded = Sets.newHashSet();
+
 	protected BlockList blockList;
 
 	protected GuiButton doneButton;
@@ -146,6 +147,16 @@ public class GuiSelectBlock extends GuiScreen
 		this(parent);
 		this.parentNameField = nameField;
 		this.parentMetaField = metaField;
+	}
+
+	public GuiSelectBlock exclude(Collection<BlockEntry> blocks)
+	{
+		for (BlockEntry entry : blocks)
+		{
+			excluded.add(entry);
+		}
+
+		return this;
 	}
 
 	@Override
@@ -452,8 +463,11 @@ public class GuiSelectBlock extends GuiScreen
 
 	class BlockList extends GuiListSlot
 	{
+		protected final ArrayListExtended<BlockEntry> entries = new ArrayListExtended(blocks);
 		protected final ArrayListExtended<BlockEntry> contents = new ArrayListExtended(blocks);
 		protected final Set<BlockEntry> selected = Sets.newHashSet();
+
+		private final Map<String, List<BlockEntry>> filterCache = Maps.newHashMap();
 
 		protected int nameType;
 
@@ -466,6 +480,9 @@ public class GuiSelectBlock extends GuiScreen
 				@Override
 				protected void compute()
 				{
+					entries.removeAll(excluded);
+					contents.removeAll(excluded);
+
 					if (parentNameField != null)
 					{
 						int meta = 0;
@@ -475,14 +492,17 @@ public class GuiSelectBlock extends GuiScreen
 							meta = NumberUtils.toInt(parentMetaField.getText());
 						}
 
-						for (BlockEntry entry : blocks)
+						for (BlockEntry entry : entries)
 						{
 							if (GameData.getBlockRegistry().getNameForObject(entry.getBlock()).equals(parentNameField.getText()) && entry.getMetadata() == meta)
 							{
 								selected.add(entry);
+								break;
 							}
 						}
 					}
+
+					scrollToSelected();
 				}
 			});
 		}
@@ -600,7 +620,7 @@ public class GuiSelectBlock extends GuiScreen
 
 			if (detailInfo.isChecked() && itemstack.getItem() != null)
 			{
-				CaveUtils.renderItemStack(mc, itemstack, width / 2 - 100, par3 - 1, false, false, null);
+				CaveUtils.renderItemStack(mc, itemstack, width / 2 - 100, par3 - 1, false, true, null);
 			}
 		}
 
@@ -639,13 +659,13 @@ public class GuiSelectBlock extends GuiScreen
 
 					if (Strings.isNullOrEmpty(filter))
 					{
-						result = blocks;
+						result = entries;
 					}
 					else
 					{
 						if (!filterCache.containsKey(filter))
 						{
-							filterCache.put(filter, Lists.newArrayList(Collections2.filter(blocks, new BlockFilter(filter))));
+							filterCache.put(filter, Lists.newArrayList(Collections2.filter(entries, new BlockFilter(filter))));
 						}
 
 						result = filterCache.get(filter);

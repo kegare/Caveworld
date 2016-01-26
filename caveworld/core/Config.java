@@ -12,13 +12,14 @@ package caveworld.core;
 import java.io.File;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.RecursiveAction;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.Level;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -43,6 +44,7 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
+import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
@@ -69,6 +71,8 @@ public class Config
 	public static boolean veinsAutoRegister;
 	public static boolean deathLoseMiningPoint;
 	public static int miningPointRenderType;
+	public static String[] miningPoints;
+	public static String[] miningPointsDefault;
 	public static String[] miningPointValidItems;
 	public static String[] miningPointValidItemsDefault;
 	public static boolean fakeMiningPickaxe;
@@ -87,6 +91,7 @@ public class Config
 	public static Class<? extends IConfigEntry> selectItems;
 	public static Class<? extends IConfigEntry> selectBiomes;
 	public static Class<? extends IConfigEntry> cycleInteger;
+	public static Class<? extends IConfigEntry> pointsEntry;
 
 	public static final int RENDER_TYPE_PORTAL = Caveworld.proxy.getUniqueRenderType();
 	public static final int RENDER_TYPE_CHEST = Caveworld.proxy.getUniqueRenderType();
@@ -172,18 +177,6 @@ public class Config
 		return config;
 	}
 
-	public static String getConfigName(Configuration config)
-	{
-		String name = FilenameUtils.getBaseName(config.toString());
-
-		if (name != null && name.startsWith("caveworld-"))
-		{
-			return name.substring(name.lastIndexOf('-') + 1);
-		}
-
-		return null;
-	}
-
 	public static void syncGeneralCfg()
 	{
 		String category = Configuration.CATEGORY_GENERAL;
@@ -244,6 +237,12 @@ public class Config
 			propOrder.add(prop.getName());
 			miningPointRenderType = MathHelper.clamp_int(prop.getInt(miningPointRenderType), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 		}
+
+		prop = generalCfg.get(category, "miningPoints", miningPointsDefault == null ? new String[0] : miningPointsDefault);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(pointsEntry);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		propOrder.add(prop.getName());
+		miningPoints = prop.getStringList();
 
 		prop = generalCfg.get(category, "miningPointValidItems", miningPointValidItemsDefault == null ? new String[0] : miningPointValidItemsDefault);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(selectItems);
@@ -335,6 +334,39 @@ public class Config
 		{
 			generalCfg.save();
 		}
+	}
+
+	public static void refreshMiningPoints()
+	{
+		CaveUtils.getPool().execute(new RecursiveAction()
+		{
+			@Override
+			protected void compute()
+			{
+				CaveworldAPI.caverManager.clearMiningPointAmounts();
+
+				for (String str : miningPoints)
+				{
+					if (!Strings.isNullOrEmpty(str) && str.contains(",") && str.contains(":"))
+					{
+						str = str.trim();
+
+						int i = str.indexOf(',');
+						String str2 = str.substring(0, i);
+						int point = Integer.parseInt(str.substring(i + 1));
+
+						i = str2.lastIndexOf(':');
+						Block block = GameData.getBlockRegistry().getObject(str2.substring(0, i));
+						int meta = Integer.parseInt(str2.substring(i + 1));
+
+						if (block != null && block != Blocks.air)
+						{
+							CaveworldAPI.setMiningPointAmount(block, meta, point);
+						}
+					}
+				}
+			}
+		});
 	}
 
 	public static void syncEntitiesCfg()

@@ -40,6 +40,12 @@ public class EntitiesEntry extends CaveCategoryEntry
 	}
 
 	@Override
+	protected String getEntryName()
+	{
+		return "entities";
+	}
+
+	@Override
 	protected List<IConfigElement> getConfigElements()
 	{
 		List<IConfigElement> list = Lists.newArrayList();

@@ -49,6 +49,7 @@ import caveworld.network.server.CaveAchievementMessage;
 import caveworld.network.server.PortalInventoryMessage;
 import caveworld.network.server.SelectBreakableMessage;
 import caveworld.plugin.advancedtools.AdvancedToolsPlugin;
+import caveworld.plugin.applemilktea.AppleMilkTeaPlugin;
 import caveworld.plugin.craftguide.CraftGuidePlugin;
 import caveworld.plugin.enderstorage.EnderStoragePlugin;
 import caveworld.plugin.hexagonaldia.HexagonalDiamondPlugin;
@@ -491,6 +492,18 @@ public class Caveworld
 			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: MaterialArmsPlugin");
 		}
 
+		try
+		{
+			if (AppleMilkTeaPlugin.enabled())
+			{
+				AppleMilkTeaPlugin.invoke();
+			}
+		}
+		catch (Throwable e)
+		{
+			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: AppleMilkTeaPlugin");
+		}
+
 		for (Item item : GameData.getItemRegistry().typeSafeIterable())
 		{
 			CaveUtils.isItemPickaxe(item);
@@ -609,15 +622,38 @@ public class Caveworld
 				CaveworldAPI.setMiningPointAmount("aquamarineOre", 2);
 				CaveworldAPI.setMiningPointAmount("glowstone", 2);
 
+				Set<String> items = Sets.newTreeSet();
+
 				for (Block block : GameData.getBlockRegistry().typeSafeIterable())
 				{
 					for (int i = 0; i < 16; ++i)
 					{
-						if (CaveworldAPI.getMiningPointAmount(block, i) > 0)
+						int point = CaveworldAPI.getMiningPointAmount(block, i);
+
+						if (point > 0)
 						{
+							items.add(GameData.getBlockRegistry().getNameForObject(block) + ":" + i + "," + point);
+
 							ItemMiningPickaxe.defaultBreakables.add(CaveUtils.toStringHelper(block, i));
 						}
 					}
+				}
+
+				CaveworldAPI.caverManager.clearMiningPointAmounts();
+
+				Config.miningPointsDefault = items.toArray(new String[items.size()]);
+
+				Property prop = Config.generalCfg.getCategory(Configuration.CATEGORY_GENERAL).get("miningPoints");
+				prop.setDefaultValues(Config.miningPointsDefault);
+
+				if (prop.getStringList() == null || prop.getStringList().length <= 0)
+				{
+					prop.setToDefault();
+				}
+
+				if (Config.generalCfg.hasChanged())
+				{
+					Config.generalCfg.save();
 				}
 			}
 		});
@@ -626,6 +662,8 @@ public class Caveworld
 	@EventHandler
 	public void serverStarting(FMLServerStartingEvent event)
 	{
+		Config.refreshMiningPoints();
+
 		event.registerServerCommand(new CommandCaveworld());
 
 		if (event.getSide().isServer() && (Version.DEV_DEBUG || Config.versionNotify && Version.isOutdated()))

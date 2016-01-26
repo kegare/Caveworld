@@ -75,7 +75,7 @@ public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMe
 
 			if (message.cavern)
 			{
-				CaveUtils.regenerateDimension(CaveworldAPI.getCavernDimension(), message.backup, false);
+				CaveUtils.regenerateDimension(CaveworldAPI.getCavernDimension(), message.backup, Config.hardcore || Config.caveborn);
 			}
 		}
 

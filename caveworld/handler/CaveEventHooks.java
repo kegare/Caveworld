@@ -49,6 +49,7 @@ import caveworld.util.CaveUtils;
 import caveworld.util.Version;
 import caveworld.util.Version.Status;
 import caveworld.util.breaker.MultiBreakExecutor;
+import caveworld.world.TeleporterCaveworld;
 import caveworld.world.WorldProviderCavern;
 import caveworld.world.WorldProviderCaveworld;
 import cpw.mods.fml.client.FMLClientHandler;
@@ -144,7 +145,13 @@ public class CaveEventHooks
 	{
 		if (Caveworld.MODID.equals(event.modID) && !event.isWorldRunning)
 		{
-			switch (event.configID)
+			if (event.configID == null)
+			{
+				Config.syncGeneralCfg();
+				Config.syncEntitiesCfg();
+				Config.syncDimensionCfg();
+			}
+			else switch (event.configID)
 			{
 				case Configuration.CATEGORY_GENERAL:
 					Config.syncGeneralCfg();
@@ -502,18 +509,47 @@ public class CaveEventHooks
 					}
 
 					bonus.add(new ItemStack(Blocks.crafting_table));
+					bonus.add(new ItemStack(Items.dye, MathHelper.getRandomIntegerInRange(world.rand, 3, 5), 15));
 
 					for (ItemStack itemstack : bonus)
 					{
 						player.inventory.addItemStackToInventory(itemstack);
 					}
 
-					CaveUtils.teleportPlayer(player, CaveworldAPI.getDimension());
+					int dim = CaveworldAPI.getDimension();
+
+					player.isDead = false;
+					player.forceSpawn = true;
+					player.timeUntilPortal = player.getPortalCooldown();
+					player.mcServer.getConfigurationManager().transferPlayerToDimension(player, dim, new TeleporterCaveworld(player.mcServer.worldServerForDimension(dim)));
+					player.addExperienceLevel(0);
+
+					world = player.getServerForPlayer();
+					world.resetUpdateEntityTick();
 
 					if (player.getBedLocation(player.dimension) == null)
 					{
 						player.setSpawnChunk(player.getPlayerCoordinates(), true);
 					}
+
+					int x = MathHelper.floor_double(player.posX);
+					int y = MathHelper.floor_double(player.posY);
+					int z = MathHelper.floor_double(player.posZ);
+
+					outside: for (int j = x - 2; j < x + 2; ++j)
+					{
+						for (int k = z - 2; k < z + 2; ++k)
+						{
+							if (world.getBlock(j, y, k) == CaveBlocks.caveworld_portal)
+							{
+								world.setBlockToAir(j, y, k);
+								break outside;
+							}
+						}
+					}
+
+					world.playSoundAtEntity(player, "dig.glass", 1.0F, 0.65F);
+					player.addChatMessage(new ChatComponentTranslation("caveworld.message.caveborn"));
 				}
 			}
 		}
@@ -550,7 +586,7 @@ public class CaveEventHooks
 			EntityPlayerMP player = (EntityPlayerMP)event.player;
 			WorldServer world = player.getServerForPlayer();
 
-			if (Config.hardcore && event.toDim != CaveworldAPI.getDimension())
+			if (Config.hardcore && event.toDim != CaveworldAPI.getDimension() && event.toDim != CaveworldAPI.getCavernDimension())
 			{
 				CaveUtils.teleportPlayer(player, event.fromDim);
 
@@ -577,12 +613,11 @@ public class CaveEventHooks
 
 				player.triggerAchievement(CaveAchievementList.caveworld);
 			}
-
-			if (event.toDim == CaveworldAPI.getCavernDimension())
+			else if (event.toDim == CaveworldAPI.getCavernDimension())
 			{
 				NBTTagCompound data = player.getEntityData();
 
-				if (data.getLong("Cavern:LastTeleportTime") + 18000L < world.getTotalWorldTime())
+				if (!player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.cavern) || data.getLong("Cavern:LastTeleportTime") + 18000L < world.getTotalWorldTime())
 				{
 					String name = "ambient.unrest";
 
@@ -595,6 +630,8 @@ public class CaveEventHooks
 				}
 
 				data.setLong("Cavern:LastTeleportTime", world.getTotalWorldTime());
+
+				player.triggerAchievement(CaveAchievementList.cavern);
 			}
 		}
 	}
