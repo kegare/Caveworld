@@ -29,12 +29,14 @@ import caveworld.core.Config;
 import caveworld.entity.EntityCaveman;
 import caveworld.entity.EntityCavenicSkeleton;
 import caveworld.entity.EntityMasterCavenicSkeleton;
+import caveworld.inventory.InventoryCaverBackpack;
 import caveworld.item.CaveItems;
 import caveworld.item.IAquamarineTool;
 import caveworld.item.ICaveniumTool;
 import caveworld.item.ItemCavenicBow;
 import caveworld.item.ItemCavenicBow.BowMode;
 import caveworld.item.ItemCavenium;
+import caveworld.item.ItemCaverBackpack;
 import caveworld.item.ItemDiggingShovel;
 import caveworld.item.ItemLumberingAxe;
 import caveworld.item.ItemMiningPickaxe;
@@ -121,6 +123,7 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
+import net.minecraftforge.event.entity.player.PlayerDestroyItemEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -955,6 +958,45 @@ public class CaveEventHooks
 				if (event.result == null)
 				{
 					data.setLong("Caveworld:LastSleepTime", world.getTotalWorldTime());
+				}
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onPlayerDestroyItem(PlayerDestroyItemEvent event)
+	{
+		EntityPlayer player = event.entityPlayer;
+
+		if (!player.worldObj.isRemote)
+		{
+			ItemStack itemstack = event.original;
+
+			outside: for (int i = 0; i < player.inventory.getSizeInventory(); ++i)
+			{
+				ItemStack item = player.inventory.getStackInSlot(i);
+
+				if (item != null && item.getItem() instanceof ItemCaverBackpack)
+				{
+					InventoryCaverBackpack inventory = new InventoryCaverBackpack(item);
+
+					for (int j = 0; j < inventory.getSizeInventory(); ++j)
+					{
+						ItemStack stack = inventory.getStackInSlot(j);
+
+						if (stack != null && itemstack.getItem() == stack.getItem())
+						{
+							if (itemstack.isItemStackDamageable() && stack.isItemStackDamageable() || itemstack.getItemDamage() == stack.getItemDamage())
+							{
+								player.inventory.setInventorySlotContents(player.inventory.currentItem, stack);
+
+								inventory.setInventorySlotContents(j, null);
+								inventory.markDirty();
+
+								break outside;
+							}
+						}
+					}
 				}
 			}
 		}

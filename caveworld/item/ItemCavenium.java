@@ -74,7 +74,13 @@ public class ItemCavenium extends Item
 	@Override
 	public EnumRarity getRarity(ItemStack itemstack)
 	{
-		return itemstack.getItemDamage() == 1 ? EnumRarity.rare : super.getRarity(itemstack);
+		switch (itemstack.getItemDamage())
+		{
+			case 1:
+				return EnumRarity.rare;
+			default:
+				return  super.getRarity(itemstack);
+		}
 	}
 
 	@SideOnly(Side.CLIENT)

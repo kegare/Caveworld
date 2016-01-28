@@ -224,12 +224,6 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 		return "Leaving the " + getDimensionName();
 	}
 
-	@Override
-	public double getMovementFactor()
-	{
-		return 3.0D;
-	}
-
 	@SideOnly(Side.CLIENT)
 	@Override
 	public IRenderHandler getSkyRenderer()

@@ -18,9 +18,10 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemPickaxe;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
+import net.minecraft.item.ItemTool;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
@@ -30,7 +31,7 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 	public enum CombatType
 	{
 		SWORD,
-		PICKAXE,
+		TOOL,
 		NONE
 	}
 
@@ -74,9 +75,9 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 		{
 			currentType = CombatType.SWORD;
 		}
-		else if (itemstack.getItem() instanceof ItemPickaxe)
+		else if (itemstack.getItem() instanceof ItemTool)
 		{
-			currentType = CombatType.PICKAXE;
+			currentType = CombatType.TOOL;
 		}
 		else
 		{
@@ -86,7 +87,7 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 		switch (getCurrentType())
 		{
 			case SWORD:
-			case PICKAXE:
+			case TOOL:
 				List<EntityLivingBase> list = theWorld.selectEntitiesWithinAABB(EntityLivingBase.class, theSoldier.boundingBox.expand(10.0D, 4.0D, 10.0D), this);
 				EntityLivingBase target = null;
 
@@ -152,7 +153,7 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 		switch (getCurrentType())
 		{
 			case SWORD:
-			case PICKAXE:
+			case TOOL:
 				if (theSoldier.getDistanceSqToEntity(theTarget) > 3.0D)
 				{
 					if (theSoldier.getEntitySenses().canSee(theTarget))
@@ -163,11 +164,22 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 				}
 				else if (theSoldier.ticksExisted % 10 == 0)
 				{
-					ItemSword item = (ItemSword)theWeapon.getItem();
+					Item item = theWeapon.getItem();
+					float damage;
+
+					if (item instanceof ItemSword)
+					{
+						damage = ((ItemSword)item).func_150931_i();
+					}
+					else if (item instanceof ItemTool)
+					{
+						damage = ((ItemTool)item).func_150913_i().getDamageVsEntity();
+					}
+					else break;
 
 					theSoldier.swingItem();
 
-					theTarget.attackEntityFrom(DamageSource.causeMobDamage(theSoldier), item.func_150931_i());
+					theTarget.attackEntityFrom(DamageSource.causeMobDamage(theSoldier), damage);
 
 					theWeapon.getItem().hitEntity(current, theTarget, theSoldier);
 				}

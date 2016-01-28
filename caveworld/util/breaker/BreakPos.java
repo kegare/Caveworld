@@ -73,43 +73,35 @@ public class BreakPos implements Comparable
 	{
 		Block block = getCurrentBlock();
 		int meta = getCurrentMetadata();
+		boolean flag = !player.capabilities.isCreativeMode;
 
-		if (player.capabilities.isCreativeMode)
+		if (flag)
 		{
-			block.onBlockHarvested(world, x, y, z, meta, player);
-
-			if (block.removedByPlayer(world, player, x, y, z, false))
-			{
-				block.onBlockDestroyedByPlayer(world, x, y, z, meta);
-
-				MinecraftForge.EVENT_BUS.post(new BreakEvent(x, y, z, world, block, meta, player));
-			}
-
-			if (player instanceof EntityPlayerMP)
-			{
-				((EntityPlayerMP)player).playerNetServerHandler.sendPacket(new S23PacketBlockChange(x, y, z, world));
-			}
-
-			return;
+			world.playAuxSFX(2001, x, y, z, Block.getIdFromBlock(block) + (meta << 12));
 		}
-
-		world.playAuxSFX(2001, x, y, z, Block.getIdFromBlock(block) + (meta << 12));
 
 		block.onBlockHarvested(world, x, y, z, meta, player);
 
 		if (block.removedByPlayer(world, player, x, y, z, true))
 		{
 			block.onBlockDestroyedByPlayer(world, x, y, z, meta);
-			block.harvestBlock(world, player, x, y, z, meta);
+
+			if (flag)
+			{
+				block.harvestBlock(world, player, x, y, z, meta);
+			}
 
 			BreakEvent event = new BreakEvent(x, y, z, world, block, meta, player);
 
-			if (!MinecraftForge.EVENT_BUS.post(event))
+			if (!MinecraftForge.EVENT_BUS.post(event) && flag)
 			{
 				block.dropXpOnBlockBreak(world, x, y, z, event.getExpToDrop());
 			}
 
-			player.getCurrentEquippedItem().damageItem(1, player);
+			if (flag)
+			{
+				player.getCurrentEquippedItem().damageItem(1, player);
+			}
 		}
 
 		if (player instanceof EntityPlayerMP)
@@ -131,14 +123,18 @@ public class BreakPos implements Comparable
 	@Override
 	public boolean equals(Object obj)
 	{
-		if (obj != null && obj instanceof BreakPos)
+		if (this == obj)
 		{
-			BreakPos pos = (BreakPos)obj;
-
-			return world.provider.dimensionId == pos.world.provider.dimensionId && x == pos.x && y == pos.y && z == pos.z;
+			return true;
+		}
+		else if (!(obj instanceof BreakPos))
+		{
+			return false;
 		}
 
-		return false;
+		BreakPos pos = (BreakPos)obj;
+
+		return world.provider.dimensionId == pos.world.provider.dimensionId && x == pos.x && y == pos.y && z == pos.z;
 	}
 
 	@Override

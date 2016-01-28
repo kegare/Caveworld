@@ -10,12 +10,10 @@
 package caveworld.world;
 
 import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
 import caveworld.api.CaveworldAPI;
 import caveworld.block.CaveBlocks;
@@ -28,6 +26,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.Direction;
+import net.minecraft.util.LongHashMap;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.Teleporter;
@@ -38,10 +37,12 @@ public class TeleporterCaveworld extends Teleporter
 	private final WorldServer worldObj;
 	private final Random random;
 
-	private final Map<Long, PortalPosition> coordCache = Maps.newHashMap();
-	private final Set<Long> coordKeys = Sets.newHashSet();
+	protected Block portalBlock;
 
-	private boolean brickFrame;
+	protected final LongHashMap coordCache = new LongHashMap();
+	protected final List<Long> coordKeys = Lists.newArrayList();
+
+	protected boolean brickFrame;
 
 	public TeleporterCaveworld(WorldServer worldServer)
 	{
@@ -49,6 +50,7 @@ public class TeleporterCaveworld extends Teleporter
 		this.worldObj = worldServer;
 		this.worldObj.customTeleporters.add(this);
 		this.random = new Random(worldServer.getSeed());
+		this.portalBlock = CaveBlocks.caveworld_portal;
 	}
 
 	public TeleporterCaveworld(WorldServer worldServer, boolean brick)
@@ -97,9 +99,9 @@ public class TeleporterCaveworld extends Teleporter
 		boolean flag = true;
 		double var1 = -1.0D;
 
-		if (coordCache.containsKey(chunkSeed))
+		if (coordCache.containsItem(chunkSeed))
 		{
-			PortalPosition portal = coordCache.get(chunkSeed);
+			PortalPosition portal = (PortalPosition)coordCache.getValueByKey(chunkSeed);
 			var1 = 0.0D;
 			blockX = portal.posX;
 			blockY = portal.posY;
@@ -119,9 +121,9 @@ public class TeleporterCaveworld extends Teleporter
 
 					for (int y = worldObj.getActualHeight() - 1; y >= 0; --y)
 					{
-						if (worldObj.getBlock(var2, y, var3) == CaveBlocks.caveworld_portal)
+						if (worldObj.getBlock(var2, y, var3) == portalBlock)
 						{
-							while (worldObj.getBlock(var2, y - 1, var3) == CaveBlocks.caveworld_portal)
+							while (worldObj.getBlock(var2, y - 1, var3) == portalBlock)
 							{
 								--y;
 							}
@@ -146,7 +148,7 @@ public class TeleporterCaveworld extends Teleporter
 		{
 			if (flag)
 			{
-				coordCache.put(chunkSeed, new PortalPosition(blockX, blockY, blockZ, worldObj.getTotalWorldTime()));
+				coordCache.add(chunkSeed, new PortalPosition(blockX, blockY, blockZ, worldObj.getTotalWorldTime()));
 				coordKeys.add(chunkSeed);
 			}
 
@@ -155,22 +157,22 @@ public class TeleporterCaveworld extends Teleporter
 			double var4 = blockZ + 0.5D;
 			int var5 = -1;
 
-			if (worldObj.getBlock(blockX - 1, blockY, blockZ) == CaveBlocks.caveworld_portal)
+			if (worldObj.getBlock(blockX - 1, blockY, blockZ) == portalBlock)
 			{
 				var5 = 2;
 			}
 
-			if (worldObj.getBlock(blockX + 1, blockY, blockZ) == CaveBlocks.caveworld_portal)
+			if (worldObj.getBlock(blockX + 1, blockY, blockZ) == portalBlock)
 			{
 				var5 = 0;
 			}
 
-			if (worldObj.getBlock(blockX, blockY, blockZ - 1) == CaveBlocks.caveworld_portal)
+			if (worldObj.getBlock(blockX, blockY, blockZ - 1) == portalBlock)
 			{
 				var5 = 3;
 			}
 
-			if (worldObj.getBlock(blockX, blockY, blockZ + 1) == CaveBlocks.caveworld_portal)
+			if (worldObj.getBlock(blockX, blockY, blockZ + 1) == portalBlock)
 			{
 				var5 = 1;
 			}
@@ -491,7 +493,7 @@ public class TeleporterCaveworld extends Teleporter
 				}
 				else
 				{
-					worldObj.setBlock(var10, var9, var12, CaveBlocks.caveworld_portal, brickFrame ? 5 : 0, 2);
+					worldObj.setBlock(var10, var9, var12, portalBlock, brickFrame ? 5 : 0, 2);
 				}
 			}
 		}
@@ -547,8 +549,8 @@ public class TeleporterCaveworld extends Teleporter
 
 			while (iterator.hasNext())
 			{
-				long chunkSeed = iterator.next();
-				PortalPosition portal = coordCache.get(chunkSeed);
+				long chunkSeed = iterator.next().longValue();
+				PortalPosition portal = (PortalPosition)coordCache.getValueByKey(chunkSeed);
 
 				if (portal == null || portal.lastUpdateTime < var1)
 				{

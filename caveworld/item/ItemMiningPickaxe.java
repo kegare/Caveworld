@@ -565,6 +565,19 @@ public class ItemMiningPickaxe extends ItemPickaxe implements ICaveniumTool
 		}
 	}
 
+	@Override
+	public boolean onEntitySwing(EntityLivingBase entityLiving, ItemStack itemstack)
+	{
+		Item item = getBase(itemstack);
+
+		if (item != this)
+		{
+			item.onEntitySwing(entityLiving, itemstack);
+		}
+
+		return super.onEntitySwing(entityLiving, itemstack);
+	}
+
 	@SideOnly(Side.CLIENT)
 	@Override
 	public boolean hasEffect(ItemStack itemstack, int pass)

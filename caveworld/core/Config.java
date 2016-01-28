@@ -83,7 +83,6 @@ public class Config
 
 	public static boolean portalCraftRecipe;
 	public static boolean mossStoneCraftRecipe;
-	public static boolean refinedCaveniumCraftRecipe;
 
 	public static boolean hardcore;
 	public static boolean caveborn;
@@ -300,12 +299,6 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		mossStoneCraftRecipe = prop.getBoolean(mossStoneCraftRecipe);
-		prop = generalCfg.get(category, "refinedCaveniumCraftRecipe", Version.DEV_DEBUG);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
-		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-		prop.comment += " [default: " + prop.getDefault() + "]";
-		propOrder.add(prop.getName());
-		refinedCaveniumCraftRecipe = prop.getBoolean(refinedCaveniumCraftRecipe);
 
 		generalCfg.setCategoryPropertyOrder(category, propOrder);
 		generalCfg.setCategoryRequiresMcRestart(category, true);

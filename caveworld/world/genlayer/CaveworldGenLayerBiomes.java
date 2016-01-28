@@ -9,29 +9,28 @@
 
 package caveworld.world.genlayer;
 
+import java.util.Random;
+
 import caveworld.api.ICaveBiomeManager;
-import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.gen.layer.GenLayer;
 import net.minecraft.world.gen.layer.IntCache;
 
 public class CaveworldGenLayerBiomes extends GenLayer
 {
 	private final ICaveBiomeManager biomeManager;
-
-	protected BiomeGenBase[] allowedBiomes;
+	private final Random random;
 
 	public CaveworldGenLayerBiomes(long seed, GenLayer layer, ICaveBiomeManager manager)
 	{
 		super(seed);
 		this.biomeManager = manager;
-		this.allowedBiomes = biomeManager.getBiomeList().toArray(new BiomeGenBase[0]);
+		this.random = new Random();
 		this.parent = layer;
 	}
 
 	@Override
 	public int[] getInts(int x, int z, int sizeX, int sizeZ)
 	{
-		parent.getInts(x, z, sizeX, sizeZ);
 		int[] ints = IntCache.getIntCache(sizeX * sizeZ);
 
 		for (int dz = 0; dz < sizeZ; ++dz)
@@ -40,7 +39,7 @@ public class CaveworldGenLayerBiomes extends GenLayer
 			{
 				initChunkSeed(dx + x, dz + z);
 
-				ints[dx + dz * sizeX] = allowedBiomes[nextInt(allowedBiomes.length)].biomeID;
+				ints[dx + dz * sizeX] = biomeManager.getRandomCaveBiome(random).getBiome().biomeID;
 			}
 		}
 

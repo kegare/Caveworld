@@ -33,6 +33,7 @@ import caveworld.entity.EntityMasterCavenicSkeleton;
 import caveworld.handler.CaveAPIHandler;
 import caveworld.handler.CaveEventHooks;
 import caveworld.handler.CaveFuelHandler;
+import caveworld.handler.CaveGuiHandler;
 import caveworld.item.CaveItems;
 import caveworld.item.ItemDiggingShovel;
 import caveworld.item.ItemLumberingAxe;
@@ -72,6 +73,7 @@ import cpw.mods.fml.common.DummyModContainer;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
+import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.Mod.Metadata;
 import cpw.mods.fml.common.ModMetadata;
 import cpw.mods.fml.common.SidedProxy;
@@ -119,6 +121,9 @@ public class Caveworld
 
 	@Metadata(MODID)
 	public static ModMetadata metadata;
+
+	@Instance(MODID)
+	public static Caveworld instance;
 
 	@SidedProxy(modId = MODID, clientSide = "caveworld.client.ClientProxy", serverSide = "caveworld.core.CommonProxy")
 	public static CommonProxy proxy;
@@ -199,6 +204,8 @@ public class Caveworld
 		id = CaveworldAPI.getCavernDimension();
 		DimensionManager.registerProviderType(id, WorldProviderCavern.class, true);
 		DimensionManager.registerDimension(id, id);
+
+		NetworkRegistry.INSTANCE.registerGuiHandler(this, new CaveGuiHandler());
 
 		FMLCommonHandler.instance().bus().register(CaveEventHooks.instance);
 

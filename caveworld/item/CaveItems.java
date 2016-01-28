@@ -12,7 +12,6 @@ package caveworld.item;
 import com.google.common.base.Predicate;
 
 import caveworld.block.CaveBlocks;
-import caveworld.core.Config;
 import caveworld.recipe.RecipeCaveniumTool;
 import caveworld.util.CaveUtils;
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -42,6 +41,7 @@ public class CaveItems
 	public static final ItemAquamarinePickaxe aquamarine_pickaxe = new ItemAquamarinePickaxe("pickaxeAquamarine");
 	public static final ItemAquamarineAxe aquamarine_axe = new ItemAquamarineAxe("axeAquamarine");
 	public static final ItemAquamarineShovel aquamarine_shovel = new ItemAquamarineShovel("shovelAquamarine");
+	public static final ItemCaverBackpack caver_backpack = new ItemCaverBackpack("caverBackpack");
 
 	public static void registerItems()
 	{
@@ -68,14 +68,6 @@ public class CaveItems
 			item = new ItemStack(cavenium, 9, 1);
 			GameRegistry.addRecipe(new ShapelessOreRecipe(item, "blockRefinedCavenium"));
 			GameRegistry.addRecipe(new ShapelessOreRecipe(item, "refinedCaveniumBlock"));
-
-			if (Config.refinedCaveniumCraftRecipe)
-			{
-				GameRegistry.addShapelessRecipe(new ItemStack(cavenium, 1, 1),
-					new ItemStack(cavenium, 1, 0),
-					new ItemStack(Items.dye, 1, 7), Items.quartz, Items.glowstone_dust
-				);
-			}
 
 			FurnaceRecipes.smelting().func_151394_a(new ItemStack(CaveBlocks.cavenium_ore, 1, 0), new ItemStack(cavenium, 1, 0), 0.5F);
 			FurnaceRecipes.smelting().func_151394_a(new ItemStack(CaveBlocks.cavenium_ore, 1, 1), new ItemStack(cavenium, 1, 1), 0.75F);
@@ -220,6 +212,23 @@ public class CaveItems
 				"A", "S", "S",
 				'A', "gemAquamarine",
 				'S', "stickWood"
+			));
+		}
+
+		{
+			GameRegistry.registerItem(caver_backpack, "caver_backpack");
+
+			OreDictionary.registerOre("caverBackpack", caver_backpack);
+
+			GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(caver_backpack),
+				"LCL", "CLC", "LCL",
+				'L', Items.leather,
+				'C', "cavenium"
+			));
+			GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(caver_backpack),
+				"LCL", "CLC", "LCL",
+				'L', Items.leather,
+				'C', "gemCavenium"
 			));
 		}
 	}

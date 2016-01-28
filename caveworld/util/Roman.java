@@ -26,7 +26,7 @@ public class Roman
 
 		StringBuilder ret = new StringBuilder();
 
-		for (int i = 3; i >= 0; i--)
+		for (int i = 3; i >= 0; --i)
 		{
 			int r = num / values[i];
 			num %= values[i];
