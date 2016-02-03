@@ -295,10 +295,8 @@ public class Caveworld
 
 		CaveAchievementList.registerAchievements();
 
-		if (event.getSide().isServer())
-		{
-			SubItemHelper.cacheSubBlocks();
-		}
+		SubItemHelper.cacheSubBlocks(event.getSide());
+		SubItemHelper.cacheSubItems(event.getSide());
 
 		List list = Lists.newArrayList();
 

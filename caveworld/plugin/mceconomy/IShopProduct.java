@@ -11,9 +11,8 @@ package caveworld.plugin.mceconomy;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import shift.mceconomy2.api.shop.IProduct;
 
-public interface IShopProduct extends IProduct
+public interface IShopProduct
 {
 	public ItemStack setItem(ItemStack item);
 

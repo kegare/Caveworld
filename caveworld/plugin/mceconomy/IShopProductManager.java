@@ -13,9 +13,8 @@ import java.util.List;
 
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.config.Configuration;
-import shift.mceconomy2.api.shop.IShop;
 
-public interface IShopProductManager extends IShop
+public interface IShopProductManager
 {
 	public Configuration getConfig();
 

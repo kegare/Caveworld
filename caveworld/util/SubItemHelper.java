@@ -18,9 +18,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import cpw.mods.fml.common.registry.GameData;
+import cpw.mods.fml.relauncher.Side;
 import net.minecraft.block.Block;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 
 public class SubItemHelper
@@ -28,107 +29,130 @@ public class SubItemHelper
 	public static final Map<Block, List<ItemStack>> cachedSubBlocks = Maps.newHashMap();
 	public static final Map<Item, List<ItemStack>> cachedSubItems = Maps.newHashMap();
 
-	public static void cacheSubBlocks()
+	public static void cacheSubBlocks(Side side)
 	{
 		cachedSubBlocks.clear();
 
 		for (Block block : GameData.getBlockRegistry().typeSafeIterable())
 		{
-			List<ItemStack> list = Lists.newArrayList();
-
-			if (Item.getItemFromBlock(block) == null)
+			try
 			{
+				List<ItemStack> list = Lists.newArrayList();
+
+				if (Item.getItemFromBlock(block) == null)
+				{
+					cachedSubBlocks.put(block, list);
+					continue;
+				}
+
+				if (side == Side.CLIENT)
+				{
+					CreativeTabs tab = block.getCreativeTabToDisplayOn();
+
+					if (tab == null)
+					{
+						tab = CreativeTabs.tabAllSearch;
+					}
+
+					block.getSubBlocks(Item.getItemFromBlock(block), tab, list);
+				}
+
+				if (list.isEmpty())
+				{
+					ItemStack stack;
+					String last = null;
+					String name = null;
+
+					for (int i = 0; i < 16; ++i)
+					{
+						stack = new ItemStack(block, 1, i);
+						name = stack.getDisplayName();
+
+						if (Strings.isNullOrEmpty(last))
+						{
+							list.add(stack);
+						}
+						else if (!last.equals(name))
+						{
+							list.add(stack);
+						}
+
+						last = name;
+					}
+
+					if (list.size() > 1)
+					{
+						list.remove(list.size() - 1);
+					}
+				}
+
 				cachedSubBlocks.put(block, list);
-				continue;
 			}
-
-			ItemStack stack;
-			String last = null;
-			String name = null;
-
-			for (int i = 0; i < 16; ++i)
-			{
-				stack = new ItemStack(block, 1, i);
-				name = stack.getDisplayName();
-
-				if (Strings.isNullOrEmpty(last))
-				{
-					list.add(stack);
-				}
-				else if (!last.equals(name))
-				{
-					list.add(stack);
-				}
-
-				last = name;
-			}
-
-			if (list.size() > 1)
-			{
-				list.remove(list.size() - 1);
-			}
-
-			cachedSubBlocks.put(block, list);
-
-			if (list.size() > 1)
-			{
-				CaveLog.fine("Cached - SubBlocks: " + GameData.getBlockRegistry().getNameForObject(block) + " has " + list.size() + " blocks");
-			}
+			catch (Throwable e) {}
 		}
 	}
 
-	public static void cacheSubItems()
+	public static void cacheSubItems(Side side)
 	{
 		cachedSubItems.clear();
 
 		for (Item item : GameData.getItemRegistry().typeSafeIterable())
 		{
-			List<ItemStack> list = Lists.newArrayList();
-
-			if (item instanceof ItemBlock)
+			try
 			{
-				cachedSubItems.put(item, list);
-				continue;
-			}
-			else if (item.isDamageable())
-			{
-				list.add(new ItemStack(item));
-				cachedSubItems.put(item, list);
-				continue;
-			}
+				List<ItemStack> list = Lists.newArrayList();
 
-			ItemStack stack;
-			String last = null;
-			String name = null;
-
-			for (int i = 0; i < 32767; ++i)
-			{
-				stack = new ItemStack(item, 1, i);
-				name = stack.getDisplayName();
-
-				if (Strings.isNullOrEmpty(last))
+				if (item.isDamageable())
 				{
-					list.add(stack);
-				}
-				else if (!last.equals(name))
-				{
-					list.add(stack);
+					list.add(new ItemStack(item));
+					cachedSubItems.put(item, list);
+					continue;
 				}
 
-				last = name;
-			}
+				if (side == Side.CLIENT)
+				{
+					CreativeTabs tab = item.getCreativeTab();
 
-			if (list.size() > 1)
-			{
-				list.remove(list.size() - 1);
-			}
+					if (tab == null)
+					{
+						tab = CreativeTabs.tabAllSearch;
+					}
 
-			cachedSubItems.put(item, list);
+					item.getSubItems(item, tab, list);
+				}
 
-			if (list.size() > 1)
-			{
-				CaveLog.fine("Cached - SubItems: " + GameData.getItemRegistry().getNameForObject(item) + " has " + list.size() + " items");
+				if (list.isEmpty())
+				{
+					ItemStack stack;
+					String last = null;
+					String name = null;
+
+					for (int i = 0; i < 32767; ++i)
+					{
+						stack = new ItemStack(item, 1, i);
+						name = stack.getDisplayName();
+
+						if (Strings.isNullOrEmpty(last))
+						{
+							list.add(stack);
+						}
+						else if (!last.equals(name))
+						{
+							list.add(stack);
+						}
+
+						last = name;
+					}
+
+					if (list.size() > 1)
+					{
+						list.remove(list.size() - 1);
+					}
+				}
+
+				cachedSubItems.put(item, list);
 			}
+			catch (Throwable e) {}
 		}
 	}
 

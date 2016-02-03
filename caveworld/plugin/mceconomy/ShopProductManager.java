@@ -29,7 +29,7 @@ import net.minecraftforge.common.config.Property;
 import shift.mceconomy2.api.shop.IProduct;
 import shift.mceconomy2.api.shop.IShop;
 
-public class ShopProductManager implements IShopProductManager
+public class ShopProductManager implements IShopProductManager, IShop
 {
 	private final List<IShopProduct> PRODUCTS = Lists.newArrayList();
 
@@ -175,7 +175,7 @@ public class ShopProductManager implements IShopProductManager
 		}
 	}
 
-	public static class ShopProduct implements IShopProduct
+	public static class ShopProduct implements IShopProduct, IProduct
 	{
 		private ItemStack itemstack;
 		private int productCost;

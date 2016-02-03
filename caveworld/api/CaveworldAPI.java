@@ -20,7 +20,7 @@ public final class CaveworldAPI
 {
 	public static final String
 	MODID = "caveworld",
-	API_VERSION = "2.0.5";
+	API_VERSION = "2.0.6";
 
 	public static ICaveAPIHandler apiHandler;
 	public static ICaveBiomeManager biomeManager;

@@ -42,10 +42,10 @@ public final class MCEconomyPlugin
 	public static int SHOP = -1;
 	public static int Player_MP_MAX = 1000000;
 
-	public static IShopProductManager productManager;
+	public static ShopProductManager productManager;
 
 	@SideOnly(Side.CLIENT)
-	public static IShopProductManager prevProductManager;
+	public static ShopProductManager prevProductManager;
 
 	public static boolean enabled()
 	{

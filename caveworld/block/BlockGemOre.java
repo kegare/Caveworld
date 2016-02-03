@@ -17,16 +17,18 @@ import caveworld.api.event.RandomiteChanceEvent.EventType;
 import caveworld.core.Caveworld;
 import caveworld.core.Config;
 import caveworld.item.CaveItems;
+import caveworld.item.ICaveniumTool;
 import caveworld.util.ArrayListExtended;
+import caveworld.util.SubItemHelper;
 import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.BlockOre;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -124,7 +126,7 @@ public class BlockGemOre extends BlockOre implements IBlockOreOverlay
 		{
 			switch (random.nextInt(3))
 			{
-				case 1:
+				case 0:
 					if (player != null && player.getActivePotionEffects().size() < 3)
 					{
 						Potion potion = null;
@@ -143,45 +145,13 @@ public class BlockGemOre extends BlockOre implements IBlockOreOverlay
 							break;
 						}
 					}
-				case 2:
-					if (fortune < 2)
-					{
-						if (random.nextInt(5) == 0)
-						{
-							world.newExplosion(null, x, y, z, 1.3F, false, true);
-
-							type = EventType.EXPLODE;
-							break;
-						}
-						else if (random.nextInt(2) == 0)
-						{
-							if (!world.isRemote)
-							{
-								EntityLightningBolt thunder;
-
-								if (player != null)
-								{
-									thunder = new EntityLightningBolt(world, player.posX, player.posY, player.posZ);
-								}
-								else
-								{
-									thunder = new EntityLightningBolt(world, x + 0.5D, y + 0.5D, z + 0.5D);
-								}
-
-								world.addWeatherEffect(thunder);
-							}
-
-							type = EventType.THUNDER;
-							break;
-						}
-					}
 				default:
 					for (int i = 0; i < Math.min(Math.max(fortune, 1), 3); ++i)
 					{
 						float f = random.nextFloat() * 0.8F + 0.1F;
 						float f1 = random.nextFloat() * 0.8F + 0.1F;
 						float f2 = random.nextFloat() * 0.8F + 0.1F;
-						EntityItem item = new EntityItem(world, x + f, y + f1, z + f2);
+						EntityItem entityitem = new EntityItem(world, x + f, y + f1, z + f2);
 
 						if (cachedItems == null || cachedItems.isEmpty())
 						{
@@ -189,21 +159,48 @@ public class BlockGemOre extends BlockOre implements IBlockOreOverlay
 
 							for (Item entry : GameData.getItemRegistry().typeSafeIterable())
 							{
-								if (entry != null && !entry.getHasSubtypes())
+								cachedItems.addIfAbsent(entry);
+							}
+						}
+						Item item;
+
+						do
+						{
+							item = cachedItems.get(random.nextInt(cachedItems.size()));
+						}
+						while (item == null || item == Item.getItemFromBlock(Blocks.bedrock) || item == Items.spawn_egg || item instanceof ICaveniumTool);
+
+						if (item.isDamageable())
+						{
+							entityitem.setEntityItemStack(new ItemStack(item));
+						}
+						else
+						{
+							List<ItemStack> list = SubItemHelper.getSubItems(item);
+
+							if (list.isEmpty())
+							{
+								entityitem.setEntityItemStack(new ItemStack(item));
+							}
+							else
+							{
+								if (list.size() == 1)
 								{
-									cachedItems.addIfAbsent(entry);
+									entityitem.setEntityItemStack(list.get(0));
+								}
+								else
+								{
+									entityitem.setEntityItemStack(list.get(random.nextInt(list.size())));
 								}
 							}
 						}
 
-						item.setEntityItemStack(new ItemStack(cachedItems.get(random.nextInt(cachedItems.size()), Items.coal)));
-
 						f = 0.05F;
-						item.motionX = (float)random.nextGaussian() * f;
-						item.motionY = (float)random.nextGaussian() * f + 0.2F;
-						item.motionZ = (float)random.nextGaussian() * f;
+						entityitem.motionX = (float)random.nextGaussian() * f;
+						entityitem.motionY = (float)random.nextGaussian() * f + 0.2F;
+						entityitem.motionZ = (float)random.nextGaussian() * f;
 
-						world.spawnEntityInWorld(item);
+						world.spawnEntityInWorld(entityitem);
 					}
 
 					type = EventType.ITEM;
