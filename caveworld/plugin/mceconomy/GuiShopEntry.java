@@ -58,6 +58,7 @@ import net.minecraft.util.EnumChatFormatting;
 public class GuiShopEntry extends GuiScreen implements SelectListener
 {
 	protected final GuiScreen parentScreen;
+	protected final IShopProductManager productManager;
 
 	protected ProductList productList;
 
@@ -91,9 +92,15 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 
 	private final Map<Object, List<String>> hoverCache = Maps.newHashMap();
 
-	public GuiShopEntry(GuiScreen parent)
+	public GuiShopEntry(GuiScreen parent, IShopProductManager manager)
 	{
 		this.parentScreen = parent;
+		this.productManager = manager;
+	}
+
+	public boolean isReadOnly()
+	{
+		return productManager.isReadOnly();
 	}
 
 	@Override
@@ -286,27 +293,30 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 				case 0:
 					if (editMode)
 					{
-						for (final ShopProduct entry : productList.selected)
+						if (!isReadOnly())
 						{
-							CaveUtils.getPool().execute(new RecursiveAction()
+							for (final IShopProduct entry : productList.selected)
 							{
-								@Override
-								protected void compute()
+								CaveUtils.getPool().execute(new RecursiveAction()
 								{
-									if (!Strings.isNullOrEmpty(itemField.getText()))
+									@Override
+									protected void compute()
 									{
-										entry.setItem(new ItemStack(GameData.getItemRegistry().getObject(itemField.getText()),
-											NumberUtils.toInt(stackField.getText(), 1), NumberUtils.toInt(damageField.getText())));
-									}
+										if (!Strings.isNullOrEmpty(itemField.getText()))
+										{
+											entry.setItem(new ItemStack(GameData.getItemRegistry().getObject(itemField.getText()),
+												NumberUtils.toInt(stackField.getText(), 1), NumberUtils.toInt(damageField.getText())));
+										}
 
-									if (!Strings.isNullOrEmpty(costField.getText()))
-									{
-										entry.setCost(NumberUtils.toInt(costField.getText()));
-									}
+										if (!Strings.isNullOrEmpty(costField.getText()))
+										{
+											entry.setCost(NumberUtils.toInt(costField.getText()));
+										}
 
-									hoverCache.remove(entry);
-								}
-							});
+										hoverCache.remove(entry);
+									}
+								});
+							}
 						}
 
 						actionPerformed(cancelButton);
@@ -316,40 +326,43 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 					}
 					else
 					{
-						CaveUtils.getPool().execute(new RecursiveAction()
+						if (!isReadOnly())
 						{
-							@Override
-							protected void compute()
+							CaveUtils.getPool().execute(new RecursiveAction()
 							{
-								boolean flag = ShopProductManager.instance().getProducts().size() != productList.products.size();
-
-								ShopProductManager.instance().getProducts().clear();
-
-								if (flag)
+								@Override
+								protected void compute()
 								{
-									try
+									boolean flag = productManager.getProducts().size() != productList.products.size();
+
+									productManager.getProducts().clear();
+
+									if (flag)
 									{
-										FileUtils.forceDelete(new File(MCEconomyPlugin.shopCfg.toString()));
+										try
+										{
+											FileUtils.forceDelete(new File(MCEconomyPlugin.shopCfg.toString()));
 
-										MCEconomyPlugin.shopCfg.load();
+											MCEconomyPlugin.shopCfg.load();
+										}
+										catch (IOException e)
+										{
+											e.printStackTrace();
+										}
 									}
-									catch (IOException e)
+
+									for (IShopProduct product : productList.products)
 									{
-										e.printStackTrace();
+										productManager.addShopProduct(product);
+									}
+
+									if (MCEconomyPlugin.shopCfg.hasChanged())
+									{
+										MCEconomyPlugin.shopCfg.save();
 									}
 								}
-
-								for (ShopProduct product : productList.products)
-								{
-									ShopProductManager.instance().addShopProduct(product);
-								}
-
-								if (MCEconomyPlugin.shopCfg.hasChanged())
-								{
-									MCEconomyPlugin.shopCfg.save();
-								}
-							}
-						});
+							});
+						}
 
 						actionPerformed(cancelButton);
 
@@ -373,7 +386,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 
 						if (productList.selected.size() == 1)
 						{
-							ShopProduct entry = productList.selected.get(0);
+							IShopProduct entry = productList.selected.get(0);
 
 							itemField.setText(GameData.getItemRegistry().getNameForObject(entry.getItem().getItem()));
 							damageField.setText(Integer.toString(entry.getItem().getItemDamage()));
@@ -403,29 +416,41 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 
 					break;
 				case 3:
-					mc.displayGuiScreen(new GuiSelectItem(this));
+					if (!isReadOnly())
+					{
+						mc.displayGuiScreen(new GuiSelectItem(this));
+					}
+
 					break;
 				case 4:
-					CaveUtils.getPool().execute(new RecursiveAction()
+					if (!isReadOnly())
 					{
-						@Override
-						protected void compute()
+						CaveUtils.getPool().execute(new RecursiveAction()
 						{
-							for (ShopProduct entry : productList.selected)
+							@Override
+							protected void compute()
 							{
-								if (productList.products.remove(entry))
+								for (IShopProduct entry : productList.selected)
 								{
-									productList.contents.remove(entry);
+									if (productList.products.remove(entry))
+									{
+										productList.contents.remove(entry);
+									}
 								}
-							}
 
-							productList.selected.clear();
-						}
-					});
+								productList.selected.clear();
+							}
+						});
+					}
 
 					break;
 				case 5:
-					productList.selected.addAll(productList.products);
+					if (!isReadOnly())
+					{
+						productList.selected.addAll(productList.products);
+
+						actionPerformed(removeButton);
+					}
 
 					break;
 				case 6:
@@ -441,7 +466,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 	@Override
 	public void onSelected(final Set<ItemEntry> result)
 	{
-		if (editMode)
+		if (editMode || isReadOnly())
 		{
 			return;
 		}
@@ -482,8 +507,10 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 		}
 		else
 		{
-			editButton.enabled = productList.selected != null;
-			removeButton.enabled = editButton.enabled;
+			editButton.enabled = !productList.selected.isEmpty();
+			addButton.enabled = !isReadOnly();
+			removeButton.enabled = !isReadOnly() && editButton.enabled;
+			clearButton.enabled = !isReadOnly();
 
 			filterTextField.updateCursorCounter();
 		}
@@ -577,7 +604,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 		}
 		else if (productList.func_148141_e(mouseY) && isCtrlKeyDown())
 		{
-			ShopProduct entry = productList.contents.get(productList.func_148124_c(mouseX, mouseY), null);
+			IShopProduct entry = productList.contents.get(productList.func_148124_c(mouseX, mouseY), null);
 
 			if (entry != null)
 			{
@@ -607,6 +634,11 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 	public void handleMouseInput()
 	{
 		super.handleMouseInput();
+
+		if (isReadOnly())
+		{
+			return;
+		}
 
 		if (damageField.isFocused())
 		{
@@ -656,6 +688,11 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 
 		if (editMode)
 		{
+			if (isReadOnly())
+			{
+				return;
+			}
+
 			for (GuiTextField textField : editFieldList)
 			{
 				textField.mouseClicked(x, y, code);
@@ -693,6 +730,11 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 	{
 		if (editMode)
 		{
+			if (isReadOnly())
+			{
+				return;
+			}
+
 			for (GuiTextField textField : editFieldList)
 			{
 				if (code == Keyboard.KEY_ESCAPE)
@@ -761,7 +803,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 					{
 						Collections.sort(productList.selected, productList);
 
-						for (ShopProduct product : productList.selected)
+						for (IShopProduct product : productList.selected)
 						{
 							productList.contents.swapTo(productList.contents.indexOf(product), -1);
 							productList.products.swapTo(productList.products.indexOf(product), -1);
@@ -782,7 +824,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 						Collections.sort(productList.selected, productList);
 						Collections.reverse(productList.selected);
 
-						for (ShopProduct product : productList.selected)
+						for (IShopProduct product : productList.selected)
 						{
 							productList.contents.swapTo(productList.contents.indexOf(product), 1);
 							productList.products.swapTo(productList.products.indexOf(product), 1);
@@ -830,7 +872,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 
 					productList.copied.clear();
 
-					for (ShopProduct entry : productList.selected)
+					for (IShopProduct entry : productList.selected)
 					{
 						productList.copied.add(new ShopProduct(entry));
 					}
@@ -852,9 +894,9 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 							int index2 = -1;
 							int i = 0;
 
-							for (ShopProduct product : productList.copied)
+							for (IShopProduct product : productList.copied)
 							{
-								ShopProduct entry = new ShopProduct(product);
+								IShopProduct entry = new ShopProduct(product);
 
 								if (productList.products.add(entry) && productList.contents.add(entry) && !productList.selected.isEmpty())
 								{
@@ -897,20 +939,22 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 		productList.currentPanoramaPaths = null;
 	}
 
-	class ProductList extends GuiListSlot implements Comparator<ShopProduct>
+	class ProductList extends GuiListSlot implements Comparator<IShopProduct>
 	{
-		protected final ArrayListExtended<ShopProduct> products = new ArrayListExtended(ShopProductManager.instance().getProducts());
-		protected final ArrayListExtended<ShopProduct> contents = new ArrayListExtended(products);
-		protected final List<ShopProduct> selected = Lists.newArrayList();
-		protected final List<ShopProduct> copied = Lists.newArrayList();
+		protected final ArrayListExtended<IShopProduct> products = new ArrayListExtended();
+		protected final ArrayListExtended<IShopProduct> contents = new ArrayListExtended();
+		protected final List<IShopProduct> selected = Lists.newArrayList();
+		protected final List<IShopProduct> copied = Lists.newArrayList();
 
-		private final Map<String, List<ShopProduct>> filterCache = Maps.newHashMap();
+		private final Map<String, List<IShopProduct>> filterCache = Maps.newHashMap();
 
 		protected int nameType;
 
 		private ProductList()
 		{
 			super(GuiShopEntry.this.mc, 0, 0, 0, 0, 22);
+			this.products.addAll(productManager.getProducts());
+			this.contents.addAll(products);
 		}
 
 		@Override
@@ -920,7 +964,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 			{
 				int amount = 0;
 
-				for (Iterator<ShopProduct> iterator = selected.iterator(); iterator.hasNext();)
+				for (Iterator<IShopProduct> iterator = selected.iterator(); iterator.hasNext();)
 				{
 					amount = contents.indexOf(iterator.next()) * getSlotHeight();
 
@@ -950,7 +994,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 		@Override
 		protected void drawSlot(int index, int par2, int par3, int par4, Tessellator tessellator, int mouseX, int mouseY)
 		{
-			ShopProduct entry = contents.get(index, null);
+			IShopProduct entry = contents.get(index, null);
 
 			if (entry == null)
 			{
@@ -1000,7 +1044,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 				return;
 			}
 
-			ShopProduct entry = contents.get(index, null);
+			IShopProduct entry = contents.get(index, null);
 
 			if (entry != null && !selected.remove(entry))
 			{
@@ -1016,7 +1060,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 		@Override
 		protected boolean isSelected(int index)
 		{
-			ShopProduct entry = contents.get(index, null);
+			IShopProduct entry = contents.get(index, null);
 
 			return entry != null && selected.contains(entry);
 		}
@@ -1028,7 +1072,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 				@Override
 				protected void compute()
 				{
-					List<ShopProduct> result;
+					List<IShopProduct> result;
 
 					if (Strings.isNullOrEmpty(filter))
 					{
@@ -1058,7 +1102,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 		}
 
 		@Override
-		public int compare(ShopProduct o1, ShopProduct o2)
+		public int compare(IShopProduct o1, IShopProduct o2)
 		{
 			int i = CaveUtils.compareWithNull(o1, o2);
 
@@ -1071,7 +1115,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 		}
 	}
 
-	public static class ProductFilter implements Predicate<ShopProduct>
+	public static class ProductFilter implements Predicate<IShopProduct>
 	{
 		private final String filter;
 
@@ -1081,7 +1125,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 		}
 
 		@Override
-		public boolean apply(ShopProduct product)
+		public boolean apply(IShopProduct product)
 		{
 			return CaveUtils.itemFilter(product.getItem(), filter) || product.getCost() == NumberUtils.toInt(filter, -1);
 		}

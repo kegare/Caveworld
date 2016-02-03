@@ -15,6 +15,7 @@ import java.util.Random;
 import caveworld.api.event.RandomiteChanceEvent;
 import caveworld.api.event.RandomiteChanceEvent.EventType;
 import caveworld.core.Caveworld;
+import caveworld.core.Config;
 import caveworld.item.CaveItems;
 import caveworld.util.ArrayListExtended;
 import cpw.mods.fml.common.registry.GameData;
@@ -23,6 +24,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.BlockOre;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
@@ -36,7 +38,7 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 
-public class BlockGemOre extends BlockOre
+public class BlockGemOre extends BlockOre implements IBlockOreOverlay
 {
 	private final Random random = new Random();
 
@@ -44,6 +46,8 @@ public class BlockGemOre extends BlockOre
 
 	@SideOnly(Side.CLIENT)
 	private IIcon[] oreIcons;
+	@SideOnly(Side.CLIENT)
+	private IIcon[] overlayIcons;
 
 	public BlockGemOre(String name)
 	{
@@ -54,6 +58,12 @@ public class BlockGemOre extends BlockOre
 		this.setHarvestLevel("pickaxe", 2, 0);
 		this.setHarvestLevel("pickaxe", 2, 1);
 		this.setCreativeTab(Caveworld.tabCaveworld);
+	}
+
+	@Override
+	public int getRenderType()
+	{
+		return Config.RENDER_TYPE_ORE;
 	}
 
 	@Override
@@ -126,7 +136,7 @@ public class BlockGemOre extends BlockOre
 
 						if (potion != null)
 						{
-							player.addPotionEffect(new PotionEffect(potion.id, (10 + random.nextInt(20)) * 20));
+							player.addPotionEffect(new PotionEffect(potion.id, MathHelper.getRandomIntegerInRange(random, 10, 20) * 20));
 							world.playSoundAtEntity(player, "dig.glass", 0.75F, 2.0F);
 
 							type = EventType.POTION;
@@ -134,12 +144,36 @@ public class BlockGemOre extends BlockOre
 						}
 					}
 				case 2:
-					if (fortune <= 0 && random.nextInt(5) == 0)
+					if (fortune < 2)
 					{
-						world.newExplosion(null, x, y, z, 1.25F, false, true);
+						if (random.nextInt(5) == 0)
+						{
+							world.newExplosion(null, x, y, z, 1.3F, false, true);
 
-						type = EventType.EXPLODE;
-						break;
+							type = EventType.EXPLODE;
+							break;
+						}
+						else if (random.nextInt(2) == 0)
+						{
+							if (!world.isRemote)
+							{
+								EntityLightningBolt thunder;
+
+								if (player != null)
+								{
+									thunder = new EntityLightningBolt(world, player.posX, player.posY, player.posZ);
+								}
+								else
+								{
+									thunder = new EntityLightningBolt(world, x + 0.5D, y + 0.5D, z + 0.5D);
+								}
+
+								world.addWeatherEffect(thunder);
+							}
+
+							type = EventType.THUNDER;
+							break;
+						}
 					}
 				default:
 					for (int i = 0; i < Math.min(Math.max(fortune, 1), 3); ++i)
@@ -237,6 +271,9 @@ public class BlockGemOre extends BlockOre
 		oreIcons[0] = iconRegister.registerIcon("caveworld:aquamarine_ore");
 		oreIcons[1] = iconRegister.registerIcon("caveworld:aquamarine_block");
 		oreIcons[2] = iconRegister.registerIcon("caveworld:randomite_ore");
+		overlayIcons = new IIcon[2];
+		overlayIcons[0] = iconRegister.registerIcon("caveworld:aquamarine_ore_overlay");
+		overlayIcons[1] = iconRegister.registerIcon("caveworld:randomite_ore_overlay");
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -249,6 +286,21 @@ public class BlockGemOre extends BlockOre
 		}
 
 		return oreIcons[metadata];
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
+	public IIcon getOverlayIcon(int metadata)
+	{
+		switch (metadata)
+		{
+			case 0:
+				return overlayIcons[0];
+			case 2:
+				return overlayIcons[1];
+			default:
+				return null;
+		}
 	}
 
 	@SideOnly(Side.CLIENT)

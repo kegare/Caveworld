@@ -33,7 +33,7 @@ public class ShopEntry extends CategoryEntry
 	@Override
 	protected GuiScreen buildChildScreen()
 	{
-		return new GuiShopEntry(owningScreen);
+		return new GuiShopEntry(owningScreen, MCEconomyPlugin.productManager);
 	}
 
 	@Override
@@ -56,7 +56,7 @@ public class ShopEntry extends CategoryEntry
 			return;
 		}
 
-		ShopProductManager.instance().clearShopProducts();
+		MCEconomyPlugin.productManager.clearProducts();
 
 		MCEconomyPlugin.shopCfg = null;
 		MCEconomyPlugin.syncShopCfg();
@@ -68,7 +68,7 @@ public class ShopEntry extends CategoryEntry
 			if (gui.productList != null)
 			{
 				gui.productList.products.clear();
-				gui.productList.products.addAll(ShopProductManager.instance().getProducts());
+				gui.productList.products.addAll(MCEconomyPlugin.productManager.getProducts());
 				gui.productList.contents.clear();
 				gui.productList.contents.addAll(gui.productList.products);
 			}

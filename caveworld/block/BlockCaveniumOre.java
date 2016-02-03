@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Random;
 
 import caveworld.core.Caveworld;
+import caveworld.core.Config;
 import caveworld.item.CaveItems;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -25,12 +26,16 @@ import net.minecraft.util.IIcon;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.IBlockAccess;
 
-public class BlockCaveniumOre extends BlockOre
+public class BlockCaveniumOre extends BlockOre implements IBlockOreOverlay
 {
 	private final Random random = new Random();
 
 	@SideOnly(Side.CLIENT)
+	protected IIcon overlayIcon;
+	@SideOnly(Side.CLIENT)
 	protected IIcon refinedIcon;
+	@SideOnly(Side.CLIENT)
+	protected IIcon overlayRefinedIcon;
 	@SideOnly(Side.CLIENT)
 	protected IIcon clustIcon;
 	@SideOnly(Side.CLIENT)
@@ -47,12 +52,20 @@ public class BlockCaveniumOre extends BlockOre
 		this.setCreativeTab(Caveworld.tabCaveworld);
 	}
 
+	@Override
+	public int getRenderType()
+	{
+		return Config.RENDER_TYPE_ORE;
+	}
+
 	@SideOnly(Side.CLIENT)
 	@Override
 	public void registerBlockIcons(IIconRegister iconRegister)
 	{
 		blockIcon = iconRegister.registerIcon(getTextureName());
+		overlayIcon = iconRegister.registerIcon(getTextureName() + "_overlay");
 		refinedIcon = iconRegister.registerIcon(getTextureName() + ".refined");
+		overlayRefinedIcon = iconRegister.registerIcon(getTextureName() + "_overlay.refined");
 		clustIcon = iconRegister.registerIcon("caveworld:cavenium_block");
 		clustRefinedIcon = iconRegister.registerIcon("caveworld:cavenium_block.refined");
 	}
@@ -71,6 +84,21 @@ public class BlockCaveniumOre extends BlockOre
 				return clustRefinedIcon;
 			default:
 				return blockIcon;
+		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
+	public IIcon getOverlayIcon(int metadata)
+	{
+		switch (metadata)
+		{
+			case 0:
+				return overlayIcon;
+			case 1:
+				return overlayRefinedIcon;
+			default:
+				return null;
 		}
 	}
 

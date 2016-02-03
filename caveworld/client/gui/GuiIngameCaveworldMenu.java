@@ -78,17 +78,6 @@ public class GuiIngameCaveworldMenu extends GuiScreen
 
 		regenButton = prev = new GuiButtonExt(3, prev.xPosition, prev.yPosition + prev.height + 5, I18n.format("caveworld.regenerate.gui.title"));
 
-		if (!mc.isSingleplayer())
-		{
-			biomeButton.enabled = false;
-			veinButton.enabled = false;
-
-			if (shopButton != null)
-			{
-				shopButton.enabled = false;
-			}
-		}
-
 		buttonList.clear();
 		buttonList.add(backButton);
 		buttonList.add(biomeButton);
@@ -163,7 +152,7 @@ public class GuiIngameCaveworldMenu extends GuiScreen
 
 					break;
 				case 4:
-					mc.displayGuiScreen(new GuiShopEntry(this));
+					mc.displayGuiScreen(new GuiShopEntry(this, MCEconomyPlugin.productManager));
 					break;
 				case 5:
 					Caveworld.network.sendToServer(new PortalInventoryMessage(portalX, portalY, portalZ));

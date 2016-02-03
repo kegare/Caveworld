@@ -15,14 +15,18 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import caveworld.block.CaveBlocks;
+import caveworld.core.Caveworld;
 import caveworld.core.Config;
 import caveworld.entity.EntityArcherZombie;
 import caveworld.entity.EntityCaveman;
 import caveworld.entity.EntityCavenicSkeleton;
+import caveworld.entity.EntityMasterCavenicSkeleton;
 import caveworld.item.CaveItems;
 import caveworld.plugin.mceconomy.ShopProductManager.ShopProduct;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Optional.Method;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -38,82 +42,21 @@ public final class MCEconomyPlugin
 	public static int SHOP = -1;
 	public static int Player_MP_MAX = 1000000;
 
+	public static IShopProductManager productManager;
+
+	@SideOnly(Side.CLIENT)
+	public static IShopProductManager prevProductManager;
+
 	public static boolean enabled()
 	{
 		return Loader.isModLoaded(MODID);
 	}
 
 	@Method(modid = MODID)
-	public static void syncShopCfg()
-	{
-		if (shopCfg == null)
-		{
-			shopCfg = Config.loadConfig("shop");
-		}
-		else
-		{
-			ShopProductManager.instance().clearShopProducts();
-		}
-
-		if (shopCfg.getCategoryNames().isEmpty())
-		{
-			ShopProductManager.instance().addShopProduct(new ShopProduct(new ItemStack(Items.bread, 6), 30));
-			ShopProductManager.instance().addShopProduct(new ShopProduct(new ItemStack(Blocks.sapling, 1, 0), 15));
-			ShopProductManager.instance().addShopProduct(new ShopProduct(new ItemStack(Blocks.sapling, 1, 1), 15));
-			ShopProductManager.instance().addShopProduct(new ShopProduct(new ItemStack(Blocks.sapling, 1, 2), 15));
-			ShopProductManager.instance().addShopProduct(new ShopProduct(new ItemStack(Blocks.sapling, 1, 3), 15));
-			ShopProductManager.instance().addShopProduct(new ShopProduct(new ItemStack(Blocks.sapling, 1, 4), 18));
-			ShopProductManager.instance().addShopProduct(new ShopProduct(new ItemStack(Blocks.sapling, 1, 5), 18));
-			ShopProductManager.instance().addShopProduct(new ShopProduct(new ItemStack(Items.wheat_seeds, 10), 10));
-			ShopProductManager.instance().addShopProduct(new ShopProduct(new ItemStack(Items.bed), 100));
-			ShopProductManager.instance().addShopProduct(new ShopProduct(new ItemStack(Blocks.torch, 64), 50));
-			ShopProductManager.instance().addShopProduct(new ShopProduct(new ItemStack(Items.iron_sword), 100));
-			ShopProductManager.instance().addShopProduct(new ShopProduct(new ItemStack(Items.iron_pickaxe), 150));
-			ShopProductManager.instance().addShopProduct(new ShopProduct(new ItemStack(Items.iron_axe), 150));
-			ShopProductManager.instance().addShopProduct(new ShopProduct(new ItemStack(Items.iron_shovel), 50));
-			ShopProductManager.instance().addShopProduct(new ShopProduct(new ItemStack(Items.iron_hoe), 100));
-			ShopProductManager.instance().addShopProduct(new ShopProduct(new ItemStack(CaveBlocks.rope, 5), 10));
-		}
-		else
-		{
-			int i = 0;
-
-			for (String name : shopCfg.getCategoryNames())
-			{
-				if (NumberUtils.isNumber(name))
-				{
-					ShopProductManager.instance().addShopProduct(null);
-				}
-				else ++i;
-			}
-
-			if (i > 0)
-			{
-				try
-				{
-					FileUtils.forceDelete(new File(shopCfg.toString()));
-
-					ShopProductManager.instance().clearShopProducts();
-
-					shopCfg = null;
-					syncShopCfg();
-				}
-				catch (Exception e)
-				{
-					e.printStackTrace();
-				}
-			}
-		}
-
-		if (shopCfg.hasChanged())
-		{
-			shopCfg.save();
-		}
-	}
-
-	@Method(modid = MODID)
 	public static void invoke()
 	{
+		productManager = new ShopProductManager();
+
 		File file = new File(Loader.instance().getConfigDir(), "mceconomy2.cfg");
 
 		if (file.isFile() && file.exists())
@@ -163,7 +106,78 @@ public final class MCEconomyPlugin
 		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCaveman.class, 20);
 		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityArcherZombie.class, 4);
 		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCavenicSkeleton.class, 100);
+		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityMasterCavenicSkeleton.class, 1500);
 
-		SHOP = MCEconomyAPI.registerShop(ShopProductManager.instance());
+		SHOP = MCEconomyAPI.registerShop(productManager);
+
+		Caveworld.network.registerMessage(ProductAdjustMessage.class, ProductAdjustMessage.class, Caveworld.messageNext++, Side.CLIENT);
+	}
+
+	@Method(modid = MODID)
+	public static void syncShopCfg()
+	{
+		if (shopCfg == null)
+		{
+			shopCfg = Config.loadConfig("shop");
+		}
+		else
+		{
+			productManager.clearProducts();
+		}
+
+		if (shopCfg.getCategoryNames().isEmpty())
+		{
+			productManager.addShopProduct(new ShopProduct(new ItemStack(Items.bread, 6), 30));
+			productManager.addShopProduct(new ShopProduct(new ItemStack(Blocks.sapling, 1, 0), 15));
+			productManager.addShopProduct(new ShopProduct(new ItemStack(Blocks.sapling, 1, 1), 15));
+			productManager.addShopProduct(new ShopProduct(new ItemStack(Blocks.sapling, 1, 2), 15));
+			productManager.addShopProduct(new ShopProduct(new ItemStack(Blocks.sapling, 1, 3), 15));
+			productManager.addShopProduct(new ShopProduct(new ItemStack(Blocks.sapling, 1, 4), 18));
+			productManager.addShopProduct(new ShopProduct(new ItemStack(Blocks.sapling, 1, 5), 18));
+			productManager.addShopProduct(new ShopProduct(new ItemStack(Items.wheat_seeds, 10), 10));
+			productManager.addShopProduct(new ShopProduct(new ItemStack(Items.bed), 100));
+			productManager.addShopProduct(new ShopProduct(new ItemStack(Blocks.torch, 64), 50));
+			productManager.addShopProduct(new ShopProduct(new ItemStack(Items.iron_sword), 100));
+			productManager.addShopProduct(new ShopProduct(new ItemStack(Items.iron_pickaxe), 150));
+			productManager.addShopProduct(new ShopProduct(new ItemStack(Items.iron_axe), 150));
+			productManager.addShopProduct(new ShopProduct(new ItemStack(Items.iron_shovel), 50));
+			productManager.addShopProduct(new ShopProduct(new ItemStack(Items.iron_hoe), 100));
+			productManager.addShopProduct(new ShopProduct(new ItemStack(CaveBlocks.rope, 5), 10));
+		}
+		else
+		{
+			int i = 0;
+
+			for (String name : shopCfg.getCategoryNames())
+			{
+				if (NumberUtils.isNumber(name))
+				{
+					productManager.addShopProduct(null);
+				}
+				else ++i;
+			}
+
+			if (i > 0)
+			{
+				try
+				{
+					FileUtils.forceDelete(new File(shopCfg.toString()));
+
+					productManager.clearProducts();
+
+					shopCfg = null;
+					syncShopCfg();
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
+			}
+		}
+
+		if (shopCfg.hasChanged())
+		{
+			shopCfg.save();
+		}
 	}
 }

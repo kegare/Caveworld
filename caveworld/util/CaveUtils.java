@@ -62,8 +62,6 @@ import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.entity.RenderItem;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.init.Blocks;
@@ -80,7 +78,6 @@ import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.MinecraftException;
-import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.client.ForgeHooksClient;
@@ -544,28 +541,6 @@ public class CaveUtils
 		}
 
 		return false;
-	}
-
-	public static <T extends Entity> T createEntity(Class<T> clazz, World world)
-	{
-		try
-		{
-			String name = String.valueOf(EntityList.classToStringMapping.get(clazz));
-			Entity entity = EntityList.createEntityByName(Strings.nullToEmpty(name), world);
-
-			if (entity == null || entity.getClass() != clazz)
-			{
-				return null;
-			}
-
-			return clazz.cast(entity);
-		}
-		catch (Exception e)
-		{
-			CaveLog.warning("Failed to create entity: %s", clazz.getSimpleName());
-
-			return null;
-		}
 	}
 
 	public static Set<BiomeGenBase> getBiomes()

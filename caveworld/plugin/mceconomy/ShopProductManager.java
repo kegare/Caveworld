@@ -19,28 +19,21 @@ import caveworld.core.Caveworld;
 import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
+import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 import shift.mceconomy2.api.shop.IProduct;
 import shift.mceconomy2.api.shop.IShop;
 
-public class ShopProductManager implements IShop
+public class ShopProductManager implements IShopProductManager
 {
-	private static ShopProductManager instance;
+	private final List<IShopProduct> PRODUCTS = Lists.newArrayList();
 
-	public static ShopProductManager instance()
-	{
-		if (instance == null)
-		{
-			instance = new ShopProductManager();
-		}
-
-		return instance;
-	}
-
-	private final List<ShopProduct> PRODUCTS = Lists.newArrayList();
+	private boolean readOnly;
 
 	@Override
 	public String getShopName(World world, EntityPlayer player)
@@ -48,17 +41,44 @@ public class ShopProductManager implements IShop
 		return "caveworld.shop.title";
 	}
 
-	public boolean addShopProduct(ShopProduct product)
+	@Override
+	public Configuration getConfig()
+	{
+		return MCEconomyPlugin.shopCfg;
+	}
+
+	@Override
+	public int getType()
+	{
+		return 0;
+	}
+
+	@Override
+	public boolean isReadOnly()
+	{
+		return readOnly;
+	}
+
+	@Override
+	public IShopProductManager setReadOnly(boolean flag)
+	{
+		readOnly = flag;
+
+		return this;
+	}
+
+	@Override
+	public boolean addShopProduct(IShopProduct product)
 	{
 		boolean flag = product == null || product.getItem() == null;
 		String item = flag ? null : GameData.getItemRegistry().getNameForObject(product.getItem().getItem());
 		int stack = flag ? -1 : product.getItem().stackSize;
 		int damage = flag ? -1 : product.getItem().getItemDamage();
-		int cost = flag ? -1 : product.productCost;
+		int cost = flag ? -1 : product.getCost();
 
 		String name = Integer.toString(PRODUCTS.size());
 
-		if (flag && !MCEconomyPlugin.shopCfg.hasCategory(name))
+		if (flag && !getConfig().hasCategory(name))
 		{
 			return false;
 		}
@@ -67,40 +87,40 @@ public class ShopProductManager implements IShop
 		Property prop;
 		List<String> propOrder = Lists.newArrayList();
 
-		prop = MCEconomyPlugin.shopCfg.get(name, "item", "");
+		prop = getConfig().get(name, "item", "");
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		if (!Strings.isNullOrEmpty(item)) prop.set(item);
 		propOrder.add(prop.getName());
 		item = prop.getString();
 		if (!GameData.getItemRegistry().containsKey(Strings.nullToEmpty(item))) return false;
-		prop = MCEconomyPlugin.shopCfg.get(name, "itemDamage", 0);
+		prop = getConfig().get(name, "itemDamage", 0);
 		prop.setMinValue(0).setMaxValue(Short.MAX_VALUE).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		if (damage >= 0) prop.set(MathHelper.clamp_int(damage, Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue())));
 		propOrder.add(prop.getName());
 		damage = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
-		prop = MCEconomyPlugin.shopCfg.get(name, "stackSize", 1);
+		prop = getConfig().get(name, "stackSize", 1);
 		prop.setMinValue(0).setMaxValue(64).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		if (stack >= 0) prop.set(MathHelper.clamp_int(stack, Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue())));
 		propOrder.add(prop.getName());
 		stack = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
-		prop = MCEconomyPlugin.shopCfg.get(name, "productCost", 10);
+		prop = getConfig().get(name, "productCost", 10);
 		prop.setMinValue(0).setMaxValue(MCEconomyPlugin.Player_MP_MAX).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		if (cost >= 0) prop.set(MathHelper.clamp_int(cost, Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue())));
 		propOrder.add(prop.getName());
 		cost = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 
-		MCEconomyPlugin.shopCfg.setCategoryPropertyOrder(name, propOrder);
+		getConfig().setCategoryPropertyOrder(name, propOrder);
 
 		if (flag)
 		{
 			product = new ShopProduct(new ItemStack(GameData.getItemRegistry().getObject(item), stack, damage), cost);
 		}
 
-		return PRODUCTS.add(product);
+		return getProducts().add(product);
 	}
 
 	@Override
@@ -109,7 +129,8 @@ public class ShopProductManager implements IShop
 		addShopProduct((ShopProduct)product);
 	}
 
-	public List<ShopProduct> getProducts()
+	@Override
+	public List<IShopProduct> getProducts()
 	{
 		return PRODUCTS;
 	}
@@ -120,15 +141,46 @@ public class ShopProductManager implements IShop
 		return new ArrayList(getProducts());
 	}
 
-	public void clearShopProducts()
+	@Override
+	public void clearProducts()
 	{
-		PRODUCTS.clear();
+		getProducts().clear();
 	}
 
-	public static class ShopProduct implements IProduct
+	@Override
+	public NBTTagList saveNBTData()
+	{
+		NBTTagList list = new NBTTagList();
+
+		for (IShopProduct product : getProducts())
+		{
+			list.appendTag(product.saveNBTData());
+		}
+
+		return list;
+	}
+
+	@Override
+	public void loadNBTData(NBTTagList list)
+	{
+		if (!isReadOnly())
+		{
+			for (int i = 0; i < list.tagCount(); ++i)
+			{
+				IShopProduct product = new ShopProduct();
+				product.loadNBTData(list.getCompoundTagAt(i));
+
+				getProducts().add(product);
+			}
+		}
+	}
+
+	public static class ShopProduct implements IShopProduct
 	{
 		private ItemStack itemstack;
 		private int productCost;
+
+		public ShopProduct() {}
 
 		public ShopProduct(ItemStack itemstack, int cost)
 		{
@@ -136,16 +188,18 @@ public class ShopProductManager implements IShop
 			this.productCost = cost;
 		}
 
-		public ShopProduct(ShopProduct product)
+		public ShopProduct(IShopProduct product)
 		{
-			this(product.itemstack, product.productCost);
+			this(product.getItem(), product.getCost());
 		}
 
+		@Override
 		public ItemStack setItem(ItemStack item)
 		{
 			return itemstack = item;
 		}
 
+		@Override
 		public ItemStack getItem()
 		{
 			return itemstack;
@@ -157,11 +211,13 @@ public class ShopProductManager implements IShop
 			return itemstack == null || itemstack.getItem() == null ? null : itemstack.copy();
 		}
 
+		@Override
 		public int setCost(int cost)
 		{
 			return productCost = cost;
 		}
 
+		@Override
 		public int getCost()
 		{
 			return productCost;
@@ -177,6 +233,29 @@ public class ShopProductManager implements IShop
 		public boolean canBuy(IShop shop, World world, EntityPlayer player)
 		{
 			return true;
+		}
+
+		@Override
+		public NBTTagCompound saveNBTData()
+		{
+			NBTTagCompound data = new NBTTagCompound();
+
+			data.setTag("Item", getItem().writeToNBT(new NBTTagCompound()));
+			data.setInteger("Cost", getCost());
+
+			return data;
+		}
+
+		@Override
+		public void loadNBTData(NBTTagCompound data)
+		{
+			if (data == null || data.hasNoTags())
+			{
+				return;
+			}
+
+			setItem(ItemStack.loadItemStackFromNBT(data.getCompoundTag("Item")));
+			setCost(data.getInteger("Cost"));
 		}
 	}
 }

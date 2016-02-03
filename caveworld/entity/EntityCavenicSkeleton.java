@@ -23,6 +23,7 @@ import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIArrowAttack;
+import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.monster.EntitySkeleton;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.init.Items;
@@ -101,9 +102,25 @@ public class EntityCavenicSkeleton extends EntitySkeleton
 			master.setLocationAndAngles(posX, posY, posZ, rotationYaw, rotationPitch);
 
 			worldObj.spawnEntityInWorld(master);
+			setDead();
 		}
 
 		return super.onSpawnWithEgg(data);
+	}
+
+	@Override
+	public void onStruckByLightning(EntityLightningBolt thunder)
+	{
+		if (!worldObj.isRemote && rand.nextInt(3) == 0)
+		{
+			EntityMasterCavenicSkeleton master = new EntityMasterCavenicSkeleton(worldObj);
+			master.setLocationAndAngles(posX, posY, posZ, rotationYaw, rotationPitch);
+
+			worldObj.spawnEntityInWorld(master);
+			setDead();
+		}
+
+		super.onStruckByLightning(thunder);
 	}
 
 	@Override

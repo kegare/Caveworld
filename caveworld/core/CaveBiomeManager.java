@@ -37,6 +37,8 @@ public class CaveBiomeManager implements ICaveBiomeManager
 {
 	private final Map<BiomeGenBase, ICaveBiome> CAVE_BIOMES = Maps.newHashMap();
 
+	private boolean readOnly;
+
 	public static final Map<BiomeGenBase, ICaveBiome> presets = Maps.newHashMap();
 
 	static
@@ -80,8 +82,27 @@ public class CaveBiomeManager implements ICaveBiomeManager
 	}
 
 	@Override
+	public boolean isReadOnly()
+	{
+		return readOnly;
+	}
+
+	@Override
+	public ICaveBiomeManager setReadOnly(boolean flag)
+	{
+		readOnly = flag;
+
+		return this;
+	}
+
+	@Override
 	public boolean addCaveBiome(ICaveBiome biome)
 	{
+		if (isReadOnly())
+		{
+			return false;
+		}
+
 		for (ICaveBiome entry : getRaw().values())
 		{
 			if (entry.getBiome().biomeID == biome.getBiome().biomeID)
@@ -100,7 +121,7 @@ public class CaveBiomeManager implements ICaveBiomeManager
 	@Override
 	public boolean removeCaveBiome(BiomeGenBase biome)
 	{
-		return getRaw().remove(biome) != null;
+		return !isReadOnly() && getRaw().remove(biome) != null;
 	}
 
 	@Override
@@ -156,7 +177,10 @@ public class CaveBiomeManager implements ICaveBiomeManager
 	@Override
 	public void clearCaveBiomes()
 	{
-		getRaw().clear();
+		if (!isReadOnly())
+		{
+			getRaw().clear();
+		}
 	}
 
 	@Override
@@ -175,13 +199,15 @@ public class CaveBiomeManager implements ICaveBiomeManager
 	@Override
 	public void loadNBTData(NBTTagList list)
 	{
-		for (int i = 0; i < list.tagCount(); ++i)
+		if (!isReadOnly())
 		{
-			ICaveBiome biome = new CaveBiome();
+			for (int i = 0; i < list.tagCount(); ++i)
+			{
+				ICaveBiome biome = new CaveBiome();
+				biome.loadNBTData(list.getCompoundTagAt(i));
 
-			biome.loadNBTData(list.getCompoundTagAt(i));
-
-			addCaveBiome(biome);
+				addCaveBiome(biome);
+			}
 		}
 	}
 
@@ -264,23 +290,24 @@ public class CaveBiomeManager implements ICaveBiomeManager
 		@Override
 		public boolean equals(Object obj)
 		{
-			if (obj instanceof ICaveBiome)
+			if (this == obj)
 			{
-				ICaveBiome biome = (ICaveBiome)obj;
-
-				return getBiome().biomeID == biome.getBiome().biomeID &&
-					getGenWeight() == biome.getGenWeight() &&
-					getTerrainBlock().equals(biome.getTerrainBlock()) &&
-					getTopBlock().equals(biome.getTopBlock());
+				return true;
+			}
+			else if (obj == null || !(obj instanceof ICaveBiome))
+			{
+				return false;
 			}
 
-			return false;
+			ICaveBiome biome = (ICaveBiome)obj;
+
+			return getBiome().biomeID == biome.getBiome().biomeID;
 		}
 
 		@Override
 		public int hashCode()
 		{
-			return Objects.hashCode(getBiome().biomeID, getGenWeight(), getTerrainBlock());
+			return Objects.hashCode(getBiome().biomeID);
 		}
 
 		@Override

@@ -64,13 +64,7 @@ public class CommandCaveworld implements ICommand
 	{
 		if (args.length <= 0 && sender instanceof EntityPlayerMP)
 		{
-			EntityPlayerMP player = (EntityPlayerMP)sender;
-			MinecraftServer server = player.mcServer;
-
-			if (server.isSinglePlayer() || server.getConfigurationManager().func_152596_g(player.getGameProfile()))
-			{
-				Caveworld.network.sendTo(new CaveworldMenuMessage(), player);
-			}
+			Caveworld.network.sendTo(new CaveworldMenuMessage(), (EntityPlayerMP)sender);
 		}
 		else if (args[0].equalsIgnoreCase("version"))
 		{

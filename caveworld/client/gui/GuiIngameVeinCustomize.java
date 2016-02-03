@@ -10,7 +10,6 @@
 package caveworld.client.gui;
 
 import caveworld.api.CaveworldAPI;
-import caveworld.client.config.GuiBiomesEntry;
 import caveworld.client.config.GuiVeinsEntry;
 import caveworld.core.Caveworld;
 import cpw.mods.fml.client.config.GuiButtonExt;
@@ -74,7 +73,7 @@ public class GuiIngameVeinCustomize extends GuiScreen
 					mc.displayGuiScreen(new GuiVeinsEntry(this, CaveworldAPI.veinManager));
 					break;
 				case 2:
-					mc.displayGuiScreen(new GuiBiomesEntry(this, CaveworldAPI.biomeCavernManager));
+					mc.displayGuiScreen(new GuiVeinsEntry(this, CaveworldAPI.veinCavernManager));
 					break;
 			}
 		}

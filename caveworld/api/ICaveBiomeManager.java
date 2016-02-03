@@ -14,6 +14,10 @@ public interface ICaveBiomeManager
 
 	public int getType();
 
+	public boolean isReadOnly();
+
+	public ICaveBiomeManager setReadOnly(boolean flag);
+
 	/**
 	 * Add a cave biome.
 	 * @return <tt>true</tt> if has been added successfully.

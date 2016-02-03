@@ -36,8 +36,6 @@ import net.minecraft.dispenser.BehaviorDefaultDispenseItem;
 import net.minecraft.dispenser.IBlockSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.passive.EntityBat;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
@@ -52,7 +50,6 @@ import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.Direction;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.IIcon;
-import net.minecraft.util.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
@@ -389,34 +386,7 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 	}
 
 	@Override
-	public void updateTick(World world, int x, int y, int z, Random random)
-	{
-		if (!world.isRemote && world.provider.isSurfaceWorld())
-		{
-			if (world.isDaytime() || !world.getGameRules().getGameRuleBooleanValue("doMobSpawning"))
-			{
-				return;
-			}
-			else if (!world.isBlockNormalCubeDefault(x, y + 1, z, false) && random.nextInt(300) < world.difficultySetting.getDifficultyId())
-			{
-				EntityLiving entity = CaveUtils.createEntity(EntityBat.class, world);
-
-				if (entity != null)
-				{
-					entity.setLocationAndAngles(x + 0.5D, y + 0.75D, z + 0.5D, MathHelper.wrapAngleTo180_float(world.rand.nextFloat() * 360.0F), 0.0F);
-					entity.rotationYawHead = entity.renderYawOffset = entity.rotationYaw;
-					entity.timeUntilPortal = entity.getPortalCooldown();
-					entity.onSpawnWithEgg(null);
-
-					if (world.spawnEntityInWorld(entity))
-					{
-						entity.playLivingSound();
-						entity.getEntityData().setBoolean("Caveworld:CaveBat", true);
-					}
-				}
-			}
-		}
-	}
+	public void updateTick(World world, int x, int y, int z, Random random) {}
 
 	@SideOnly(Side.CLIENT)
 	@Override

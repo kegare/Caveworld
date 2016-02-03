@@ -13,7 +13,8 @@ public class RandomiteChanceEvent extends Event
 		NONE,
 		ITEM,
 		POTION,
-		EXPLODE
+		EXPLODE,
+		THUNDER
 	}
 
 	public final World world;

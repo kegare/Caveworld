@@ -56,16 +56,6 @@ public class CaveBlocks
 
 			OreDictionary.registerOre("portalCaveworld", caveworld_portal);
 
-			if (Config.portalCraftRecipe)
-			{
-				GameRegistry.addShapedRecipe(new ItemStack(caveworld_portal),
-					" E ", "EPE", " D ",
-					'E', Items.emerald,
-					'P', Items.ender_pearl,
-					'D', Items.diamond
-				);
-			}
-
 			BlockDispenser.dispenseBehaviorRegistry.putObject(Item.getItemFromBlock(caveworld_portal), caveworld_portal.new DispencePortal());
 		}
 

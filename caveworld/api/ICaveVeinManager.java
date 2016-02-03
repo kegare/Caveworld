@@ -4,11 +4,18 @@ import java.util.List;
 import java.util.Random;
 
 import net.minecraft.block.Block;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.config.Configuration;
 
 public interface ICaveVeinManager
 {
 	public Configuration getConfig();
+
+	public int getType();
+
+	public boolean isReadOnly();
+
+	public ICaveVeinManager setReadOnly(boolean flag);
 
 	/**
 	 * Add a cave vein.
@@ -43,4 +50,8 @@ public interface ICaveVeinManager
 	 * Remove all cave veins.
 	 */
 	public void clearCaveVeins();
+
+	public NBTTagList saveNBTData();
+
+	public void loadNBTData(NBTTagList list);
 }

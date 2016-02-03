@@ -22,6 +22,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.EntityPlayerMP;
 
 public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMessage, IMessage>
 {
@@ -68,15 +69,21 @@ public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMe
 		}
 		else
 		{
-			if (message.caveworld)
-			{
-				CaveUtils.regenerateDimension(CaveworldAPI.getDimension(), message.backup, Config.hardcore || Config.caveborn);
-			}
+			EntityPlayerMP player = ctx.getServerHandler().playerEntity;
 
-			if (message.cavern)
+			if (player.mcServer.isSinglePlayer() || player.mcServer.getConfigurationManager().func_152596_g(player.getGameProfile()))
 			{
-				CaveUtils.regenerateDimension(CaveworldAPI.getCavernDimension(), message.backup, Config.hardcore || Config.caveborn);
+				if (message.caveworld)
+				{
+					CaveUtils.regenerateDimension(CaveworldAPI.getDimension(), message.backup, Config.hardcore || Config.caveborn);
+				}
+
+				if (message.cavern)
+				{
+					CaveUtils.regenerateDimension(CaveworldAPI.getCavernDimension(), message.backup, Config.hardcore || Config.caveborn);
+				}
 			}
+			else return new ProgressNotify(3);
 		}
 
 		return null;

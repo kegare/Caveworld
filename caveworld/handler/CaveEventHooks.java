@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.opengl.GL11;
 
 import com.google.common.base.Strings;
@@ -20,10 +21,16 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import caveworld.api.CaveworldAPI;
+import caveworld.api.ICaveBiomeManager;
+import caveworld.api.ICaveVeinManager;
 import caveworld.api.event.MiningPointEvent;
 import caveworld.block.CaveBlocks;
 import caveworld.client.gui.GuiSelectBreakable;
 import caveworld.core.CaveAchievementList;
+import caveworld.core.CaveBiomeManager;
+import caveworld.core.CaveVeinManager;
+import caveworld.core.CavernBiomeManager;
+import caveworld.core.CavernVeinManager;
 import caveworld.core.Caveworld;
 import caveworld.core.Config;
 import caveworld.entity.EntityCaveman;
@@ -40,13 +47,17 @@ import caveworld.item.ItemCaverBackpack;
 import caveworld.item.ItemDiggingShovel;
 import caveworld.item.ItemLumberingAxe;
 import caveworld.item.ItemMiningPickaxe;
+import caveworld.network.client.BiomeAdjustMessage;
 import caveworld.network.client.CavernAdjustMessage;
 import caveworld.network.client.CaveworldAdjustMessage;
 import caveworld.network.client.MultiBreakCountMessage;
 import caveworld.network.client.PlaySoundMessage;
+import caveworld.network.client.VeinAdjustMessage;
 import caveworld.network.server.CaveAchievementMessage;
 import caveworld.plugin.enderstorage.EnderStoragePlugin;
 import caveworld.plugin.mceconomy.MCEconomyPlugin;
+import caveworld.plugin.mceconomy.ProductAdjustMessage;
+import caveworld.plugin.mceconomy.ShopProductManager;
 import caveworld.util.CaveUtils;
 import caveworld.util.Version;
 import caveworld.util.Version.Status;
@@ -73,8 +84,6 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockOre;
-import net.minecraft.block.BlockRedstoneOre;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundCategory;
@@ -141,6 +150,15 @@ public class CaveEventHooks
 
 	@SideOnly(Side.CLIENT)
 	private ItemStack miningPointItemDefault;
+
+	@SideOnly(Side.CLIENT)
+	public static ICaveBiomeManager prevBiomeManager;
+	@SideOnly(Side.CLIENT)
+	public static ICaveBiomeManager prevBiomeCavernManager;
+	@SideOnly(Side.CLIENT)
+	public static ICaveVeinManager prevVeinManager;
+	@SideOnly(Side.CLIENT)
+	public static ICaveVeinManager prevVeinCavernManager;
 
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
@@ -443,17 +461,55 @@ public class CaveEventHooks
 	@SubscribeEvent
 	public void onClientConnected(ClientConnectedToServerEvent event)
 	{
+		Minecraft mc = FMLClientHandler.instance().getClient();
+
 		if (Version.getStatus() == Status.PENDING || Version.getStatus() == Status.FAILED)
 		{
 			Version.versionCheck();
 		}
-		else if (Version.DEV_DEBUG || Config.versionNotify && Version.isOutdated())
+		else if (Version.DEV_DEBUG || Version.getStatus() == Status.AHEAD || Config.versionNotify && Version.isOutdated())
 		{
-			IChatComponent component = new ChatComponentTranslation("caveworld.version.message", EnumChatFormatting.AQUA + "Caveworld" + EnumChatFormatting.RESET);
-			component.appendText(" : " + EnumChatFormatting.YELLOW + Version.getLatest());
-			component.getChatStyle().setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, Caveworld.metadata.url));
+			IChatComponent message;
+			String name = Caveworld.metadata.name;
 
-			FMLClientHandler.instance().getClient().ingameGUI.getChatGUI().printChatMessage(component);
+			message = new ChatComponentTranslation("caveworld.version.message", EnumChatFormatting.AQUA + name + EnumChatFormatting.RESET);
+			message.appendText(" : " + EnumChatFormatting.YELLOW + Version.getLatest());
+			message.getChatStyle().setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, Caveworld.metadata.url));
+
+			mc.ingameGUI.getChatGUI().printChatMessage(message);
+			message = null;
+
+			if (StringUtils.endsWithIgnoreCase(Version.getCurrent(), "beta"))
+			{
+				message = new ChatComponentTranslation("caveworld.version.message.beta", EnumChatFormatting.AQUA + name + EnumChatFormatting.RESET);
+			}
+			else if (StringUtils.endsWithIgnoreCase(Version.getCurrent(), "alpha"))
+			{
+				message = new ChatComponentTranslation("caveworld.version.message.alpha", EnumChatFormatting.AQUA + name + EnumChatFormatting.RESET);
+			}
+
+			if (message != null)
+			{
+				mc.ingameGUI.getChatGUI().printChatMessage(message);
+			}
+		}
+
+		if (!mc.isIntegratedServerRunning())
+		{
+			prevBiomeManager = CaveworldAPI.biomeManager;
+			CaveworldAPI.biomeManager = new CaveBiomeManager();
+			prevBiomeCavernManager = CaveworldAPI.biomeCavernManager;
+			CaveworldAPI.biomeCavernManager = new CavernBiomeManager();
+			prevVeinManager = CaveworldAPI.veinManager;
+			CaveworldAPI.veinManager = new CaveVeinManager();
+			prevVeinCavernManager = CaveworldAPI.veinCavernManager;
+			CaveworldAPI.veinCavernManager = new CavernVeinManager();
+
+			if (MCEconomyPlugin.enabled())
+			{
+				MCEconomyPlugin.prevProductManager = MCEconomyPlugin.productManager;
+				MCEconomyPlugin.productManager = new ShopProductManager();
+			}
 		}
 	}
 
@@ -461,8 +517,37 @@ public class CaveEventHooks
 	@SubscribeEvent
 	public void onClientDisconnected(ClientDisconnectionFromServerEvent event)
 	{
-		Config.syncGeneralCfg();
 		Config.syncDimensionCfg();
+
+		if (prevBiomeManager != null)
+		{
+			CaveworldAPI.biomeManager = prevBiomeManager;
+			prevBiomeManager = null;
+		}
+
+		if (prevBiomeCavernManager != null)
+		{
+			CaveworldAPI.biomeCavernManager = prevBiomeCavernManager;
+			prevBiomeCavernManager = null;
+		}
+
+		if (prevVeinManager != null)
+		{
+			CaveworldAPI.veinManager = prevVeinManager;
+			prevVeinManager = null;
+		}
+
+		if (prevVeinCavernManager != null)
+		{
+			CaveworldAPI.veinCavernManager = prevVeinCavernManager;
+			prevVeinCavernManager = null;
+		}
+
+		if (MCEconomyPlugin.prevProductManager != null)
+		{
+			MCEconomyPlugin.productManager = MCEconomyPlugin.prevProductManager;
+			MCEconomyPlugin.prevProductManager = null;
+		}
 
 		CaveItems.ore_compass.resetFinder();
 	}
@@ -472,8 +557,20 @@ public class CaveEventHooks
 	{
 		NetworkManager manager = event.manager;
 
-		manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new CaveworldAdjustMessage(CaveworldAPI.getDimension(), WorldProviderCaveworld.getDimData())), new GenericFutureListener[0]);
-		manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new CavernAdjustMessage(CaveworldAPI.getCavernDimension(), WorldProviderCavern.getDimData())), new GenericFutureListener[0]);
+		if (!manager.isLocalChannel())
+		{
+			manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new CaveworldAdjustMessage(CaveworldAPI.getDimension(), WorldProviderCaveworld.getDimData())), new GenericFutureListener[0]);
+			manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new CavernAdjustMessage(CaveworldAPI.getCavernDimension(), WorldProviderCavern.getDimData())), new GenericFutureListener[0]);
+			manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new BiomeAdjustMessage(CaveworldAPI.biomeManager)), new GenericFutureListener[0]);
+			manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new BiomeAdjustMessage(CaveworldAPI.biomeCavernManager)), new GenericFutureListener[0]);
+			manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new VeinAdjustMessage(CaveworldAPI.veinManager)), new GenericFutureListener[0]);
+			manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new VeinAdjustMessage(CaveworldAPI.veinCavernManager)), new GenericFutureListener[0]);
+
+			if (MCEconomyPlugin.enabled())
+			{
+				manager.scheduleOutboundPacket(Caveworld.network.getPacketFrom(new ProductAdjustMessage(MCEconomyPlugin.productManager)), new GenericFutureListener[0]);
+			}
+		}
 	}
 
 	@SubscribeEvent
@@ -725,14 +822,6 @@ public class CaveEventHooks
 				{
 					Block block = event.block;
 					int amount = CaveworldAPI.getMiningPointAmount(block, event.blockMetadata);
-
-					if (amount == 0)
-					{
-						if (block instanceof BlockOre || block instanceof BlockRedstoneOre)
-						{
-							amount = 1;
-						}
-					}
 
 					MiningPointEvent.OnBlockBreak pointEvent = new MiningPointEvent.OnBlockBreak(player, amount);
 					MinecraftForge.EVENT_BUS.post(pointEvent);

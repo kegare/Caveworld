@@ -12,7 +12,6 @@ package caveworld.core;
 import java.io.File;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.RecursiveAction;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -36,7 +35,6 @@ import caveworld.entity.EntityCavenicSkeleton;
 import caveworld.util.CaveConfiguration;
 import caveworld.util.CaveLog;
 import caveworld.util.CaveUtils;
-import caveworld.util.Version;
 import caveworld.world.ChunkProviderCavern;
 import caveworld.world.ChunkProviderCaveworld;
 import cpw.mods.fml.client.config.GuiConfigEntries.IConfigEntry;
@@ -75,13 +73,13 @@ public class Config
 	public static String[] miningPointsDefault;
 	public static String[] miningPointValidItems;
 	public static String[] miningPointValidItemsDefault;
+	public static boolean oreRenderOverlay;
 	public static boolean fakeMiningPickaxe;
 	public static boolean fakeLumberingAxe;
 	public static boolean fakeDiggingShovel;
 	public static int modeDisplayTime;
 	public static int quickBreakLimit;
 
-	public static boolean portalCraftRecipe;
 	public static boolean mossStoneCraftRecipe;
 
 	public static boolean hardcore;
@@ -94,6 +92,7 @@ public class Config
 
 	public static final int RENDER_TYPE_PORTAL = Caveworld.proxy.getUniqueRenderType();
 	public static final int RENDER_TYPE_CHEST = Caveworld.proxy.getUniqueRenderType();
+	public static final int RENDER_TYPE_ORE = Caveworld.proxy.getUniqueRenderType();
 
 	public static File getConfigDir()
 	{
@@ -251,6 +250,12 @@ public class Config
 
 		if (side.isClient())
 		{
+			prop = generalCfg.get(category, "oreRenderOverlay", true);
+			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+			prop.comment += " [default: " + prop.getDefault() + "]";
+			propOrder.add(prop.getName());
+			oreRenderOverlay = prop.getBoolean(oreRenderOverlay);
 			prop = generalCfg.get(category, "fakeMiningPickaxe", false);
 			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -287,12 +292,6 @@ public class Config
 		generalCfg.setCategoryPropertyOrder(category, propOrder);
 
 		category = "recipes";
-		prop = generalCfg.get(category, "portalCraftRecipe", Version.DEV_DEBUG);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
-		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-		prop.comment += " [default: " + prop.getDefault() + "]";
-		propOrder.add(prop.getName());
-		portalCraftRecipe = prop.getBoolean(portalCraftRecipe);
 		prop = generalCfg.get(category, "mossStoneCraftRecipe", true);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -331,35 +330,28 @@ public class Config
 
 	public static void refreshMiningPoints()
 	{
-		CaveUtils.getPool().execute(new RecursiveAction()
+		CaveworldAPI.caverManager.clearMiningPointAmounts();
+
+		for (String str : miningPoints)
 		{
-			@Override
-			protected void compute()
+			if (!Strings.isNullOrEmpty(str) && str.contains(",") && str.contains(":"))
 			{
-				CaveworldAPI.caverManager.clearMiningPointAmounts();
+				str = str.trim();
 
-				for (String str : miningPoints)
+				int i = str.indexOf(',');
+				String str2 = str.substring(0, i);
+				int point = Integer.parseInt(str.substring(i + 1));
+
+				i = str2.lastIndexOf(':');
+				Block block = GameData.getBlockRegistry().getObject(str2.substring(0, i));
+				int meta = Integer.parseInt(str2.substring(i + 1));
+
+				if (block != null && block != Blocks.air)
 				{
-					if (!Strings.isNullOrEmpty(str) && str.contains(",") && str.contains(":"))
-					{
-						str = str.trim();
-
-						int i = str.indexOf(',');
-						String str2 = str.substring(0, i);
-						int point = Integer.parseInt(str.substring(i + 1));
-
-						i = str2.lastIndexOf(':');
-						Block block = GameData.getBlockRegistry().getObject(str2.substring(0, i));
-						int meta = Integer.parseInt(str2.substring(i + 1));
-
-						if (block != null && block != Blocks.air)
-						{
-							CaveworldAPI.setMiningPointAmount(block, meta, point);
-						}
-					}
+					CaveworldAPI.setMiningPointAmount(block, meta, point);
 				}
 			}
-		});
+		}
 	}
 
 	public static void syncEntitiesCfg()

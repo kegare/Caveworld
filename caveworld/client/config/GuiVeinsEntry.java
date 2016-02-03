@@ -112,6 +112,11 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 		this.veinManager = manager;
 	}
 
+	public boolean isReadOnly()
+	{
+		return veinManager.isReadOnly();
+	}
+
 	@Override
 	public void initGui()
 	{
@@ -379,68 +384,71 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 				case 0:
 					if (editMode)
 					{
-						for (final ICaveVein entry : veinList.selected)
+						if (!isReadOnly())
 						{
-							CaveUtils.getPool().execute(new RecursiveAction()
+							for (final ICaveVein entry : veinList.selected)
 							{
-								@Override
-								protected void compute()
+								CaveUtils.getPool().execute(new RecursiveAction()
 								{
-									if (!Strings.isNullOrEmpty(blockField.getText()))
+									@Override
+									protected void compute()
 									{
-										entry.setBlock(new BlockEntry(blockField.getText(), NumberUtils.toInt(blockMetaField.getText())));
-									}
-
-									if (!Strings.isNullOrEmpty(countField.getText()))
-									{
-										entry.setGenBlockCount(NumberUtils.toInt(countField.getText(), entry.getGenBlockCount()));
-									}
-
-									if (!Strings.isNullOrEmpty(weightField.getText()))
-									{
-										entry.setGenWeight(NumberUtils.toInt(weightField.getText(), entry.getGenWeight()));
-									}
-
-									if (!Strings.isNullOrEmpty(rateField.getText()))
-									{
-										entry.setGenRate(NumberUtils.toInt(rateField.getText(), entry.getGenRate()));
-									}
-
-									if (!Strings.isNullOrEmpty(minHeightField.getText()))
-									{
-										entry.setGenMinHeight(NumberUtils.toInt(minHeightField.getText(), entry.getGenMinHeight()));
-									}
-
-									if (!Strings.isNullOrEmpty(maxHeightField.getText()))
-									{
-										entry.setGenMaxHeight(NumberUtils.toInt(maxHeightField.getText(), entry.getGenMaxHeight()));
-									}
-
-									if (!Strings.isNullOrEmpty(targetField.getText()))
-									{
-										entry.setGenTargetBlock(new BlockEntry(targetField.getText(), NumberUtils.toInt(targetMetaField.getText())));
-									}
-
-									if (!Strings.isNullOrEmpty(biomesField.getText()))
-									{
-										List<Integer> ids = Lists.newArrayList();
-
-										for (String str : Splitter.on(',').trimResults().omitEmptyStrings().split(biomesField.getText()))
+										if (!Strings.isNullOrEmpty(blockField.getText()))
 										{
-											if (NumberUtils.isNumber(str))
-											{
-												ids.add(Integer.parseInt(str));
-											}
+											entry.setBlock(new BlockEntry(blockField.getText(), NumberUtils.toInt(blockMetaField.getText())));
 										}
 
-										Collections.sort(ids);
+										if (!Strings.isNullOrEmpty(countField.getText()))
+										{
+											entry.setGenBlockCount(NumberUtils.toInt(countField.getText(), entry.getGenBlockCount()));
+										}
 
-										entry.setGenBiomes(Ints.toArray(ids));
+										if (!Strings.isNullOrEmpty(weightField.getText()))
+										{
+											entry.setGenWeight(NumberUtils.toInt(weightField.getText(), entry.getGenWeight()));
+										}
+
+										if (!Strings.isNullOrEmpty(rateField.getText()))
+										{
+											entry.setGenRate(NumberUtils.toInt(rateField.getText(), entry.getGenRate()));
+										}
+
+										if (!Strings.isNullOrEmpty(minHeightField.getText()))
+										{
+											entry.setGenMinHeight(NumberUtils.toInt(minHeightField.getText(), entry.getGenMinHeight()));
+										}
+
+										if (!Strings.isNullOrEmpty(maxHeightField.getText()))
+										{
+											entry.setGenMaxHeight(NumberUtils.toInt(maxHeightField.getText(), entry.getGenMaxHeight()));
+										}
+
+										if (!Strings.isNullOrEmpty(targetField.getText()))
+										{
+											entry.setGenTargetBlock(new BlockEntry(targetField.getText(), NumberUtils.toInt(targetMetaField.getText())));
+										}
+
+										if (!Strings.isNullOrEmpty(biomesField.getText()))
+										{
+											List<Integer> ids = Lists.newArrayList();
+
+											for (String str : Splitter.on(',').trimResults().omitEmptyStrings().split(biomesField.getText()))
+											{
+												if (NumberUtils.isNumber(str))
+												{
+													ids.add(Integer.parseInt(str));
+												}
+											}
+
+											Collections.sort(ids);
+
+											entry.setGenBiomes(Ints.toArray(ids));
+										}
+
+										hoverCache.remove(entry);
 									}
-
-									hoverCache.remove(entry);
-								}
-							});
+								});
+							}
 						}
 
 						actionPerformed(cancelButton);
@@ -450,40 +458,43 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 					}
 					else
 					{
-						CaveUtils.getPool().execute(new RecursiveAction()
+						if (!isReadOnly())
 						{
-							@Override
-							protected void compute()
+							CaveUtils.getPool().execute(new RecursiveAction()
 							{
-								boolean flag = veinManager.getCaveVeins().size() != veinList.veins.size();
-
-								veinManager.clearCaveVeins();
-
-								if (flag)
+								@Override
+								protected void compute()
 								{
-									try
+									boolean flag = veinManager.getCaveVeins().size() != veinList.veins.size();
+
+									veinManager.clearCaveVeins();
+
+									if (flag)
 									{
-										FileUtils.forceDelete(new File(veinManager.getConfig().toString()));
+										try
+										{
+											FileUtils.forceDelete(new File(veinManager.getConfig().toString()));
 
-										veinManager.getConfig().load();
+											veinManager.getConfig().load();
+										}
+										catch (IOException e)
+										{
+											e.printStackTrace();
+										}
 									}
-									catch (IOException e)
+
+									for (ICaveVein vein : veinList.veins)
 									{
-										e.printStackTrace();
+										veinManager.addCaveVein(vein);
+									}
+
+									if (veinManager.getConfig().hasChanged())
+									{
+										veinManager.getConfig().save();
 									}
 								}
-
-								for (ICaveVein vein : veinList.veins)
-								{
-									veinManager.addCaveVein(vein);
-								}
-
-								if (veinManager.getConfig().hasChanged())
-								{
-									veinManager.getConfig().save();
-								}
-							}
-						});
+							});
+						}
 
 						actionPerformed(cancelButton);
 
@@ -549,31 +560,42 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 
 					break;
 				case 3:
-					mc.displayGuiScreen(new GuiSelectBlock(this));
+					if (!isReadOnly())
+					{
+						mc.displayGuiScreen(new GuiSelectBlock(this));
+					}
+
 					break;
 				case 4:
-					CaveUtils.getPool().execute(new RecursiveAction()
+					if (!isReadOnly())
 					{
-						@Override
-						protected void compute()
+						CaveUtils.getPool().execute(new RecursiveAction()
 						{
-							for (ICaveVein entry : veinList.selected)
+							@Override
+							protected void compute()
 							{
-								if (veinList.veins.remove(entry))
+								for (ICaveVein entry : veinList.selected)
 								{
-									veinList.contents.remove(entry);
+									if (veinList.veins.remove(entry))
+									{
+										veinList.contents.remove(entry);
+									}
 								}
-							}
 
-							veinList.selected.clear();
-						}
-					});
+								veinList.selected.clear();
+							}
+						});
+					}
 
 					break;
 				case 5:
-					veinList.selected.addAll(veinList.veins);
+					if (!isReadOnly())
+					{
+						veinList.selected.addAll(veinList.veins);
 
-					actionPerformed(removeButton);
+						actionPerformed(removeButton);
+					}
+
 					break;
 				case 6:
 					CaveConfigGui.detailInfo = detailInfo.isChecked();
@@ -588,7 +610,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 	@Override
 	public void onSelected(final Set<BlockEntry> result)
 	{
-		if (editMode)
+		if (editMode || isReadOnly())
 		{
 			return;
 		}
@@ -629,7 +651,9 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 		else
 		{
 			editButton.enabled = !veinList.selected.isEmpty();
-			removeButton.enabled = editButton.enabled;
+			addButton.enabled = !isReadOnly();
+			removeButton.enabled = !isReadOnly() && editButton.enabled;
+			clearButton.enabled = !isReadOnly();
 
 			filterTextField.updateCursorCounter();
 		}
@@ -824,6 +848,11 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 	{
 		super.handleMouseInput();
 
+		if (isReadOnly())
+		{
+			return;
+		}
+
 		if (blockMetaField.isFocused())
 		{
 			int i = Mouse.getDWheel();
@@ -924,6 +953,11 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 
 		if (editMode)
 		{
+			if (isReadOnly())
+			{
+				return;
+			}
+
 			for (GuiTextField textField : editFieldList)
 			{
 				textField.mouseClicked(x, y, code);
@@ -973,6 +1007,11 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 	{
 		if (editMode)
 		{
+			if (isReadOnly())
+			{
+				return;
+			}
+
 			for (GuiTextField textField : editFieldList)
 			{
 				if (code == Keyboard.KEY_ESCAPE)

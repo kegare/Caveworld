@@ -6,6 +6,8 @@ gui.remove=Remove
 gui.clear=Clear
 
 caveworld.version.message=A new %s version is available
+caveworld.version.message.beta=You are using a Beta version of %s
+caveworld.version.message.alpha=You are using a Alpha version of %s
 
 caveworld.menu.title=Caveworld menu
 caveworld.regenerate.regenerating=Regenerating the %s dimension...
@@ -54,6 +56,8 @@ caveworld.config.general.miningPoints=Mining Points
 caveworld.config.general.miningPoints.tooltip=Specify the mining points.
 caveworld.config.general.miningPointValidItems=Mining Point Valid Items
 caveworld.config.general.miningPointValidItems.tooltip=Specify the valid items that can getting mining point.
+caveworld.config.general.oreRenderOverlay=Ore Render Overlay
+caveworld.config.general.oreRenderOverlay.tooltip=Whether or not to ores render on stone texture.
 caveworld.config.general.fakeMiningPickaxe=Fake Mining Pickaxe
 caveworld.config.general.fakeMiningPickaxe.tooltip=Whether or not to Mining Pickaxe fake to the base pickaxe.
 caveworld.config.general.fakeLumberingAxe=Fake Lumbering Axe

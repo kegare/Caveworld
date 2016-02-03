@@ -20,6 +20,7 @@ import caveworld.client.renderer.RenderCavenicBow;
 import caveworld.client.renderer.RenderCavenicSkeleton;
 import caveworld.client.renderer.RenderCaveniumTool;
 import caveworld.client.renderer.RenderMasterCavenicSkeleton;
+import caveworld.client.renderer.RenderOreOverlay;
 import caveworld.client.renderer.RenderPortalCaveworld;
 import caveworld.client.renderer.TileEntityUniversalChestRenderer;
 import caveworld.core.CommonProxy;
@@ -55,6 +56,7 @@ public class ClientProxy extends CommonProxy
 	public void registerRenderers()
 	{
 		RenderingRegistry.registerBlockHandler(new RenderPortalCaveworld());
+		RenderingRegistry.registerBlockHandler(new RenderOreOverlay());
 
 		TileEntityUniversalChestRenderer chestRenderer = new TileEntityUniversalChestRenderer();
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityUniversalChest.class, chestRenderer);

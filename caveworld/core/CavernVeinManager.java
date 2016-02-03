@@ -27,6 +27,12 @@ public class CavernVeinManager extends CaveVeinManager
 	}
 
 	@Override
+	public int getType()
+	{
+		return 1;
+	}
+
+	@Override
 	public List<ICaveVein> getCaveVeins()
 	{
 		return CAVE_VEINS;
