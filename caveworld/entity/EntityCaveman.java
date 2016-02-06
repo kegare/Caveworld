@@ -18,7 +18,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import com.google.common.collect.Sets;
 
 import caveworld.api.CaveworldAPI;
-import caveworld.block.CaveBlocks;
 import caveworld.entity.ai.EntityAICollector;
 import caveworld.entity.ai.EntityAIFleeSun2;
 import caveworld.entity.ai.EntityAISoldier;
@@ -48,6 +47,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
+import net.minecraft.item.Item.ToolMaterial;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -194,22 +194,14 @@ public class EntityCaveman extends EntityMob implements IInventory
 
 		Set<ItemStack> items = Sets.newHashSet();
 
-		for (int i = 0; i < rand.nextInt(2) + 1; ++i)
+		for (int i = 0; i < rand.nextInt(3) + 1; ++i)
 		{
-			items.add(new ItemStack(Items.stone_pickaxe));
+			items.add(new ItemStack(Items.stone_pickaxe, 1, rand.nextInt(ToolMaterial.STONE.getMaxUses())));
 		}
 
-		items.add(new ItemStack(Items.coal, MathHelper.getRandomIntegerInRange(rand, 16, 48)));
 		items.add(new ItemStack(CaveItems.cavenium, 1));
-
-		if (rand.nextInt(20) == 0)
-		{
-			items.add(new ItemStack(Items.diamond));
-		}
-
 		items.add(new ItemStack(Blocks.torch, MathHelper.getRandomIntegerInRange(rand, 16, 32)));
 		items.add(new ItemStack(Items.bread, MathHelper.getRandomIntegerInRange(rand, 4, 16)));
-		items.add(new ItemStack(CaveBlocks.rope, MathHelper.getRandomIntegerInRange(rand, 8, 24)));
 
 		int slot = 0;
 
@@ -310,7 +302,7 @@ public class EntityCaveman extends EntityMob implements IInventory
 			{
 				ItemStack content = ItemStack.copyItemStack(itemstack);
 
-				if (content != null && content.getItem() != null && content.stackSize > 0)
+				if (content != null && content.getItem() != null && content.stackSize > 0 && rand.nextInt(3) == 0)
 				{
 					entityDropItem(content, 0.0F);
 
@@ -479,9 +471,9 @@ public class EntityCaveman extends EntityMob implements IInventory
 			case 19:
 				for (int i = 0; i < 3; ++i)
 				{
-					double d0 = this.rand.nextGaussian() * 0.02D;
-					double d1 = this.rand.nextGaussian() * 0.02D;
-					double d2 = this.rand.nextGaussian() * 0.02D;
+					double d0 = rand.nextGaussian() * 0.02D;
+					double d1 = rand.nextGaussian() * 0.02D;
+					double d2 = rand.nextGaussian() * 0.02D;
 
 					worldObj.spawnParticle("note", posX + rand.nextFloat() * width * 2.0F - width, posY + 0.5D + rand.nextFloat() * height, posZ + rand.nextFloat() * width * 2.0F - width, d0, d1, d2);
 				}
@@ -575,10 +567,10 @@ public class EntityCaveman extends EntityMob implements IInventory
 	{
 		for (int i = 0; i < inventoryContents.length; ++i)
 		{
-			if (inventoryContents[i] != null && inventoryContents[i].getItem() == itemstack.getItem() &&
-				inventoryContents[i].isStackable() && inventoryContents[i].stackSize < inventoryContents[i].getMaxStackSize() &&
-				inventoryContents[i].stackSize < getInventoryStackLimit() && (!inventoryContents[i].getHasSubtypes() || inventoryContents[i].getItemDamage() == itemstack.getItemDamage()) &&
-				ItemStack.areItemStackTagsEqual(inventoryContents[i], itemstack))
+			ItemStack item = inventoryContents[i];
+
+			if (item != null && item.getItem() == itemstack.getItem() && item.isStackable() && item.stackSize < item.getMaxStackSize() && item.stackSize < getInventoryStackLimit() &&
+				(!item.getHasSubtypes() || item.getItemDamage() == itemstack.getItemDamage()) && ItemStack.areItemStackTagsEqual(item, itemstack))
 			{
 				return i;
 			}
@@ -785,12 +777,12 @@ public class EntityCaveman extends EntityMob implements IInventory
 
 					if (compact[count].stackSize == compact[count].getMaxStackSize())
 					{
-						count++;
+						++count;
 					}
 				}
 				else
 				{
-					count++;
+					++count;
 				}
 			}
 		}

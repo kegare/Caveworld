@@ -9,7 +9,6 @@
 
 package caveworld.core;
 
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.List;
@@ -49,20 +48,7 @@ import caveworld.network.common.RegenerateMessage;
 import caveworld.network.server.CaveAchievementMessage;
 import caveworld.network.server.PortalInventoryMessage;
 import caveworld.network.server.SelectBreakableMessage;
-import caveworld.plugin.advancedtools.AdvancedToolsPlugin;
-import caveworld.plugin.applemilktea.AppleMilkTeaPlugin;
-import caveworld.plugin.craftguide.CraftGuidePlugin;
-import caveworld.plugin.enderstorage.EnderStoragePlugin;
-import caveworld.plugin.hexagonaldia.HexagonalDiamondPlugin;
-import caveworld.plugin.ic2.IC2Plugin;
-import caveworld.plugin.mapletree.MapleTreePlugin;
-import caveworld.plugin.materialarms.MaterialArmsPlugin;
-import caveworld.plugin.mceconomy.MCEconomyPlugin;
-import caveworld.plugin.miningmod.MiningmodPlugin;
-import caveworld.plugin.more.MOrePlugin;
-import caveworld.plugin.moreinventory.MIMPlugin;
-import caveworld.plugin.nei.NEIPlugin;
-import caveworld.plugin.tconstruct.TinkersConstructPlugin;
+import caveworld.plugin.CavePlugins;
 import caveworld.recipe.RecipeCaveniumTool;
 import caveworld.util.CaveLog;
 import caveworld.util.CaveUtils;
@@ -428,172 +414,14 @@ public class Caveworld
 		Config.syncVeinsCfg();
 		Config.syncVeinsCavernCfg();
 
-		try
-		{
-			if (CraftGuidePlugin.enabled())
-			{
-				CraftGuidePlugin.invoke();
-			}
-		}
-		catch (Throwable e)
-		{
-			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: CraftGuidePlugin");
-		}
+		CavePlugins.registerPlugins();
+		Config.syncPluginsCfg();
 
-		try
-		{
-			if (event.getSide().isClient() && NEIPlugin.enabled())
-			{
-				NEIPlugin.invoke();
-			}
-		}
-		catch (Throwable e)
-		{
-			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: NEIPlugin");
-		}
+		CavePlugins.invokePlugins();
 
-		try
+		if (event.getSide().isClient())
 		{
-			if (IC2Plugin.enabled())
-			{
-				IC2Plugin.invoke();
-			}
-		}
-		catch (Throwable e)
-		{
-			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: IC2Plugin");
-		}
-
-		try
-		{
-			if (MCEconomyPlugin.enabled())
-			{
-				MCEconomyPlugin.invoke();
-			}
-		}
-		catch (Throwable e)
-		{
-			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: MCEconomyPlugin");
-		}
-
-		try
-		{
-			if (MOrePlugin.enabled())
-			{
-				MOrePlugin.invoke();
-			}
-		}
-		catch (Throwable e)
-		{
-			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: MOrePlugin");
-		}
-
-		try
-		{
-			if (MiningmodPlugin.enabled())
-			{
-				MiningmodPlugin.invoke();
-			}
-		}
-		catch (Throwable e)
-		{
-			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: MiningmodPlugin");
-		}
-
-		try
-		{
-			if (AdvancedToolsPlugin.enabled())
-			{
-				AdvancedToolsPlugin.invoke();
-			}
-		}
-		catch (Throwable e)
-		{
-			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: AdvancedToolsPlugin");
-		}
-
-		try
-		{
-			if (TinkersConstructPlugin.enabled())
-			{
-				TinkersConstructPlugin.invoke();
-			}
-		}
-		catch (Throwable e)
-		{
-			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: TinkersConstructPlugin");
-		}
-
-		try
-		{
-			if (MIMPlugin.enabled())
-			{
-				MIMPlugin.invoke();
-			}
-		}
-		catch (Throwable e)
-		{
-			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: MIMPlugin");
-		}
-
-		try
-		{
-			if (MapleTreePlugin.enabled())
-			{
-				MapleTreePlugin.invoke();
-			}
-		}
-		catch (Throwable e)
-		{
-			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: MapleTreePlugin");
-		}
-
-		try
-		{
-			if (EnderStoragePlugin.enabled())
-			{
-				EnderStoragePlugin.invoke();
-			}
-		}
-		catch (Throwable e)
-		{
-			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: EnderStoragePlugin");
-		}
-
-		try
-		{
-			if (HexagonalDiamondPlugin.enabled())
-			{
-				HexagonalDiamondPlugin.invoke();
-			}
-		}
-		catch (Throwable e)
-		{
-			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: HexagonalDiamondPlugin");
-		}
-
-		try
-		{
-			if (MaterialArmsPlugin.enabled())
-			{
-				MaterialArmsPlugin.invoke();
-			}
-		}
-		catch (Throwable e)
-		{
-			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: MaterialArmsPlugin");
-		}
-
-		try
-		{
-			if (AppleMilkTeaPlugin.enabled())
-			{
-				AppleMilkTeaPlugin.invoke();
-			}
-		}
-		catch (Throwable e)
-		{
-			CaveLog.log(Level.WARN, e, "Failed to trying invoke plugin: AppleMilkTeaPlugin");
+			CavePlugins.invokeClientPlugins();
 		}
 	}
 

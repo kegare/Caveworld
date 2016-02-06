@@ -11,6 +11,7 @@ package caveworld.plugin.applemilktea;
 
 import caveworld.block.CaveBlocks;
 import caveworld.item.CaveItems;
+import caveworld.plugin.ICavePlugin;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Optional.Method;
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -18,17 +19,38 @@ import mods.defeatedcrow.api.recipe.RecipeRegisterManager;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
-public class AppleMilkTeaPlugin
+public class AppleMilkTeaPlugin implements ICavePlugin
 {
 	public static final String MODID = "DCsAppleMilk";
 
+	public static boolean pluginState = true;
+
 	public static boolean enabled()
 	{
-		return Loader.isModLoaded(MODID);
+		return pluginState && Loader.isModLoaded(MODID);
+	}
+
+	@Override
+	public String getModId()
+	{
+		return MODID;
+	}
+
+	@Override
+	public boolean getPluginState()
+	{
+		return pluginState;
+	}
+
+	@Override
+	public boolean setPluginState(boolean state)
+	{
+		return pluginState = state;
 	}
 
 	@Method(modid = MODID)
-	public static void invoke()
+	@Override
+	public void invoke()
 	{
 		Item strangeSlag = GameRegistry.findItem(MODID, "defeatedcrow.strangeSlag");
 

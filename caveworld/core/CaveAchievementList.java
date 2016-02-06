@@ -31,10 +31,12 @@ public class CaveAchievementList
 	public static final Achievement cavenium = CaveAchievement.of("cavenium", -1, 3, CaveItems.cavenium, caveworld, true);
 	public static final Achievement oreFinder = CaveAchievement.of("oreFinder", -3, 5, CaveItems.ore_compass, cavenium, true);
 	public static final Achievement theMiner = CaveAchievement.of("theMiner", 3, 2, Items.iron_pickaxe, caveworld, true);
-	public static final Achievement caveman = CaveAchievement.of("caveman", -4, -1, Blocks.stone, caveworld, true);
-	public static final Achievement cavenicSkeletonSlayer = CaveAchievement.of("cavenicSkeletonSlayer", 3, -3, new ItemStack(CaveItems.cavenium, 1, 1), caveworld, true);
+	public static final Achievement theRoper = CaveAchievement.of("theRoper", -2, 1, CaveBlocks.rope, caveworld, true);
+	public static final Achievement caveman = CaveAchievement.of("caveman", -4, -1, CaveBlocks.cavenium_ore, caveworld, true);
+	public static final Achievement cavenicSkeletonSlayer = CaveAchievement.of("cavenicSkeletonSlayer", 3, -3, new ItemStack(CaveItems.cavenium, 1, 0), caveworld, true);
 	public static final Achievement masterCavenicSkeletonSlayer = CaveAchievement.of("masterCavenicSkeletonSlayer", 5, -3, new ItemStack(CaveItems.cavenium, 1, 1), cavenicSkeletonSlayer, true).setSpecial();
-	public static final Achievement aquamarine = CaveAchievement.of("aquamarine", 2, 8, new ItemStack(CaveItems.gem, 1, 0), caveworld, true);
+	public static final Achievement aquamarine = CaveAchievement.of("aquamarine", 2, 6, new ItemStack(CaveItems.gem, 1, 0), caveworld, true);
+	public static final Achievement randomite = CaveAchievement.of("randomite", 2, 4, new ItemStack(CaveBlocks.gem_ore, 1, 2), caveworld, true);
 
 	public static void registerAchievements()
 	{

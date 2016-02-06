@@ -13,23 +13,45 @@ import caveworld.api.BlockEntry;
 import caveworld.api.CaveworldAPI;
 import caveworld.core.CaveVeinManager.CaveVein;
 import caveworld.core.Config;
+import caveworld.plugin.ICavePlugin;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Optional.Method;
 import ic2.api.item.IC2Items;
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 
-public class IC2Plugin
+public class IC2Plugin implements ICavePlugin
 {
 	public static final String MODID = "IC2";
 
+	public static boolean pluginState = true;
+
 	public static boolean enabled()
 	{
-		return Loader.isModLoaded(MODID);
+		return pluginState && Loader.isModLoaded(MODID);
+	}
+
+	@Override
+	public String getModId()
+	{
+		return MODID;
+	}
+
+	@Override
+	public boolean getPluginState()
+	{
+		return pluginState;
+	}
+
+	@Override
+	public boolean setPluginState(boolean state)
+	{
+		return pluginState = state;
 	}
 
 	@Method(modid = MODID)
-	public static void invoke()
+	@Override
+	public void invoke()
 	{
 		ItemStack itemstack = IC2Items.getItem("copperOre");
 		BlockEntry block;

@@ -32,6 +32,8 @@ import caveworld.core.CaveVeinManager.CaveVein;
 import caveworld.entity.EntityArcherZombie;
 import caveworld.entity.EntityCaveman;
 import caveworld.entity.EntityCavenicSkeleton;
+import caveworld.plugin.CavePlugins;
+import caveworld.plugin.ICavePlugin;
 import caveworld.util.CaveConfiguration;
 import caveworld.util.CaveLog;
 import caveworld.util.CaveUtils;
@@ -40,6 +42,7 @@ import caveworld.world.ChunkProviderCaveworld;
 import cpw.mods.fml.client.config.GuiConfigEntries.IConfigEntry;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
 import net.minecraft.block.Block;
@@ -64,6 +67,7 @@ public class Config
 	public static Configuration biomesCavernCfg;
 	public static Configuration veinsCfg;
 	public static Configuration veinsCavernCfg;
+	public static Configuration pluginsCfg;
 
 	public static boolean versionNotify;
 	public static boolean veinsAutoRegister;
@@ -1065,6 +1069,63 @@ public class Config
 		if (veinsCavernCfg.hasChanged())
 		{
 			veinsCavernCfg.save();
+		}
+	}
+
+	public static void syncPluginsCfg()
+	{
+		String category = "plugins";
+		Property prop;
+		List<String> propOrder = Lists.newArrayList();
+
+		if (pluginsCfg == null)
+		{
+			pluginsCfg = loadConfig(category);
+		}
+
+		for (ICavePlugin plugin : CavePlugins.PLUGINS)
+		{
+			if (Loader.isModLoaded(plugin.getModId()))
+			{
+				ModContainer mod = Loader.instance().getIndexedModList().get(plugin.getModId());
+				String name = mod == null ? plugin.getModId() : mod.getName();
+
+				prop = pluginsCfg.get(category, plugin.getModId(), true);
+				prop.setLanguageKey(Caveworld.CONFIG_LANG + category + ".state");
+				prop.comment = plugin.getClass().getSimpleName();
+				prop.comment += " : ";
+				prop.comment += StatCollector.translateToLocalFormatted(prop.getLanguageKey() + ".tooltip", name);
+				propOrder.add(prop.getName());
+				plugin.setPluginState(prop.getBoolean(plugin.getPluginState()));
+			}
+		}
+
+		if (side.isClient())
+		{
+			for (ICavePlugin plugin : CavePlugins.CLIENT_PLUGINS)
+			{
+				if (Loader.isModLoaded(plugin.getModId()))
+				{
+					ModContainer mod = Loader.instance().getIndexedModList().get(plugin.getModId());
+					String name = mod == null ? plugin.getModId() : mod.getName();
+
+					prop = pluginsCfg.get(category, plugin.getModId(), true);
+					prop.setLanguageKey(Caveworld.CONFIG_LANG + category + ".state");
+					prop.comment = plugin.getClass().getSimpleName();
+					prop.comment += " : ";
+					prop.comment += StatCollector.translateToLocalFormatted(prop.getLanguageKey() + ".tooltip", name);
+					propOrder.add(prop.getName());
+					plugin.setPluginState(prop.getBoolean(plugin.getPluginState()));
+				}
+			}
+		}
+
+		pluginsCfg.setCategoryPropertyOrder(category, propOrder);
+		pluginsCfg.setCategoryRequiresMcRestart(category, true);
+
+		if (pluginsCfg.hasChanged())
+		{
+			pluginsCfg.save();
 		}
 	}
 }

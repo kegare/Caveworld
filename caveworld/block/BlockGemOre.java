@@ -14,6 +14,7 @@ import java.util.Random;
 
 import caveworld.api.event.RandomiteChanceEvent;
 import caveworld.api.event.RandomiteChanceEvent.EventType;
+import caveworld.core.CaveAchievementList;
 import caveworld.core.Caveworld;
 import caveworld.core.Config;
 import caveworld.item.CaveItems;
@@ -124,6 +125,11 @@ public class BlockGemOre extends BlockOre implements IBlockOreOverlay
 
 		if (!world.isRemote)
 		{
+			if (player != null)
+			{
+				player.triggerAchievement(CaveAchievementList.randomite);
+			}
+
 			switch (random.nextInt(3))
 			{
 				case 0:

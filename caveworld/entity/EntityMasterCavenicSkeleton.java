@@ -10,14 +10,21 @@
 package caveworld.entity;
 
 import caveworld.api.CaveworldAPI;
+import caveworld.core.CaveAchievementList;
 import caveworld.item.CaveItems;
-import cpw.mods.fml.common.ObfuscationReflectionHelper;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIArrowAttack;
 import net.minecraft.entity.boss.IBossDisplayData;
-import net.minecraft.entity.monster.EntitySkeleton;
-import net.minecraft.init.Items;
+import net.minecraft.entity.effect.EntityLightningBolt;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.EnumSkyBlock;
@@ -25,15 +32,12 @@ import net.minecraft.world.World;
 
 public class EntityMasterCavenicSkeleton extends EntityCavenicSkeleton implements IBossDisplayData
 {
-	private EntityAIArrowAttack aiArrowAttack = new EntityAIArrowAttack(this, 1.0D, 1, 2, 14.0F);
-
 	public EntityMasterCavenicSkeleton(World world)
 	{
 		super(world);
 		this.experienceValue = 50;
+		this.aiArrowAttack = new EntityAIArrowAttack(this, 1.0D, 1, 2, 16.0F);
 		this.setSize(0.95F, 2.65F);
-
-		ObfuscationReflectionHelper.setPrivateValue(EntitySkeleton.class, this, aiArrowAttack, "aiArrowAttack", "field_85037_d");
 	}
 
 	@Override
@@ -41,10 +45,23 @@ public class EntityMasterCavenicSkeleton extends EntityCavenicSkeleton implement
 	{
 		super.applyEntityAttributes();
 
-		getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(rand.nextInt(100) + 1 + 500.0D);
-		getEntityAttribute(SharedMonsterAttributes.knockbackResistance).setBaseValue(3.0D);
+		getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(200.0D + 100.0D * rand.nextInt(3));
+		getEntityAttribute(SharedMonsterAttributes.knockbackResistance).setBaseValue(5.0D);
 		getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.29778D);
 	}
+
+	@Override
+	public IEntityLivingData onSpawnWithEgg(IEntityLivingData data)
+	{
+		tasks.addTask(4, aiArrowAttack);
+		addRandomArmor();
+		enchantEquipment();
+
+		return data;
+	}
+
+	@Override
+	public void onStruckByLightning(EntityLightningBolt thunder) {}
 
 	@Override
 	protected void addRandomArmor()
@@ -64,19 +81,6 @@ public class EntityMasterCavenicSkeleton extends EntityCavenicSkeleton implement
 	}
 
 	@Override
-	public void setCombatTask()
-	{
-		tasks.removeTask(aiArrowAttack);
-
-		ItemStack itemstack = getHeldItem();
-
-		if (itemstack != null && (itemstack.getItem() == Items.bow || itemstack.getItem() == CaveItems.cavenic_bow))
-		{
-			tasks.addTask(4, aiArrowAttack);
-		}
-	}
-
-	@Override
 	protected void dropFewItems(boolean par1, int looting)
 	{
 		super.dropFewItems(par1, looting);
@@ -84,6 +88,46 @@ public class EntityMasterCavenicSkeleton extends EntityCavenicSkeleton implement
 		for (int i = 0; i < rand.nextInt(10) + 15; ++i)
 		{
 			entityDropItem(new ItemStack(CaveItems.cavenium, 1, 1), rand.nextFloat() + 0.1F);
+		}
+	}
+
+	@Override
+	public void attackEntityWithRangedAttack(EntityLivingBase entity, float power)
+	{
+		EntityArrow arrow = new EntityCavenicArrow(worldObj, this, entity, 1.6F, 14 - worldObj.difficultySetting.getDifficultyId() * 4);
+		int i = EnchantmentHelper.getEnchantmentLevel(Enchantment.power.effectId, getHeldItem());
+		int j = EnchantmentHelper.getEnchantmentLevel(Enchantment.punch.effectId, getHeldItem());
+		arrow.setDamage(power * 2.0F + rand.nextGaussian() * 0.25D + worldObj.difficultySetting.getDifficultyId() * 0.11F);
+
+		if (i > 0)
+		{
+			arrow.setDamage(arrow.getDamage() + i * 0.5D + 1.0D);
+		}
+
+		if (j > 0)
+		{
+			arrow.setKnockbackStrength(j + 1);
+		}
+
+		if (EnchantmentHelper.getEnchantmentLevel(Enchantment.flame.effectId, getHeldItem()) > 0 || getSkeletonType() == 1)
+		{
+			arrow.setFire(100);
+		}
+
+		playSound("random.bow", 1.0F, 1.0F / (getRNG().nextFloat() * 0.4F + 0.8F));
+		worldObj.spawnEntityInWorld(arrow);
+	}
+
+	@Override
+	public void onDeath(DamageSource source)
+	{
+		super.onDeath(source);
+
+		Entity entity = source.getEntity();
+
+		if (entity != null && entity instanceof EntityPlayer)
+		{
+			((EntityPlayer)entity).triggerAchievement(CaveAchievementList.masterCavenicSkeletonSlayer);
 		}
 	}
 
@@ -109,7 +153,7 @@ public class EntityMasterCavenicSkeleton extends EntityCavenicSkeleton implement
 			worldObj.skylightSubtracted = prev;
 		}
 
-		return l <= this.rand.nextInt(11);
+		return l <= rand.nextInt(11);
 	}
 
 	@Override

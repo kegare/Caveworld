@@ -15,6 +15,7 @@ import java.util.List;
 import com.google.common.collect.Lists;
 
 import caveworld.api.CaveworldAPI;
+import caveworld.core.CaveAchievementList;
 import caveworld.core.Caveworld;
 import caveworld.util.breaker.BreakPos;
 import caveworld.util.breaker.BreakPos.NearestBreakPosComparator;
@@ -80,6 +81,14 @@ public class ItemOreCompass extends Item
 		this.setTextureName("caveworld:ore_compass");
 		this.setMaxStackSize(1);
 		this.setCreativeTab(Caveworld.tabCaveworld);
+	}
+
+	@Override
+	public void onCreated(ItemStack itemstack, World world, EntityPlayer player)
+	{
+		super.onCreated(itemstack, world, player);
+
+		player.triggerAchievement(CaveAchievementList.oreFinder);
 	}
 
 	@SideOnly(Side.CLIENT)

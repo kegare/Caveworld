@@ -12,12 +12,16 @@ package caveworld.entity;
 import org.apache.commons.lang3.ArrayUtils;
 
 import caveworld.api.CaveworldAPI;
+import caveworld.core.CaveAchievementList;
 import caveworld.item.CaveItems;
 import caveworld.util.CaveUtils;
 import cpw.mods.fml.common.ObfuscationReflectionHelper;
 import cpw.mods.fml.common.registry.EntityRegistry;
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.IEntityLivingData;
@@ -25,9 +29,13 @@ import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIArrowAttack;
 import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.monster.EntitySkeleton;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -72,12 +80,12 @@ public class EntityCavenicSkeleton extends EntitySkeleton
 		}
 	}
 
-	private EntityAIArrowAttack aiArrowAttack = new EntityAIArrowAttack(this, 0.975D, 1, 3, 8.0F);
+	protected EntityAIArrowAttack aiArrowAttack = new EntityAIArrowAttack(this, 0.975D, 1, 3, 8.0F);
 
 	public EntityCavenicSkeleton(World world)
 	{
 		super(world);
-		this.experienceValue = rand.nextInt(10) + 3;
+		this.experienceValue = 10;
 		this.setSize(0.68F, 2.0F);
 
 		ObfuscationReflectionHelper.setPrivateValue(EntitySkeleton.class, this, aiArrowAttack, "aiArrowAttack", "field_85037_d");
@@ -88,7 +96,7 @@ public class EntityCavenicSkeleton extends EntitySkeleton
 	{
 		super.applyEntityAttributes();
 
-		getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(50.0D + rand.nextInt(20));
+		getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(50.0D + 10.0D * rand.nextInt(3));
 		getEntityAttribute(SharedMonsterAttributes.knockbackResistance).setBaseValue(2.0D);
 		getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.2D);
 	}
@@ -103,9 +111,15 @@ public class EntityCavenicSkeleton extends EntitySkeleton
 
 			worldObj.spawnEntityInWorld(master);
 			setDead();
+
+			return data;
 		}
 
-		return super.onSpawnWithEgg(data);
+		tasks.addTask(4, aiArrowAttack);
+		addRandomArmor();
+		enchantEquipment();
+
+		return data;
 	}
 
 	@Override
@@ -153,10 +167,14 @@ public class EntityCavenicSkeleton extends EntitySkeleton
 	}
 
 	@Override
+	public int getSkeletonType()
+	{
+		return 0;
+	}
+
+	@Override
 	public void setSkeletonType(int type)
 	{
-		super.setSkeletonType(type);
-
 		setSize(0.68F, 2.0F);
 	}
 
@@ -166,6 +184,35 @@ public class EntityCavenicSkeleton extends EntitySkeleton
 		super.dropFewItems(par1, looting);
 
 		entityDropItem(new ItemStack(CaveItems.cavenium, 1, rand.nextInt(2)), 0.5F);
+	}
+
+	@Override
+	public boolean attackEntityFrom(DamageSource source, float damage)
+	{
+		return !source.isFireDamage() && super.attackEntityFrom(source, damage);
+	}
+
+	@Override
+	protected void fall(float damage)
+	{
+		PotionEffect potion = getActivePotionEffect(Potion.jump);
+		float f1 = potion != null ? (float)(potion.getAmplifier() + 1) : 0.0F;
+		int i = MathHelper.ceiling_float_int(damage - 3.0F - f1);
+
+		if (i > 0)
+		{
+			playSound(func_146067_o(i), 1.0F, 1.0F);
+
+			int x = MathHelper.floor_double(posX);
+			int y = MathHelper.floor_double(posY - 0.20000000298023224D - yOffset);
+			int z = MathHelper.floor_double(posZ);
+			Block block = worldObj.getBlock(x, y, z);
+
+			if (block.getMaterial() != Material.air)
+			{
+				playSound(block.stepSound.getStepResourcePath(), block.stepSound.getVolume() * 0.5F, block.stepSound.getPitch() * 0.75F);
+			}
+		}
 	}
 
 	@Override
@@ -193,6 +240,19 @@ public class EntityCavenicSkeleton extends EntitySkeleton
 
 		playSound("random.bow", 1.0F, 1.0F / (getRNG().nextFloat() * 0.4F + 0.8F));
 		worldObj.spawnEntityInWorld(arrow);
+	}
+
+	@Override
+	public void onDeath(DamageSource source)
+	{
+		super.onDeath(source);
+
+		Entity entity = source.getEntity();
+
+		if (entity != null && entity instanceof EntityPlayer)
+		{
+			((EntityPlayer)entity).triggerAchievement(CaveAchievementList.cavenicSkeletonSlayer);
+		}
 	}
 
 	@Override

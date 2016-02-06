@@ -34,7 +34,7 @@ public class RenderMasterCavenicSkeleton extends RenderSkeleton
 	@Override
 	public void doRender(EntityLiving entity, double posX, double posY, double posZ, float f1, float f2)
 	{
-		BossStatus.setBossStatus((IBossDisplayData)entity, true);
+		BossStatus.setBossStatus((IBossDisplayData)entity, false);
 
 		super.doRender(entity, posX, posY, posZ, f1, f2);
 	}

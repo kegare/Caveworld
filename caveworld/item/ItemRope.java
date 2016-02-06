@@ -10,10 +10,12 @@
 package caveworld.item;
 
 import caveworld.block.IRope;
+import caveworld.core.CaveAchievementList;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
@@ -89,6 +91,14 @@ public class ItemRope extends ItemBlock
 						}
 						else break;
 					}
+				}
+			}
+
+			if (player instanceof EntityPlayerMP)
+			{
+				if (!((EntityPlayerMP)player).func_147099_x().hasAchievementUnlocked(CaveAchievementList.theRoper) && ((IRope)field_150939_a).getRopesLength(world, x, y, z) >= 100)
+				{
+					player.triggerAchievement(CaveAchievementList.theRoper);
 				}
 			}
 

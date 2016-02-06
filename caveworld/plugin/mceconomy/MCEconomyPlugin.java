@@ -22,6 +22,7 @@ import caveworld.entity.EntityCaveman;
 import caveworld.entity.EntityCavenicSkeleton;
 import caveworld.entity.EntityMasterCavenicSkeleton;
 import caveworld.item.CaveItems;
+import caveworld.plugin.ICavePlugin;
 import caveworld.plugin.mceconomy.ShopProductManager.ShopProduct;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Optional.Method;
@@ -34,7 +35,7 @@ import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 import shift.mceconomy2.api.MCEconomyAPI;
 
-public final class MCEconomyPlugin
+public final class MCEconomyPlugin implements ICavePlugin
 {
 	public static final String MODID = "mceconomy2";
 
@@ -43,17 +44,37 @@ public final class MCEconomyPlugin
 	public static int Player_MP_MAX = 1000000;
 
 	public static ShopProductManager productManager;
-
 	@SideOnly(Side.CLIENT)
 	public static ShopProductManager prevProductManager;
 
+	public static boolean pluginState = true;
+
 	public static boolean enabled()
 	{
-		return Loader.isModLoaded(MODID);
+		return pluginState && Loader.isModLoaded(MODID);
+	}
+
+	@Override
+	public String getModId()
+	{
+		return MODID;
+	}
+
+	@Override
+	public boolean getPluginState()
+	{
+		return pluginState;
+	}
+
+	@Override
+	public boolean setPluginState(boolean state)
+	{
+		return pluginState = state;
 	}
 
 	@Method(modid = MODID)
-	public static void invoke()
+	@Override
+	public void invoke()
 	{
 		productManager = new ShopProductManager();
 

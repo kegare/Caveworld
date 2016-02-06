@@ -34,8 +34,6 @@ import caveworld.core.CavernVeinManager;
 import caveworld.core.Caveworld;
 import caveworld.core.Config;
 import caveworld.entity.EntityCaveman;
-import caveworld.entity.EntityCavenicSkeleton;
-import caveworld.entity.EntityMasterCavenicSkeleton;
 import caveworld.inventory.InventoryCaverBackpack;
 import caveworld.item.CaveItems;
 import caveworld.item.IAquamarineTool;
@@ -69,7 +67,6 @@ import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
 import cpw.mods.fml.common.ObfuscationReflectionHelper;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.PlayerEvent.ItemCraftedEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
@@ -136,7 +133,6 @@ import net.minecraftforge.event.entity.player.PlayerDestroyItemEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -164,7 +160,7 @@ public class CaveEventHooks
 	@SubscribeEvent
 	public void onConfigChanged(OnConfigChangedEvent event)
 	{
-		if (Caveworld.MODID.equals(event.modID) && !event.isWorldRunning)
+		if (Caveworld.MODID.equals(event.modID))
 		{
 			if (event.configID == null)
 			{
@@ -753,15 +749,6 @@ public class CaveEventHooks
 	}
 
 	@SubscribeEvent
-	public void onCrafted(ItemCraftedEvent event)
-	{
-		if (event.crafting.getItem() == CaveItems.ore_compass)
-		{
-			event.player.triggerAchievement(CaveAchievementList.oreFinder);
-		}
-	}
-
-	@SubscribeEvent
 	public void onItemPickup(ItemPickupEvent event)
 	{
 		EntityPlayer player = event.player;
@@ -821,7 +808,8 @@ public class CaveEventHooks
 				if (CaveUtils.isMiningPointValidItem(current))
 				{
 					Block block = event.block;
-					int amount = CaveworldAPI.getMiningPointAmount(block, event.blockMetadata);
+					int meta = event.blockMetadata;
+					int amount = CaveworldAPI.getMiningPointAmount(block, meta);
 
 					MiningPointEvent.OnBlockBreak pointEvent = new MiningPointEvent.OnBlockBreak(player, amount);
 					MinecraftForge.EVENT_BUS.post(pointEvent);
@@ -840,125 +828,129 @@ public class CaveEventHooks
 	@SubscribeEvent
 	public void onPlayerInteract(PlayerInteractEvent event)
 	{
-		if (event.entityPlayer instanceof EntityPlayerMP)
+		EntityPlayer player = event.entityPlayer;
+		World world = event.world;
+		int x = event.x;
+		int y = event.y;
+		int z = event.z;
+		int face = event.face;
+		ItemStack current = player.getCurrentEquippedItem();
+
+		if (!world.isRemote)
 		{
-			EntityPlayerMP player = (EntityPlayerMP)event.entityPlayer;
-			ItemStack current = player.getCurrentEquippedItem();
-			WorldServer world = player.getServerForPlayer();
-			int x = event.x;
-			int y = event.y;
-			int z = event.z;
-			int face = event.face;
-
-			if (event.action == Action.LEFT_CLICK_BLOCK)
+			switch (event.action)
 			{
-				if (current != null && current.getItem() != null && current.getItem() instanceof ICaveniumTool && current.getItemDamage() < current.getMaxDamage())
-				{
-					ICaveniumTool tool = (ICaveniumTool)current.getItem();
-
-					if (tool.canBreak(current, world.getBlock(x, y, z), world.getBlockMetadata(x, y, z)))
+				case LEFT_CLICK_BLOCK:
+					if (current != null && current.getItem() != null && current.getItem() instanceof ICaveniumTool && current.getItemDamage() < current.getMaxDamage())
 					{
-						MultiBreakExecutor executor = tool.getMode(current).getExecutor(player);
+						ICaveniumTool tool = (ICaveniumTool)current.getItem();
 
-						if (executor != null)
+						if (tool.canBreak(current, world.getBlock(x, y, z), world.getBlockMetadata(x, y, z)))
 						{
-							executor.setOriginPos(x, y, z).setBreakPositions();
+							MultiBreakExecutor executor = tool.getMode(current).getExecutor(player);
 
-							if (player.capabilities.isCreativeMode)
+							if (executor != null)
 							{
-								executor.breakAll();
-							}
-							else
-							{
-								Caveworld.network.sendTo(new MultiBreakCountMessage(executor.getBreakPositions().size()), player);
+								executor.setOriginPos(x, y, z).setBreakPositions();
+
+								if (player.capabilities.isCreativeMode)
+								{
+									executor.breakAll();
+								}
+								else
+								{
+									Caveworld.network.sendTo(new MultiBreakCountMessage(executor.getBreakPositions().size()), (EntityPlayerMP)player);
+								}
 							}
 						}
-					}
-					else
-					{
-						tool.getMode(current).clear(player);
-
-						Caveworld.network.sendTo(new MultiBreakCountMessage(0), player);
-					}
-				}
-			}
-			else if (event.action == Action.RIGHT_CLICK_BLOCK)
-			{
-				if (!player.isSneaking() && current != null && (current.getItem() == Item.getItemFromBlock(Blocks.ender_chest) ||
-					EnderStoragePlugin.enderChest != null && current.getItem() == Item.getItemFromBlock(EnderStoragePlugin.enderChest)))
-				{
-					switch (face)
-					{
-						case 0:
-							--y;
-							break;
-						case 1:
-							++y;
-							break;
-						case 2:
-							--z;
-							break;
-						case 3:
-							++z;
-							break;
-						case 4:
-							--x;
-							break;
-						case 5:
-							++x;
-							break;
-					}
-
-					if (CaveBlocks.caveworld_portal.func_150000_e(world, x, y, z))
-					{
-						world.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, CaveBlocks.caveworld_portal.stepSound.func_150496_b(), 1.0F, 2.0F);
-
-						if (!player.capabilities.isCreativeMode && --current.stackSize <= 0)
+						else
 						{
-							player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
+							tool.getMode(current).clear(player);
+
+							Caveworld.network.sendTo(new MultiBreakCountMessage(0), (EntityPlayerMP)player);
+						}
+					}
+
+					break;
+				case RIGHT_CLICK_BLOCK:
+					if (!player.isSneaking() && current != null && (current.getItem() == Item.getItemFromBlock(Blocks.ender_chest) ||
+						EnderStoragePlugin.enderChest != null && current.getItem() == Item.getItemFromBlock(EnderStoragePlugin.enderChest)))
+					{
+						switch (face)
+						{
+							case 0:
+								--y;
+								break;
+							case 1:
+								++y;
+								break;
+							case 2:
+								--z;
+								break;
+							case 3:
+								++z;
+								break;
+							case 4:
+								--x;
+								break;
+							case 5:
+								++x;
+								break;
 						}
 
-						player.triggerAchievement(CaveAchievementList.portal);
-
-						event.setCanceled(true);
-					}
-				}
-				else if (current != null && current.getItem() == Items.emerald)
-				{
-					switch (face)
-					{
-					case 0:
-						--y;
-						break;
-					case 1:
-						++y;
-						break;
-					case 2:
-						--z;
-						break;
-					case 3:
-						++z;
-						break;
-					case 4:
-						--x;
-						break;
-					case 5:
-						++x;
-						break;
-					}
-
-					if (CaveBlocks.cavern_portal.func_150000_e(world, x, y, z))
-					{
-						world.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, CaveBlocks.cavern_portal.stepSound.func_150496_b(), 1.0F, 2.0F);
-
-						if (!player.capabilities.isCreativeMode && --current.stackSize <= 0)
+						if (CaveBlocks.caveworld_portal.func_150000_e(world, x, y, z))
 						{
-							player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
+							world.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, CaveBlocks.caveworld_portal.stepSound.func_150496_b(), 1.0F, 2.0F);
+
+							if (!player.capabilities.isCreativeMode && --current.stackSize <= 0)
+							{
+								player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
+							}
+
+							player.triggerAchievement(CaveAchievementList.portal);
+
+							event.setCanceled(true);
+						}
+					}
+					else if (current != null && current.getItem() == Items.emerald)
+					{
+						switch (face)
+						{
+							case 0:
+								--y;
+								break;
+							case 1:
+								++y;
+								break;
+							case 2:
+								--z;
+								break;
+							case 3:
+								++z;
+								break;
+							case 4:
+								--x;
+								break;
+							case 5:
+								++x;
+								break;
 						}
 
-						event.setCanceled(true);
+						if (CaveBlocks.cavern_portal.func_150000_e(world, x, y, z))
+						{
+							world.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, CaveBlocks.cavern_portal.stepSound.func_150496_b(), 1.0F, 2.0F);
+
+							if (!player.capabilities.isCreativeMode && --current.stackSize <= 0)
+							{
+								player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
+							}
+
+							event.setCanceled(true);
+						}
 					}
-				}
+
+					break;
+				default:
 			}
 		}
 	}
@@ -1152,25 +1144,6 @@ public class CaveEventHooks
 		}
 
 		CaveworldAPI.saveData(entity, null);
-
-		if (entity instanceof EntityMasterCavenicSkeleton)
-		{
-			Entity source = event.source.getEntity();
-
-			if (source != null && source instanceof EntityPlayerMP)
-			{
-				((EntityPlayerMP)source).triggerAchievement(CaveAchievementList.masterCavenicSkeletonSlayer);
-			}
-		}
-		else if (entity instanceof EntityCavenicSkeleton)
-		{
-			Entity source = event.source.getEntity();
-
-			if (source != null && source instanceof EntityPlayerMP)
-			{
-				((EntityPlayerMP)source).triggerAchievement(CaveAchievementList.cavenicSkeletonSlayer);
-			}
-		}
 	}
 
 	@SubscribeEvent

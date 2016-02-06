@@ -9,21 +9,43 @@
 
 package caveworld.plugin.nei;
 
+import caveworld.plugin.ICavePlugin;
 import codechicken.nei.api.API;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Optional.Method;
 
-public class NEIPlugin
+public class NEIPlugin implements ICavePlugin
 {
 	public static final String MODID = "NotEnoughItems";
 
+	public static boolean pluginState = true;
+
 	public static boolean enabled()
 	{
-		return Loader.isModLoaded(MODID);
+		return pluginState && Loader.isModLoaded(MODID);
+	}
+
+	@Override
+	public String getModId()
+	{
+		return MODID;
+	}
+
+	@Override
+	public boolean getPluginState()
+	{
+		return pluginState;
+	}
+
+	@Override
+	public boolean setPluginState(boolean state)
+	{
+		return pluginState = state;
 	}
 
 	@Method(modid = MODID)
-	public static void invoke()
+	@Override
+	public void invoke()
 	{
 		CaveniumToolRecipeHandler handler = new MiningPickaxeRecipeHandler();
 

@@ -183,6 +183,35 @@ public class BlockRope extends Block implements IRope
 	}
 
 	@Override
+	public int getRopesLength(World world, int x, int y, int z)
+	{
+		if (world.getBlock(x, y, z) == this)
+		{
+			int ry = y;
+
+			do
+			{
+				++ry;
+			}
+			while (world.getBlock(x, ry, z) == this);
+
+			int max = ry - 1;
+
+			ry = y;
+
+			do
+			{
+				--ry;
+			}
+			while (world.getBlock(x, ry, z) == this);
+
+			return max - ry + 1;
+		}
+
+		return 0;
+	}
+
+	@Override
 	public boolean canBlockStay(World world, int x, int y, int z)
 	{
 		return !world.isAirBlock(x, y + 1, z);
