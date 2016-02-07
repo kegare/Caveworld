@@ -4,7 +4,7 @@
     "modid": "caveworld",
     "name": "Caveworld 2",
     "description": "Adds the Caveworld dimension. Caveworld is world for the subsurface, There's no surface there.",
-    "version": "2.0.7",
+    "version": "2.0.8",
     "url": "http://kegare.github.io/caveworld/",
     "updateUrl": "https://dl.dropboxusercontent.com/u/51943112/kegare/caveworld.json",
     "authorList": ["kegare"],

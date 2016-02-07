@@ -107,6 +107,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.stats.AchievementList;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.EnumChatFormatting;
@@ -599,9 +600,9 @@ public class CaveEventHooks
 						bonus.add(new ItemStack(Items.apple, MathHelper.getRandomIntegerInRange(world.rand, 5, 10)));
 					}
 
-					for (int i = 0; i < 5; ++i)
+					for (int i = 0; i < 3; ++i)
 					{
-						bonus.add(new ItemStack(Blocks.sapling, MathHelper.getRandomIntegerInRange(world.rand, 2, 5), i));
+						bonus.add(new ItemStack(CaveBlocks.perverted_sapling, MathHelper.getRandomIntegerInRange(world.rand, 2, 5), i));
 					}
 
 					bonus.add(new ItemStack(Blocks.crafting_table));
@@ -775,6 +776,10 @@ public class CaveEventHooks
 			{
 				player.triggerAchievement(CaveAchievementList.aquamarine);
 			}
+		}
+		else if (itemstack.getItem() == Item.getItemFromBlock(CaveBlocks.perverted_log))
+		{
+			player.triggerAchievement(AchievementList.mineWood);
 		}
 	}
 

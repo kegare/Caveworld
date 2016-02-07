@@ -14,6 +14,7 @@ import static net.minecraftforge.common.ChestGenHooks.DUNGEON_CHEST;
 import java.util.Random;
 
 import caveworld.entity.EntityArcherZombie;
+import caveworld.entity.EntityCavenicSkeleton;
 import caveworld.util.ArrayListExtended;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.EntityList;
@@ -43,7 +44,7 @@ public class WorldGenDungeonsCaveworld extends WorldGenDungeons
 		{
 			EntityZombie.class, EntitySkeleton.class, EntitySpider.class, EntityCaveSpider.class,
 			EntityCreeper.class, EntityEnderman.class, EntitySilverfish.class, EntityBat.class, EntitySnowman.class,
-			EntityArcherZombie.class
+			EntityArcherZombie.class, EntityCavenicSkeleton.class
 		};
 
 		for (Class clazz : classes)

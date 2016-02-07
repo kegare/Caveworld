@@ -1,4 +1,4 @@
-# Caveworld
+# Caveworld 2
 Minecraft mod. Adds the Caveworld dimension.
 
 ----

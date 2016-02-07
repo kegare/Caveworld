@@ -212,6 +212,12 @@ tile.oreGem.aquamarine.name=アクアマリン鉱石
 tile.oreGem.aquamarine.block.name=アクアマリンブロック
 tile.oreGem.randomite.name=ランダマイト鉱石
 tile.portalCavern.name=Cavern ポータルブロック
+tile.pervertedLog.name=変質した原木
+tile.pervertedLog.type.name=変質した
+tile.pervertedLeaves.name=変質した葉
+tile.pervertedLeaves.type.name=変質した
+tile.pervertedSapling.name=変質した苗木
+tile.pervertedSapling.type.name=変質した
 
 item.cavenium.name=ケイブニウム
 item.cavenium.refined.name=上質なケイブニウム

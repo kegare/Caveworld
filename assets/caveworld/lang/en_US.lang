@@ -213,6 +213,12 @@ tile.oreGem.aquamarine.name=Aquamarine Ore
 tile.oreGem.aquamarine.block.name=Block of Aquamarine
 tile.oreGem.randomite.name=Randomite Ore
 tile.portalCavern.name=Cavern Portal Block
+tile.pervertedLog.name=Perverted Wood
+tile.pervertedLog.type.name=Perverted
+tile.pervertedLeaves.name=Perverted Leaves
+tile.pervertedLeaves.type.name=Perverted
+tile.pervertedSapling.name=Perverted Sapling
+tile.pervertedSapling.type.name=Perverted
 
 item.cavenium.name=Cavenium
 item.cavenium.refined.name=Refined Cavenium

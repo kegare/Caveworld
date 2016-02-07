@@ -14,6 +14,7 @@ import java.io.File;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
+import caveworld.block.BlockPervertedLog;
 import caveworld.block.CaveBlocks;
 import caveworld.core.Caveworld;
 import caveworld.core.Config;
@@ -164,6 +165,11 @@ public final class MCEconomyPlugin implements ICavePlugin
 			productManager.addShopProduct(new ShopProduct(new ItemStack(Items.iron_shovel), 50));
 			productManager.addShopProduct(new ShopProduct(new ItemStack(Items.iron_hoe), 100));
 			productManager.addShopProduct(new ShopProduct(new ItemStack(CaveBlocks.rope, 5), 10));
+
+			for (int i = 0; i < BlockPervertedLog.types.length; ++i)
+			{
+				productManager.addShopProduct(new ShopProduct(new ItemStack(CaveBlocks.perverted_sapling, 1, i), 10));
+			}
 		}
 		else
 		{

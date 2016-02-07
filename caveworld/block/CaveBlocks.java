@@ -19,6 +19,9 @@ import caveworld.core.Config;
 import caveworld.entity.TileEntityUniversalChest;
 import caveworld.item.ItemCaveniumOre;
 import caveworld.item.ItemGemOre;
+import caveworld.item.ItemPervertedLeaves;
+import caveworld.item.ItemPervertedLog;
+import caveworld.item.ItemPervertedSapling;
 import caveworld.item.ItemPortalCavern;
 import caveworld.item.ItemPortalCaveworld;
 import caveworld.item.ItemRope;
@@ -48,6 +51,9 @@ public class CaveBlocks
 	public static final BlockUniversalChest universal_chest = new BlockUniversalChest("universalChest");
 	public static final BlockGemOre gem_ore = new BlockGemOre("oreGem");
 	public static final BlockPortalCavern cavern_portal = new BlockPortalCavern("portalCavern");
+	public static final BlockPervertedLog perverted_log = new BlockPervertedLog("pervertedLog");
+	public static final BlockPervertedLeaves perverted_leaves = new BlockPervertedLeaves("pervertedLeaves");
+	public static final BlockPervertedSapling perverted_sapling = new BlockPervertedSapling("pervertedSapling");
 
 	public static void registerBlocks()
 	{
@@ -200,6 +206,45 @@ public class CaveBlocks
 			OreDictionary.registerOre("portalCavern", cavern_portal);
 
 			BlockDispenser.dispenseBehaviorRegistry.putObject(Item.getItemFromBlock(cavern_portal), cavern_portal.new DispencePortal());
+		}
+
+		{
+			GameRegistry.registerBlock(perverted_log, ItemPervertedLog.class, "perverted_log");
+
+			GameRegistry.addShapelessRecipe(new ItemStack(Items.stick, 8), new ItemStack(perverted_log, 1, OreDictionary.WILDCARD_VALUE));
+
+			for (int i = 0; i < BlockPervertedLog.types.length; ++i)
+			{
+				GameRegistry.addRecipe(new ItemStack(Blocks.planks, 4, i),
+					"LL", "LL",
+					'L', new ItemStack(perverted_log, 1, i)
+				);
+			}
+
+			OreDictionary.registerOre("logWoodPerverted", new ItemStack(perverted_log, 1, OreDictionary.WILDCARD_VALUE));
+
+			Blocks.fire.setFireInfo(perverted_log, 15, 15);
+		}
+
+		{
+			GameRegistry.registerBlock(perverted_leaves, ItemPervertedLeaves.class, "perverted_leaves");
+
+			OreDictionary.registerOre("treeLeavesPerverted", new ItemStack(perverted_leaves, 1, OreDictionary.WILDCARD_VALUE));
+
+			Blocks.fire.setFireInfo(perverted_leaves, 90, 180);
+		}
+
+		{
+			GameRegistry.registerBlock(perverted_sapling, ItemPervertedSapling.class, "perverted_sapling");
+
+			for (int i = 0; i < BlockPervertedLog.types.length; ++i)
+			{
+				GameRegistry.addShapelessRecipe(new ItemStack(perverted_sapling, 1, i), new ItemStack(Blocks.sapling, 1, i), Items.fermented_spider_eye);
+			}
+
+			OreDictionary.registerOre("treeSaplingPerverted", new ItemStack(perverted_sapling, 1, OreDictionary.WILDCARD_VALUE));
+
+			Blocks.fire.setFireInfo(perverted_sapling, 60, 180);
 		}
 
 		if (Config.mossStoneCraftRecipe)
