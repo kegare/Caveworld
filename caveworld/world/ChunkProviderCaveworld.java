@@ -71,6 +71,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	public static boolean generateDungeons;
 	public static boolean generateAnimalDungeons;
 	public static boolean decorateVines;
+	public static String[] spawnerMobs;
 
 	private final World worldObj;
 	private final Random random;
@@ -87,7 +88,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 	private final WorldGenerator lakeWaterGen = new WorldGenLakes(Blocks.water);
 	private final WorldGenerator lakeLavaGen = new WorldGenLakes(Blocks.lava);
-	private final WorldGenerator dungeonGen = new WorldGenDungeonsCaveworld();
+	private final WorldGenerator dungeonGen = new WorldGenDungeonsCaveworld(spawnerMobs);
 	private final WorldGenerator animalDungeonGen = new WorldGenAnimalDungeons();
 	private final WorldGenerator glowStoneGen = new WorldGenGlowStone1();
 	private final WorldGenerator liquidWaterGen = new WorldGenLiquids(Blocks.flowing_water);

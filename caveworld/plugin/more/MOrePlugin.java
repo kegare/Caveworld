@@ -57,7 +57,7 @@ public class MOrePlugin implements ICavePlugin
 		{
 			if (Config.veinsAutoRegister)
 			{
-				CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(block, 0), 16, 20, 100, 0, 255));
+				CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 16, 20, 100, 0, 255));
 			}
 
 			CaveworldAPI.setMiningPointAmount(block, 0, 1);
@@ -69,7 +69,7 @@ public class MOrePlugin implements ICavePlugin
 		{
 			if (Config.veinsAutoRegister)
 			{
-				CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(block, 0), 14, 24, 100, 0, 255));
+				CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 14, 24, 100, 0, 255));
 			}
 
 			CaveworldAPI.setMiningPointAmount(block, 0, 1);
@@ -81,7 +81,7 @@ public class MOrePlugin implements ICavePlugin
 		{
 			if (Config.veinsAutoRegister)
 			{
-				CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(block, 0), 10, 7, 100, 0, 50));
+				CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 10, 7, 100, 0, 50));
 			}
 
 			CaveworldAPI.setMiningPointAmount(block, 0, 1);
@@ -93,7 +93,7 @@ public class MOrePlugin implements ICavePlugin
 		{
 			if (Config.veinsAutoRegister)
 			{
-				CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(block, 0), 6, 4, 100, 0, 50));
+				CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 6, 4, 100, 0, 50));
 			}
 
 			CaveworldAPI.setMiningPointAmount(block, 0, 1);
@@ -105,7 +105,7 @@ public class MOrePlugin implements ICavePlugin
 		{
 			if (Config.veinsAutoRegister)
 			{
-				CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(block, 0), 6, 4, 100, 0, 64));
+				CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 6, 4, 100, 0, 64));
 			}
 
 			CaveworldAPI.setMiningPointAmount(block, 0, 1);
@@ -117,7 +117,7 @@ public class MOrePlugin implements ICavePlugin
 		{
 			if (Config.veinsAutoRegister)
 			{
-				CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(block, 0), 6, 15, 100, 0, 255));
+				CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 6, 15, 100, 0, 255));
 			}
 
 			CaveworldAPI.setMiningPointAmount(block, 0, 1);
@@ -129,7 +129,7 @@ public class MOrePlugin implements ICavePlugin
 		{
 			if (Config.veinsAutoRegister)
 			{
-				CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(block, 0), 5, 5, 100, 0, 30));
+				CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 5, 5, 100, 0, 30));
 			}
 
 			CaveworldAPI.setMiningPointAmount(block, 0, 1);
@@ -141,7 +141,7 @@ public class MOrePlugin implements ICavePlugin
 		{
 			if (Config.veinsAutoRegister)
 			{
-				 CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(block, 0), 6, 3, 100, 0, 24));
+				 CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 6, 3, 100, 0, 24));
 			}
 
 			CaveworldAPI.setMiningPointAmount(block, 0, 1);
@@ -153,7 +153,7 @@ public class MOrePlugin implements ICavePlugin
 		{
 			if (Config.veinsAutoRegister)
 			{
-				CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(block, 0), 6, 20, 100, 0, 255, null, Type.HILLS));
+				CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 6, 20, 100, 0, 255, null, Type.HILLS));
 			}
 		}
 

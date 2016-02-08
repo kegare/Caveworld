@@ -28,6 +28,7 @@ import caveworld.plugin.miningmod.MiningmodPlugin;
 import caveworld.plugin.more.MOrePlugin;
 import caveworld.plugin.moreinventory.MIMPlugin;
 import caveworld.plugin.nei.NEIPlugin;
+import caveworld.plugin.sextiarysector.SextiarySectorPlugin;
 import caveworld.plugin.tconstruct.TinkersConstructPlugin;
 import caveworld.util.CaveLog;
 import cpw.mods.fml.common.Loader;
@@ -50,6 +51,7 @@ public class CavePlugins
 		PLUGINS.add(new MiningmodPlugin());
 		PLUGINS.add(new MOrePlugin());
 		PLUGINS.add(new MIMPlugin());
+		PLUGINS.add(new SextiarySectorPlugin());
 		PLUGINS.add(new TinkersConstructPlugin());
 		CLIENT_PLUGINS.add(new CraftGuidePlugin());
 		CLIENT_PLUGINS.add(new NEIPlugin());

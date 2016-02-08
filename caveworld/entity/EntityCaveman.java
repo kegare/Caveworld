@@ -451,7 +451,7 @@ public class EntityCaveman extends EntityMob implements IInventory
 	{
 		int y = MathHelper.floor_double(boundingBox.minY);
 
-		return (CaveworldAPI.isEntityInCaveworld(this) || CaveworldAPI.isEntityInCavern(this)) && y >= spawnMinHeight && y <= spawnMaxHeight &&
+		return CaveworldAPI.isEntityInCaves(this) && y >= spawnMinHeight && y <= spawnMaxHeight &&
 			worldObj.getEntitiesWithinAABB(getClass(), boundingBox.expand(64.0D, 64.0D, 64.0D)).isEmpty() &&
 			worldObj.checkNoEntityCollision(boundingBox) && worldObj.getCollidingBoundingBoxes(this, boundingBox).isEmpty() && !worldObj.isAnyLiquid(boundingBox);
 	}

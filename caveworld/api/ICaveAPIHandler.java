@@ -32,4 +32,10 @@ public interface ICaveAPIHandler
 	 * @return <tt>true</tt> if the entity is in the Cavern dimension.
 	 */
 	public boolean isEntityInCavern(Entity entity);
+
+	/**
+	 * Checks if entity is in dimensions for Caveworld mod.
+	 * @param entity The entity
+	 */
+	public boolean isEntityInCaves(Entity entity);
 }

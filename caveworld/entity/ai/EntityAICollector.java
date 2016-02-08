@@ -125,7 +125,7 @@ public class EntityAICollector extends EntityAIBase implements IEntitySelector
 			return false;
 		}
 
-		if (!theWorld.isDaytime() || CaveworldAPI.isEntityInCaveworld(entity) || CaveworldAPI.isEntityInCavern(entity))
+		if (!theWorld.isDaytime() || CaveworldAPI.isEntityInCaves(entity))
 		{
 			return true;
 		}

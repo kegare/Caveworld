@@ -159,7 +159,7 @@ public class EntityMasterCavenicSkeleton extends EntityCavenicSkeleton implement
 	@Override
 	public boolean getCanSpawnHere()
 	{
-		if ((CaveworldAPI.isEntityInCaveworld(this) || CaveworldAPI.isEntityInCavern(this)) && worldObj.difficultySetting != EnumDifficulty.PEACEFUL && isValidLightLevel())
+		if (CaveworldAPI.isEntityInCaves(this) && worldObj.difficultySetting != EnumDifficulty.PEACEFUL && isValidLightLevel())
 		{
 			if (worldObj.checkNoEntityCollision(boundingBox) && worldObj.getCollidingBoundingBoxes(this, boundingBox).isEmpty() && !worldObj.isAnyLiquid(boundingBox))
 			{

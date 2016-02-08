@@ -20,7 +20,7 @@ public final class CaveworldAPI
 {
 	public static final String
 	MODID = "caveworld",
-	API_VERSION = "2.0.6";
+	API_VERSION = "2.0.9";
 
 	public static ICaveAPIHandler apiHandler;
 	public static ICaveBiomeManager biomeManager;
@@ -69,6 +69,14 @@ public final class CaveworldAPI
 	public static boolean isEntityInCavern(Entity entity)
 	{
 		return apiHandler != null && apiHandler.isEntityInCavern(entity);
+	}
+
+	/**
+	 * @see ICaveAPIHandler#isEntityInCaves(Entity)
+	 */
+	public static boolean isEntityInCaves(Entity entity)
+	{
+		return apiHandler != null && apiHandler.isEntityInCaves(entity);
 	}
 
 	/**
@@ -301,6 +309,12 @@ public final class CaveworldAPI
 		}
 	}
 
+	public static void addCavesVein(ICaveVein vein)
+	{
+		addCaveVein(vein);
+		addCavernVein(vein);
+	}
+
 	/**
 	 * @see ICaverManager#getMiningPoint(Entity)
 	 */
@@ -358,6 +372,25 @@ public final class CaveworldAPI
 		if (caverManager != null)
 		{
 			caverManager.setMiningPointAmount(oredict, amount);
+		}
+	}
+
+	/**
+	 * @see ICaverManager#getRank(Entity)
+	 */
+	public static int getMinerRank(Entity entity)
+	{
+		return caverManager == null ? 0 : caverManager.getRank(entity);
+	}
+
+	/**
+	 * @see ICaverManager#setRank(Entity, int)
+	 */
+	public static void setMinerRank(Entity entity, int rank)
+	{
+		if (caverManager != null)
+		{
+			caverManager.setRank(entity, rank);
 		}
 	}
 

@@ -29,6 +29,8 @@ import caveworld.client.gui.GuiSelectBreakable;
 import caveworld.core.CaveAchievementList;
 import caveworld.core.CaveBiomeManager;
 import caveworld.core.CaveVeinManager;
+import caveworld.core.CaverManager;
+import caveworld.core.CaverManager.MinerRank;
 import caveworld.core.CavernBiomeManager;
 import caveworld.core.CavernVeinManager;
 import caveworld.core.Caveworld;
@@ -56,6 +58,7 @@ import caveworld.plugin.enderstorage.EnderStoragePlugin;
 import caveworld.plugin.mceconomy.MCEconomyPlugin;
 import caveworld.plugin.mceconomy.ProductAdjustMessage;
 import caveworld.plugin.mceconomy.ShopProductManager;
+import caveworld.plugin.sextiarysector.SextiarySectorPlugin;
 import caveworld.util.CaveUtils;
 import caveworld.util.Version;
 import caveworld.util.Version.Status;
@@ -87,6 +90,7 @@ import net.minecraft.client.audio.SoundCategory;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
@@ -114,6 +118,7 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.StatCollector;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -130,6 +135,7 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
+import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.event.entity.player.PlayerDestroyItemEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed;
@@ -138,6 +144,7 @@ import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import shift.mceconomy2.api.MCEconomyAPI;
+import shift.sextiarysector.api.SextiarySectorAPI;
 
 public class CaveEventHooks
 {
@@ -297,19 +304,23 @@ public class CaveEventHooks
 				}
 			}
 
-			if ((CaveworldAPI.isEntityInCaveworld(player) || CaveworldAPI.isEntityInCavern(player)) && (mc.currentScreen == null || GuiChat.class.isInstance(mc.currentScreen)) &&
+			if (CaveworldAPI.isEntityInCaves(player) && (mc.currentScreen == null || GuiChat.class.isInstance(mc.currentScreen)) &&
 				(player.capabilities.isCreativeMode || mc.gameSettings.advancedItemTooltips || CaveUtils.isItemPickaxe(current) || CaveUtils.isMiningPointValidItem(current)))
 			{
-				String str = Integer.toString(CaveworldAPI.getMiningPoint(mc.thePlayer));
-				int x = event.resolution.getScaledWidth() - 20;
-				int y;
-				boolean left = false;
 				int type = Config.miningPointRenderType;
 
 				if (type > 3)
 				{
 					return;
 				}
+
+				MinerRank minerRank = CaverManager.getRank(CaveworldAPI.getMinerRank(mc.thePlayer));
+				String point = Integer.toString(CaveworldAPI.getMiningPoint(mc.thePlayer));
+				String rank = I18n.format(minerRank.getUnlocalizedName());
+				int x = event.resolution.getScaledWidth() - 20;
+				int y;
+				boolean left = false;
+				boolean top = type == 0 || type == 2;
 
 				if (type == 2 || type == 3)
 				{
@@ -326,23 +337,7 @@ public class CaveEventHooks
 					y = 5;
 				}
 
-				ItemStack icon;
-
-				if (CaveUtils.isItemPickaxe(current))
-				{
-					icon = current;
-				}
-				else
-				{
-					if (miningPointItemDefault == null)
-					{
-						miningPointItemDefault = new ItemStack(Items.stone_pickaxe);
-					}
-
-					icon = miningPointItemDefault;
-				}
-
-				CaveUtils.renderItemStack(mc, icon, x, y, true, false, null);
+				CaveUtils.renderItemStack(mc, minerRank.getRenderItemStack(), x, y, true, false, null);
 
 				GL11.glPushMatrix();
 				GL11.glDisable(GL11.GL_LIGHTING);
@@ -352,11 +347,35 @@ public class CaveEventHooks
 
 				if (left)
 				{
-					mc.fontRenderer.drawStringWithShadow(str, x + 5, y + 9, 0xCECECE);
+					mc.fontRenderer.drawStringWithShadow(point, x + 5, y + 9, 0xCECECE);
+
+					if (Config.showMinerRank)
+					{
+						if (top)
+						{
+							mc.fontRenderer.drawStringWithShadow(rank, x + 5, y + 19, 0xCECECE);
+						}
+						else
+						{
+							mc.fontRenderer.drawStringWithShadow(rank, x + 5, y - 12, 0xCECECE);
+						}
+					}
 				}
 				else
 				{
-					mc.fontRenderer.drawStringWithShadow(str, x + 17 - mc.fontRenderer.getStringWidth(str), y + 9, 0xCECECE);
+					mc.fontRenderer.drawStringWithShadow(point, x + 17 - mc.fontRenderer.getStringWidth(point), y + 9, 0xCECECE);
+
+					if (Config.showMinerRank)
+					{
+						if (top)
+						{
+							mc.fontRenderer.drawStringWithShadow(rank, x + 17 - mc.fontRenderer.getStringWidth(rank), y + 19, 0xCECECE);
+						}
+						else
+						{
+							mc.fontRenderer.drawStringWithShadow(rank, x + 17 - mc.fontRenderer.getStringWidth(rank), y - 12, 0xCECECE);
+						}
+					}
 				}
 
 				GL11.glEnable(GL11.GL_LIGHTING);
@@ -448,7 +467,7 @@ public class CaveEventHooks
 	{
 		Minecraft mc = FMLClientHandler.instance().getClient();
 
-		if (event.category == SoundCategory.MUSIC && (CaveworldAPI.isEntityInCaveworld(mc.thePlayer) || CaveworldAPI.isEntityInCavern(mc.thePlayer)))
+		if (event.category == SoundCategory.MUSIC && CaveworldAPI.isEntityInCaves(mc.thePlayer))
 		{
 			event.result = null;
 		}
@@ -578,7 +597,7 @@ public class CaveEventHooks
 			EntityPlayerMP player = (EntityPlayerMP)event.player;
 			WorldServer world = player.getServerForPlayer();
 
-			if (CaveworldAPI.isEntityInCaveworld(player) || CaveworldAPI.isEntityInCavern(player))
+			if (CaveworldAPI.isEntityInCaves(player))
 			{
 				if (MathHelper.floor_double(player.posY) >= world.getActualHeight() - 1)
 				{
@@ -738,7 +757,7 @@ public class CaveEventHooks
 	{
 		EntityPlayer player = event.player;
 
-		if (CaveworldAPI.isEntityInCaveworld(player) || CaveworldAPI.isEntityInCavern(player))
+		if (CaveworldAPI.isEntityInCaves(player))
 		{
 			player.timeUntilPortal = player.getPortalCooldown();
 
@@ -806,7 +825,7 @@ public class CaveEventHooks
 		{
 			EntityPlayerMP player = (EntityPlayerMP)event.getPlayer();
 
-			if (CaveworldAPI.isEntityInCaveworld(player) || CaveworldAPI.isEntityInCavern(player))
+			if (CaveworldAPI.isEntityInCaves(player))
 			{
 				ItemStack current = player.getCurrentEquippedItem();
 
@@ -967,7 +986,8 @@ public class CaveEventHooks
 		ItemStack current = player.getCurrentEquippedItem();
 
 		if (current != null && (current.getItem() instanceof IAquamarineTool ||
-			current.getItem() instanceof ICaveniumTool && ((ICaveniumTool)current.getItem()).getBase(current) instanceof IAquamarineTool))
+			current.getItem() instanceof ICaveniumTool && ((ICaveniumTool)current.getItem()).getBase(current) instanceof IAquamarineTool ||
+			CaveworldAPI.isEntityInCaves(player) && CaveUtils.isItemPickaxe(current) && CaveworldAPI.getMinerRank(player) >= MinerRank.AQUA_MINER.getRank()))
 		{
 			if (player.isInsideOfMaterial(Material.water) && !EnchantmentHelper.getAquaAffinityModifier(player))
 			{
@@ -1027,7 +1047,7 @@ public class CaveEventHooks
 			EntityPlayerMP player = (EntityPlayerMP)event.entityPlayer;
 			WorldServer world = player.getServerForPlayer();
 
-			if ((CaveworldAPI.isEntityInCaveworld(player) || CaveworldAPI.isEntityInCavern(player)) && !player.capabilities.isCreativeMode)
+			if (CaveworldAPI.isEntityInCaves(player) && !(player.capabilities.isCreativeMode || CaveworldAPI.getMinerRank(player) >= MinerRank.DIAMOND_MINER.getRank()))
 			{
 				NBTTagCompound data = player.getEntityData();
 				ChunkCoordinates spawn = player.getBedLocation(player.dimension);
@@ -1105,7 +1125,7 @@ public class CaveEventHooks
 			CaveworldAPI.loadData(entity, null);
 		}
 
-		if (entity instanceof EntityLiving && (CaveworldAPI.isEntityInCaveworld(entity) || CaveworldAPI.isEntityInCavern(entity)))
+		if (entity instanceof EntityLiving && CaveworldAPI.isEntityInCaves(entity))
 		{
 			if (entity.posY >= world.provider.getActualHeight() - 1)
 			{
@@ -1152,6 +1172,35 @@ public class CaveEventHooks
 	}
 
 	@SubscribeEvent
+	public void onLivingUpdate(LivingUpdateEvent event)
+	{
+		EntityLivingBase entity = event.entityLiving;
+
+		if (SextiarySectorPlugin.enabled() && entity instanceof EntityPlayerMP)
+		{
+			EntityPlayerMP player = (EntityPlayerMP)entity;
+
+			if (CaveworldAPI.isEntityInCaves(player))
+			{
+				int i = 200;
+
+				if (entity.isSprinting())
+				{
+					i /= 3;
+				}
+
+				if (player.ticksExisted % i == 0)
+				{
+					if (CaveworldAPI.getMinerRank(entity) >= MinerRank.IRON_MINER.getRank())
+					{
+						SextiarySectorAPI.addMoistureExhaustion(player, 2.0F);
+					}
+				}
+			}
+		}
+	}
+
+	@SubscribeEvent
 	public void onLivingDrops(LivingDropsEvent event)
 	{
 		EntityLivingBase living = event.entityLiving;
@@ -1163,7 +1212,7 @@ public class CaveEventHooks
 			Random random = living.getRNG();
 			int looting = MathHelper.clamp_int(event.lootingLevel, 0, 3);
 
-			if (MCEconomyPlugin.enabled() && (CaveworldAPI.isEntityInCaveworld(living) || CaveworldAPI.isEntityInCavern(entity)) && living instanceof IMob)
+			if (MCEconomyPlugin.enabled() && CaveworldAPI.isEntityInCaves(entity) && living instanceof IMob)
 			{
 				if (!MCEconomyAPI.ShopManager.hasEntityPurchase(living))
 				{
@@ -1231,37 +1280,47 @@ public class CaveEventHooks
 		String message = event.message;
 		EntityPlayerMP player = event.player;
 
-		if (message.matches("@buff|@buff ([0-9]*$|max)") && (CaveworldAPI.isEntityInCaveworld(player) || CaveworldAPI.isEntityInCavern(player)))
+		if (CaveworldAPI.isEntityInCaves(player))
 		{
-			int point = CaveworldAPI.getMiningPoint(player);
-
-			if (message.matches("@buff [0-9]*$"))
+			if (message.matches("@buff|@buff ([0-9]*$|max)"))
 			{
-				point = MathHelper.clamp_int(Integer.parseInt(message.substring(6)), 0, point);
-			}
-			else if (!message.endsWith("max") && point > 30)
-			{
-				point = 30;
-			}
+				int point = CaveworldAPI.getMiningPoint(player);
 
-			if (point > 0)
-			{
-				Potion potion = null;
-
-				while (potion == null || potion.getEffectiveness() <= 0.5D || player.isPotionActive(potion))
+				if (message.matches("@buff [0-9]*$"))
 				{
-					potion = Potion.potionTypes[player.getRNG().nextInt(Potion.potionTypes.length)];
+					point = MathHelper.clamp_int(Integer.parseInt(message.substring(6)), 0, point);
+				}
+				else if (!message.endsWith("max") && point > 30)
+				{
+					point = 30;
 				}
 
-				if (potion != null)
+				if (point > 0)
 				{
-					CaveworldAPI.addMiningPoint(player, -point);
+					Potion potion = null;
 
-					player.addPotionEffect(new PotionEffect(potion.id, point * 20));
+					while (potion == null || potion.getEffectiveness() <= 0.5D || player.isPotionActive(potion))
+					{
+						potion = Potion.potionTypes[player.getRNG().nextInt(Potion.potionTypes.length)];
+					}
+
+					if (potion != null)
+					{
+						CaveworldAPI.addMiningPoint(player, -point);
+
+						player.addPotionEffect(new PotionEffect(potion.id, point * 20));
+					}
 				}
-			}
 
-			event.setCanceled(true);
+				event.setCanceled(true);
+			}
+			else if (Config.showMinerRank)
+			{
+				MinerRank rank = CaverManager.getRank(CaveworldAPI.getMinerRank(player));
+				ChatComponentTranslation text = new ChatComponentTranslation("[" + StatCollector.translateToLocal(rank.getUnlocalizedName()) + "] ");
+
+				event.component = (ChatComponentTranslation)text.appendSibling(event.component);
+			}
 		}
 	}
 }

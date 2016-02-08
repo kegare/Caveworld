@@ -50,6 +50,19 @@ public interface ICaverManager
 
 	public void clearMiningPointAmounts();
 
+	/**
+	 * Returns miner rank of the entity.
+	 * @param entity The entity
+	 */
+	public int getRank(Entity entity);
+
+	/**
+	 * Sets miner rank of the entity.
+	 * @param entity The entity
+	 * @param rank The set rank
+	 */
+	public void setRank(Entity entity, int rank);
+
 	public int getLastDimension(Entity entity);
 
 	public void setLastDimension(Entity entity, int dimension);

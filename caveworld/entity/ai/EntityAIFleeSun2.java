@@ -39,7 +39,7 @@ public class EntityAIFleeSun2 extends EntityAIBase
 	@Override
 	public boolean shouldExecute()
 	{
-		if (!theWorld.isDaytime() || CaveworldAPI.isEntityInCaveworld(theCreature) || CaveworldAPI.isEntityInCavern(theCreature))
+		if (!theWorld.isDaytime() || CaveworldAPI.isEntityInCaves(theCreature))
 		{
 			return false;
 		}

@@ -13,20 +13,8 @@ import static net.minecraftforge.common.ChestGenHooks.DUNGEON_CHEST;
 
 import java.util.Random;
 
-import caveworld.entity.EntityArcherZombie;
-import caveworld.entity.EntityCavenicSkeleton;
 import caveworld.util.ArrayListExtended;
 import net.minecraft.block.material.Material;
-import net.minecraft.entity.EntityList;
-import net.minecraft.entity.monster.EntityCaveSpider;
-import net.minecraft.entity.monster.EntityCreeper;
-import net.minecraft.entity.monster.EntityEnderman;
-import net.minecraft.entity.monster.EntitySilverfish;
-import net.minecraft.entity.monster.EntitySkeleton;
-import net.minecraft.entity.monster.EntitySnowman;
-import net.minecraft.entity.monster.EntitySpider;
-import net.minecraft.entity.monster.EntityZombie;
-import net.minecraft.entity.passive.EntityBat;
 import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.tileentity.TileEntityMobSpawner;
@@ -39,18 +27,9 @@ public class WorldGenDungeonsCaveworld extends WorldGenDungeons
 {
 	private final ArrayListExtended<String> spawnerMobs = new ArrayListExtended();
 
+	public WorldGenDungeonsCaveworld(String[] mobs)
 	{
-		Class[] classes =
-		{
-			EntityZombie.class, EntitySkeleton.class, EntitySpider.class, EntityCaveSpider.class,
-			EntityCreeper.class, EntityEnderman.class, EntitySilverfish.class, EntityBat.class, EntitySnowman.class,
-			EntityArcherZombie.class, EntityCavenicSkeleton.class
-		};
-
-		for (Class clazz : classes)
-		{
-			spawnerMobs.addIfAbsent((String)EntityList.classToStringMapping.get(clazz));
-		}
+		spawnerMobs.addAllObject(mobs);
 	}
 
 	@Override

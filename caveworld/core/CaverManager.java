@@ -17,6 +17,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 
 import caveworld.api.ICaverManager;
+import caveworld.item.CaveItems;
 import caveworld.network.client.CaverAdjustMessage;
 import caveworld.plugin.mceconomy.MCEconomyPlugin;
 import net.minecraft.block.Block;
@@ -24,8 +25,14 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IChatComponent;
+import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraftforge.common.IExtendedEntityProperties;
 import net.minecraftforge.oredict.OreDictionary;
@@ -105,6 +112,18 @@ public class CaverManager implements ICaverManager
 	}
 
 	@Override
+	public int getRank(Entity entity)
+	{
+		return getCaver(entity).getRank();
+	}
+
+	@Override
+	public void setRank(Entity entity, int rank)
+	{
+		getCaver(entity).setRank(rank);
+	}
+
+	@Override
 	public int getLastDimension(Entity entity)
 	{
 		return getCaver(entity).getLastDimension();
@@ -164,11 +183,85 @@ public class CaverManager implements ICaverManager
 		caver.adjustData();
 	}
 
+	public enum MinerRank
+	{
+		BEGINNER(0, 0, "beginner", Items.wooden_pickaxe),
+		STONE_MINER(1, 50, "stoneMiner", Items.stone_pickaxe),
+		IRON_MINER(2, 100, "ironMiner", Items.iron_pickaxe),
+		GOLD_MINER(3, 1000, "goldMiner", Items.golden_pickaxe),
+		AQUA_MINER(4, 3000, "aquaMiner", CaveItems.aquamarine_pickaxe),
+		DIAMOND_MINER(5, 10000, "diamondMiner", Items.diamond_pickaxe),
+		THE_MINER(6, 20000, "theMiner", CaveItems.mining_pickaxe),
+		CRAZY_MINER(7, 50000, "crazyMiner", CaveItems.mining_pickaxe);
+
+		private int rank;
+		private int phase;
+		private String name;
+		private Item pickaxe;
+		private ItemStack renderItemStack;
+
+		private MinerRank(int rank, int phase, String name, Item pickaxe)
+		{
+			this.rank = rank;
+			this.phase = phase;
+			this.name = name;
+			this.pickaxe = pickaxe;
+		}
+
+		public int getRank()
+		{
+			return rank;
+		}
+
+		public int getPhase()
+		{
+			return phase;
+		}
+
+		public String getUnlocalizedName()
+		{
+			return "caveworld.minerrank." + name;
+		}
+
+		public Item getPickaxe()
+		{
+			return pickaxe;
+		}
+
+		public ItemStack getRenderItemStack()
+		{
+			if (renderItemStack == null)
+			{
+				renderItemStack = new ItemStack(pickaxe);
+			}
+
+			return renderItemStack;
+		}
+	}
+
+	public static MinerRank getRank(int rank)
+	{
+		if (rank < 0)
+		{
+			rank = 0;
+		}
+
+		int max = MinerRank.values().length - 1;
+
+		if (rank > max)
+		{
+			rank = max;
+		}
+
+		return MinerRank.values()[rank];
+	}
+
 	public static class Caver implements IExtendedEntityProperties
 	{
 		private final Entity entity;
 
 		private int point;
+		private int rank;
 		private int caveworld;
 		private int cavern;
 
@@ -183,6 +276,7 @@ public class CaverManager implements ICaverManager
 			NBTTagCompound data = new NBTTagCompound();
 
 			data.setInteger("MiningPoint", point);
+			data.setInteger("Rank", rank);
 
 			String tag = "LastDimension.";
 
@@ -203,6 +297,7 @@ public class CaverManager implements ICaverManager
 			NBTTagCompound data = compound.getCompoundTag(CAVER_TAG);
 
 			point = data.getInteger("MiningPoint");
+			rank = data.getInteger("Rank");
 
 			String tag = "LastDimension.";
 
@@ -229,6 +324,24 @@ public class CaverManager implements ICaverManager
 		{
 			setMiningPoint(point + value);
 
+			MinerRank current = CaverManager.getRank(rank);
+			boolean promoted = false;
+
+			if (current.getRank() < 7)
+			{
+				MinerRank next = CaverManager.getRank(rank + 1);
+
+				if (point >= next.getPhase())
+				{
+					++rank;
+
+					promoted = true;
+					current = next;
+
+					setMiningPoint(point - current.getPhase());
+				}
+			}
+
 			if (entity instanceof EntityPlayer)
 			{
 				EntityPlayer player = (EntityPlayer)entity;
@@ -243,11 +356,44 @@ public class CaverManager implements ICaverManager
 					}
 				}
 
+				if (promoted && player instanceof EntityPlayerMP)
+				{
+					EntityPlayerMP thePlayer = (EntityPlayerMP)player;
+					IChatComponent component = new ChatComponentTranslation("caveworld.minerrank.promoted", thePlayer.getDisplayName(), StatCollector.translateToLocal(current.getUnlocalizedName()));
+					component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
+
+					thePlayer.mcServer.getConfigurationManager().sendChatMsg(component);
+				}
+
 				if (point >= 1000)
 				{
 					player.triggerAchievement(CaveAchievementList.theMiner);
 				}
 			}
+		}
+
+		public int getRank()
+		{
+			return rank;
+		}
+
+		public void setRank(int value)
+		{
+			if (value < 0)
+			{
+				value = 0;
+			}
+
+			int max = MinerRank.values().length - 1;
+
+			if (value > max)
+			{
+				value = max;
+			}
+
+			rank = value;
+
+			adjustData();
 		}
 
 		public void adjustData()

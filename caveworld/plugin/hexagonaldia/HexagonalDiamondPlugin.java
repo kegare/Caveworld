@@ -56,7 +56,7 @@ public class HexagonalDiamondPlugin implements ICavePlugin
 		{
 			if (Config.veinsAutoRegister)
 			{
-				CaveworldAPI.addCaveVein(new CaveVein(new BlockEntry(block, 0), 1, 1, 10, 1, 10));
+				CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 1, 1, 10, 1, 10));
 			}
 
 			CaveworldAPI.setMiningPointAmount(block, 0, 10);

@@ -127,7 +127,7 @@ public class BreakPos implements Comparable
 		{
 			return true;
 		}
-		else if (!(obj instanceof BreakPos))
+		else if (obj == null || !(obj instanceof BreakPos))
 		{
 			return false;
 		}

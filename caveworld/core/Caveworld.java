@@ -172,87 +172,11 @@ public class Caveworld
 		CaveItems.registerItems();
 
 		GameRegistry.registerFuelHandler(new CaveFuelHandler());
-
-		CaveworldAPI.setMiningPointAmount("oreCoal", 1);
-		CaveworldAPI.setMiningPointAmount("oreIron", 1);
-		CaveworldAPI.setMiningPointAmount("oreGold", 1);
-		CaveworldAPI.setMiningPointAmount("oreRedstone", 2);
-		CaveworldAPI.setMiningPointAmount(Blocks.lit_redstone_ore, 0, 2);
-		CaveworldAPI.setMiningPointAmount("oreLapis", 2);
-		CaveworldAPI.setMiningPointAmount("oreEmerald", 2);
-		CaveworldAPI.setMiningPointAmount("oreDiamond", 3);
-		CaveworldAPI.setMiningPointAmount("oreQuartz", 1);
-		CaveworldAPI.setMiningPointAmount("oreCopper", 1);
-		CaveworldAPI.setMiningPointAmount("copperOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreTin", 1);
-		CaveworldAPI.setMiningPointAmount("tinOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreLead", 1);
-		CaveworldAPI.setMiningPointAmount("leadOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreSilver", 1);
-		CaveworldAPI.setMiningPointAmount("silverOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreAdamantium", 1);
-		CaveworldAPI.setMiningPointAmount("adamantiumOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreAluminum", 1);
-		CaveworldAPI.setMiningPointAmount("aluminumOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreApatite", 1);
-		CaveworldAPI.setMiningPointAmount("apatiteOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreMythril", 1);
-		CaveworldAPI.setMiningPointAmount("mythrilOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreOnyx", 1);
-		CaveworldAPI.setMiningPointAmount("onyxOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreUranium", 2);
-		CaveworldAPI.setMiningPointAmount("uraniumOre", 2);
-		CaveworldAPI.setMiningPointAmount("oreSapphire", 2);
-		CaveworldAPI.setMiningPointAmount("sapphireOre", 2);
-		CaveworldAPI.setMiningPointAmount("oreRuby", 2);
-		CaveworldAPI.setMiningPointAmount("rubyOre", 2);
-		CaveworldAPI.setMiningPointAmount("oreTopaz", 2);
-		CaveworldAPI.setMiningPointAmount("topazOre", 2);
-		CaveworldAPI.setMiningPointAmount("oreChrome", 1);
-		CaveworldAPI.setMiningPointAmount("chromeOre", 1);
-		CaveworldAPI.setMiningPointAmount("orePlatinum", 1);
-		CaveworldAPI.setMiningPointAmount("platinumOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreTitanium", 1);
-		CaveworldAPI.setMiningPointAmount("titaniumOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreTofu", 1);
-		CaveworldAPI.setMiningPointAmount("tofuOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreTofuDiamond", 3);
-		CaveworldAPI.setMiningPointAmount("tofuDiamondOre", 3);
-		CaveworldAPI.setMiningPointAmount("oreSulfur", 1);
-		CaveworldAPI.setMiningPointAmount("sulfurOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreSaltpeter", 1);
-		CaveworldAPI.setMiningPointAmount("saltpeterOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreFirestone", 2);
-		CaveworldAPI.setMiningPointAmount("firestoneOre", 2);
-		CaveworldAPI.setMiningPointAmount("oreSalt", 1);
-		CaveworldAPI.setMiningPointAmount("saltOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreJade", 1);
-		CaveworldAPI.setMiningPointAmount("jadeOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreManganese", 1);
-		CaveworldAPI.setMiningPointAmount("manganeseOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreLanite", 1);
-		CaveworldAPI.setMiningPointAmount("laniteOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreMeurodite", 1);
-		CaveworldAPI.setMiningPointAmount("meuroditeOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreSoul", 1);
-		CaveworldAPI.setMiningPointAmount("soulOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreSunstone", 1);
-		CaveworldAPI.setMiningPointAmount("sunstoneOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreZinc", 1);
-		CaveworldAPI.setMiningPointAmount("zincOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreCavenium", 2);
-		CaveworldAPI.setMiningPointAmount("caveniumOre", 2);
-		CaveworldAPI.setMiningPointAmount("oreAquamarine", 2);
-		CaveworldAPI.setMiningPointAmount("aquamarineOre", 2);
-		CaveworldAPI.setMiningPointAmount("glowstone", 2);
 	}
 
 	@EventHandler
 	public void init(FMLInitializationEvent event)
 	{
-		Config.syncEntitiesCfg();
-		Config.syncDimensionCfg();
-
 		int id = 0;
 		EntityRegistry.registerGlobalEntityID(EntityCaveman.class, "Caveman", EntityRegistry.findGlobalUniqueEntityId(), 0xAAAAAA, 0xCCCCCC);
 		EntityRegistry.registerModEntity(EntityCaveman.class, "Caveman", id++, this, 128, 1, true);
@@ -264,6 +188,9 @@ public class Caveworld
 		EntityRegistry.registerModEntity(EntityMasterCavenicSkeleton.class, "MasterCavenicSkeleton", id, this, 128, 1, true);
 
 		proxy.registerRenderers();
+
+		Config.syncEntitiesCfg();
+		Config.syncDimensionCfg();
 
 		id = CaveworldAPI.getDimension();
 		DimensionManager.registerProviderType(id, WorldProviderCaveworld.class, true);
@@ -409,6 +336,79 @@ public class Caveworld
 	@EventHandler
 	public void postInit(final FMLPostInitializationEvent event)
 	{
+		CaveworldAPI.setMiningPointAmount("oreCoal", 1);
+		CaveworldAPI.setMiningPointAmount("oreIron", 1);
+		CaveworldAPI.setMiningPointAmount("oreGold", 1);
+		CaveworldAPI.setMiningPointAmount("oreRedstone", 2);
+		CaveworldAPI.setMiningPointAmount(Blocks.lit_redstone_ore, 0, 2);
+		CaveworldAPI.setMiningPointAmount("oreLapis", 2);
+		CaveworldAPI.setMiningPointAmount("oreEmerald", 2);
+		CaveworldAPI.setMiningPointAmount("oreDiamond", 3);
+		CaveworldAPI.setMiningPointAmount("oreQuartz", 1);
+		CaveworldAPI.setMiningPointAmount("oreCopper", 1);
+		CaveworldAPI.setMiningPointAmount("copperOre", 1);
+		CaveworldAPI.setMiningPointAmount("oreTin", 1);
+		CaveworldAPI.setMiningPointAmount("tinOre", 1);
+		CaveworldAPI.setMiningPointAmount("oreLead", 1);
+		CaveworldAPI.setMiningPointAmount("leadOre", 1);
+		CaveworldAPI.setMiningPointAmount("oreSilver", 1);
+		CaveworldAPI.setMiningPointAmount("silverOre", 1);
+		CaveworldAPI.setMiningPointAmount("oreAdamantium", 1);
+		CaveworldAPI.setMiningPointAmount("adamantiumOre", 1);
+		CaveworldAPI.setMiningPointAmount("oreAluminum", 1);
+		CaveworldAPI.setMiningPointAmount("aluminumOre", 1);
+		CaveworldAPI.setMiningPointAmount("oreApatite", 1);
+		CaveworldAPI.setMiningPointAmount("apatiteOre", 1);
+		CaveworldAPI.setMiningPointAmount("oreMythril", 1);
+		CaveworldAPI.setMiningPointAmount("mythrilOre", 1);
+		CaveworldAPI.setMiningPointAmount("oreOnyx", 1);
+		CaveworldAPI.setMiningPointAmount("onyxOre", 1);
+		CaveworldAPI.setMiningPointAmount("oreUranium", 2);
+		CaveworldAPI.setMiningPointAmount("uraniumOre", 2);
+		CaveworldAPI.setMiningPointAmount("oreSapphire", 2);
+		CaveworldAPI.setMiningPointAmount("sapphireOre", 2);
+		CaveworldAPI.setMiningPointAmount("oreRuby", 2);
+		CaveworldAPI.setMiningPointAmount("rubyOre", 2);
+		CaveworldAPI.setMiningPointAmount("oreTopaz", 2);
+		CaveworldAPI.setMiningPointAmount("topazOre", 2);
+		CaveworldAPI.setMiningPointAmount("oreChrome", 1);
+		CaveworldAPI.setMiningPointAmount("chromeOre", 1);
+		CaveworldAPI.setMiningPointAmount("orePlatinum", 1);
+		CaveworldAPI.setMiningPointAmount("platinumOre", 1);
+		CaveworldAPI.setMiningPointAmount("oreTitanium", 1);
+		CaveworldAPI.setMiningPointAmount("titaniumOre", 1);
+		CaveworldAPI.setMiningPointAmount("oreTofu", 1);
+		CaveworldAPI.setMiningPointAmount("tofuOre", 1);
+		CaveworldAPI.setMiningPointAmount("oreTofuDiamond", 3);
+		CaveworldAPI.setMiningPointAmount("tofuDiamondOre", 3);
+		CaveworldAPI.setMiningPointAmount("oreSulfur", 1);
+		CaveworldAPI.setMiningPointAmount("sulfurOre", 1);
+		CaveworldAPI.setMiningPointAmount("oreSaltpeter", 1);
+		CaveworldAPI.setMiningPointAmount("saltpeterOre", 1);
+		CaveworldAPI.setMiningPointAmount("oreFirestone", 2);
+		CaveworldAPI.setMiningPointAmount("firestoneOre", 2);
+		CaveworldAPI.setMiningPointAmount("oreSalt", 1);
+		CaveworldAPI.setMiningPointAmount("saltOre", 1);
+		CaveworldAPI.setMiningPointAmount("oreJade", 1);
+		CaveworldAPI.setMiningPointAmount("jadeOre", 1);
+		CaveworldAPI.setMiningPointAmount("oreManganese", 1);
+		CaveworldAPI.setMiningPointAmount("manganeseOre", 1);
+		CaveworldAPI.setMiningPointAmount("oreLanite", 1);
+		CaveworldAPI.setMiningPointAmount("laniteOre", 1);
+		CaveworldAPI.setMiningPointAmount("oreMeurodite", 1);
+		CaveworldAPI.setMiningPointAmount("meuroditeOre", 1);
+		CaveworldAPI.setMiningPointAmount("oreSoul", 1);
+		CaveworldAPI.setMiningPointAmount("soulOre", 1);
+		CaveworldAPI.setMiningPointAmount("oreSunstone", 1);
+		CaveworldAPI.setMiningPointAmount("sunstoneOre", 1);
+		CaveworldAPI.setMiningPointAmount("oreZinc", 1);
+		CaveworldAPI.setMiningPointAmount("zincOre", 1);
+		CaveworldAPI.setMiningPointAmount("oreCavenium", 2);
+		CaveworldAPI.setMiningPointAmount("caveniumOre", 2);
+		CaveworldAPI.setMiningPointAmount("oreAquamarine", 2);
+		CaveworldAPI.setMiningPointAmount("aquamarineOre", 2);
+		CaveworldAPI.setMiningPointAmount("glowstone", 2);
+
 		Config.syncBiomesCfg();
 		Config.syncBiomesCavernCfg();
 		Config.syncVeinsCfg();

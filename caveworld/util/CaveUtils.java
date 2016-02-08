@@ -543,6 +543,19 @@ public class CaveUtils
 		return false;
 	}
 
+	public static String getEntityLocalizedName(String name)
+	{
+		String key = "entity." + name + ".name";
+		String localized = StatCollector.translateToLocal(key);
+
+		if (key.equals(localized))
+		{
+			localized = name;
+		}
+
+		return localized;
+	}
+
 	public static Set<BiomeGenBase> getBiomes()
 	{
 		Set<BiomeGenBase> result = Sets.newLinkedHashSet();

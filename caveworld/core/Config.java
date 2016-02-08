@@ -46,6 +46,16 @@ import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
 import net.minecraft.block.Block;
+import net.minecraft.entity.EntityList;
+import net.minecraft.entity.monster.EntityCaveSpider;
+import net.minecraft.entity.monster.EntityCreeper;
+import net.minecraft.entity.monster.EntityEnderman;
+import net.minecraft.entity.monster.EntitySilverfish;
+import net.minecraft.entity.monster.EntitySkeleton;
+import net.minecraft.entity.monster.EntitySnowman;
+import net.minecraft.entity.monster.EntitySpider;
+import net.minecraft.entity.monster.EntityZombie;
+import net.minecraft.entity.passive.EntityBat;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
@@ -73,6 +83,7 @@ public class Config
 	public static boolean veinsAutoRegister;
 	public static boolean deathLoseMiningPoint;
 	public static int miningPointRenderType;
+	public static boolean showMinerRank;
 	public static String[] miningPoints;
 	public static String[] miningPointsDefault;
 	public static String[] miningPointValidItems;
@@ -91,6 +102,7 @@ public class Config
 
 	public static Class<? extends IConfigEntry> selectItems;
 	public static Class<? extends IConfigEntry> selectBiomes;
+	public static Class<? extends IConfigEntry> selectMobs;
 	public static Class<? extends IConfigEntry> cycleInteger;
 	public static Class<? extends IConfigEntry> pointsEntry;
 
@@ -240,6 +252,12 @@ public class Config
 			miningPointRenderType = MathHelper.clamp_int(prop.getInt(miningPointRenderType), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 		}
 
+		prop = generalCfg.get(category, "showMinerRank", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		showMinerRank = prop.getBoolean(showMinerRank);
 		prop = generalCfg.get(category, "miningPoints", miningPointsDefault == null ? new String[0] : miningPointsDefault);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(pointsEntry);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -370,7 +388,7 @@ public class Config
 		}
 
 		category = "Caveman";
-		prop = entitiesCfg.get(category, "spawnWeight", 50);
+		prop = entitiesCfg.get(category, "spawnWeight", 70);
 		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
@@ -463,7 +481,7 @@ public class Config
 
 		propOrder = Lists.newArrayList();
 		category = "CavenicSkeleton";
-		prop = entitiesCfg.get(category, "spawnWeight", 50);
+		prop = entitiesCfg.get(category, "spawnWeight", 60);
 		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
@@ -602,6 +620,26 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		ChunkProviderCaveworld.decorateVines = prop.getBoolean(ChunkProviderCaveworld.decorateVines);
+
+		Class[] classes =
+		{
+			EntityZombie.class, EntitySkeleton.class, EntitySpider.class, EntityCaveSpider.class,
+			EntityCreeper.class, EntityEnderman.class, EntitySilverfish.class, EntityBat.class, EntitySnowman.class,
+			EntityArcherZombie.class, EntityCavenicSkeleton.class
+		};
+
+		Set<String> mobs = Sets.newTreeSet();
+
+		for (Class clazz : classes)
+		{
+			mobs.add((String)EntityList.classToStringMapping.get(clazz));
+		}
+
+		prop = dimensionCfg.get(category, "spawnerMobs", mobs.toArray(new String[mobs.size()]));
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName()).setConfigEntryClass(selectMobs);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		propOrder.add(prop.getName());
+		ChunkProviderCaveworld.spawnerMobs = prop.getStringList();
 
 		dimensionCfg.setCategoryPropertyOrder(category, propOrder);
 

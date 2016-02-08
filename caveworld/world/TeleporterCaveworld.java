@@ -76,7 +76,7 @@ public class TeleporterCaveworld extends Teleporter
 			player.addExperienceLevel(0);
 			player.addPotionEffect(new PotionEffect(Potion.blindness.getId(), 25));
 
-			if (CaveworldAPI.isEntityInCaveworld(player) && player.getBedLocation(player.dimension) == null)
+			if (CaveworldAPI.isEntityInCaves(player) && player.getBedLocation(player.dimension) == null)
 			{
 				int x = MathHelper.floor_double(player.posX);
 				int y = MathHelper.floor_double(player.posY + 0.5D);

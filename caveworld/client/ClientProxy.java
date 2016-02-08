@@ -13,6 +13,7 @@ import caveworld.client.config.CycleIntegerEntry;
 import caveworld.client.config.MiningPointsEntry;
 import caveworld.client.config.SelectBiomeEntry;
 import caveworld.client.config.SelectItemEntry;
+import caveworld.client.config.SelectMobEntry;
 import caveworld.client.gui.GuiIngameCaveworldMenu;
 import caveworld.client.gui.MenuType;
 import caveworld.client.renderer.RenderCaveman;
@@ -48,6 +49,7 @@ public class ClientProxy extends CommonProxy
 	{
 		Config.selectItems = SelectItemEntry.class;
 		Config.selectBiomes = SelectBiomeEntry.class;
+		Config.selectMobs = SelectMobEntry.class;
 		Config.cycleInteger = CycleIntegerEntry.class;
 		Config.pointsEntry = MiningPointsEntry.class;
 	}

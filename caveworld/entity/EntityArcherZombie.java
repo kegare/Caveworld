@@ -193,7 +193,7 @@ public class EntityArcherZombie extends EntityZombie implements IRangedAttackMob
 	{
 		int y = MathHelper.floor_double(boundingBox.minY);
 
-		return (CaveworldAPI.isEntityInCaveworld(this) || CaveworldAPI.isEntityInCavern(this)) && y >= spawnMinHeight && y <= spawnMaxHeight && super.getCanSpawnHere();
+		return CaveworldAPI.isEntityInCaves(this) && y >= spawnMinHeight && y <= spawnMaxHeight && super.getCanSpawnHere();
 	}
 
 	@Override
