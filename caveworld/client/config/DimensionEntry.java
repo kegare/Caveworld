@@ -53,6 +53,8 @@ public class DimensionEntry extends CaveCategoryEntry
 
 		list.add(new DimensionElement(getConfig().getCategory("Caveworld")));
 		list.add(new DimensionElement(getConfig().getCategory("Cavern")));
+		list.add(new DimensionElement(getConfig().getCategory("Aqua Cavern")));
+		list.add(new DimensionElement(getConfig().getCategory("Caveland")));
 
 		return list;
 	}
@@ -80,6 +82,12 @@ public class DimensionEntry extends CaveCategoryEntry
 						result.add(new CaveCategoryElement("biomesCavern", BiomesCavernEntry.class));
 						result.add(new CaveCategoryElement("veinsCavern", VeinsCavernEntry.class));
 						break;
+					case "Aqua Cavern":
+						result.add(new CaveCategoryElement("biomesAquaCavern", BiomesAquaCavernEntry.class));
+						result.add(new CaveCategoryElement("veinsAquaCavern", VeinsAquaCavernEntry.class));
+						break;
+					case "Caveland":
+						break;
 					default:
 						result.add(new CaveCategoryElement("biomes", BiomesEntry.class));
 						result.add(new CaveCategoryElement("veins", VeinsEntry.class));
@@ -93,7 +101,7 @@ public class DimensionEntry extends CaveCategoryEntry
 		@Override
 		public String getComment()
 		{
-			return I18n.format(Caveworld.CONFIG_LANG + "dimension.entry.tooltip", getName());
+			return I18n.format(Caveworld.CONFIG_LANG + getEntryName() + ".entry.tooltip", getName());
 		}
 	}
 }

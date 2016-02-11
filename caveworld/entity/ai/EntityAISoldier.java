@@ -232,14 +232,6 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 			return false;
 		}
 
-		switch (EntityCaveman.creatureType)
-		{
-			case 0:
-				return false;
-			case 1:
-				return entity instanceof EntityPlayer && !((EntityPlayer)entity).capabilities.isCreativeMode;
-			default:
-				return false;
-		}
+		return entity instanceof EntityPlayer && !((EntityPlayer)entity).capabilities.isCreativeMode;
 	}
 }

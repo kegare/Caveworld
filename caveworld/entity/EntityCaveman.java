@@ -66,7 +66,6 @@ public class EntityCaveman extends EntityMob implements IInventory
 	public static int spawnMaxHeight;
 	public static int spawnInChunks;
 	public static int[] spawnBiomes;
-	public static int creatureType;
 
 	public static void refreshSpawn()
 	{
@@ -179,7 +178,7 @@ public class EntityCaveman extends EntityMob implements IInventory
 	{
 		data = super.onSpawnWithEgg(data);
 
-		if (creatureType > 0 && rand.nextInt(3) == 0)
+		if (rand.nextInt(3) == 0)
 		{
 			setCurrentItemOrArmor(0, new ItemStack(Items.stone_sword));
 		}
@@ -190,6 +189,18 @@ public class EntityCaveman extends EntityMob implements IInventory
 		else if (rand.nextInt(3) == 0)
 		{
 			setCurrentItemOrArmor(0, new ItemStack(Items.stone_pickaxe));
+		}
+		else if (rand.nextInt(3) == 0)
+		{
+			setCurrentItemOrArmor(0, new ItemStack(Blocks.torch));
+		}
+		else if (rand.nextInt(3) == 0)
+		{
+			setCurrentItemOrArmor(0, new ItemStack(Blocks.stone));
+		}
+		else if (rand.nextInt(3) == 0)
+		{
+			setCurrentItemOrArmor(0, new ItemStack(Blocks.cobblestone));
 		}
 
 		Set<ItemStack> items = Sets.newHashSet();
@@ -221,7 +232,7 @@ public class EntityCaveman extends EntityMob implements IInventory
 	{
 		super.onLivingUpdate();
 
-		if (getStoppedTime() > 5L)
+		if (isStopped())
 		{
 			setSize(0.45F, 1.2F);
 		}
@@ -374,7 +385,7 @@ public class EntityCaveman extends EntityMob implements IInventory
 
 		if (itemstack != null && itemstack.getItem() instanceof ItemCavenium)
 		{
-			if (!worldObj.isRemote && rand.nextInt(2) == 0)
+			if (!worldObj.isRemote)
 			{
 				player.displayGUIChest(this);
 			}
@@ -446,14 +457,18 @@ public class EntityCaveman extends EntityMob implements IInventory
 		return !getLeashed();
 	}
 
-	@Override
-	public boolean getCanSpawnHere()
+	public boolean isValidHeight()
 	{
 		int y = MathHelper.floor_double(boundingBox.minY);
 
-		return CaveworldAPI.isEntityInCaves(this) && y >= spawnMinHeight && y <= spawnMaxHeight &&
-			worldObj.getEntitiesWithinAABB(getClass(), boundingBox.expand(64.0D, 64.0D, 64.0D)).isEmpty() &&
-			worldObj.checkNoEntityCollision(boundingBox) && worldObj.getCollidingBoundingBoxes(this, boundingBox).isEmpty() && !worldObj.isAnyLiquid(boundingBox);
+		return y >= spawnMinHeight && y <= spawnMaxHeight;
+	}
+
+	@Override
+	public boolean getCanSpawnHere()
+	{
+		return CaveworldAPI.isEntityInCaves(this) && isValidHeight() && super.getCanSpawnHere() &&
+			worldObj.getEntitiesWithinAABB(getClass(), boundingBox.expand(32.0D, 32.0D, 32.0D)).isEmpty();
 	}
 
 	@Override

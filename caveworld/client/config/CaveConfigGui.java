@@ -41,7 +41,7 @@ public class CaveConfigGui extends GuiConfig
 		List<IConfigElement> list = Lists.newArrayList();
 
 		list.add(new CaveCategoryElement(Configuration.CATEGORY_GENERAL, GeneralEntry.class));
-		list.add(new CaveCategoryElement("entities", EntitiesEntry.class));
+		list.add(new CaveCategoryElement("mobs", MobsEntry.class));
 		list.add(new CaveCategoryElement("dimension", DimensionEntry.class));
 
 		if (MCEconomyPlugin.enabled())

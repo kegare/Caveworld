@@ -12,6 +12,8 @@ package caveworld.core;
 import java.util.ArrayList;
 import java.util.Map;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
@@ -20,6 +22,8 @@ import caveworld.api.ICaverManager;
 import caveworld.item.CaveItems;
 import caveworld.network.client.CaverAdjustMessage;
 import caveworld.plugin.mceconomy.MCEconomyPlugin;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -32,7 +36,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
-import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraftforge.common.IExtendedEntityProperties;
 import net.minecraftforge.oredict.OreDictionary;
@@ -82,7 +85,22 @@ public class CaverManager implements ICaverManager
 	@Override
 	public void setMiningPointAmount(Block block, int metadata, int amount)
 	{
-		pointAmounts.put(block, metadata, amount);
+		if (metadata == OreDictionary.WILDCARD_VALUE)
+		{
+			for (int meta = 0; meta < 16; ++meta)
+			{
+				pointAmounts.put(block, meta, amount);
+			}
+		}
+		else
+		{
+			if (metadata < 0 || metadata > 16)
+			{
+				metadata = 0;
+			}
+
+			pointAmounts.put(block, metadata, amount);
+		}
 	}
 
 	@Override
@@ -95,11 +113,10 @@ public class CaverManager implements ICaverManager
 			for (ItemStack entry : ores)
 			{
 				Block block = Block.getBlockFromItem(entry.getItem());
-				int meta = entry.getItemDamage();
 
-				if (block != Blocks.air && !pointAmounts.contains(block, meta))
+				if (block != Blocks.air)
 				{
-					setMiningPointAmount(block, meta, amount);
+					setMiningPointAmount(block, entry.getItemDamage(), amount);
 				}
 			}
 		}
@@ -112,15 +129,34 @@ public class CaverManager implements ICaverManager
 	}
 
 	@Override
-	public int getRank(Entity entity)
+	public int getMinerRank(Entity entity)
 	{
 		return getCaver(entity).getRank();
 	}
 
 	@Override
-	public void setRank(Entity entity, int rank)
+	public String getMinerRankName(Entity entity)
+	{
+		return getRank(getMinerRank(entity)).getName();
+	}
+
+	@Override
+	public void setMinerRank(Entity entity, int rank)
 	{
 		getCaver(entity).setRank(rank);
+	}
+
+	@Override
+	public Map<Integer, Pair<String, Integer>> getMinerRanks()
+	{
+		Map<Integer, Pair<String, Integer>> result = Maps.newHashMap();
+
+		for (MinerRank rank : MinerRank.values())
+		{
+			result.put(rank.getRank(), Pair.of(rank.getName(), rank.getPhase()));
+		}
+
+		return result;
 	}
 
 	@Override
@@ -145,6 +181,30 @@ public class CaverManager implements ICaverManager
 	public void setCavernLastDimension(Entity entity, int dimension)
 	{
 		getCaver(entity).setCavernLastDimension(dimension);
+	}
+
+	@Override
+	public int getAquaCavernLastDimension(Entity entity)
+	{
+		return getCaver(entity).getAquaCavernLastDimension();
+	}
+
+	@Override
+	public void setAquaCavernLastDimension(Entity entity, int dimension)
+	{
+		getCaver(entity).setAquaCavernLastDimension(dimension);
+	}
+
+	@Override
+	public int getCavelandLastDimension(Entity entity)
+	{
+		return getCaver(entity).getCavelandLastDimension();
+	}
+
+	@Override
+	public void setCavelandLastDimension(Entity entity, int dimension)
+	{
+		getCaver(entity).setCavelandLastDimension(dimension);
 	}
 
 	@Override
@@ -198,6 +258,8 @@ public class CaverManager implements ICaverManager
 		private int phase;
 		private String name;
 		private Item pickaxe;
+
+		@SideOnly(Side.CLIENT)
 		private ItemStack renderItemStack;
 
 		private MinerRank(int rank, int phase, String name, Item pickaxe)
@@ -218,16 +280,17 @@ public class CaverManager implements ICaverManager
 			return phase;
 		}
 
+		public String getName()
+		{
+			return name;
+		}
+
 		public String getUnlocalizedName()
 		{
 			return "caveworld.minerrank." + name;
 		}
 
-		public Item getPickaxe()
-		{
-			return pickaxe;
-		}
-
+		@SideOnly(Side.CLIENT)
 		public ItemStack getRenderItemStack()
 		{
 			if (renderItemStack == null)
@@ -264,6 +327,8 @@ public class CaverManager implements ICaverManager
 		private int rank;
 		private int caveworld;
 		private int cavern;
+		private int aqua;
+		private int caveland;
 
 		public Caver(Entity entity)
 		{
@@ -282,6 +347,8 @@ public class CaverManager implements ICaverManager
 
 			data.setInteger(tag + "Caveworld", caveworld);
 			data.setInteger(tag + "Cavern", cavern);
+			data.setInteger(tag + "AquaCavern", aqua);
+			data.setInteger(tag + "Caveland", caveland);
 
 			compound.setTag(CAVER_TAG, data);
 		}
@@ -303,6 +370,8 @@ public class CaverManager implements ICaverManager
 
 			caveworld = data.getInteger(tag + "Caveworld");
 			cavern = data.getInteger(tag + "Cavern");
+			aqua = data.getInteger(tag + "AquaCavern");
+			caveland = data.getInteger(tag + "Caveland");
 		}
 
 		@Override
@@ -346,7 +415,7 @@ public class CaverManager implements ICaverManager
 			{
 				EntityPlayer player = (EntityPlayer)entity;
 
-				if (point > 0 && point % 100 == 0)
+				if (value > 0 && point > 0 && point % 100 == 0)
 				{
 					player.addExperience(player.xpBarCap() / 2);
 
@@ -359,10 +428,13 @@ public class CaverManager implements ICaverManager
 				if (promoted && player instanceof EntityPlayerMP)
 				{
 					EntityPlayerMP thePlayer = (EntityPlayerMP)player;
-					IChatComponent component = new ChatComponentTranslation("caveworld.minerrank.promoted", thePlayer.getDisplayName(), StatCollector.translateToLocal(current.getUnlocalizedName()));
+					IChatComponent name = new ChatComponentTranslation(current.getUnlocalizedName());
+					name.getChatStyle().setBold(true);
+					IChatComponent component = new ChatComponentTranslation("caveworld.minerrank.promoted", thePlayer.getDisplayName(), name);
 					component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
 
 					thePlayer.mcServer.getConfigurationManager().sendChatMsg(component);
+					thePlayer.getServerForPlayer().playSoundAtEntity(thePlayer, "caveworld:minerrank.promoted", 1.0F, 1.0F);
 				}
 
 				if (point >= 1000)
@@ -431,6 +503,26 @@ public class CaverManager implements ICaverManager
 		public void setCavernLastDimension(int dim)
 		{
 			cavern = dim;
+		}
+
+		public int getAquaCavernLastDimension()
+		{
+			return aqua;
+		}
+
+		public void setAquaCavernLastDimension(int dim)
+		{
+			aqua = dim;
+		}
+
+		public int getCavelandLastDimension()
+		{
+			return caveland;
+		}
+
+		public void setCavelandLastDimension(int dim)
+		{
+			caveland = dim;
 		}
 	}
 }

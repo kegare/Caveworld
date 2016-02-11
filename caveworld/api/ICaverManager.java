@@ -1,5 +1,9 @@
 package caveworld.api;
 
+import java.util.Map;
+
+import org.apache.commons.lang3.tuple.Pair;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
@@ -54,22 +58,64 @@ public interface ICaverManager
 	 * Returns miner rank of the entity.
 	 * @param entity The entity
 	 */
-	public int getRank(Entity entity);
+	public int getMinerRank(Entity entity);
+
+	/**
+	 * Returns miner rank name of the entity.
+	 * @param entity The entity
+	 */
+	public String getMinerRankName(Entity entity);
 
 	/**
 	 * Sets miner rank of the entity.
 	 * @param entity The entity
 	 * @param rank The set rank
 	 */
-	public void setRank(Entity entity, int rank);
+	public void setMinerRank(Entity entity, int rank);
 
+	/**
+	 * Returns miner ranks.<br>
+	 * <br>
+	 * <b>key</b>: rank<br>
+	 * <b>pair</b>: left=rank name, right=rank phase
+	 */
+	public Map<Integer, Pair<String, Integer>> getMinerRanks();
+
+	/**
+	 * Returns last dimension before Caveworld dimension for the entity.
+	 * @param entity The entity
+	 * @return dimension id
+	 */
 	public int getLastDimension(Entity entity);
 
 	public void setLastDimension(Entity entity, int dimension);
 
+	/**
+	 * Returns last dimension before Cavern dimension for the entity.
+	 * @param entity The entity
+	 * @return dimension id
+	 */
 	public int getCavernLastDimension(Entity entity);
 
 	public void setCavernLastDimension(Entity entity, int dimension);
+
+	/**
+	 * Returns last dimension before Aqua Cavern dimension for the entity.
+	 * @param entity The entity
+	 * @return dimension id
+	 */
+	public int getAquaCavernLastDimension(Entity entity);
+
+	public void setAquaCavernLastDimension(Entity entity, int dimension);
+
+	/**
+	 * Returns last dimension before Caveland dimension for the entity.
+	 * @param entity The entity
+	 * @return dimension id
+	 */
+	public int getCavelandLastDimension(Entity entity);
+
+	public void setCavelandLastDimension(Entity entity, int dimension);
 
 	public void saveData(Entity entity, NBTTagCompound compound);
 

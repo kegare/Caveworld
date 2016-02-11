@@ -9,6 +9,8 @@
 
 package caveworld.client;
 
+import org.lwjgl.input.Keyboard;
+
 import caveworld.client.config.CycleIntegerEntry;
 import caveworld.client.config.MiningPointsEntry;
 import caveworld.client.config.SelectBiomeEntry;
@@ -16,12 +18,12 @@ import caveworld.client.config.SelectItemEntry;
 import caveworld.client.config.SelectMobEntry;
 import caveworld.client.gui.GuiIngameCaveworldMenu;
 import caveworld.client.gui.MenuType;
+import caveworld.client.renderer.RenderBlockOverlay;
 import caveworld.client.renderer.RenderCaveman;
 import caveworld.client.renderer.RenderCavenicBow;
 import caveworld.client.renderer.RenderCavenicSkeleton;
 import caveworld.client.renderer.RenderCaveniumTool;
 import caveworld.client.renderer.RenderMasterCavenicSkeleton;
-import caveworld.client.renderer.RenderOreOverlay;
 import caveworld.client.renderer.RenderPortalCaveworld;
 import caveworld.client.renderer.TileEntityUniversalChestRenderer;
 import caveworld.core.CommonProxy;
@@ -38,6 +40,7 @@ import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.renderer.entity.RenderZombie;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.client.IItemRenderer;
 import net.minecraftforge.client.MinecraftForgeClient;
 
@@ -55,10 +58,18 @@ public class ClientProxy extends CommonProxy
 	}
 
 	@Override
+	public void registerKeyBindings()
+	{
+		Config.keyBindAtCommand = new KeyBinding("key.atCommand", Keyboard.KEY_GRAVE, "key.categories.caveworld");
+
+		ClientRegistry.registerKeyBinding(Config.keyBindAtCommand);
+	}
+
+	@Override
 	public void registerRenderers()
 	{
 		RenderingRegistry.registerBlockHandler(new RenderPortalCaveworld());
-		RenderingRegistry.registerBlockHandler(new RenderOreOverlay());
+		RenderingRegistry.registerBlockHandler(new RenderBlockOverlay());
 
 		TileEntityUniversalChestRenderer chestRenderer = new TileEntityUniversalChestRenderer();
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityUniversalChest.class, chestRenderer);

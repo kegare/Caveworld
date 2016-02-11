@@ -19,15 +19,14 @@ import org.apache.logging.log4j.Level;
 import caveworld.api.CaveworldAPI;
 import caveworld.client.renderer.EmptyRenderer;
 import caveworld.core.Caveworld;
+import caveworld.network.client.CaveMusicMessage;
 import caveworld.network.client.CaveworldAdjustMessage;
-import caveworld.network.client.PlaySoundMessage;
 import caveworld.util.CaveLog;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChunkCoordinates;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.WorldProviderSurface;
 import net.minecraft.world.chunk.Chunk;
@@ -305,20 +304,9 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 		{
 			if (--ambientTickCountdown <= 0)
 			{
-				String name;
-
-				if (worldObj.rand.nextInt(3) == 0)
-				{
-					name = "ambient.cave";
-				}
-				else
-				{
-					name = "ambient.unrest";
-				}
-
-				Caveworld.network.sendToDimension(new PlaySoundMessage(new ResourceLocation("caveworld", name)), dimensionId);
-
 				ambientTickCountdown = worldObj.rand.nextInt(5000) + 10000;
+
+				Caveworld.network.sendToDimension(new CaveMusicMessage(worldObj.rand.nextInt(3) == 0 ? "cavemusic.cave" : "cavemusic.unrest"), dimensionId);
 			}
 		}
 

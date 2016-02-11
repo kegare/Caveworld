@@ -22,6 +22,8 @@ import caveworld.item.ItemGemOre;
 import caveworld.item.ItemPervertedLeaves;
 import caveworld.item.ItemPervertedLog;
 import caveworld.item.ItemPervertedSapling;
+import caveworld.item.ItemPortalAquaCavern;
+import caveworld.item.ItemPortalCaveland;
 import caveworld.item.ItemPortalCavern;
 import caveworld.item.ItemPortalCaveworld;
 import caveworld.item.ItemRope;
@@ -54,6 +56,8 @@ public class CaveBlocks
 	public static final BlockPervertedLog perverted_log = new BlockPervertedLog("pervertedLog");
 	public static final BlockPervertedLeaves perverted_leaves = new BlockPervertedLeaves("pervertedLeaves");
 	public static final BlockPervertedSapling perverted_sapling = new BlockPervertedSapling("pervertedSapling");
+	public static final BlockPortalAquaCavern aqua_cavern_portal = new BlockPortalAquaCavern("portalAquaCavern");
+	public static final BlockPortalCaveland caveland_portal = new BlockPortalCaveland("portalCaveland");
 
 	public static void registerBlocks()
 	{
@@ -245,6 +249,22 @@ public class CaveBlocks
 			OreDictionary.registerOre("treeSaplingPerverted", new ItemStack(perverted_sapling, 1, OreDictionary.WILDCARD_VALUE));
 
 			Blocks.fire.setFireInfo(perverted_sapling, 60, 180);
+		}
+
+		{
+			GameRegistry.registerBlock(aqua_cavern_portal, ItemPortalAquaCavern.class, "aqua_cavern_portal");
+
+			OreDictionary.registerOre("portalAquaCavern", aqua_cavern_portal);
+
+			BlockDispenser.dispenseBehaviorRegistry.putObject(Item.getItemFromBlock(aqua_cavern_portal), aqua_cavern_portal.new DispencePortal());
+		}
+
+		{
+			GameRegistry.registerBlock(caveland_portal, ItemPortalCaveland.class, "caveland_portal");
+
+			OreDictionary.registerOre("portalCaveland", caveland_portal);
+
+			BlockDispenser.dispenseBehaviorRegistry.putObject(Item.getItemFromBlock(caveland_portal), caveland_portal.new DispencePortal());
 		}
 
 		if (Config.mossStoneCraftRecipe)

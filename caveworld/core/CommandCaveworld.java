@@ -150,7 +150,7 @@ public class CommandCaveworld implements ICommand
 			}
 			else
 			{
-				boolean ret = Config.hardcore || Config.caveborn;
+				boolean ret = CaveworldAPI.isHardcore() || CaveworldAPI.isCaveborn();
 
 				CaveUtils.regenerateDimension(CaveworldAPI.getDimension(), backup, ret);
 				CaveUtils.regenerateDimension(CaveworldAPI.getCavernDimension(), backup, ret);

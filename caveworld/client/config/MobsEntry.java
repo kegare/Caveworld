@@ -26,9 +26,9 @@ import net.minecraftforge.common.config.ConfigElement;
 import net.minecraftforge.common.config.Configuration;
 
 @SideOnly(Side.CLIENT)
-public class EntitiesEntry extends CaveCategoryEntry
+public class MobsEntry extends CaveCategoryEntry
 {
-	public EntitiesEntry(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement prop)
+	public MobsEntry(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement prop)
 	{
 		super(owningScreen, owningEntryList, prop);
 	}
@@ -36,13 +36,13 @@ public class EntitiesEntry extends CaveCategoryEntry
 	@Override
 	protected Configuration getConfig()
 	{
-		return Config.entitiesCfg;
+		return Config.mobsCfg;
 	}
 
 	@Override
 	protected String getEntryName()
 	{
-		return "entities";
+		return "mobs";
 	}
 
 	@Override
@@ -74,7 +74,7 @@ public class EntitiesEntry extends CaveCategoryEntry
 		@Override
 		public String getComment()
 		{
-			return I18n.format(Caveworld.CONFIG_LANG + "entities.entry.tooltip", getName());
+			return I18n.format(Caveworld.CONFIG_LANG + getEntryName() +".entry.tooltip", getName());
 		}
 	}
 }

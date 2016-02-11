@@ -11,7 +11,7 @@ package caveworld.client.renderer;
 
 import org.lwjgl.opengl.GL11;
 
-import caveworld.block.IBlockOreOverlay;
+import caveworld.block.IBlockRenderOverlay;
 import caveworld.core.Config;
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import cpw.mods.fml.relauncher.Side;
@@ -24,7 +24,7 @@ import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 
 @SideOnly(Side.CLIENT)
-public class RenderOreOverlay implements ISimpleBlockRenderingHandler
+public class RenderBlockOverlay implements ISimpleBlockRenderingHandler
 {
 	@Override
 	public void renderInventoryBlock(Block block, int metadata, int modelId, RenderBlocks renderer)
@@ -32,9 +32,9 @@ public class RenderOreOverlay implements ISimpleBlockRenderingHandler
 		IIcon icon;
 		IIcon overlay = null;
 
-		if (Config.oreRenderOverlay && block instanceof IBlockOreOverlay)
+		if (Config.oreRenderOverlay && block instanceof IBlockRenderOverlay)
 		{
-			overlay = ((IBlockOreOverlay)block).getOverlayIcon(metadata);
+			overlay = ((IBlockRenderOverlay)block).getOverlayIcon(metadata);
 		}
 
 		if (overlay == null)
@@ -43,7 +43,17 @@ public class RenderOreOverlay implements ISimpleBlockRenderingHandler
 		}
 		else
 		{
-			icon = renderer.getBlockIcon(Blocks.stone);
+			icon = ((IBlockRenderOverlay)block).getBaseIcon(metadata);
+
+			if (icon == null)
+			{
+				icon = renderer.getBlockIcon(Blocks.stone);
+			}
+			else
+			{
+				icon = renderer.getIconSafe(icon);
+			}
+
 			overlay = renderer.getIconSafe(overlay);
 		}
 
@@ -111,10 +121,11 @@ public class RenderOreOverlay implements ISimpleBlockRenderingHandler
 	{
 		IIcon icon;
 		IIcon overlay = null;
+		int meta = world.getBlockMetadata(x, y, z);
 
-		if (Config.oreRenderOverlay && block instanceof IBlockOreOverlay)
+		if (Config.oreRenderOverlay && block instanceof IBlockRenderOverlay)
 		{
-			overlay = ((IBlockOreOverlay)block).getOverlayIcon(world.getBlockMetadata(x, y, z));
+			overlay = ((IBlockRenderOverlay)block).getOverlayIcon(meta);
 		}
 
 		if (overlay == null)
@@ -123,7 +134,17 @@ public class RenderOreOverlay implements ISimpleBlockRenderingHandler
 		}
 		else
 		{
-			icon = renderer.getBlockIcon(Blocks.stone);
+			icon = ((IBlockRenderOverlay)block).getBaseIcon(meta);
+
+			if (icon == null)
+			{
+				icon = renderer.getBlockIcon(Blocks.stone);
+			}
+			else
+			{
+				icon = renderer.getIconSafe(icon);
+			}
+
 			overlay = renderer.getIconSafe(overlay);
 		}
 
@@ -150,6 +171,6 @@ public class RenderOreOverlay implements ISimpleBlockRenderingHandler
 	@Override
 	public int getRenderId()
 	{
-		return Config.RENDER_TYPE_ORE;
+		return Config.RENDER_TYPE_OVERLAY;
 	}
 }

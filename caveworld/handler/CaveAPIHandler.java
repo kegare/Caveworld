@@ -10,7 +10,10 @@
 package caveworld.handler;
 
 import caveworld.api.ICaveAPIHandler;
+import caveworld.core.Config;
 import caveworld.util.Version;
+import caveworld.world.ChunkProviderAquaCavern;
+import caveworld.world.ChunkProviderCaveland;
 import caveworld.world.ChunkProviderCavern;
 import caveworld.world.ChunkProviderCaveworld;
 import net.minecraft.entity.Entity;
@@ -36,6 +39,18 @@ public class CaveAPIHandler implements ICaveAPIHandler
 	}
 
 	@Override
+	public int getAquaCavernDimension()
+	{
+		return ChunkProviderAquaCavern.dimensionId;
+	}
+
+	@Override
+	public int getCavelandDimension()
+	{
+		return ChunkProviderCaveland.dimensionId;
+	}
+
+	@Override
 	public boolean isEntityInCaveworld(Entity entity)
 	{
 		return entity != null && entity.dimension == getDimension();
@@ -48,8 +63,32 @@ public class CaveAPIHandler implements ICaveAPIHandler
 	}
 
 	@Override
+	public boolean isEntityInAquaCavern(Entity entity)
+	{
+		return entity != null && entity.dimension == getAquaCavernDimension();
+	}
+
+	@Override
+	public boolean isEntityInCaveland(Entity entity)
+	{
+		return entity != null && entity.dimension == getCavelandDimension();
+	}
+
+	@Override
 	public boolean isEntityInCaves(Entity entity)
 	{
-		return isEntityInCaveworld(entity) || isEntityInCavern(entity);
+		return isEntityInCaveworld(entity) || isEntityInCavern(entity) || isEntityInAquaCavern(entity) || isEntityInCaveland(entity);
+	}
+
+	@Override
+	public boolean isHardcore()
+	{
+		return Config.hardcore;
+	}
+
+	@Override
+	public boolean isCaveborn()
+	{
+		return Config.caveborn;
 	}
 }

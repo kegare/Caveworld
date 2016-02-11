@@ -23,7 +23,7 @@ import net.minecraft.client.resources.I18n;
 public class GuiIngameBiomeCustomize extends GuiScreen
 {
 	private GuiButton backButton;
-	private GuiButton caveworldButton, cavernButton;
+	private GuiButton caveworldButton, cavernButton, aquaCavernButton;
 
 	@Override
 	public void initGui()
@@ -52,10 +52,19 @@ public class GuiIngameBiomeCustomize extends GuiScreen
 		cavernButton.xPosition = caveworldButton.xPosition;
 		cavernButton.yPosition = caveworldButton.yPosition + caveworldButton.height + 5;
 
+		if (aquaCavernButton == null)
+		{
+			aquaCavernButton = new GuiButtonExt(3, 0, 0, "Aqua Cavern");
+		}
+
+		aquaCavernButton.xPosition = cavernButton.xPosition;
+		aquaCavernButton.yPosition = cavernButton.yPosition + cavernButton.height + 5;
+
 		buttonList.clear();
 		buttonList.add(backButton);
 		buttonList.add(caveworldButton);
 		buttonList.add(cavernButton);
+		buttonList.add(aquaCavernButton);
 	}
 
 	@Override
@@ -74,6 +83,9 @@ public class GuiIngameBiomeCustomize extends GuiScreen
 					break;
 				case 2:
 					mc.displayGuiScreen(new GuiBiomesEntry(this, CaveworldAPI.biomeCavernManager));
+					break;
+				case 3:
+					mc.displayGuiScreen(new GuiBiomesEntry(this, CaveworldAPI.biomeAquaCavernManager));
 					break;
 			}
 		}

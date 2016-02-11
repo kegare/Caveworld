@@ -11,7 +11,6 @@ package caveworld.network.common;
 
 import caveworld.api.CaveworldAPI;
 import caveworld.client.gui.GuiRegeneration;
-import caveworld.core.Config;
 import caveworld.util.CaveUtils;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -29,6 +28,8 @@ public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMe
 	private boolean backup = true;
 	private boolean caveworld = true;
 	private boolean cavern = true;
+	private boolean aquaCavern = true;
+	private boolean caveland = true;
 
 	public RegenerateMessage() {}
 
@@ -37,11 +38,13 @@ public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMe
 		this.backup = backup;
 	}
 
-	public RegenerateMessage(boolean backup, boolean caveworld, boolean cavern)
+	public RegenerateMessage(boolean backup, boolean caveworld, boolean cavern, boolean aquaCavern, boolean caveland)
 	{
 		this(backup);
 		this.caveworld = caveworld;
 		this.cavern = cavern;
+		this.aquaCavern = aquaCavern;
+		this.caveland = caveland;
 	}
 
 	@Override
@@ -50,6 +53,8 @@ public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMe
 		backup = buffer.readBoolean();
 		caveworld = buffer.readBoolean();
 		cavern = buffer.readBoolean();
+		aquaCavern = buffer.readBoolean();
+		caveland = buffer.readBoolean();
 	}
 
 	@Override
@@ -58,6 +63,8 @@ public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMe
 		buffer.writeBoolean(backup);
 		buffer.writeBoolean(caveworld);
 		buffer.writeBoolean(cavern);
+		buffer.writeBoolean(aquaCavern);
+		buffer.writeBoolean(caveland);
 	}
 
 	@Override
@@ -73,14 +80,26 @@ public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMe
 
 			if (player.mcServer.isSinglePlayer() || player.mcServer.getConfigurationManager().func_152596_g(player.getGameProfile()))
 			{
+				boolean ret = CaveworldAPI.isHardcore() || CaveworldAPI.isCaveborn();
+
 				if (message.caveworld)
 				{
-					CaveUtils.regenerateDimension(CaveworldAPI.getDimension(), message.backup, Config.hardcore || Config.caveborn);
+					CaveUtils.regenerateDimension(CaveworldAPI.getDimension(), message.backup, ret);
 				}
 
 				if (message.cavern)
 				{
-					CaveUtils.regenerateDimension(CaveworldAPI.getCavernDimension(), message.backup, Config.hardcore || Config.caveborn);
+					CaveUtils.regenerateDimension(CaveworldAPI.getCavernDimension(), message.backup, ret);
+				}
+
+				if (message.aquaCavern)
+				{
+					CaveUtils.regenerateDimension(CaveworldAPI.getAquaCavernDimension(), message.backup, ret);
+				}
+
+				if (message.caveland)
+				{
+					CaveUtils.regenerateDimension(CaveworldAPI.getCavelandDimension(), message.backup, ret);
 				}
 			}
 			else return new ProgressNotify(3);

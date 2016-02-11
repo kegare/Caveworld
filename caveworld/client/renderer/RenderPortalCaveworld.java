@@ -11,7 +11,7 @@ package caveworld.client.renderer;
 
 import org.lwjgl.opengl.GL11;
 
-import caveworld.block.CaveBlocks;
+import caveworld.block.IBlockPortal;
 import caveworld.core.Config;
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import cpw.mods.fml.relauncher.Side;
@@ -62,7 +62,7 @@ public class RenderPortalCaveworld implements ISimpleBlockRenderingHandler
 	@Override
 	public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId, RenderBlocks renderer)
 	{
-		renderer.setOverrideBlockTexture(renderer.getIconSafe(CaveBlocks.caveworld_portal.portalIcon));
+		renderer.setOverrideBlockTexture(renderer.getIconSafe(((IBlockPortal)block).getPortalIcon()));
 		renderer.renderStandardBlock(block, x, y, z);
 		renderer.clearOverrideBlockTexture();
 

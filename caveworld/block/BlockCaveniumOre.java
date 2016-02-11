@@ -26,7 +26,7 @@ import net.minecraft.util.IIcon;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.IBlockAccess;
 
-public class BlockCaveniumOre extends BlockOre implements IBlockOreOverlay
+public class BlockCaveniumOre extends BlockOre implements IBlockRenderOverlay
 {
 	private final Random random = new Random();
 
@@ -55,7 +55,7 @@ public class BlockCaveniumOre extends BlockOre implements IBlockOreOverlay
 	@Override
 	public int getRenderType()
 	{
-		return Config.RENDER_TYPE_ORE;
+		return Config.RENDER_TYPE_OVERLAY;
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -100,6 +100,13 @@ public class BlockCaveniumOre extends BlockOre implements IBlockOreOverlay
 			default:
 				return null;
 		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
+	public IIcon getBaseIcon(int metadata)
+	{
+		return null;
 	}
 
 	@Override

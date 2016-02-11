@@ -15,6 +15,8 @@ public class CommonProxy
 {
 	public void initializeConfigEntries() {}
 
+	public void registerKeyBindings() {}
+
 	public void registerRenderers() {}
 
 	public int getUniqueRenderType()

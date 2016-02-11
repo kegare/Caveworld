@@ -9,7 +9,9 @@
 
 package caveworld.network.client;
 
+import caveworld.core.Config;
 import cpw.mods.fml.client.FMLClientHandler;
+import cpw.mods.fml.common.ObfuscationReflectionHelper;
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
@@ -18,47 +20,58 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.audio.ISound;
+import net.minecraft.client.audio.PositionedSound;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.util.ResourceLocation;
 
-public class PlaySoundMessage implements IMessage, IMessageHandler<PlaySoundMessage, IMessage>
+public class CaveMusicMessage implements IMessage, IMessageHandler<CaveMusicMessage, IMessage>
 {
-	private ResourceLocation resource;
+	@SideOnly(Side.CLIENT)
+	public static ISound prevMusic;
 
-	public PlaySoundMessage() {}
+	private String name;
 
-	public PlaySoundMessage(ResourceLocation resource)
+	public CaveMusicMessage() {}
+
+	public CaveMusicMessage(String name)
 	{
-		this.resource = resource;
+		this.name = name;
 	}
 
 	@Override
 	public void fromBytes(ByteBuf buffer)
 	{
-		String domain = ByteBufUtils.readUTF8String(buffer);
-		String path = ByteBufUtils.readUTF8String(buffer);
-
-		resource = new ResourceLocation(domain, path);
+		name = ByteBufUtils.readUTF8String(buffer);
 	}
 
 	@Override
 	public void toBytes(ByteBuf buffer)
 	{
-		ByteBufUtils.writeUTF8String(buffer, resource.getResourceDomain());
-		ByteBufUtils.writeUTF8String(buffer, resource.getResourcePath());
+		ByteBufUtils.writeUTF8String(buffer, name);
 	}
 
 	@SideOnly(Side.CLIENT)
 	@Override
-	public IMessage onMessage(PlaySoundMessage message, MessageContext ctx)
+	public IMessage onMessage(CaveMusicMessage message, MessageContext ctx)
 	{
 		SoundHandler handler = FMLClientHandler.instance().getClient().getSoundHandler();
-		ISound sound = PositionedSoundRecord.func_147673_a(message.resource);
 
-		if (!handler.isSoundPlaying(sound))
+		if (prevMusic != null)
 		{
+			handler.stopSound(prevMusic);
+
+			prevMusic = null;
+		}
+
+		if (Config.caveMusicVolume > 0.0D)
+		{
+			ISound sound = PositionedSoundRecord.func_147673_a(new ResourceLocation("caveworld", message.name));
+			ObfuscationReflectionHelper.setPrivateValue(PositionedSound.class, (PositionedSound)sound, Config.caveMusicVolume, "volume", "field_147662_b");
+
 			handler.playSound(sound);
+
+			prevMusic = sound;
 		}
 
 		return null;

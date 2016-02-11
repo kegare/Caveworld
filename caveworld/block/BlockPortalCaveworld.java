@@ -56,13 +56,13 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import shift.mceconomy2.api.MCEconomyAPI;
 
-public class BlockPortalCaveworld extends BlockPortal implements IInventory
+public class BlockPortalCaveworld extends BlockPortal implements IInventory, IBlockPortal
 {
 	private final ItemStack[] inventoryContents = new ItemStack[getSizeInventory()];
 	private final Table<String, Integer, ChunkCoordinates> portalCoord = HashBasedTable.create();
 
 	@SideOnly(Side.CLIENT)
-	public IIcon portalIcon;
+	private IIcon portalIcon;
 
 	public BlockPortalCaveworld(String name)
 	{
@@ -83,6 +83,13 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 	{
 		blockIcon = iconRegister.registerIcon(getTextureName() + "_block");
 		portalIcon = iconRegister.registerIcon(getTextureName());
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
+	public IIcon getPortalIcon()
+	{
+		return portalIcon;
 	}
 
 	@Override
@@ -295,7 +302,7 @@ public class BlockPortalCaveworld extends BlockPortal implements IInventory
 	{
 		if (!world.isRemote && entity.isEntityAlive())
 		{
-			if (Config.hardcore && CaveworldAPI.isEntityInCaveworld(entity))
+			if (CaveworldAPI.isHardcore() && CaveworldAPI.isEntityInCaveworld(entity))
 			{
 				return;
 			}

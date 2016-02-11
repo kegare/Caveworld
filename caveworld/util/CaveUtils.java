@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
@@ -72,7 +73,7 @@ import net.minecraft.item.ItemSpade;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MathHelper;
@@ -670,7 +671,7 @@ public class CaveUtils
 
 		IChatComponent component;
 
-		component = new ChatComponentText(StatCollector.translateToLocalFormatted("caveworld.regenerate.regenerating", name));
+		component = new ChatComponentTranslation("caveworld.regenerate.regenerating", name);
 		component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
 		server.getConfigurationManager().sendChatMsg(component);
 
@@ -754,7 +755,7 @@ public class CaveUtils
 					FileUtils.deleteQuietly(bak);
 				}
 
-				component = new ChatComponentText(StatCollector.translateToLocalFormatted("caveworld.regenerate.backingup", name));
+				component = new ChatComponentTranslation("caveworld.regenerate.backingup", name);
 				component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
 				server.getConfigurationManager().sendChatMsg(component);
 
@@ -764,13 +765,13 @@ public class CaveUtils
 				{
 					ClickEvent click = new ClickEvent(ClickEvent.Action.OPEN_FILE, FilenameUtils.normalize(bak.getParentFile().getPath()));
 
-					component = new ChatComponentText(StatCollector.translateToLocalFormatted("caveworld.regenerate.backedup", name));
+					component = new ChatComponentTranslation("caveworld.regenerate.backedup", name);
 					component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true).setChatClickEvent(click);
 					server.getConfigurationManager().sendChatMsg(component);
 				}
 				else
 				{
-					component = new ChatComponentText(StatCollector.translateToLocalFormatted("caveworld.regenerate.backup.failed", name));
+					component = new ChatComponentTranslation("caveworld.regenerate.backup.failed", name);
 					component.getChatStyle().setColor(EnumChatFormatting.RED).setItalic(true);
 					server.getConfigurationManager().sendChatMsg(component);
 				}
@@ -802,7 +803,7 @@ public class CaveUtils
 			world.flush();
 		}
 
-		component = new ChatComponentText(StatCollector.translateToLocalFormatted("caveworld.regenerate.regenerated", name));
+		component = new ChatComponentTranslation("caveworld.regenerate.regenerated", name);
 		component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
 		server.getConfigurationManager().sendChatMsg(component);
 
@@ -1016,14 +1017,18 @@ public class CaveUtils
 	public static boolean containsOreDict(ItemStack itemstack, String oredict)
 	{
 		int[] ids = OreDictionary.getOreIDs(itemstack);
-		String[] names = new String[ids.length];
 
 		for (int i = 0; i < ids.length; ++i)
 		{
-			names[i] = OreDictionary.getOreName(ids[i]);
+			String name = OreDictionary.getOreName(ids[i]);
+
+			if (!name.equalsIgnoreCase("Unknown") && StringUtils.contains(name, oredict))
+			{
+				return true;
+			}
 		}
 
-		return ArrayUtils.contains(names, oredict);
+		return false;
 	}
 
 	public static boolean blockFilter(BlockEntry entry, String filter)

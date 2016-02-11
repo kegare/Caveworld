@@ -29,9 +29,11 @@ public class GuiRegeneration extends GuiScreen
 	private boolean backup = true;
 	private boolean caveworld = true;
 	private boolean cavern = true;
+	private boolean aquaCavern = true;
+	private boolean caveland = true;
 
 	protected GuiButton regenButton, openButton, cancelButton;
-	protected GuiCheckBox caveworldCheckBox, cavernCheckBox, backupCheckBox;
+	protected GuiCheckBox caveworldCheckBox, cavernCheckBox, aquaCavernCheckBox, cavelandCheckBox, backupCheckBox;
 
 	private HoverChecker backupHoverChecker;
 
@@ -42,11 +44,13 @@ public class GuiRegeneration extends GuiScreen
 		this.backup = backup;
 	}
 
-	public GuiRegeneration(boolean backup, boolean caveworld, boolean cavern)
+	public GuiRegeneration(boolean backup, boolean caveworld, boolean cavern, boolean aquaCavern, boolean caveland)
 	{
 		this(backup);
 		this.caveworld = caveworld;
 		this.cavern = cavern;
+		this.aquaCavern = aquaCavern;
+		this.caveland = caveland;
 	}
 
 	@Override
@@ -87,6 +91,16 @@ public class GuiRegeneration extends GuiScreen
 			cavernCheckBox = new GuiCheckBox(4, 10, caveworldCheckBox.yPosition + caveworldCheckBox.height + 5, "Cavern", cavern);
 		}
 
+		if (aquaCavernCheckBox == null)
+		{
+			aquaCavernCheckBox = new GuiCheckBox(4, 10, cavernCheckBox.yPosition + cavernCheckBox.height + 5, "Aqua Cavern", aquaCavern);
+		}
+
+		if (cavelandCheckBox == null)
+		{
+			cavelandCheckBox = new GuiCheckBox(4, 10, aquaCavernCheckBox.yPosition + aquaCavernCheckBox.height + 5, "Caveland", caveland);
+		}
+
 		if (backupCheckBox == null)
 		{
 			backupCheckBox = new GuiCheckBox(6, 10, 0, I18n.format("caveworld.regenerate.gui.backup"), backup);
@@ -100,6 +114,8 @@ public class GuiRegeneration extends GuiScreen
 		buttonList.add(cancelButton);
 		buttonList.add(caveworldCheckBox);
 		buttonList.add(cavernCheckBox);
+		buttonList.add(aquaCavernCheckBox);
+		buttonList.add(cavelandCheckBox);
 		buttonList.add(backupCheckBox);
 
 		if (backupHoverChecker == null)
@@ -140,13 +156,15 @@ public class GuiRegeneration extends GuiScreen
 				case 0:
 					boolean caveworld = caveworldCheckBox.isChecked();
 					boolean cavern = cavernCheckBox.isChecked();
+					boolean aquaCavern = aquaCavernCheckBox.isChecked();
+					boolean caveland = cavelandCheckBox.isChecked();
 
-					if (!caveworld && !cavern)
+					if (!caveworld && !cavern && !aquaCavern && !caveland)
 					{
 						break;
 					}
 
-					Caveworld.network.sendToServer(new RegenerateMessage(backupCheckBox.isChecked(), caveworld, cavern));
+					Caveworld.network.sendToServer(new RegenerateMessage(backupCheckBox.isChecked(), caveworld, cavern, aquaCavern, caveland));
 
 					regenButton.enabled = false;
 					cancelButton.visible = false;

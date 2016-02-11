@@ -9,7 +9,6 @@
 
 package caveworld.entity;
 
-import caveworld.api.CaveworldAPI;
 import caveworld.core.CaveAchievementList;
 import caveworld.item.CaveItems;
 import net.minecraft.enchantment.Enchantment;
@@ -25,9 +24,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.MathHelper;
-import net.minecraft.world.EnumDifficulty;
-import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 
 public class EntityMasterCavenicSkeleton extends EntityCavenicSkeleton implements IBossDisplayData
@@ -129,49 +125,6 @@ public class EntityMasterCavenicSkeleton extends EntityCavenicSkeleton implement
 		{
 			((EntityPlayer)entity).triggerAchievement(CaveAchievementList.masterCavenicSkeletonSlayer);
 		}
-	}
-
-	@Override
-	protected boolean isValidLightLevel()
-	{
-		int i = MathHelper.floor_double(posX);
-		int j = MathHelper.floor_double(boundingBox.minY);
-		int k = MathHelper.floor_double(posZ);
-
-		if (worldObj.getSavedLightValue(EnumSkyBlock.Sky, i, j, k) > rand.nextInt(32))
-		{
-			return false;
-		}
-
-		int l = worldObj.getBlockLightValue(i, j, k);
-
-		if (worldObj.isThundering())
-		{
-			int prev = worldObj.skylightSubtracted;
-			worldObj.skylightSubtracted = 10;
-			l = worldObj.getBlockLightValue(i, j, k);
-			worldObj.skylightSubtracted = prev;
-		}
-
-		return l <= rand.nextInt(11);
-	}
-
-	@Override
-	public boolean getCanSpawnHere()
-	{
-		if (CaveworldAPI.isEntityInCaves(this) && worldObj.difficultySetting != EnumDifficulty.PEACEFUL && isValidLightLevel())
-		{
-			if (worldObj.checkNoEntityCollision(boundingBox) && worldObj.getCollidingBoundingBoxes(this, boundingBox).isEmpty() && !worldObj.isAnyLiquid(boundingBox))
-			{
-				int i = MathHelper.floor_double(posX);
-				int j = MathHelper.floor_double(boundingBox.minY);
-				int k = MathHelper.floor_double(posZ);
-
-				return getBlockPathWeight(i, j, k) >= 0.0F;
-			}
-		}
-
-		return false;
 	}
 
 	@Override

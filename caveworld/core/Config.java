@@ -37,6 +37,8 @@ import caveworld.plugin.ICavePlugin;
 import caveworld.util.CaveConfiguration;
 import caveworld.util.CaveLog;
 import caveworld.util.CaveUtils;
+import caveworld.world.ChunkProviderAquaCavern;
+import caveworld.world.ChunkProviderCaveland;
 import caveworld.world.ChunkProviderCavern;
 import caveworld.world.ChunkProviderCaveworld;
 import cpw.mods.fml.client.config.GuiConfigEntries.IConfigEntry;
@@ -45,7 +47,9 @@ import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.monster.EntityCaveSpider;
 import net.minecraft.entity.monster.EntityCreeper;
@@ -71,14 +75,17 @@ public class Config
 	private static final Side side = FMLCommonHandler.instance().getSide();
 
 	public static Configuration generalCfg;
-	public static Configuration entitiesCfg;
+	public static Configuration mobsCfg;
 	public static Configuration dimensionCfg;
 	public static Configuration biomesCfg;
 	public static Configuration biomesCavernCfg;
+	public static Configuration biomesAquaCavernCfg;
 	public static Configuration veinsCfg;
 	public static Configuration veinsCavernCfg;
+	public static Configuration veinsAquaCavernCfg;
 	public static Configuration pluginsCfg;
 
+	public static float caveMusicVolume;
 	public static boolean versionNotify;
 	public static boolean veinsAutoRegister;
 	public static boolean deathLoseMiningPoint;
@@ -106,9 +113,12 @@ public class Config
 	public static Class<? extends IConfigEntry> cycleInteger;
 	public static Class<? extends IConfigEntry> pointsEntry;
 
+	@SideOnly(Side.CLIENT)
+	public static KeyBinding keyBindAtCommand;
+
 	public static final int RENDER_TYPE_PORTAL = Caveworld.proxy.getUniqueRenderType();
 	public static final int RENDER_TYPE_CHEST = Caveworld.proxy.getUniqueRenderType();
-	public static final int RENDER_TYPE_ORE = Caveworld.proxy.getUniqueRenderType();
+	public static final int RENDER_TYPE_OVERLAY = Caveworld.proxy.getUniqueRenderType();
 
 	public static File getConfigDir()
 	{
@@ -200,6 +210,16 @@ public class Config
 		if (generalCfg == null)
 		{
 			generalCfg = loadConfig(category);
+		}
+
+		if (side.isClient())
+		{
+			prop = generalCfg.get(category, "caveMusicVolume", Float.toString(0.5F));
+			prop.setMinValue(0.0F).setMaxValue(1.0F).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+			prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+			propOrder.add(prop.getName());
+			caveMusicVolume = Float.parseFloat(prop.getString()) < 0.0F ? 0.0F : Float.parseFloat(prop.getString()) > 1.0F ? 1.0F : Float.parseFloat(prop.getString());
 		}
 
 		prop = generalCfg.get(category, "versionNotify", true);
@@ -356,7 +376,7 @@ public class Config
 
 		for (String str : miningPoints)
 		{
-			if (!Strings.isNullOrEmpty(str) && str.contains(",") && str.contains(":"))
+			if (!Strings.isNullOrEmpty(str) && str.contains(","))
 			{
 				str = str.trim();
 
@@ -364,160 +384,147 @@ public class Config
 				String str2 = str.substring(0, i);
 				int point = Integer.parseInt(str.substring(i + 1));
 
-				i = str2.lastIndexOf(':');
-				Block block = GameData.getBlockRegistry().getObject(str2.substring(0, i));
-				int meta = Integer.parseInt(str2.substring(i + 1));
-
-				if (block != null && block != Blocks.air)
+				if (str2.contains(":"))
 				{
-					CaveworldAPI.setMiningPointAmount(block, meta, point);
+					i = str2.lastIndexOf(':');
+					Block block = GameData.getBlockRegistry().getObject(str2.substring(0, i));
+
+					if (block != null && block != Blocks.air)
+					{
+						int meta = Integer.parseInt(str2.substring(i + 1));
+
+						CaveworldAPI.setMiningPointAmount(block, meta, point);
+					}
+				}
+				else
+				{
+					CaveworldAPI.setMiningPointAmount(str2, point);
 				}
 			}
 		}
 	}
 
-	public static void syncEntitiesCfg()
+	public static void syncMobsCfg()
 	{
-		String category = "entities";
+		String category = "mobs";
 		Property prop;
 		List<String> propOrder = Lists.newArrayList();
 
-		if (entitiesCfg == null)
+		if (mobsCfg == null)
 		{
-			entitiesCfg = loadConfig(category);
+			mobsCfg = loadConfig(category);
 		}
 
 		category = "Caveman";
-		prop = entitiesCfg.get(category, "spawnWeight", 70);
-		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+		prop = mobsCfg.get(category, "spawnWeight", 70);
+		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		EntityCaveman.spawnWeight = MathHelper.clamp_int(prop.getInt(EntityCaveman.spawnWeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
-		prop = entitiesCfg.get(category, "spawnMinHeight", 10);
-		prop.setMinValue(1).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+		prop = mobsCfg.get(category, "spawnMinHeight", 1);
+		prop.setMinValue(1).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		EntityCaveman.spawnMinHeight = MathHelper.clamp_int(prop.getInt(EntityCaveman.spawnMinHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
-		prop = entitiesCfg.get(category, "spawnMaxHeight", 255);
-		prop.setMinValue(1).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+		prop = mobsCfg.get(category, "spawnMaxHeight", 255);
+		prop.setMinValue(1).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		EntityCaveman.spawnMaxHeight = MathHelper.clamp_int(prop.getInt(EntityCaveman.spawnMaxHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
-		prop = entitiesCfg.get(category, "spawnInChunks", 1);
-		prop.setMinValue(1).setMaxValue(500).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+		prop = mobsCfg.get(category, "spawnInChunks", 1);
+		prop.setMinValue(1).setMaxValue(500).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		EntityCaveman.spawnInChunks = MathHelper.clamp_int(prop.getInt(EntityCaveman.spawnInChunks), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
-		prop = entitiesCfg.get(category, "spawnBiomes", new int[0]);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName()).setConfigEntryClass(selectBiomes);
+		prop = mobsCfg.get(category, "spawnBiomes", new int[0]);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName()).setConfigEntryClass(selectBiomes);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		propOrder.add(prop.getName());
 		EntityCaveman.spawnBiomes = prop.getIntList();
 		EntityCaveman.refreshSpawn();
-		prop = entitiesCfg.get(category, "creatureType", 1);
-		prop.setMinValue(0).setMaxValue(1).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName()).setConfigEntryClass(cycleInteger);
-		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 
-		for (int i = Integer.parseInt(prop.getMinValue()); i <= Integer.parseInt(prop.getMaxValue()); ++i)
-		{
-			prop.comment += Configuration.NEW_LINE;
-
-			if (i == Integer.parseInt(prop.getMaxValue()))
-			{
-				prop.comment += i + ": " + StatCollector.translateToLocal(prop.getLanguageKey() + "." + i);
-			}
-			else
-			{
-				prop.comment += i + ": " + StatCollector.translateToLocal(prop.getLanguageKey() + "." + i) + ", ";
-			}
-		}
-
-		propOrder.add(prop.getName());
-		EntityCaveman.creatureType = MathHelper.clamp_int(prop.getInt(EntityCaveman.creatureType), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
-
-		entitiesCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
-		entitiesCfg.setCategoryPropertyOrder(category, propOrder);
+		mobsCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
+		mobsCfg.setCategoryPropertyOrder(category, propOrder);
 
 		propOrder = Lists.newArrayList();
 		category = "ArcherZombie";
-		prop = entitiesCfg.get(category, "spawnWeight", 100);
-		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+		prop = mobsCfg.get(category, "spawnWeight", 100);
+		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		EntityArcherZombie.spawnWeight = MathHelper.clamp_int(prop.getInt(EntityArcherZombie.spawnWeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
-		prop = entitiesCfg.get(category, "spawnMinHeight", 10);
-		prop.setMinValue(1).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+		prop = mobsCfg.get(category, "spawnMinHeight", 1);
+		prop.setMinValue(1).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		EntityArcherZombie.spawnMinHeight = MathHelper.clamp_int(prop.getInt(EntityArcherZombie.spawnMinHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
-		prop = entitiesCfg.get(category, "spawnMaxHeight", 255);
-		prop.setMinValue(1).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+		prop = mobsCfg.get(category, "spawnMaxHeight", 255);
+		prop.setMinValue(1).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		EntityArcherZombie.spawnMaxHeight = MathHelper.clamp_int(prop.getInt(EntityArcherZombie.spawnMaxHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
-		prop = entitiesCfg.get(category, "spawnInChunks", 4);
-		prop.setMinValue(1).setMaxValue(500).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+		prop = mobsCfg.get(category, "spawnInChunks", 4);
+		prop.setMinValue(1).setMaxValue(500).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		EntityArcherZombie.spawnInChunks = MathHelper.clamp_int(prop.getInt(EntityArcherZombie.spawnInChunks), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
-		prop = entitiesCfg.get(category, "spawnBiomes", new int[0]);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName()).setConfigEntryClass(selectBiomes);
+		prop = mobsCfg.get(category, "spawnBiomes", new int[0]);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName()).setConfigEntryClass(selectBiomes);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		propOrder.add(prop.getName());
 		EntityArcherZombie.spawnBiomes = prop.getIntList();
 		EntityArcherZombie.refreshSpawn();
 
-		entitiesCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
-		entitiesCfg.setCategoryPropertyOrder(category, propOrder);
+		mobsCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
+		mobsCfg.setCategoryPropertyOrder(category, propOrder);
 
 		propOrder = Lists.newArrayList();
 		category = "CavenicSkeleton";
-		prop = entitiesCfg.get(category, "spawnWeight", 60);
-		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+		prop = mobsCfg.get(category, "spawnWeight", 80);
+		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		EntityCavenicSkeleton.spawnWeight = MathHelper.clamp_int(prop.getInt(EntityCavenicSkeleton.spawnWeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
-		prop = entitiesCfg.get(category, "spawnMinHeight", 100);
-		prop.setMinValue(1).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+		prop = mobsCfg.get(category, "spawnMinHeight", 1);
+		prop.setMinValue(1).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		EntityCavenicSkeleton.spawnMinHeight = MathHelper.clamp_int(prop.getInt(EntityCavenicSkeleton.spawnMinHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
-		prop = entitiesCfg.get(category, "spawnMaxHeight", 200);
-		prop.setMinValue(1).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+		prop = mobsCfg.get(category, "spawnMaxHeight", 255);
+		prop.setMinValue(1).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		EntityCavenicSkeleton.spawnMaxHeight = MathHelper.clamp_int(prop.getInt(EntityCavenicSkeleton.spawnMaxHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
-		prop = entitiesCfg.get(category, "spawnInChunks", 2);
-		prop.setMinValue(1).setMaxValue(500).setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName());
+		prop = mobsCfg.get(category, "spawnInChunks", 3);
+		prop.setMinValue(1).setMaxValue(500).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		EntityCavenicSkeleton.spawnInChunks = MathHelper.clamp_int(prop.getInt(EntityCavenicSkeleton.spawnInChunks), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
-		prop = entitiesCfg.get(category, "spawnBiomes", new int[0]);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + "entities.entry." + prop.getName()).setConfigEntryClass(selectBiomes);
+		prop = mobsCfg.get(category, "spawnBiomes", new int[0]);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName()).setConfigEntryClass(selectBiomes);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		propOrder.add(prop.getName());
 		EntityCavenicSkeleton.spawnBiomes = prop.getIntList();
 		EntityCavenicSkeleton.refreshSpawn();
 
-		entitiesCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
-		entitiesCfg.setCategoryPropertyOrder(category, propOrder);
+		mobsCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
+		mobsCfg.setCategoryPropertyOrder(category, propOrder);
 
-		if (entitiesCfg.hasChanged())
+		if (mobsCfg.hasChanged())
 		{
-			entitiesCfg.save();
+			mobsCfg.save();
 		}
 	}
 
@@ -701,6 +708,80 @@ public class Config
 
 		propOrder.add(prop.getName());
 		ChunkProviderCavern.caveType = MathHelper.clamp_int(prop.getInt(ChunkProviderCavern.caveType), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+
+		dimensionCfg.setCategoryPropertyOrder(category, propOrder);
+
+		propOrder = Lists.newArrayList();
+		category = "Aqua Cavern";
+
+		dimensionCfg.addCustomCategoryComment(category, "If multiplayer, server-side only.");
+
+		prop = dimensionCfg.get(category, "dimension", -10);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName()).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderAquaCavern.dimensionId = prop.getInt(ChunkProviderAquaCavern.dimensionId);
+
+		if (ChunkProviderAquaCavern.dimensionId == 0)
+		{
+			prop.set(DimensionManager.getNextFreeDimId());
+
+			ChunkProviderAquaCavern.dimensionId = prop.getInt();
+		}
+
+		prop = dimensionCfg.get(category, "subsurfaceHeight", 255);
+		prop.setMinValue(63).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderAquaCavern.subsurfaceHeight = MathHelper.clamp_int(prop.getInt(ChunkProviderAquaCavern.subsurfaceHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		prop = dimensionCfg.get(category, "generateRavine", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderAquaCavern.generateRavine = prop.getBoolean(ChunkProviderAquaCavern.generateRavine);
+
+		dimensionCfg.setCategoryPropertyOrder(category, propOrder);
+
+		propOrder = Lists.newArrayList();
+		category = "Caveland";
+
+		dimensionCfg.addCustomCategoryComment(category, "If multiplayer, server-side only.");
+
+		prop = dimensionCfg.get(category, "dimension", -11);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName()).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderCaveland.dimensionId = prop.getInt(ChunkProviderCaveland.dimensionId);
+
+		if (ChunkProviderCaveland.dimensionId == 0)
+		{
+			prop.set(DimensionManager.getNextFreeDimId());
+
+			ChunkProviderCaveland.dimensionId = prop.getInt();
+		}
+
+		prop = dimensionCfg.get(category, "subsurfaceHeight", 255);
+		prop.setMinValue(63).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderCaveland.subsurfaceHeight = MathHelper.clamp_int(prop.getInt(ChunkProviderCaveland.subsurfaceHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		prop = dimensionCfg.get(category, "generateLakes", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderCaveland.generateLakes = prop.getBoolean(ChunkProviderCaveland.generateLakes);
+		prop = dimensionCfg.get(category, "generateAnimalDungeons", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderCaveland.generateAnimalDungeons = prop.getBoolean(ChunkProviderCaveland.generateAnimalDungeons);
 
 		dimensionCfg.setCategoryPropertyOrder(category, propOrder);
 
@@ -920,6 +1001,111 @@ public class Config
 		}
 	}
 
+	public static void syncBiomesAquaCavernCfg()
+	{
+		String category = "biomes";
+		Property prop;
+		List<String> propOrder = Lists.newArrayList();
+
+		if (biomesAquaCavernCfg == null)
+		{
+			biomesAquaCavernCfg = loadConfig("aquacavern", category);
+		}
+		else
+		{
+			CaveworldAPI.clearAquaCavernBiomes();
+		}
+
+		String name, terrainBlock, topBlock;
+		int weight, terrainMeta, topMeta;
+
+		for (BiomeGenBase biome : CaveUtils.getBiomes())
+		{
+			name = Integer.toString(biome.biomeID);
+
+			if (CaveBiomeManager.presets.containsKey(biome))
+			{
+				ICaveBiome entry = CaveBiomeManager.presets.get(biome);
+
+				weight = entry.getGenWeight();
+				terrainBlock = GameData.getBlockRegistry().getNameForObject(entry.getTerrainBlock().getBlock());
+				terrainMeta = entry.getTerrainBlock().getMetadata();
+				topBlock = GameData.getBlockRegistry().getNameForObject(entry.getTopBlock().getBlock());
+				topMeta = entry.getTopBlock().getMetadata();
+			}
+			else
+			{
+				weight = 0;
+				terrainBlock = GameData.getBlockRegistry().getNameForObject(Blocks.stone);
+				terrainMeta = 0;
+				topBlock = terrainBlock;
+				topMeta = terrainMeta;
+			}
+
+			propOrder = Lists.newArrayList();
+			prop = biomesAquaCavernCfg.get(name, "genWeight", weight);
+			prop.setMinValue(0).setMaxValue(100).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+			prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+			propOrder.add(prop.getName());
+			weight = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+			prop = biomesAquaCavernCfg.get(name, "terrainBlock", terrainBlock);
+			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+			prop.comment += " [default: " + prop.getDefault() + "]";
+			propOrder.add(prop.getName());
+			terrainBlock = prop.getString();
+			if (!GameData.getBlockRegistry().containsKey(terrainBlock)) prop.setToDefault();
+			prop = biomesAquaCavernCfg.get(name, "terrainBlockMetadata", terrainMeta);
+			prop.setMinValue(0).setMaxValue(15).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+			prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+			propOrder.add(prop.getName());
+			terrainMeta = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+			prop = biomesAquaCavernCfg.get(name, "topBlock", topBlock);
+			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+			prop.comment += " [default: " + prop.getDefault() + "]";
+			propOrder.add(prop.getName());
+			topBlock = prop.getString();
+			if (!GameData.getBlockRegistry().containsKey(topBlock)) prop.setToDefault();
+			prop = biomesAquaCavernCfg.get(name, "topBlockMetadata", topMeta);
+			prop.setMinValue(0).setMaxValue(15).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+			prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+			propOrder.add(prop.getName());
+			topMeta = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+
+			if (BiomeDictionary.isBiomeRegistered(biome))
+			{
+				Set<String> types = Sets.newTreeSet();
+
+				for (Type type : BiomeDictionary.getTypesForBiome(biome))
+				{
+					types.add(type.name());
+				}
+
+				biomesAquaCavernCfg.addCustomCategoryComment(name, biome.biomeName + ": " + Joiner.on(", ").skipNulls().join(types));
+			}
+			else
+			{
+				biomesAquaCavernCfg.addCustomCategoryComment(name, biome.biomeName);
+			}
+
+			biomesAquaCavernCfg.setCategoryPropertyOrder(name, propOrder);
+
+			if (weight > 0)
+			{
+				CaveworldAPI.addAquaCavernBiome(new CaveBiome(biome, weight, new BlockEntry(terrainBlock, terrainMeta), new BlockEntry(topBlock, topMeta)));
+			}
+		}
+
+		if (biomesAquaCavernCfg.hasChanged())
+		{
+			biomesAquaCavernCfg.save();
+		}
+	}
+
 	public static void syncVeinsCfg()
 	{
 		if (veinsCfg == null)
@@ -1107,6 +1293,89 @@ public class Config
 		if (veinsCavernCfg.hasChanged())
 		{
 			veinsCavernCfg.save();
+		}
+	}
+
+	public static void syncVeinsAquaCavernCfg()
+	{
+		if (veinsAquaCavernCfg == null)
+		{
+			veinsAquaCavernCfg = loadConfig("aquacavern", "veins");
+		}
+		else
+		{
+			CaveworldAPI.clearAquaCavernVeins();
+		}
+
+		if (veinsAquaCavernCfg.getCategoryNames().isEmpty())
+		{
+			List<ICaveVein> veins = Lists.newArrayList();
+
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 0), 5, 10, 100, 0, 255));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 0), 20, 3, 8, 0, 255));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 1), 2, 4, 100, 128, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 17, 30, 100, 0, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 85, 2, 10, 0, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 10, 45, 100, 0, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 50, 2, 10, 0, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.gold_ore, 0), 8, 7, 100, 0, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.gold_ore, 0), 24, 2, 8, 0, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.redstone_ore, 0), 7, 18, 100, 0, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.redstone_ore, 0), 30, 2, 8, 0, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.lapis_ore, 0), 5, 10, 100, 0, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.lapis_ore, 0), 18, 2, 8, 0, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.diamond_ore, 0), 8, 3, 100, 0, 20));
+			veins.add(new CaveVein(new BlockEntry(Blocks.diamond_ore, 0), 15, 2, 5, 0, 20));
+			veins.add(new CaveVein(new BlockEntry(Blocks.emerald_ore, 0), 5, 7, 100, 0, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.emerald_ore, 0), 16, 2, 6, 0, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.dirt, 0), 25, 20, 100, 0, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.gravel, 0), 20, 30, 100, 0, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.sand, 0), 20, 20, 100, 0, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.clay, 0), 20, 20, 100, 0, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.stained_hardened_clay, 1), 24, 20, 100, 0, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
+			veins.add(new CaveVein(new BlockEntry(Blocks.stained_hardened_clay, 12), 24, 14, 100, 0, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 0), 30, 35, 100, 0, 255));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 2), 10, 32, 100, 0, 255));
+
+			for (ICaveVein entry : veins)
+			{
+				CaveworldAPI.addAquaCavernVein(entry);
+			}
+		}
+		else
+		{
+			int i = 0;
+
+			for (String name : veinsAquaCavernCfg.getCategoryNames())
+			{
+				if (NumberUtils.isNumber(name))
+				{
+					CaveworldAPI.addAquaCavernVein(null);
+				}
+				else ++i;
+			}
+
+			if (i > 0)
+			{
+				try
+				{
+					FileUtils.forceDelete(new File(veinsAquaCavernCfg.toString()));
+
+					CaveworldAPI.clearAquaCavernVeins();
+
+					veinsAquaCavernCfg = null;
+					syncVeinsAquaCavernCfg();
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
+			}
+		}
+
+		if (veinsAquaCavernCfg.hasChanged())
+		{
+			veinsAquaCavernCfg.save();
 		}
 	}
 

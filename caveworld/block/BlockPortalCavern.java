@@ -48,10 +48,10 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import shift.mceconomy2.api.MCEconomyAPI;
 
-public class BlockPortalCavern extends BlockPortal
+public class BlockPortalCavern extends BlockPortal implements IBlockPortal
 {
 	@SideOnly(Side.CLIENT)
-	public IIcon portalIcon;
+	private IIcon portalIcon;
 
 	public BlockPortalCavern(String name)
 	{
@@ -72,6 +72,13 @@ public class BlockPortalCavern extends BlockPortal
 	{
 		blockIcon = iconRegister.registerIcon(getTextureName() + "_block");
 		portalIcon = iconRegister.registerIcon(getTextureName());
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
+	public IIcon getPortalIcon()
+	{
+		return portalIcon;
 	}
 
 	@Override

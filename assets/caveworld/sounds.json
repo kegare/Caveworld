@@ -1,19 +1,39 @@
 {
-  "ambient.cave": {
-    "category": "ambient",
+  "cavemusic.cave": {
+    "category": "master",
     "sounds": [
       {
-        "name": "ambient/cave",
+        "name": "cavemusic/cave",
         "volume": 0.5,
         "stream": true
       }
     ]
   },
-  "ambient.unrest": {
-    "category": "ambient",
+  "cavemusic.unrest": {
+    "category": "master",
     "sounds": [
       {
-        "name": "ambient/unrest",
+        "name": "cavemusic/unrest",
+        "volume": 0.5,
+        "stream": true
+      }
+    ]
+  },
+  "cavemusic.aqua": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "cavemusic/aqua",
+        "volume": 0.5,
+        "stream": true
+      }
+    ]
+  },
+  "cavemusic.hope": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "cavemusic/hope",
         "volume": 0.5,
         "stream": true
       }
@@ -23,6 +43,12 @@
     "category": "block",
     "sounds": [
       "caveworld_portal"
+    ]
+  },
+  "minerrank.promoted": {
+    "category": "player",
+    "sounds": [
+      "promoted"
     ]
   }
 }

@@ -104,7 +104,7 @@ public class EntityCavenicSkeleton extends EntitySkeleton
 	@Override
 	public IEntityLivingData onSpawnWithEgg(IEntityLivingData data)
 	{
-		if (!worldObj.isRemote && rand.nextInt(100) == 0)
+		if (!worldObj.isRemote && rand.nextInt(80) == 0)
 		{
 			EntityMasterCavenicSkeleton master = new EntityMasterCavenicSkeleton(worldObj);
 			master.setLocationAndAngles(posX, posY, posZ, rotationYaw, rotationPitch);
@@ -125,13 +125,15 @@ public class EntityCavenicSkeleton extends EntitySkeleton
 	@Override
 	public void onStruckByLightning(EntityLightningBolt thunder)
 	{
-		if (!worldObj.isRemote && rand.nextInt(3) == 0)
+		if (!worldObj.isRemote && rand.nextInt(2) == 0)
 		{
 			EntityMasterCavenicSkeleton master = new EntityMasterCavenicSkeleton(worldObj);
 			master.setLocationAndAngles(posX, posY, posZ, rotationYaw, rotationPitch);
 
 			worldObj.spawnEntityInWorld(master);
 			setDead();
+
+			return;
 		}
 
 		super.onStruckByLightning(thunder);
@@ -255,12 +257,17 @@ public class EntityCavenicSkeleton extends EntitySkeleton
 		}
 	}
 
-	@Override
-	public boolean getCanSpawnHere()
+	public boolean isValidHeight()
 	{
 		int y = MathHelper.floor_double(boundingBox.minY);
 
-		return CaveworldAPI.isEntityInCaves(this) && y >= spawnMinHeight && y <= spawnMaxHeight && super.getCanSpawnHere();
+		return y >= spawnMinHeight && y <= spawnMaxHeight;
+	}
+
+	@Override
+	public boolean getCanSpawnHere()
+	{
+		return CaveworldAPI.isEntityInCaves(this) && isValidHeight() && super.getCanSpawnHere();
 	}
 
 	@Override

@@ -41,7 +41,7 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 
-public class BlockGemOre extends BlockOre implements IBlockOreOverlay
+public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 {
 	private final Random random = new Random();
 
@@ -66,7 +66,7 @@ public class BlockGemOre extends BlockOre implements IBlockOreOverlay
 	@Override
 	public int getRenderType()
 	{
-		return Config.RENDER_TYPE_ORE;
+		return Config.RENDER_TYPE_OVERLAY;
 	}
 
 	@Override
@@ -304,6 +304,13 @@ public class BlockGemOre extends BlockOre implements IBlockOreOverlay
 			default:
 				return null;
 		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
+	public IIcon getBaseIcon(int metadata)
+	{
+		return null;
 	}
 
 	@SideOnly(Side.CLIENT)

@@ -17,7 +17,6 @@ import java.util.Set;
 import org.apache.logging.log4j.Level;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import caveworld.api.BlockEntry;
@@ -35,14 +34,16 @@ import caveworld.item.CaveItems;
 import caveworld.item.ItemDiggingShovel;
 import caveworld.item.ItemLumberingAxe;
 import caveworld.item.ItemMiningPickaxe;
+import caveworld.network.client.AquaCavernAdjustMessage;
 import caveworld.network.client.BiomeAdjustMessage;
+import caveworld.network.client.CaveMusicMessage;
+import caveworld.network.client.CavelandAdjustMessage;
 import caveworld.network.client.CaverAdjustMessage;
 import caveworld.network.client.CavernAdjustMessage;
 import caveworld.network.client.CaveworldAdjustMessage;
 import caveworld.network.client.CaveworldMenuMessage;
 import caveworld.network.client.MultiBreakCountMessage;
 import caveworld.network.client.OpenUrlMessage;
-import caveworld.network.client.PlaySoundMessage;
 import caveworld.network.client.VeinAdjustMessage;
 import caveworld.network.common.RegenerateMessage;
 import caveworld.network.server.CaveAchievementMessage;
@@ -54,6 +55,8 @@ import caveworld.util.CaveLog;
 import caveworld.util.CaveUtils;
 import caveworld.util.SubItemHelper;
 import caveworld.util.Version;
+import caveworld.world.WorldProviderAquaCavern;
+import caveworld.world.WorldProviderCaveland;
 import caveworld.world.WorldProviderCavern;
 import caveworld.world.WorldProviderCaveworld;
 import cpw.mods.fml.common.DummyModContainer;
@@ -85,7 +88,6 @@ import net.minecraft.block.BlockOre;
 import net.minecraft.block.BlockRedstoneOre;
 import net.minecraft.block.BlockRotatedPillar;
 import net.minecraft.block.material.Material;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -133,18 +135,13 @@ public class Caveworld
 		CaveworldAPI.veinManager = new CaveVeinManager();
 		CaveworldAPI.biomeCavernManager = new CavernBiomeManager();
 		CaveworldAPI.veinCavernManager = new CavernVeinManager();
+		CaveworldAPI.biomeAquaCavernManager = new AquaCavernBiomeManager();
+		CaveworldAPI.veinAquaCavernManager = new AquaCavernVeinManager();
 		CaveworldAPI.caverManager = new CaverManager();
 
 		Version.versionCheck();
 
 		RecipeSorter.register(MODID + ":cavenium_tool", RecipeCaveniumTool.class, Category.SHAPED, "after:minecraft:shaped");
-
-		for (Item item : GameData.getItemRegistry().typeSafeIterable())
-		{
-			CaveUtils.isItemPickaxe(item);
-			CaveUtils.isItemAxe(item);
-			CaveUtils.isItemShovel(item);
-		}
 	}
 
 	@EventHandler
@@ -152,11 +149,13 @@ public class Caveworld
 	{
 		network.registerMessage(CaveworldAdjustMessage.class, CaveworldAdjustMessage.class, messageNext++, Side.CLIENT);
 		network.registerMessage(CavernAdjustMessage.class, CavernAdjustMessage.class, messageNext++, Side.CLIENT);
+		network.registerMessage(AquaCavernAdjustMessage.class, AquaCavernAdjustMessage.class, messageNext++, Side.CLIENT);
+		network.registerMessage(CavelandAdjustMessage.class, CavelandAdjustMessage.class, messageNext++, Side.CLIENT);
 		network.registerMessage(CaverAdjustMessage.class, CaverAdjustMessage.class, messageNext++, Side.CLIENT);
 		network.registerMessage(BiomeAdjustMessage.class, BiomeAdjustMessage.class, messageNext++, Side.CLIENT);
 		network.registerMessage(VeinAdjustMessage.class, VeinAdjustMessage.class, messageNext++, Side.CLIENT);
 		network.registerMessage(OpenUrlMessage.class, OpenUrlMessage.class, messageNext++, Side.CLIENT);
-		network.registerMessage(PlaySoundMessage.class, PlaySoundMessage.class, messageNext++, Side.CLIENT);
+		network.registerMessage(CaveMusicMessage.class, CaveMusicMessage.class, messageNext++, Side.CLIENT);
 		network.registerMessage(RegenerateMessage.class, RegenerateMessage.class, messageNext++, Side.CLIENT);
 		network.registerMessage(RegenerateMessage.class, RegenerateMessage.class, messageNext++, Side.SERVER);
 		network.registerMessage(RegenerateMessage.ProgressNotify.class, RegenerateMessage.ProgressNotify.class, messageNext++, Side.CLIENT);
@@ -172,6 +171,8 @@ public class Caveworld
 		CaveItems.registerItems();
 
 		GameRegistry.registerFuelHandler(new CaveFuelHandler());
+
+		proxy.registerKeyBindings();
 	}
 
 	@EventHandler
@@ -189,7 +190,7 @@ public class Caveworld
 
 		proxy.registerRenderers();
 
-		Config.syncEntitiesCfg();
+		Config.syncMobsCfg();
 		Config.syncDimensionCfg();
 
 		id = CaveworldAPI.getDimension();
@@ -200,6 +201,14 @@ public class Caveworld
 		DimensionManager.registerProviderType(id, WorldProviderCavern.class, true);
 		DimensionManager.registerDimension(id, id);
 
+		id = CaveworldAPI.getAquaCavernDimension();
+		DimensionManager.registerProviderType(id, WorldProviderAquaCavern.class, true);
+		DimensionManager.registerDimension(id, id);
+
+		id = CaveworldAPI.getCavelandDimension();
+		DimensionManager.registerProviderType(id, WorldProviderCaveland.class, true);
+		DimensionManager.registerDimension(id, id);
+
 		NetworkRegistry.INSTANCE.registerGuiHandler(this, new CaveGuiHandler());
 
 		FMLCommonHandler.instance().bus().register(CaveEventHooks.instance);
@@ -207,38 +216,26 @@ public class Caveworld
 		MinecraftForge.EVENT_BUS.register(CaveEventHooks.instance);
 
 		CaveAchievementList.registerAchievements();
+	}
 
+	@EventHandler
+	public void postInit(final FMLPostInitializationEvent event)
+	{
 		SubItemHelper.cacheSubBlocks(event.getSide());
 		SubItemHelper.cacheSubItems(event.getSide());
 
-		List list = Lists.newArrayList();
+		for (Item item : GameData.getItemRegistry().typeSafeIterable())
+		{
+			CaveUtils.isItemPickaxe(item);
+			CaveUtils.isItemAxe(item);
+			CaveUtils.isItemShovel(item);
+		}
 
 		for (Block block : GameData.getBlockRegistry().typeSafeIterable())
 		{
 			try
 			{
-				Item item = Item.getItemFromBlock(block);
-
-				list.clear();
-
-				if (event.getSide().isClient())
-				{
-					CreativeTabs tab = block.getCreativeTabToDisplayOn();
-
-					if (tab == null)
-					{
-						tab = CreativeTabs.tabAllSearch;
-					}
-
-					if (item != null)
-					{
-						block.getSubBlocks(item, tab, list);
-					}
-				}
-				else
-				{
-					list = SubItemHelper.getSubBlocks(block);
-				}
+				List<ItemStack> list = SubItemHelper.getSubBlocks(block);
 
 				if (list.isEmpty())
 				{
@@ -277,10 +274,8 @@ public class Caveworld
 						}
 					}
 				}
-				else for (Object obj : list)
+				else for (ItemStack itemstack : list)
 				{
-					ItemStack itemstack = (ItemStack)obj;
-
 					if (itemstack != null && itemstack.getItem() != null)
 					{
 						Block sub = Block.getBlockFromItem(itemstack.getItem());
@@ -331,11 +326,7 @@ public class Caveworld
 			}
 			catch (Throwable e) {}
 		}
-	}
 
-	@EventHandler
-	public void postInit(final FMLPostInitializationEvent event)
-	{
 		CaveworldAPI.setMiningPointAmount("oreCoal", 1);
 		CaveworldAPI.setMiningPointAmount("oreIron", 1);
 		CaveworldAPI.setMiningPointAmount("oreGold", 1);
@@ -411,8 +402,10 @@ public class Caveworld
 
 		Config.syncBiomesCfg();
 		Config.syncBiomesCavernCfg();
+		Config.syncBiomesAquaCavernCfg();
 		Config.syncVeinsCfg();
 		Config.syncVeinsCavernCfg();
+		Config.syncVeinsAquaCavernCfg();
 
 		CavePlugins.registerPlugins();
 		Config.syncPluginsCfg();

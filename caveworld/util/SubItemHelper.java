@@ -38,8 +38,9 @@ public class SubItemHelper
 			try
 			{
 				List<ItemStack> list = Lists.newArrayList();
+				Item item = Item.getItemFromBlock(block);
 
-				if (Item.getItemFromBlock(block) == null)
+				if (item == null)
 				{
 					cachedSubBlocks.put(block, list);
 					continue;
@@ -54,7 +55,7 @@ public class SubItemHelper
 						tab = CreativeTabs.tabAllSearch;
 					}
 
-					block.getSubBlocks(Item.getItemFromBlock(block), tab, list);
+					block.getSubBlocks(item, tab, list);
 				}
 
 				if (list.isEmpty())

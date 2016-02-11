@@ -3,8 +3,13 @@ package caveworld.api;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+
+import org.apache.commons.lang3.tuple.Pair;
+
+import com.google.common.collect.Maps;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
@@ -20,13 +25,15 @@ public final class CaveworldAPI
 {
 	public static final String
 	MODID = "caveworld",
-	API_VERSION = "2.0.9";
+	API_VERSION = "2.1.0";
 
 	public static ICaveAPIHandler apiHandler;
 	public static ICaveBiomeManager biomeManager;
 	public static ICaveVeinManager veinManager;
 	public static ICaveBiomeManager biomeCavernManager;
 	public static ICaveVeinManager veinCavernManager;
+	public static ICaveBiomeManager biomeAquaCavernManager;
+	public static ICaveVeinManager veinAquaCavernManager;
 	public static ICaverManager caverManager;
 
 	private CaveworldAPI() {}
@@ -56,6 +63,22 @@ public final class CaveworldAPI
 	}
 
 	/**
+	 * @see ICaveAPIHandler#getAquaCavernDimension()
+	 */
+	public static int getAquaCavernDimension()
+	{
+		return apiHandler == null ? DimensionManager.getNextFreeDimId() : apiHandler.getAquaCavernDimension();
+	}
+
+	/**
+	 * @see ICaveAPIHandler#getCavelandDimension()
+	 */
+	public static int getCavelandDimension()
+	{
+		return apiHandler == null ? DimensionManager.getNextFreeDimId() : apiHandler.getCavelandDimension();
+	}
+
+	/**
 	 * @see ICaveAPIHandler#isEntityInCaveworld(Entity)
 	 */
 	public static boolean isEntityInCaveworld(Entity entity)
@@ -72,11 +95,43 @@ public final class CaveworldAPI
 	}
 
 	/**
+	 * @see ICaveAPIHandler#isEntityInAquaCavern(Entity)
+	 */
+	public static boolean isEntityInAquaCavern(Entity entity)
+	{
+		return apiHandler != null && apiHandler.isEntityInAquaCavern(entity);
+	}
+
+	/**
+	 * @see ICaveAPIHandler#isEntityInCaveland(Entity)
+	 */
+	public static boolean isEntityInCaveland(Entity entity)
+	{
+		return apiHandler != null && apiHandler.isEntityInCaveland(entity);
+	}
+
+	/**
 	 * @see ICaveAPIHandler#isEntityInCaves(Entity)
 	 */
 	public static boolean isEntityInCaves(Entity entity)
 	{
 		return apiHandler != null && apiHandler.isEntityInCaves(entity);
+	}
+
+	/**
+	 * @see ICaveAPIHandler#isHardcore()
+	 */
+	public static boolean isHardcore()
+	{
+		return apiHandler != null && apiHandler.isHardcore();
+	}
+
+	/**
+	 * @see ICaveAPIHandler#isCaveborn()
+	 */
+	public static boolean isCaveborn()
+	{
+		return apiHandler != null && apiHandler.isCaveborn();
 	}
 
 	/**
@@ -239,7 +294,7 @@ public final class CaveworldAPI
 	 */
 	public static Set<ICaveBiome> getCavernBiomes()
 	{
-		return biomeCavernManager == null ? new HashSet<ICaveBiome>() : biomeManager.getCaveBiomes();
+		return biomeCavernManager == null ? new HashSet<ICaveBiome>() : biomeCavernManager.getCaveBiomes();
 	}
 
 	/**
@@ -247,7 +302,7 @@ public final class CaveworldAPI
 	 */
 	public static List<BiomeGenBase> getCavernBiomeList()
 	{
-		return biomeCavernManager == null ? new ArrayList<BiomeGenBase>() : biomeManager.getBiomeList();
+		return biomeCavernManager == null ? new ArrayList<BiomeGenBase>() : biomeCavernManager.getBiomeList();
 	}
 
 	/**
@@ -309,10 +364,126 @@ public final class CaveworldAPI
 		}
 	}
 
+	/**
+	 * @see ICaveBiomeManager#addCaveBiome(ICaveBiome)
+	 */
+	public static boolean addAquaCavernBiome(ICaveBiome biome)
+	{
+		return biomeAquaCavernManager != null && biomeAquaCavernManager.addCaveBiome(biome);
+	}
+
+	/**
+	 * @see ICaveBiomeManager#removeCaveBiome(BiomeGenBase)
+	 */
+	public static boolean removeAquaCavernBiome(BiomeGenBase biome)
+	{
+		return biomeAquaCavernManager != null && biomeAquaCavernManager.removeCaveBiome(biome);
+	}
+
+	/**
+	 * @see ICaveBiomeManager#getActiveBiomeCount()
+	 */
+	public static int getActiveAquaCavernBiomeCount()
+	{
+		return biomeAquaCavernManager == null ? 0 : biomeAquaCavernManager.getActiveBiomeCount();
+	}
+
+	/**
+	 * @see ICaveBiomeManager#getCaveBiome(BiomeGenBase)
+	 */
+	public static ICaveBiome getAquaCavernBiome(BiomeGenBase biome)
+	{
+		return biomeAquaCavernManager == null ? new EmptyCaveBiome(biome) : biomeAquaCavernManager.getCaveBiome(biome);
+	}
+
+	/**
+	 * @see ICaveBiomeManager#getRandomCaveBiome(Random)
+	 */
+	public static ICaveBiome getRandomAquaCavernBiome(Random random)
+	{
+		return biomeAquaCavernManager == null ? null : biomeAquaCavernManager.getRandomCaveBiome(random);
+	}
+
+	/**
+	 * @see ICaveBiomeManager#getCaveBiomes()
+	 */
+	public static Set<ICaveBiome> getAquaCavernBiomes()
+	{
+		return biomeAquaCavernManager == null ? new HashSet<ICaveBiome>() : biomeAquaCavernManager.getCaveBiomes();
+	}
+
+	/**
+	 * @see ICaveBiomeManager#getBiomeList()
+	 */
+	public static List<BiomeGenBase> getAquaCavernBiomeList()
+	{
+		return biomeAquaCavernManager == null ? new ArrayList<BiomeGenBase>() : biomeAquaCavernManager.getBiomeList();
+	}
+
+	/**
+	 * @see ICaveBiomeManager#clearCaveBiomes()
+	 */
+	public static void clearAquaCavernBiomes()
+	{
+		if (biomeAquaCavernManager != null)
+		{
+			biomeAquaCavernManager.clearCaveBiomes();
+		}
+	}
+
+	/**
+	 * @see ICaveVeinManager#addCaveVein(ICaveVein)
+	 */
+	public static boolean addAquaCavernVein(ICaveVein vein)
+	{
+		return veinAquaCavernManager != null && veinAquaCavernManager.addCaveVein(vein);
+	}
+
+	/**
+	 * @see ICaveVeinManager#removeCaveVeins(ICaveVein)
+	 */
+	public static int removeAquaCavernVeins(ICaveVein vein)
+	{
+		return veinAquaCavernManager == null ? 0 : veinAquaCavernManager.removeCaveVeins(vein);
+	}
+
+	/**
+	 * @see ICaveVeinManager#removeCaveVeins(Block, int)
+	 */
+	public static int removeAquaCavernVeins(Block block, int metadata)
+	{
+		return veinAquaCavernManager == null ? 0 : veinAquaCavernManager.removeCaveVeins(block, metadata);
+	}
+
+	/**
+	 * @see ICaveVeinManager#getRandomCaveVein(Random)
+	 */
+	public static ICaveVein getRandomAquaCavernVein(Random random)
+	{
+		return veinAquaCavernManager == null ? null : veinAquaCavernManager.getRandomCaveVein(random);
+	}
+
+	public static List<ICaveVein> getAquaCavernVeins()
+	{
+		return veinAquaCavernManager == null ? new ArrayList<ICaveVein>() : veinAquaCavernManager.getCaveVeins();
+	}
+
+	/**
+	 * @see ICaveVeinManager#clearCaveVeins()
+	 */
+	public static void clearAquaCavernVeins()
+	{
+		if (veinAquaCavernManager != null)
+		{
+			veinAquaCavernManager.clearCaveVeins();
+		}
+	}
+
 	public static void addCavesVein(ICaveVein vein)
 	{
 		addCaveVein(vein);
 		addCavernVein(vein);
+		addAquaCavernVein(vein);
 	}
 
 	/**
@@ -376,22 +547,43 @@ public final class CaveworldAPI
 	}
 
 	/**
-	 * @see ICaverManager#getRank(Entity)
+	 * @see ICaverManager#getMinerRank(Entity)
 	 */
 	public static int getMinerRank(Entity entity)
 	{
-		return caverManager == null ? 0 : caverManager.getRank(entity);
+		return caverManager == null ? 0 : caverManager.getMinerRank(entity);
 	}
 
 	/**
-	 * @see ICaverManager#setRank(Entity, int)
+	 * @see ICaverManager#getMinerRankName(Entity)
+	 */
+	public static String getMinerRankName(Entity entity)
+	{
+		return caverManager == null ? "null" : caverManager.getMinerRankName(entity);
+	}
+
+	/**
+	 * @see ICaverManager#setMinerRank(Entity, int)
 	 */
 	public static void setMinerRank(Entity entity, int rank)
 	{
 		if (caverManager != null)
 		{
-			caverManager.setRank(entity, rank);
+			caverManager.setMinerRank(entity, rank);
 		}
+	}
+
+	/**
+	 * @see ICaverManager#getMinerRanks()
+	 */
+	public static Map<Integer, Pair<String, Integer>> getMinerRanks()
+	{
+		if (caverManager == null)
+		{
+			return Maps.newHashMap();
+		}
+
+		return caverManager.getMinerRanks();
 	}
 
 	/**
@@ -429,6 +621,44 @@ public final class CaveworldAPI
 		if (caverManager != null)
 		{
 			caverManager.setCavernLastDimension(entity, dimension);
+		}
+	}
+
+	/**
+	 * @see ICaverManager#getAquaCavernLastDimension(Entity)
+	 */
+	public static int getAquaCavernLastDimension(Entity entity)
+	{
+		return caverManager == null ? 0 : caverManager.getAquaCavernLastDimension(entity);
+	}
+
+	/**
+	 * @see ICaverManager#setAquaCavernLastDimension(Entity, int)
+	 */
+	public static void setAquaCavernLastDimension(Entity entity, int dimension)
+	{
+		if (caverManager != null)
+		{
+			caverManager.setAquaCavernLastDimension(entity, dimension);
+		}
+	}
+
+	/**
+	 * @see ICaverManager#getCavelandLastDimension(Entity)
+	 */
+	public static int getCavelandLastDimension(Entity entity)
+	{
+		return caverManager == null ? 0 : caverManager.getCavelandLastDimension(entity);
+	}
+
+	/**
+	 * @see ICaverManager#setCavelandLastDimension(Entity, int)
+	 */
+	public static void setCavelandLastDimension(Entity entity, int dimension)
+	{
+		if (caverManager != null)
+		{
+			caverManager.setCavelandLastDimension(entity, dimension);
 		}
 	}
 
