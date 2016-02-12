@@ -25,6 +25,7 @@ import caveworld.api.ICaveBiomeManager;
 import caveworld.api.ICaveVeinManager;
 import caveworld.api.event.MiningPointEvent;
 import caveworld.block.CaveBlocks;
+import caveworld.client.gui.GuiDownloadCaveTerrain;
 import caveworld.client.gui.GuiSelectBreakable;
 import caveworld.core.AquaCavernBiomeManager;
 import caveworld.core.AquaCavernVeinManager;
@@ -95,6 +96,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundCategory;
 import net.minecraft.client.gui.GuiChat;
+import net.minecraft.client.gui.GuiDownloadTerrain;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.resources.I18n;
@@ -128,6 +130,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.client.event.EntityViewRenderEvent.FogDensity;
 import net.minecraftforge.client.event.FOVUpdateEvent;
+import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
@@ -244,13 +247,13 @@ public class CaveEventHooks
 				{
 					ICaveniumTool tool = (ICaveniumTool)current.getItem();
 
-					if (tool.getHighlightStart() > 0 && System.currentTimeMillis() - tool.getHighlightStart() < Config.modeDisplayTime)
+					if (tool.getHighlightStart() > 0 && Minecraft.getSystemTime() - tool.getHighlightStart() < Config.modeDisplayTime)
 					{
-						long time = System.currentTimeMillis() - tool.getHighlightStart();
+						long time = Minecraft.getSystemTime() - tool.getHighlightStart();
 
 						if (time > Config.modeDisplayTime - 255)
 						{
-							time = tool.getHighlightStart() + Config.modeDisplayTime - System.currentTimeMillis();
+							time = tool.getHighlightStart() + Config.modeDisplayTime - Minecraft.getSystemTime();
 						}
 
 						int i = MathHelper.clamp_int((int)time, 0, 255);
@@ -271,7 +274,7 @@ public class CaveEventHooks
 
 						if (highlight == 40)
 						{
-							tool.setHighlightStart(System.currentTimeMillis());
+							tool.setHighlightStart(Minecraft.getSystemTime());
 						}
 					}
 				}
@@ -279,13 +282,13 @@ public class CaveEventHooks
 				{
 					ItemCavenicBow bow = (ItemCavenicBow)current.getItem();
 
-					if (bow.highlightStart > 0 && System.currentTimeMillis() - bow.highlightStart < Config.modeDisplayTime)
+					if (bow.highlightStart > 0 && Minecraft.getSystemTime() - bow.highlightStart < Config.modeDisplayTime)
 					{
-						long time = System.currentTimeMillis() - bow.highlightStart;
+						long time = Minecraft.getSystemTime() - bow.highlightStart;
 
 						if (time > Config.modeDisplayTime - 255)
 						{
-							time = bow.highlightStart + Config.modeDisplayTime - System.currentTimeMillis();
+							time = bow.highlightStart + Config.modeDisplayTime - Minecraft.getSystemTime();
 						}
 
 						int i = MathHelper.clamp_int((int)time, 0, 255);
@@ -507,6 +510,18 @@ public class CaveEventHooks
 			}
 
 			event.setCanceled(true);
+		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
+	public void onGuiOpen(GuiOpenEvent event)
+	{
+		Minecraft mc = FMLClientHandler.instance().getClient();
+
+		if (event.gui != null && CaveworldAPI.isEntityInCaves(mc.thePlayer) && GuiDownloadTerrain.class.isInstance(event.gui))
+		{
+			event.gui = new GuiDownloadCaveTerrain(mc.getNetHandler());
 		}
 	}
 

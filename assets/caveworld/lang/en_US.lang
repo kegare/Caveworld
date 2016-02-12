@@ -264,6 +264,8 @@ entity.Caveman.name=Caveman
 entity.ArcherZombie.name=Archer Zombie
 entity.CavenicSkeleton.name=Cavenic Skeleton
 entity.MasterCavenicSkeleton.name=Master Cavenic Skeleton
+entity.CavenicCreeper.name=Cavenic Creeper
+entity.MasterCavenicCreeper.name=Master Cavenic Creeper
 
 inventory.caveworld.portal=Portal Inventory
 
@@ -291,6 +293,10 @@ achievement.caveworld.cavenicSkeletonSlayer=Cavenic Skeleton Slayer
 achievement.caveworld.cavenicSkeletonSlayer.desc=Kills the Cavenic Skeleton
 achievement.caveworld.masterCavenicSkeletonSlayer=Master Cavenic Skeleton Slayer
 achievement.caveworld.masterCavenicSkeletonSlayer.desc=Kills the Master Cavenic Skeleton
+achievement.caveworld.cavenicCreeperSlayer=Cavenic Creeper Slayer
+achievement.caveworld.cavenicCreeperSlayer.desc=Kills the Creeper Skeleton
+achievement.caveworld.masterCavenicCreeperSlayer=Master Cavenic Creeper Slayer
+achievement.caveworld.masterCavenicCreeperSlayer.desc=Kills the Master Creeper Skeleton
 achievement.caveworld.aquamarine=Aquamarine
 achievement.caveworld.aquamarine.desc=Mines an Aquamarine Ore, and gets an Aquamarine
 achievement.caveworld.randomite=Randomite

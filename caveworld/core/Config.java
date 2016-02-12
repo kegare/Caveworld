@@ -31,6 +31,7 @@ import caveworld.core.CaveBiomeManager.CaveBiome;
 import caveworld.core.CaveVeinManager.CaveVein;
 import caveworld.entity.EntityArcherZombie;
 import caveworld.entity.EntityCaveman;
+import caveworld.entity.EntityCavenicCreeper;
 import caveworld.entity.EntityCavenicSkeleton;
 import caveworld.plugin.CavePlugins;
 import caveworld.plugin.ICavePlugin;
@@ -522,6 +523,42 @@ public class Config
 		mobsCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
 		mobsCfg.setCategoryPropertyOrder(category, propOrder);
 
+		propOrder = Lists.newArrayList();
+		category = "CavenicCreeper";
+		prop = mobsCfg.get(category, "spawnWeight", 80);
+		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		EntityCavenicCreeper.spawnWeight = MathHelper.clamp_int(prop.getInt(EntityCavenicCreeper.spawnWeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		prop = mobsCfg.get(category, "spawnMinHeight", 1);
+		prop.setMinValue(1).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		EntityCavenicCreeper.spawnMinHeight = MathHelper.clamp_int(prop.getInt(EntityCavenicCreeper.spawnMinHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		prop = mobsCfg.get(category, "spawnMaxHeight", 255);
+		prop.setMinValue(1).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		EntityCavenicCreeper.spawnMaxHeight = MathHelper.clamp_int(prop.getInt(EntityCavenicCreeper.spawnMaxHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		prop = mobsCfg.get(category, "spawnInChunks", 3);
+		prop.setMinValue(1).setMaxValue(500).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		EntityCavenicCreeper.spawnInChunks = MathHelper.clamp_int(prop.getInt(EntityCavenicCreeper.spawnInChunks), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		prop = mobsCfg.get(category, "spawnBiomes", new int[0]);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName()).setConfigEntryClass(selectBiomes);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		propOrder.add(prop.getName());
+		EntityCavenicCreeper.spawnBiomes = prop.getIntList();
+		EntityCavenicCreeper.refreshSpawn();
+
+		mobsCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
+		mobsCfg.setCategoryPropertyOrder(category, propOrder);
+
 		if (mobsCfg.hasChanged())
 		{
 			mobsCfg.save();
@@ -632,7 +669,7 @@ public class Config
 		{
 			EntityZombie.class, EntitySkeleton.class, EntitySpider.class, EntityCaveSpider.class,
 			EntityCreeper.class, EntityEnderman.class, EntitySilverfish.class, EntityBat.class, EntitySnowman.class,
-			EntityArcherZombie.class, EntityCavenicSkeleton.class
+			EntityArcherZombie.class, EntityCavenicSkeleton.class, EntityCavenicCreeper.class
 		};
 
 		Set<String> mobs = Sets.newTreeSet();

@@ -20,7 +20,9 @@ import caveworld.core.Caveworld;
 import caveworld.core.Config;
 import caveworld.entity.EntityArcherZombie;
 import caveworld.entity.EntityCaveman;
+import caveworld.entity.EntityCavenicCreeper;
 import caveworld.entity.EntityCavenicSkeleton;
+import caveworld.entity.EntityMasterCavenicCreeper;
 import caveworld.entity.EntityMasterCavenicSkeleton;
 import caveworld.item.CaveItems;
 import caveworld.plugin.ICavePlugin;
@@ -101,7 +103,7 @@ public final class MCEconomyPlugin implements ICavePlugin
 
 		syncShopCfg();
 
-		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.caveworld_portal), 2000);
+		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.caveworld_portal), -1);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.rope), 2);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.rope_ladder), 5);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.cavenium_ore, 1, 0), 300);
@@ -131,6 +133,8 @@ public final class MCEconomyPlugin implements ICavePlugin
 		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityArcherZombie.class, 4);
 		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCavenicSkeleton.class, 100);
 		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityMasterCavenicSkeleton.class, 1500);
+		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCavenicCreeper.class, 100);
+		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityMasterCavenicCreeper.class, 1500);
 
 		SHOP = MCEconomyAPI.registerShop(productManager);
 

@@ -293,7 +293,7 @@ public class ItemOreCompass extends Item
 				World world = mc.theWorld;
 				EntityPlayer player = mc.thePlayer;
 
-				if (world == null || player == null || findFailedCount > 10 && System.currentTimeMillis() - prevFindTime < 10000L)
+				if (world == null || player == null || findFailedCount > 10 && Minecraft.getSystemTime() - prevFindTime < 10000L)
 				{
 					continue;
 				}
@@ -302,13 +302,13 @@ public class ItemOreCompass extends Item
 
 				if (prevFindTime <= 0)
 				{
-					prevFindTime = System.currentTimeMillis();
+					prevFindTime = Minecraft.getSystemTime();
 					first = true;
 				}
 
-				if (first || nearestOrePos != null && nearestOrePos.isPlaced() || System.currentTimeMillis() - prevFindTime >= 1500L)
+				if (first || nearestOrePos != null && nearestOrePos.isPlaced() || Minecraft.getSystemTime() - prevFindTime >= 1500L)
 				{
-					prevFindTime = System.currentTimeMillis();
+					prevFindTime = Minecraft.getSystemTime();
 					result.clear();
 
 					int findDistance = 1;

@@ -215,6 +215,11 @@ public class GuiRegeneration extends GuiScreen
 	{
 		regenButton.enabled = false;
 		cancelButton.visible = false;
+		caveworldCheckBox.visible = false;
+		cavernCheckBox.visible = false;
+		aquaCavernCheckBox.visible = false;
+		cavelandCheckBox.visible = false;
+		backupCheckBox.visible = false;
 
 		if (task < 0)
 		{

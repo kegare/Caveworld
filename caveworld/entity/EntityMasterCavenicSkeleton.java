@@ -23,7 +23,10 @@ import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IChatComponent;
 import net.minecraft.world.World;
 
 public class EntityMasterCavenicSkeleton extends EntityCavenicSkeleton implements IBossDisplayData
@@ -32,8 +35,24 @@ public class EntityMasterCavenicSkeleton extends EntityCavenicSkeleton implement
 	{
 		super(world);
 		this.experienceValue = 50;
-		this.aiArrowAttack = new EntityAIArrowAttack(this, 1.0D, 1, 2, 16.0F);
 		this.setSize(0.95F, 2.65F);
+	}
+
+	@Override
+	public IChatComponent func_145748_c_()
+	{
+		IChatComponent name = new ChatComponentTranslation("entity.MasterCavenicSkeleton.name");
+		name.getChatStyle().setColor(EnumChatFormatting.GRAY);
+
+		return name;
+	}
+
+	@Override
+	protected void applyCustomValue()
+	{
+		aiArrowAttack = new EntityAIArrowAttack(this, 1.0D, 1, 2, 16.0F);
+
+		super.applyCustomValue();
 	}
 
 	@Override

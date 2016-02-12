@@ -17,8 +17,6 @@ import caveworld.item.CaveItems;
 import caveworld.util.CaveUtils;
 import cpw.mods.fml.common.ObfuscationReflectionHelper;
 import cpw.mods.fml.common.registry.EntityRegistry;
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
@@ -33,8 +31,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
-import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
@@ -87,7 +83,11 @@ public class EntityCavenicSkeleton extends EntitySkeleton
 		super(world);
 		this.experienceValue = 10;
 		this.setSize(0.68F, 2.0F);
+		this.applyCustomValue();
+	}
 
+	protected void applyCustomValue()
+	{
 		ObfuscationReflectionHelper.setPrivateValue(EntitySkeleton.class, this, aiArrowAttack, "aiArrowAttack", "field_85037_d");
 	}
 
@@ -104,7 +104,7 @@ public class EntityCavenicSkeleton extends EntitySkeleton
 	@Override
 	public IEntityLivingData onSpawnWithEgg(IEntityLivingData data)
 	{
-		if (!worldObj.isRemote && rand.nextInt(80) == 0)
+		if (!worldObj.isRemote && rand.nextInt(50) == 0)
 		{
 			EntityMasterCavenicSkeleton master = new EntityMasterCavenicSkeleton(worldObj);
 			master.setLocationAndAngles(posX, posY, posZ, rotationYaw, rotationPitch);
@@ -191,30 +191,7 @@ public class EntityCavenicSkeleton extends EntitySkeleton
 	@Override
 	public boolean attackEntityFrom(DamageSource source, float damage)
 	{
-		return !source.isFireDamage() && super.attackEntityFrom(source, damage);
-	}
-
-	@Override
-	protected void fall(float damage)
-	{
-		PotionEffect potion = getActivePotionEffect(Potion.jump);
-		float f1 = potion != null ? (float)(potion.getAmplifier() + 1) : 0.0F;
-		int i = MathHelper.ceiling_float_int(damage - 3.0F - f1);
-
-		if (i > 0)
-		{
-			playSound(func_146067_o(i), 1.0F, 1.0F);
-
-			int x = MathHelper.floor_double(posX);
-			int y = MathHelper.floor_double(posY - 0.20000000298023224D - yOffset);
-			int z = MathHelper.floor_double(posZ);
-			Block block = worldObj.getBlock(x, y, z);
-
-			if (block.getMaterial() != Material.air)
-			{
-				playSound(block.stepSound.getStepResourcePath(), block.stepSound.getVolume() * 0.5F, block.stepSound.getPitch() * 0.75F);
-			}
-		}
+		return !source.isFireDamage() && source != DamageSource.fall && super.attackEntityFrom(source, damage);
 	}
 
 	@Override

@@ -261,6 +261,8 @@ entity.Caveman.name=ケイブマン
 entity.ArcherZombie.name=弓兵ゾンビ
 entity.CavenicSkeleton.name=ケイブニックスケルトン
 entity.MasterCavenicSkeleton.name=マスターケイブニックスケルトン
+entity.CavenicCreeper.name=ケイブニッククリーパー
+entity.MasterCavenicCreeper.name=マスターケイブニッククリーパー
 
 inventory.caveworld.portal=ポータルインベントリ
 
@@ -288,6 +290,10 @@ achievement.caveworld.cavenicSkeletonSlayer=ケイブニックスケルトン退
 achievement.caveworld.cavenicSkeletonSlayer.desc=ケイブニックスケルトンを倒す
 achievement.caveworld.masterCavenicSkeletonSlayer=マスターケイブニックスケルトン退治
 achievement.caveworld.masterCavenicSkeletonSlayer.desc=マスターケイブニックスケルトンを倒す
+achievement.caveworld.cavenicCreeperSlayer=ケイブニッククリーパー退治
+achievement.caveworld.cavenicCreeperSlayer.desc=ケイブニッククリーパーを倒す
+achievement.caveworld.masterCavenicCreeperSlayer=マスターケイブニッククリーパー退治
+achievement.caveworld.masterCavenicCreeperSlayer.desc=マスターケイブニッククリーパーを倒す
 achievement.caveworld.aquamarine=アクアマリン
 achievement.caveworld.aquamarine.desc=アクアマリン鉱石を採掘し、アクアマリンを得る
 achievement.caveworld.randomite=ランダマイト

@@ -24,7 +24,9 @@ import caveworld.api.CaveworldAPI;
 import caveworld.block.CaveBlocks;
 import caveworld.entity.EntityArcherZombie;
 import caveworld.entity.EntityCaveman;
+import caveworld.entity.EntityCavenicCreeper;
 import caveworld.entity.EntityCavenicSkeleton;
+import caveworld.entity.EntityMasterCavenicCreeper;
 import caveworld.entity.EntityMasterCavenicSkeleton;
 import caveworld.handler.CaveAPIHandler;
 import caveworld.handler.CaveEventHooks;
@@ -178,15 +180,18 @@ public class Caveworld
 	@EventHandler
 	public void init(FMLInitializationEvent event)
 	{
-		int id = 0;
 		EntityRegistry.registerGlobalEntityID(EntityCaveman.class, "Caveman", EntityRegistry.findGlobalUniqueEntityId(), 0xAAAAAA, 0xCCCCCC);
-		EntityRegistry.registerModEntity(EntityCaveman.class, "Caveman", id++, this, 128, 1, true);
 		EntityRegistry.registerGlobalEntityID(EntityArcherZombie.class, "ArcherZombie", EntityRegistry.findGlobalUniqueEntityId(), 0x00A0A0, 0xAAAAAA);
-		EntityRegistry.registerModEntity(EntityArcherZombie.class, "ArcherZombie", id++, this, 128, 1, true);
 		EntityRegistry.registerGlobalEntityID(EntityCavenicSkeleton.class, "CavenicSkeleton", EntityRegistry.findGlobalUniqueEntityId(), 0xAAAAAA, 0xDDDDDD);
+		EntityRegistry.registerGlobalEntityID(EntityCavenicCreeper.class, "CavenicCreeper", EntityRegistry.findGlobalUniqueEntityId(), 0x2E8B57, 0xDDDDDD);
+
+		int id = 0;
+		EntityRegistry.registerModEntity(EntityCaveman.class, "Caveman", id++, this, 128, 1, true);
+		EntityRegistry.registerModEntity(EntityArcherZombie.class, "ArcherZombie", id++, this, 128, 1, true);
 		EntityRegistry.registerModEntity(EntityCavenicSkeleton.class, "CavenicSkeleton", id++, this, 128, 1, true);
-		EntityRegistry.registerGlobalEntityID(EntityMasterCavenicSkeleton.class, "MasterCavenicSkeleton", EntityRegistry.findGlobalUniqueEntityId());
-		EntityRegistry.registerModEntity(EntityMasterCavenicSkeleton.class, "MasterCavenicSkeleton", id, this, 128, 1, true);
+		EntityRegistry.registerModEntity(EntityMasterCavenicSkeleton.class, "MasterCavenicSkeleton", id++, this, 128, 1, true);
+		EntityRegistry.registerModEntity(EntityCavenicCreeper.class, "CavenicCreeper", id++, this, 128, 1, true);
+		EntityRegistry.registerModEntity(EntityMasterCavenicCreeper.class, "MasterCavenicCreeper", id++, this, 128, 1, true);
 
 		proxy.registerRenderers();
 
@@ -394,6 +399,8 @@ public class Caveworld
 		CaveworldAPI.setMiningPointAmount("sunstoneOre", 1);
 		CaveworldAPI.setMiningPointAmount("oreZinc", 1);
 		CaveworldAPI.setMiningPointAmount("zincOre", 1);
+		CaveworldAPI.setMiningPointAmount("oreCrocoite", 3);
+		CaveworldAPI.setMiningPointAmount("crocoiteOre", 3);
 		CaveworldAPI.setMiningPointAmount("oreCavenium", 2);
 		CaveworldAPI.setMiningPointAmount("caveniumOre", 2);
 		CaveworldAPI.setMiningPointAmount("oreAquamarine", 2);
