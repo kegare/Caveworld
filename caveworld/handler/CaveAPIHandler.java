@@ -75,6 +75,12 @@ public class CaveAPIHandler implements ICaveAPIHandler
 	}
 
 	@Override
+	public boolean isCaveDimensions(int dim)
+	{
+		return dim == getDimension() || dim == getCavernDimension() || dim == getAquaCavernDimension() || dim == getCavelandDimension();
+	}
+
+	@Override
 	public boolean isEntityInCaves(Entity entity)
 	{
 		return isEntityInCaveworld(entity) || isEntityInCavern(entity) || isEntityInAquaCavern(entity) || isEntityInCaveland(entity);
@@ -87,7 +93,7 @@ public class CaveAPIHandler implements ICaveAPIHandler
 	}
 
 	@Override
-	public boolean isCaveborn()
+	public int getCaveborn()
 	{
 		return Config.caveborn;
 	}

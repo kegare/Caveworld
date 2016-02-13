@@ -133,7 +133,7 @@ public class EntityCavenicZombie extends EntityZombie
 	@Override
 	public boolean getCanSpawnHere()
 	{
-		return CaveworldAPI.isEntityInCaves(this) && isValidHeight() && super.getCanSpawnHere();
+		return CaveworldAPI.isEntityInCaves(this) && !CaveworldAPI.isEntityInCavern(this) && isValidHeight() && super.getCanSpawnHere();
 	}
 
 	@Override

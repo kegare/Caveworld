@@ -25,7 +25,7 @@ public final class CaveworldAPI
 {
 	public static final String
 	MODID = "caveworld",
-	API_VERSION = "2.1.0";
+	API_VERSION = "2.1.3";
 
 	public static ICaveAPIHandler apiHandler;
 	public static ICaveBiomeManager biomeManager;
@@ -119,6 +119,14 @@ public final class CaveworldAPI
 	}
 
 	/**
+	 * @see ICaveAPIHandler#isCaveDimensions(int)
+	 */
+	public static boolean isCaveDimensions(int dim)
+	{
+		return apiHandler != null && apiHandler.isCaveDimensions(dim);
+	}
+
+	/**
 	 * @see ICaveAPIHandler#isHardcore()
 	 */
 	public static boolean isHardcore()
@@ -126,12 +134,17 @@ public final class CaveworldAPI
 		return apiHandler != null && apiHandler.isHardcore();
 	}
 
-	/**
-	 * @see ICaveAPIHandler#isCaveborn()
-	 */
 	public static boolean isCaveborn()
 	{
-		return apiHandler != null && apiHandler.isCaveborn();
+		return getCaveborn() > 0;
+	}
+
+	/**
+	 * @see ICaveAPIHandler#getCaveborn()
+	 */
+	public static int getCaveborn()
+	{
+		return apiHandler == null ? 0 : apiHandler.getCaveborn();
 	}
 
 	/**

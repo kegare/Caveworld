@@ -64,12 +64,19 @@ public interface ICaveAPIHandler
 	public boolean isEntityInCaves(Entity entity);
 
 	/**
+	 * Checks if the dimension is dimensions for Caveworld mod.
+	 * @param dim The dimension
+	 */
+	public boolean isCaveDimensions(int dim);
+
+	/**
 	 * Returns true if hardcore option.
 	 */
 	public boolean isHardcore();
 
 	/**
-	 * Returns true if caveborn option.
+	 * Returns caveborn type.
+	 * @return 0: Disabled, 1: Caveworld, 2: Cavern, 3:Aqua Cavern, 4:Caveland
 	 */
-	public boolean isCaveborn();
+	public int getCaveborn();
 }

@@ -16,12 +16,11 @@ import com.google.common.collect.Maps;
 import caveworld.core.Caveworld;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList.EntityEggInfo;
 
 public class CaveEntityRegistry
 {
 	public static final Map<Integer, Class<? extends Entity>> entities = Maps.newHashMap();
-	public static final Map<Integer, EntityEggInfo> mobs = Maps.newHashMap();
+	public static final Map<Integer, EggInfo> mobs = Maps.newHashMap();
 
 	private static int entityId;
 
@@ -43,7 +42,7 @@ public class CaveEntityRegistry
 	{
 		registerMob(entityClass, entityName);
 
-		mobs.put(entityId, new EntityEggInfo(entityId, primaryColor, secondaryColor));
+		mobs.put(entityId, new EggInfo(primaryColor, secondaryColor));
 	}
 
 	public static void registerEntities()
@@ -56,5 +55,17 @@ public class CaveEntityRegistry
 		registerMob(EntityMasterCavenicCreeper.class, "MasterCavenicCreeper", 0xAAAAAA, 0x2E8B57);
 		registerMob(EntityCavenicZombie.class, "CavenicZombie", 0xAAAAAA, 0x00A0A0);
 		registerMob(EntityCavenicSpider.class, "CavenicSpider", 0xAAAAAA, 0x811F1F);
+	}
+
+	public static class EggInfo
+	{
+		public final int primaryColor;
+		public final int secondaryColor;
+
+		public EggInfo(int primaryColor, int secondaryColor)
+		{
+			this.primaryColor = primaryColor;
+			this.secondaryColor = secondaryColor;
+		}
 	}
 }

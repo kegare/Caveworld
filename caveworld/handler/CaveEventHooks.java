@@ -23,6 +23,7 @@ import caveworld.api.CaveworldAPI;
 import caveworld.api.ICaveBiomeManager;
 import caveworld.api.ICaveVeinManager;
 import caveworld.api.event.MiningPointEvent;
+import caveworld.block.BlockCavePortal;
 import caveworld.block.CaveBlocks;
 import caveworld.client.gui.GuiDownloadCaveTerrain;
 import caveworld.client.gui.GuiLoadCaveTerrain;
@@ -68,7 +69,6 @@ import caveworld.util.CaveUtils;
 import caveworld.util.Version;
 import caveworld.util.Version.Status;
 import caveworld.util.breaker.MultiBreakExecutor;
-import caveworld.world.TeleporterCaveworld;
 import caveworld.world.WorldProviderAquaCavern;
 import caveworld.world.WorldProviderCaveland;
 import caveworld.world.WorldProviderCavern;
@@ -127,6 +127,7 @@ import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MathHelper;
+import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.client.event.EntityViewRenderEvent.FogDensity;
@@ -734,12 +735,35 @@ public class CaveEventHooks
 						player.inventory.addItemStackToInventory(itemstack);
 					}
 
-					int dim = CaveworldAPI.getDimension();
+					int dim = 0;
+					BlockCavePortal portal = null;
+
+					switch (CaveworldAPI.getCaveborn())
+					{
+						case 1:
+							dim = CaveworldAPI.getDimension();
+							portal = CaveBlocks.caveworld_portal;
+							break;
+						case 2:
+							dim = CaveworldAPI.getCavernDimension();
+							portal = CaveBlocks.cavern_portal;
+							break;
+						case 3:
+							dim = CaveworldAPI.getAquaCavernDimension();
+							portal = CaveBlocks.aqua_cavern_portal;
+							break;
+						case 4:
+							dim = CaveworldAPI.getCavelandDimension();
+							portal = CaveBlocks.caveland_portal;
+							break;
+					}
+
+					Teleporter teleporter = portal.getTeleporter(player.mcServer.worldServerForDimension(dim), false);
 
 					player.isDead = false;
 					player.forceSpawn = true;
 					player.timeUntilPortal = player.getPortalCooldown();
-					player.mcServer.getConfigurationManager().transferPlayerToDimension(player, dim, new TeleporterCaveworld(player.mcServer.worldServerForDimension(dim)));
+					player.mcServer.getConfigurationManager().transferPlayerToDimension(player, dim, teleporter);
 					player.addExperienceLevel(0);
 
 					world = player.getServerForPlayer();
@@ -758,7 +782,7 @@ public class CaveEventHooks
 					{
 						for (int k = z - 2; k < z + 2; ++k)
 						{
-							if (world.getBlock(j, y, k) == CaveBlocks.caveworld_portal)
+							if (world.getBlock(j, y, k) == portal)
 							{
 								world.setBlockToAir(j, y, k);
 								break outside;

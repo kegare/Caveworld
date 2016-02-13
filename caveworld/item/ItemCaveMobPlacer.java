@@ -14,6 +14,7 @@ import java.util.Map.Entry;
 
 import caveworld.core.Caveworld;
 import caveworld.entity.CaveEntityRegistry;
+import caveworld.entity.CaveEntityRegistry.EggInfo;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
@@ -24,7 +25,6 @@ import net.minecraft.dispenser.BehaviorDefaultDispenseItem;
 import net.minecraft.dispenser.IBlockSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
-import net.minecraft.entity.EntityList.EntityEggInfo;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.player.EntityPlayer;
@@ -52,7 +52,7 @@ public class ItemCaveMobPlacer extends ItemMonsterPlacer
 	@Override
 	public int getColorFromItemStack(ItemStack itemstack, int pass)
 	{
-		EntityEggInfo info = CaveEntityRegistry.mobs.get(itemstack.getItemDamage());
+		EggInfo info = CaveEntityRegistry.mobs.get(itemstack.getItemDamage());
 
 		return info == null ? 0xFFFFFF : pass == 0 ? info.primaryColor : info.secondaryColor;
 	}
@@ -195,7 +195,7 @@ public class ItemCaveMobPlacer extends ItemMonsterPlacer
 	@Override
 	public void getSubItems(Item item, CreativeTabs tab, List list)
 	{
-		for (Entry<Integer, EntityEggInfo> mob : CaveEntityRegistry.mobs.entrySet())
+		for (Entry<Integer, EggInfo> mob : CaveEntityRegistry.mobs.entrySet())
 		{
 			if (mob.getValue() != null)
 			{

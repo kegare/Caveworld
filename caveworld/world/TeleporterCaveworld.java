@@ -20,6 +20,7 @@ import caveworld.block.CaveBlocks;
 import caveworld.util.CaveUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockBed;
+import net.minecraft.block.BlockPortal;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
@@ -37,7 +38,7 @@ public class TeleporterCaveworld extends Teleporter
 	private final WorldServer worldObj;
 	private final Random random;
 
-	protected Block portalBlock;
+	public BlockPortal portalBlock;
 
 	protected final LongHashMap coordCache = new LongHashMap();
 	protected final List<Long> coordKeys = Lists.newArrayList();

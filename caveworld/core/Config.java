@@ -108,7 +108,7 @@ public class Config
 	public static boolean mossStoneCraftRecipe;
 
 	public static boolean hardcore;
-	public static boolean caveborn;
+	public static int caveborn;
 
 	public static Class<? extends IConfigEntry> selectItems;
 	public static Class<? extends IConfigEntry> selectBiomes;
@@ -356,14 +356,27 @@ public class Config
 		prop.comment += "Note: If multiplayer, server-side only.";
 		propOrder.add(prop.getName());
 		hardcore = prop.getBoolean(hardcore);
-		prop = generalCfg.get(category, "caveborn", false);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop = generalCfg.get(category, "caveborn", 0);
+		prop.setMinValue(0).setMaxValue(4).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(cycleInteger);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-		prop.comment += " [default: " + prop.getDefault() + "]";
-		prop.comment += Configuration.NEW_LINE;
-		prop.comment += "Note: If multiplayer, server-side only.";
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+
+		for (int i = Integer.parseInt(prop.getMinValue()); i <= Integer.parseInt(prop.getMaxValue()); ++i)
+		{
+			prop.comment += Configuration.NEW_LINE;
+
+			if (i == Integer.parseInt(prop.getMaxValue()))
+			{
+				prop.comment += i + ": " + StatCollector.translateToLocal(prop.getLanguageKey() + "." + i);
+			}
+			else
+			{
+				prop.comment += i + ": " + StatCollector.translateToLocal(prop.getLanguageKey() + "." + i) + ", ";
+			}
+		}
+
 		propOrder.add(prop.getName());
-		caveborn = prop.getBoolean(caveborn);
+		caveborn = MathHelper.clamp_int(prop.getInt(caveborn), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 
 		generalCfg.setCategoryPropertyOrder(category, propOrder);
 
