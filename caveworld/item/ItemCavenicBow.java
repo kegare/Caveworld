@@ -17,7 +17,6 @@ import caveworld.entity.EntityTorchArrow;
 import caveworld.plugin.moreinventory.MIMPlugin;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import net.minecraft.client.Minecraft;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityLivingBase;
@@ -93,7 +92,7 @@ public class ItemCavenicBow extends ItemBow
 
 			if (entity.worldObj.isRemote && entity instanceof EntityPlayer)
 			{
-				highlightStart = Minecraft.getSystemTime();
+				highlightStart = System.currentTimeMillis();
 			}
 
 			entity.worldObj.playSoundAtEntity(entity, "random.click", 0.6F, 1.7F);

@@ -83,10 +83,10 @@ public class EntityCavenicSkeleton extends EntitySkeleton
 		super(world);
 		this.experienceValue = 10;
 		this.setSize(0.68F, 2.0F);
-		this.applyCustomValue();
+		this.applyCustomValues();
 	}
 
-	protected void applyCustomValue()
+	protected void applyCustomValues()
 	{
 		ObfuscationReflectionHelper.setPrivateValue(EntitySkeleton.class, this, aiArrowAttack, "aiArrowAttack", "field_85037_d");
 	}
@@ -227,6 +227,11 @@ public class EntityCavenicSkeleton extends EntitySkeleton
 		super.onDeath(source);
 
 		Entity entity = source.getEntity();
+
+		if (entity == null)
+		{
+			entity = source.getSourceOfDamage();
+		}
 
 		if (entity != null && entity instanceof EntityPlayer)
 		{

@@ -34,7 +34,7 @@ public class EntityMasterCavenicCreeper extends EntityCavenicCreeper implements 
 	@Override
 	public IChatComponent func_145748_c_()
 	{
-		IChatComponent name = new ChatComponentTranslation("entity.MasterCavenicCreeper.name");
+		IChatComponent name = new ChatComponentTranslation("entity." + getEntityString() +  ".name");
 		name.getChatStyle().setColor(EnumChatFormatting.GRAY);
 
 		return name;
@@ -82,6 +82,11 @@ public class EntityMasterCavenicCreeper extends EntityCavenicCreeper implements 
 		super.onDeath(source);
 
 		Entity entity = source.getEntity();
+
+		if (entity == null)
+		{
+			entity = source.getSourceOfDamage();
+		}
 
 		if (entity != null && entity instanceof EntityPlayer)
 		{

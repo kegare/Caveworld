@@ -15,6 +15,7 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.Facing;
 import net.minecraft.world.World;
 
 public class ItemPortalCaveworld extends ItemBlock
@@ -30,27 +31,9 @@ public class ItemPortalCaveworld extends ItemBlock
 	{
 		if (!world.isRemote)
 		{
-			switch (side)
-			{
-				case 0:
-					--y;
-					break;
-				case 1:
-					++y;
-					break;
-				case 2:
-					--z;
-					break;
-				case 3:
-					++z;
-					break;
-				case 4:
-					--x;
-					break;
-				case 5:
-					++x;
-					break;
-			}
+			x += Facing.offsetsXForSide[side];
+			y += Facing.offsetsYForSide[side];
+			z += Facing.offsetsZForSide[side];
 
 			if (CaveBlocks.caveworld_portal.func_150000_e(world, x, y, z))
 			{

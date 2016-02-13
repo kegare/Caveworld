@@ -30,8 +30,8 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemMonsterPlacer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
@@ -174,7 +174,7 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 						{
 							item = cachedItems.get(random.nextInt(cachedItems.size()));
 						}
-						while (item == null || item == Item.getItemFromBlock(Blocks.bedrock) || item == Items.spawn_egg || item instanceof ICaveniumTool);
+						while (item == null || item == Item.getItemFromBlock(Blocks.bedrock) || item instanceof ItemMonsterPlacer || item instanceof ICaveniumTool);
 
 						if (item.isDamageable())
 						{

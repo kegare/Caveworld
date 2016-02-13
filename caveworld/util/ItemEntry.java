@@ -46,14 +46,18 @@ public class ItemEntry
 	@Override
 	public boolean equals(Object obj)
 	{
-		if (obj instanceof ItemEntry)
+		if (this == obj)
 		{
-			ItemEntry entry = (ItemEntry)obj;
-
-			return item == entry.item && damage == entry.damage;
+			return true;
+		}
+		else if (obj == null || !(obj instanceof ItemEntry))
+		{
+			return false;
 		}
 
-		return false;
+		ItemEntry entry = (ItemEntry)obj;
+
+		return item == entry.item && damage == entry.damage;
 	}
 
 	@Override

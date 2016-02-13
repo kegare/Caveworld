@@ -124,13 +124,7 @@ public class ItemOreCompass extends Item
 			return -1;
 		}
 
-		if (finderThread == null || !finderThread.isAlive())
-		{
-			finderThread = CaveItems.ore_compass.new ThreadFinder();
-			finderThread.setDaemon(true);
-			finderThread.setPriority(Thread.MIN_PRIORITY);
-			finderThread.start();
-		}
+		initFinder();
 
 		if (nearestOrePos != null && nearestOrePos.world != null && !nearestOrePos.isPlaced())
 		{
@@ -267,11 +261,24 @@ public class ItemOreCompass extends Item
 	}
 
 	@SideOnly(Side.CLIENT)
+	public void initFinder()
+	{
+		if (finderThread == null || !finderThread.isAlive())
+		{
+			finderThread = new ThreadFinder();
+			finderThread.setDaemon(true);
+			finderThread.setPriority(Thread.MIN_PRIORITY);
+			finderThread.start();
+		}
+	}
+
+	@SideOnly(Side.CLIENT)
 	public void resetFinder()
 	{
 		if (finderThread != null)
 		{
-			finderThread.result.clear();
+			finderThread.setFinding(false);
+			finderThread = null;
 		}
 
 		prevFindTime = 0;
@@ -284,10 +291,17 @@ public class ItemOreCompass extends Item
 	{
 		private final List<BreakPos> result = Lists.newArrayList();
 
+		private boolean finding = true;
+
+		public void setFinding(boolean flag)
+		{
+			finding = flag;
+		}
+
 		@Override
 		public void run()
 		{
-			while (true)
+			while (finding)
 			{
 				Minecraft mc = FMLClientHandler.instance().getClient();
 				World world = mc.theWorld;

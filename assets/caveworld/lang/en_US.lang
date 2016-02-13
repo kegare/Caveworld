@@ -200,6 +200,9 @@ caveworld.config.select.entry.selected=%d entries selected
 caveworld.config.select.mob=Select the mobs
 caveworld.config.select.mob.selected=%d mobs selected
 
+caveworld.terrain.wait=Please wait a moment
+caveworld.terrain.load=Loading terrain
+
 caveworld.message.caveborn=Oh.. Portal is broken.
 
 caveworld.minerrank.beginner=Beginner
@@ -260,12 +263,14 @@ item.axeAquamarine.name=Aquamarine Axe
 item.shovelAquamarine.name=Aquamarine Shovel
 item.caverBackpack.name=Caver's Backpack
 
-entity.Caveman.name=Caveman
-entity.ArcherZombie.name=Archer Zombie
-entity.CavenicSkeleton.name=Cavenic Skeleton
-entity.MasterCavenicSkeleton.name=Master Cavenic Skeleton
-entity.CavenicCreeper.name=Cavenic Creeper
-entity.MasterCavenicCreeper.name=Master Cavenic Creeper
+entity.caveworld.Caveman.name=Caveman
+entity.caveworld.ArcherZombie.name=Archer Zombie
+entity.caveworld.CavenicSkeleton.name=Cavenic Skeleton
+entity.caveworld.MasterCavenicSkeleton.name=Master Cavenic Skeleton
+entity.caveworld.CavenicCreeper.name=Cavenic Creeper
+entity.caveworld.MasterCavenicCreeper.name=Master Cavenic Creeper
+entity.caveworld.CavenicZombie.name=Cavenic Zombie
+entity.caveworld.CavenicSpider.name=Cavenic Spider
 
 inventory.caveworld.portal=Portal Inventory
 
@@ -297,6 +302,10 @@ achievement.caveworld.cavenicCreeperSlayer=Cavenic Creeper Slayer
 achievement.caveworld.cavenicCreeperSlayer.desc=Kills the Creeper Skeleton
 achievement.caveworld.masterCavenicCreeperSlayer=Master Cavenic Creeper Slayer
 achievement.caveworld.masterCavenicCreeperSlayer.desc=Kills the Master Creeper Skeleton
+achievement.caveworld.cavenicZombieSlayer=Cavenic Zombie Slayer
+achievement.caveworld.cavenicZombieSlayer.desc=Kills the Cavenic Zombie
+achievement.caveworld.cavenicSpiderSlayer=Cavenic Spider Slayer
+achievement.caveworld.cavenicSpiderSlayer.desc=Kills the Spider Skeleton
 achievement.caveworld.aquamarine=Aquamarine
 achievement.caveworld.aquamarine.desc=Mines an Aquamarine Ore, and gets an Aquamarine
 achievement.caveworld.randomite=Randomite

@@ -68,7 +68,7 @@ public class MobsEntry extends CaveCategoryEntry
 		@Override
 		public String getName()
 		{
-			return I18n.format("entity." + super.getName() + ".name");
+			return I18n.format("entity.caveworld." + super.getName() + ".name");
 		}
 
 		@Override

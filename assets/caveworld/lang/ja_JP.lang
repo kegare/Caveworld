@@ -199,6 +199,9 @@ caveworld.config.select.entry.selected=%dつのエントリが選択済み
 caveworld.config.select.mob=モブを選択してください
 caveworld.config.select.mob.selected=%dつのモブが選択済み
 
+caveworld.terrain.wait=しばらくお待ちください
+caveworld.terrain.load=地形情報を読み込んでいます
+
 caveworld.message.caveborn=うわ、ポータルが壊れてしまった！
 
 caveworld.minerrank.beginner=初心者
@@ -257,12 +260,14 @@ item.axeAquamarine.name=アクアマリンの斧
 item.shovelAquamarine.name=アクアマリンのシャベル
 item.caverBackpack.name=ケイバーのリュック
 
-entity.Caveman.name=ケイブマン
-entity.ArcherZombie.name=弓兵ゾンビ
-entity.CavenicSkeleton.name=ケイブニックスケルトン
-entity.MasterCavenicSkeleton.name=マスターケイブニックスケルトン
-entity.CavenicCreeper.name=ケイブニッククリーパー
-entity.MasterCavenicCreeper.name=マスターケイブニッククリーパー
+entity.caveworld.Caveman.name=ケイブマン
+entity.caveworld.ArcherZombie.name=弓兵ゾンビ
+entity.caveworld.CavenicSkeleton.name=ケイブニックスケルトン
+entity.caveworld.MasterCavenicSkeleton.name=マスターケイブニックスケルトン
+entity.caveworld.CavenicCreeper.name=ケイブニッククリーパー
+entity.caveworld.MasterCavenicCreeper.name=マスターケイブニッククリーパー
+entity.caveworld.CavenicZombie.name=ケイブニックゾンビ
+entity.caveworld.CavenicSpider.name=ケイブニックスパイダー
 
 inventory.caveworld.portal=ポータルインベントリ
 
@@ -294,6 +299,14 @@ achievement.caveworld.cavenicCreeperSlayer=ケイブニッククリーパー退�
 achievement.caveworld.cavenicCreeperSlayer.desc=ケイブニッククリーパーを倒す
 achievement.caveworld.masterCavenicCreeperSlayer=マスターケイブニッククリーパー退治
 achievement.caveworld.masterCavenicCreeperSlayer.desc=マスターケイブニッククリーパーを倒す
+achievement.caveworld.cavenicZombieSlayer=ケイブニックゾンビ退治
+achievement.caveworld.cavenicZombieSlayer.desc=ケイブニックゾンビを倒す
+achievement.caveworld.cavenicSpiderSlayer=ケイブニックスパイダー退治
+achievement.caveworld.cavenicSpiderSlayer.desc=ケイブニックスパイダーを倒す
+achievement.caveworld.cavenicZombieSlayer=ケイブニックゾンビ退治
+achievement.caveworld.cavenicZombieSlayer.desc=ケイブニックゾンビを倒す
+achievement.caveworld.cavenicSpiderSlayer=ケイブニックスパイダー退治
+achievement.caveworld.cavenicSpiderSlayer.desc=ケイブニックスパイダーを倒す
 achievement.caveworld.aquamarine=アクアマリン
 achievement.caveworld.aquamarine.desc=アクアマリン鉱石を採掘し、アクアマリンを得る
 achievement.caveworld.randomite=ランダマイト

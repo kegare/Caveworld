@@ -38,7 +38,6 @@ import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.creativetab.CreativeTabs;
@@ -458,7 +457,7 @@ public class ItemLumberingAxe extends ItemAxe implements ICaveniumTool
 
 		if (world.isRemote)
 		{
-			highlightStart = Minecraft.getSystemTime();
+			highlightStart = System.currentTimeMillis();
 		}
 
 		world.playSoundAtEntity(player, "random.click", 0.6F, 1.7F);

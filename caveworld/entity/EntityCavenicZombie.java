@@ -15,13 +15,11 @@ import caveworld.api.CaveworldAPI;
 import caveworld.core.CaveAchievementList;
 import caveworld.item.CaveItems;
 import caveworld.util.CaveUtils;
-import cpw.mods.fml.common.ObfuscationReflectionHelper;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EnumCreatureType;
-import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.monster.EntityCreeper;
+import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
@@ -29,7 +27,7 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
 
-public class EntityCavenicCreeper extends EntityCreeper
+public class EntityCavenicZombie extends EntityZombie
 {
 	public static int spawnWeight;
 	public static int spawnMinHeight;
@@ -61,28 +59,18 @@ public class EntityCavenicCreeper extends EntityCreeper
 			biomes = def;
 		}
 
-		EntityRegistry.removeSpawn(EntityCavenicCreeper.class, EnumCreatureType.monster, def);
+		EntityRegistry.removeSpawn(EntityCavenicZombie.class, EnumCreatureType.monster, def);
 
 		if (spawnWeight > 0)
 		{
-			EntityRegistry.addSpawn(EntityCavenicCreeper.class, spawnWeight, 4, 4, EnumCreatureType.monster, biomes);
+			EntityRegistry.addSpawn(EntityCavenicZombie.class, spawnWeight, 4, 4, EnumCreatureType.monster, biomes);
 		}
 	}
 
-	protected int fuseTime = 15;
-	protected int explosionRadius = 5;
-
-	public EntityCavenicCreeper(World world)
+	public EntityCavenicZombie(World world)
 	{
 		super(world);
 		this.experienceValue = 10;
-		this.applyCustomValues();
-	}
-
-	protected void applyCustomValues()
-	{
-		ObfuscationReflectionHelper.setPrivateValue(EntityCreeper.class, this, fuseTime, "fuseTime", "field_82225_f");
-		ObfuscationReflectionHelper.setPrivateValue(EntityCreeper.class, this, explosionRadius, "explosionRadius", "field_82226_g");
 	}
 
 	@Override
@@ -90,26 +78,11 @@ public class EntityCavenicCreeper extends EntityCreeper
 	{
 		super.applyEntityAttributes();
 
-		getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(30.0D + 10.0D * rand.nextInt(3));
-		getEntityAttribute(SharedMonsterAttributes.knockbackResistance).setBaseValue(2.0D);
-		getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.2D);
-	}
-
-	@Override
-	public IEntityLivingData onSpawnWithEgg(IEntityLivingData data)
-	{
-		if (!worldObj.isRemote && rand.nextInt(50) == 0)
-		{
-			EntityMasterCavenicCreeper master = new EntityMasterCavenicCreeper(worldObj);
-			master.setLocationAndAngles(posX, posY, posZ, rotationYaw, rotationPitch);
-
-			worldObj.spawnEntityInWorld(master);
-			setDead();
-
-			return data;
-		}
-
-		return super.onSpawnWithEgg(data);
+		getEntityAttribute(field_110186_bp).setBaseValue(0.0D);
+		getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(50.0D + 10.0D * rand.nextInt(3));
+		getEntityAttribute(SharedMonsterAttributes.followRange).setBaseValue(50.0D);
+		getEntityAttribute(SharedMonsterAttributes.knockbackResistance).setBaseValue(3.0D);
+		getEntityAttribute(SharedMonsterAttributes.attackDamage).setBaseValue(6.0D);
 	}
 
 	@Override
@@ -127,6 +100,12 @@ public class EntityCavenicCreeper extends EntityCreeper
 	}
 
 	@Override
+	public boolean interact(EntityPlayer player)
+	{
+		return false;
+	}
+
+	@Override
 	public void onDeath(DamageSource source)
 	{
 		super.onDeath(source);
@@ -140,7 +119,7 @@ public class EntityCavenicCreeper extends EntityCreeper
 
 		if (entity != null && entity instanceof EntityPlayer)
 		{
-			((EntityPlayer)entity).triggerAchievement(CaveAchievementList.cavenicCreeperSlayer);
+			((EntityPlayer)entity).triggerAchievement(CaveAchievementList.cavenicZombieSlayer);
 		}
 	}
 
@@ -161,5 +140,32 @@ public class EntityCavenicCreeper extends EntityCreeper
 	public int getMaxSpawnedInChunk()
 	{
 		return spawnInChunks;
+	}
+
+	@Override
+	public boolean isVillager()
+	{
+		return false;
+	}
+
+	@Override
+	public void setVillager(boolean flag) {}
+
+	@Override
+	protected void startConversion(int time) {}
+
+	@Override
+	public boolean isConverting()
+	{
+		return false;
+	}
+
+	@Override
+	protected void convertToVillager() {}
+
+	@Override
+	protected int getConversionTimeBoost()
+	{
+		return 0;
 	}
 }

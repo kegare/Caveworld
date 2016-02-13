@@ -22,12 +22,7 @@ import com.google.common.collect.Sets;
 import caveworld.api.BlockEntry;
 import caveworld.api.CaveworldAPI;
 import caveworld.block.CaveBlocks;
-import caveworld.entity.EntityArcherZombie;
-import caveworld.entity.EntityCaveman;
-import caveworld.entity.EntityCavenicCreeper;
-import caveworld.entity.EntityCavenicSkeleton;
-import caveworld.entity.EntityMasterCavenicCreeper;
-import caveworld.entity.EntityMasterCavenicSkeleton;
+import caveworld.entity.CaveEntityRegistry;
 import caveworld.handler.CaveAPIHandler;
 import caveworld.handler.CaveEventHooks;
 import caveworld.handler.CaveFuelHandler;
@@ -80,7 +75,6 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
-import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.Side;
@@ -180,25 +174,14 @@ public class Caveworld
 	@EventHandler
 	public void init(FMLInitializationEvent event)
 	{
-		EntityRegistry.registerGlobalEntityID(EntityCaveman.class, "Caveman", EntityRegistry.findGlobalUniqueEntityId(), 0xAAAAAA, 0xCCCCCC);
-		EntityRegistry.registerGlobalEntityID(EntityArcherZombie.class, "ArcherZombie", EntityRegistry.findGlobalUniqueEntityId(), 0x00A0A0, 0xAAAAAA);
-		EntityRegistry.registerGlobalEntityID(EntityCavenicSkeleton.class, "CavenicSkeleton", EntityRegistry.findGlobalUniqueEntityId(), 0xAAAAAA, 0xDDDDDD);
-		EntityRegistry.registerGlobalEntityID(EntityCavenicCreeper.class, "CavenicCreeper", EntityRegistry.findGlobalUniqueEntityId(), 0x2E8B57, 0xDDDDDD);
-
-		int id = 0;
-		EntityRegistry.registerModEntity(EntityCaveman.class, "Caveman", id++, this, 128, 1, true);
-		EntityRegistry.registerModEntity(EntityArcherZombie.class, "ArcherZombie", id++, this, 128, 1, true);
-		EntityRegistry.registerModEntity(EntityCavenicSkeleton.class, "CavenicSkeleton", id++, this, 128, 1, true);
-		EntityRegistry.registerModEntity(EntityMasterCavenicSkeleton.class, "MasterCavenicSkeleton", id++, this, 128, 1, true);
-		EntityRegistry.registerModEntity(EntityCavenicCreeper.class, "CavenicCreeper", id++, this, 128, 1, true);
-		EntityRegistry.registerModEntity(EntityMasterCavenicCreeper.class, "MasterCavenicCreeper", id++, this, 128, 1, true);
+		CaveEntityRegistry.registerEntities();
 
 		proxy.registerRenderers();
 
 		Config.syncMobsCfg();
 		Config.syncDimensionCfg();
 
-		id = CaveworldAPI.getDimension();
+		int id = CaveworldAPI.getDimension();
 		DimensionManager.registerProviderType(id, WorldProviderCaveworld.class, true);
 		DimensionManager.registerDimension(id, id);
 

@@ -40,8 +40,7 @@ public class GuiDownloadCaveTerrain extends GuiDownloadTerrain
 
 	public PanoramaPaths currentPanoramaPaths;
 
-	private static int panoramaTimer;
-
+	protected static int panoramaTimer;
 
 	public GuiDownloadCaveTerrain(NetHandlerPlayClient handler)
 	{
@@ -65,7 +64,6 @@ public class GuiDownloadCaveTerrain extends GuiDownloadTerrain
 
 		return currentPanoramaPaths;
 	}
-
 
 	private void drawPanorama(float ticks)
 	{
@@ -230,12 +228,22 @@ public class GuiDownloadCaveTerrain extends GuiDownloadTerrain
 
 		if (time > 500L)
 		{
-			drawCenteredString(fontRendererObj, I18n.format("multiplayer.downloadingTerrain"), width / 2, height / 2 + 40, 0xFFFFFF);
+			drawCenteredString(fontRendererObj, getInfoText(), width / 2, height / 2 + 40, 0xFFFFFF);
 		}
 
 		if (time > 2000L)
 		{
-			drawCenteredString(fontRendererObj, I18n.format("caveworld.downloadTerrain.wait"), width / 2, height / 2 + 65, 0xCCCCCC);
+			drawCenteredString(fontRendererObj, getSubText(), width / 2, height / 2 + 65, 0xCCCCCC);
 		}
+	}
+
+	public String getInfoText()
+	{
+		return I18n.format("multiplayer.downloadingTerrain");
+	}
+
+	public String getSubText()
+	{
+		return I18n.format("caveworld.terrain.wait");
 	}
 }

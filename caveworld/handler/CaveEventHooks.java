@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.opengl.GL11;
 
 import com.google.common.base.Strings;
@@ -26,6 +25,7 @@ import caveworld.api.ICaveVeinManager;
 import caveworld.api.event.MiningPointEvent;
 import caveworld.block.CaveBlocks;
 import caveworld.client.gui.GuiDownloadCaveTerrain;
+import caveworld.client.gui.GuiLoadCaveTerrain;
 import caveworld.client.gui.GuiSelectBreakable;
 import caveworld.core.AquaCavernBiomeManager;
 import caveworld.core.AquaCavernVeinManager;
@@ -98,6 +98,7 @@ import net.minecraft.client.audio.SoundCategory;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiDownloadTerrain;
 import net.minecraft.client.gui.GuiIngame;
+import net.minecraft.client.gui.GuiSelectWorld;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.enchantment.Enchantment;
@@ -247,13 +248,13 @@ public class CaveEventHooks
 				{
 					ICaveniumTool tool = (ICaveniumTool)current.getItem();
 
-					if (tool.getHighlightStart() > 0 && Minecraft.getSystemTime() - tool.getHighlightStart() < Config.modeDisplayTime)
+					if (tool.getHighlightStart() > 0 && System.currentTimeMillis() - tool.getHighlightStart() < Config.modeDisplayTime)
 					{
-						long time = Minecraft.getSystemTime() - tool.getHighlightStart();
+						long time = System.currentTimeMillis() - tool.getHighlightStart();
 
 						if (time > Config.modeDisplayTime - 255)
 						{
-							time = tool.getHighlightStart() + Config.modeDisplayTime - Minecraft.getSystemTime();
+							time = tool.getHighlightStart() + Config.modeDisplayTime - System.currentTimeMillis();
 						}
 
 						int i = MathHelper.clamp_int((int)time, 0, 255);
@@ -274,7 +275,7 @@ public class CaveEventHooks
 
 						if (highlight == 40)
 						{
-							tool.setHighlightStart(Minecraft.getSystemTime());
+							tool.setHighlightStart(System.currentTimeMillis());
 						}
 					}
 				}
@@ -282,13 +283,13 @@ public class CaveEventHooks
 				{
 					ItemCavenicBow bow = (ItemCavenicBow)current.getItem();
 
-					if (bow.highlightStart > 0 && Minecraft.getSystemTime() - bow.highlightStart < Config.modeDisplayTime)
+					if (bow.highlightStart > 0 && System.currentTimeMillis() - bow.highlightStart < Config.modeDisplayTime)
 					{
-						long time = Minecraft.getSystemTime() - bow.highlightStart;
+						long time = System.currentTimeMillis() - bow.highlightStart;
 
 						if (time > Config.modeDisplayTime - 255)
 						{
-							time = bow.highlightStart + Config.modeDisplayTime - Minecraft.getSystemTime();
+							time = bow.highlightStart + Config.modeDisplayTime - System.currentTimeMillis();
 						}
 
 						int i = MathHelper.clamp_int((int)time, 0, 255);
@@ -519,9 +520,19 @@ public class CaveEventHooks
 	{
 		Minecraft mc = FMLClientHandler.instance().getClient();
 
-		if (event.gui != null && CaveworldAPI.isEntityInCaves(mc.thePlayer) && GuiDownloadTerrain.class.isInstance(event.gui))
+		if (CaveworldAPI.isEntityInCaves(mc.thePlayer) && (mc.currentScreen == null || !(mc.currentScreen instanceof GuiSelectWorld)))
 		{
-			event.gui = new GuiDownloadCaveTerrain(mc.getNetHandler());
+			if (event.gui == null)
+			{
+				if (mc.currentScreen != null && GuiDownloadCaveTerrain.class == mc.currentScreen.getClass())
+				{
+					event.gui = new GuiLoadCaveTerrain(mc.getNetHandler());
+				}
+			}
+			else if (GuiDownloadTerrain.class == event.gui.getClass())
+			{
+				event.gui = new GuiDownloadCaveTerrain(mc.getNetHandler());
+			}
 		}
 	}
 
@@ -563,11 +574,11 @@ public class CaveEventHooks
 			mc.ingameGUI.getChatGUI().printChatMessage(message);
 			message = null;
 
-			if (StringUtils.endsWithIgnoreCase(Version.getCurrent(), "beta"))
+			if (Version.isBeta())
 			{
 				message = new ChatComponentTranslation("caveworld.version.message.beta", name);
 			}
-			else if (StringUtils.endsWithIgnoreCase(Version.getCurrent(), "alpha"))
+			else if (Version.isAlpha())
 			{
 				message = new ChatComponentTranslation("caveworld.version.message.alpha", name);
 			}
@@ -947,10 +958,10 @@ public class CaveEventHooks
 					int meta = event.blockMetadata;
 					int amount = CaveworldAPI.getMiningPointAmount(block, meta);
 
-					MiningPointEvent.OnBlockBreak pointEvent = new MiningPointEvent.OnBlockBreak(player, amount);
-					MinecraftForge.EVENT_BUS.post(pointEvent);
+					MiningPointEvent.OnBlockBreak point = new MiningPointEvent.OnBlockBreak(player, amount);
+					MinecraftForge.EVENT_BUS.post(point);
 
-					amount = pointEvent.newAmount;
+					amount = point.newAmount;
 
 					if (amount != 0)
 					{

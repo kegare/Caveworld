@@ -15,6 +15,7 @@ import caveworld.block.CaveBlocks;
 import caveworld.recipe.RecipeCaveniumTool;
 import caveworld.util.CaveUtils;
 import cpw.mods.fml.common.registry.GameRegistry;
+import net.minecraft.block.BlockDispenser;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item.ToolMaterial;
 import net.minecraft.item.ItemStack;
@@ -42,6 +43,7 @@ public class CaveItems
 	public static final ItemAquamarineAxe aquamarine_axe = new ItemAquamarineAxe("axeAquamarine");
 	public static final ItemAquamarineShovel aquamarine_shovel = new ItemAquamarineShovel("shovelAquamarine");
 	public static final ItemCaverBackpack caver_backpack = new ItemCaverBackpack("caverBackpack");
+	public static final ItemCaveMobPlacer spawn_egg = new ItemCaveMobPlacer();
 
 	public static void registerItems()
 	{
@@ -230,6 +232,12 @@ public class CaveItems
 				'L', Items.leather,
 				'C', "gemCavenium"
 			));
+		}
+
+		{
+			GameRegistry.registerItem(spawn_egg, "spawn_egg");
+
+			BlockDispenser.dispenseBehaviorRegistry.putObject(spawn_egg, spawn_egg.new DispenceEgg());
 		}
 	}
 }

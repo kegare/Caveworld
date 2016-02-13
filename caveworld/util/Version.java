@@ -120,6 +120,16 @@ public class Version extends RecursiveAction
 		return getStatus() == Status.OUTDATED;
 	}
 
+	public static boolean isBeta()
+	{
+		return StringUtils.containsIgnoreCase(getCurrent(), "beta");
+	}
+
+	public static boolean isAlpha()
+	{
+		return StringUtils.containsIgnoreCase(getCurrent(), "alpha");
+	}
+
 	@Override
 	protected void compute()
 	{

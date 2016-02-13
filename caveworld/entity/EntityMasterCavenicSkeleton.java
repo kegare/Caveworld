@@ -41,18 +41,18 @@ public class EntityMasterCavenicSkeleton extends EntityCavenicSkeleton implement
 	@Override
 	public IChatComponent func_145748_c_()
 	{
-		IChatComponent name = new ChatComponentTranslation("entity.MasterCavenicSkeleton.name");
+		IChatComponent name = new ChatComponentTranslation("entity." + getEntityString() + ".name");
 		name.getChatStyle().setColor(EnumChatFormatting.GRAY);
 
 		return name;
 	}
 
 	@Override
-	protected void applyCustomValue()
+	protected void applyCustomValues()
 	{
 		aiArrowAttack = new EntityAIArrowAttack(this, 1.0D, 1, 2, 16.0F);
 
-		super.applyCustomValue();
+		super.applyCustomValues();
 	}
 
 	@Override
@@ -139,6 +139,11 @@ public class EntityMasterCavenicSkeleton extends EntityCavenicSkeleton implement
 		super.onDeath(source);
 
 		Entity entity = source.getEntity();
+
+		if (entity == null)
+		{
+			entity = source.getSourceOfDamage();
+		}
 
 		if (entity != null && entity instanceof EntityPlayer)
 		{

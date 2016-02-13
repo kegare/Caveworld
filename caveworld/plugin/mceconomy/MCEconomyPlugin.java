@@ -22,6 +22,8 @@ import caveworld.entity.EntityArcherZombie;
 import caveworld.entity.EntityCaveman;
 import caveworld.entity.EntityCavenicCreeper;
 import caveworld.entity.EntityCavenicSkeleton;
+import caveworld.entity.EntityCavenicSpider;
+import caveworld.entity.EntityCavenicZombie;
 import caveworld.entity.EntityMasterCavenicCreeper;
 import caveworld.entity.EntityMasterCavenicSkeleton;
 import caveworld.item.CaveItems;
@@ -36,6 +38,7 @@ import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.oredict.OreDictionary;
 import shift.mceconomy2.api.MCEconomyAPI;
 
 public final class MCEconomyPlugin implements ICavePlugin
@@ -115,6 +118,9 @@ public final class MCEconomyPlugin implements ICavePlugin
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.gem_ore, 1, 1), 315);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.gem_ore, 1, 2), 50);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.cavern_portal), -1);
+		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.perverted_log, 1, OreDictionary.WILDCARD_VALUE), 1);
+		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.perverted_leaves, 1, OreDictionary.WILDCARD_VALUE), 0);
+		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.perverted_sapling, 1, OreDictionary.WILDCARD_VALUE), 0);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.aqua_cavern_portal), -1);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.caveland_portal), -1);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.cavenium, 1, 0), 200);
@@ -128,6 +134,8 @@ public final class MCEconomyPlugin implements ICavePlugin
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.aquamarine_pickaxe), 110);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.aquamarine_axe), 110);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.aquamarine_shovel), 40);
+		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.caver_backpack), 850);
+		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.spawn_egg, 1, OreDictionary.WILDCARD_VALUE), -1);
 
 		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCaveman.class, 20);
 		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityArcherZombie.class, 4);
@@ -135,6 +143,8 @@ public final class MCEconomyPlugin implements ICavePlugin
 		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityMasterCavenicSkeleton.class, 1500);
 		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCavenicCreeper.class, 100);
 		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityMasterCavenicCreeper.class, 1500);
+		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCavenicZombie.class, 100);
+		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCavenicSpider.class, 100);
 
 		SHOP = MCEconomyAPI.registerShop(productManager);
 

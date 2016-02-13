@@ -23,6 +23,8 @@ import caveworld.client.renderer.RenderCaveman;
 import caveworld.client.renderer.RenderCavenicBow;
 import caveworld.client.renderer.RenderCavenicCreeper;
 import caveworld.client.renderer.RenderCavenicSkeleton;
+import caveworld.client.renderer.RenderCavenicSpider;
+import caveworld.client.renderer.RenderCavenicZombie;
 import caveworld.client.renderer.RenderCaveniumTool;
 import caveworld.client.renderer.RenderMasterCavenicCreeper;
 import caveworld.client.renderer.RenderMasterCavenicSkeleton;
@@ -34,6 +36,8 @@ import caveworld.entity.EntityArcherZombie;
 import caveworld.entity.EntityCaveman;
 import caveworld.entity.EntityCavenicCreeper;
 import caveworld.entity.EntityCavenicSkeleton;
+import caveworld.entity.EntityCavenicSpider;
+import caveworld.entity.EntityCavenicZombie;
 import caveworld.entity.EntityMasterCavenicCreeper;
 import caveworld.entity.EntityMasterCavenicSkeleton;
 import caveworld.entity.TileEntityUniversalChest;
@@ -91,6 +95,8 @@ public class ClientProxy extends CommonProxy
 		RenderingRegistry.registerEntityRenderingHandler(EntityMasterCavenicSkeleton.class, new RenderMasterCavenicSkeleton());
 		RenderingRegistry.registerEntityRenderingHandler(EntityCavenicCreeper.class, new RenderCavenicCreeper());
 		RenderingRegistry.registerEntityRenderingHandler(EntityMasterCavenicCreeper.class, new RenderMasterCavenicCreeper());
+		RenderingRegistry.registerEntityRenderingHandler(EntityCavenicZombie.class, new RenderCavenicZombie());
+		RenderingRegistry.registerEntityRenderingHandler(EntityCavenicSpider.class, new RenderCavenicSpider());
 	}
 
 	@Override
