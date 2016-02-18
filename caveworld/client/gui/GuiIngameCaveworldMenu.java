@@ -14,6 +14,7 @@ import caveworld.block.CaveBlocks;
 import caveworld.client.config.GuiBiomesEntry;
 import caveworld.client.config.GuiVeinsEntry;
 import caveworld.client.gui.GuiButtonVolume.IVolume;
+import caveworld.core.CaveNetworkRegistry;
 import caveworld.core.Caveworld;
 import caveworld.core.Config;
 import caveworld.network.server.PortalInventoryMessage;
@@ -77,7 +78,7 @@ public class GuiIngameCaveworldMenu extends GuiScreen implements IVolume
 			inventoryButton = prev = new GuiButtonExt(5, prev.xPosition, prev.yPosition + prev.height + 5, I18n.format(CaveBlocks.caveworld_portal.getInventoryName()));
 		}
 
-		if (menuType != MenuType.CAVELAND_PORTAL)
+		if (menuType != MenuType.CAVELAND_PORTAL && menuType != MenuType.CAVENIA_PORTAL)
 		{
 			biomeButton = prev = new GuiButtonExt(1, prev.xPosition, prev.yPosition + prev.height + 5, I18n.format(Caveworld.CONFIG_LANG + "biomes"));
 			veinButton = prev = new GuiButtonExt(2, prev.xPosition, prev.yPosition + prev.height + 5, I18n.format(Caveworld.CONFIG_LANG + "veins"));
@@ -172,16 +173,19 @@ public class GuiIngameCaveworldMenu extends GuiScreen implements IVolume
 					switch (menuType)
 					{
 						case CAVEWORLD_PORTAL:
-							mc.displayGuiScreen(new GuiRegeneration(true, true, false, false, false));
+							mc.displayGuiScreen(new GuiRegeneration(true, true, false, false, false, false));
 							break;
 						case CAVERN_PORTAL:
-							mc.displayGuiScreen(new GuiRegeneration(true, false, true, false, false));
+							mc.displayGuiScreen(new GuiRegeneration(true, false, true, false, false, false));
 							break;
 						case AQUA_CAVERN_PORTAL:
-							mc.displayGuiScreen(new GuiRegeneration(true, false, false, true, false));
+							mc.displayGuiScreen(new GuiRegeneration(true, false, false, true, false, false));
 							break;
 						case CAVELAND_PORTAL:
-							mc.displayGuiScreen(new GuiRegeneration(true, false, false, false, true));
+							mc.displayGuiScreen(new GuiRegeneration(true, false, false, false, true, false));
+							break;
+						case CAVENIA_PORTAL:
+							mc.displayGuiScreen(new GuiRegeneration(true, false, false, false, false, true));
 							break;
 						default:
 							mc.displayGuiScreen(new GuiRegeneration(true));
@@ -193,7 +197,7 @@ public class GuiIngameCaveworldMenu extends GuiScreen implements IVolume
 					mc.displayGuiScreen(new GuiShopEntry(this, MCEconomyPlugin.productManager));
 					break;
 				case 5:
-					Caveworld.network.sendToServer(new PortalInventoryMessage(portalX, portalY, portalZ));
+					CaveNetworkRegistry.sendToServer(new PortalInventoryMessage(portalX, portalY, portalZ));
 					break;
 			}
 		}
@@ -214,6 +218,9 @@ public class GuiIngameCaveworldMenu extends GuiScreen implements IVolume
 				break;
 			case CAVELAND_PORTAL:
 				drawCenteredString(fontRendererObj, I18n.format("caveland.menu.title"), width / 2, 40, 0xFFFFFF);
+				break;
+			case CAVENIA_PORTAL:
+				drawCenteredString(fontRendererObj, I18n.format("cavenia.menu.title"), width / 2, 40, 0xFFFFFF);
 				break;
 			default:
 				drawCenteredString(fontRendererObj, I18n.format("caveworld.menu.title"), width / 2, 40, 0xFFFFFF);

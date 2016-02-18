@@ -23,6 +23,7 @@ import com.google.common.primitives.Ints;
 import caveworld.api.BlockEntry;
 import caveworld.api.ICaveVein;
 import caveworld.api.ICaveVeinManager;
+import caveworld.world.WorldProviderCaveworld;
 import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
@@ -53,7 +54,7 @@ public class CaveVeinManager implements ICaveVeinManager
 	@Override
 	public int getType()
 	{
-		return 0;
+		return WorldProviderCaveworld.TYPE;
 	}
 
 	@Override
@@ -284,10 +285,7 @@ public class CaveVeinManager implements ICaveVeinManager
 		{
 			for (int i = 0; i < list.tagCount(); ++i)
 			{
-				ICaveVein vein = new CaveVein();
-				vein.loadNBTData(list.getCompoundTagAt(i));
-
-				getCaveVeins().add(vein);
+				getCaveVeins().add(new CaveVein(list.getCompoundTagAt(i)));
 			}
 		}
 	}
@@ -335,6 +333,12 @@ public class CaveVeinManager implements ICaveVeinManager
 		public CaveVein(ICaveVein vein)
 		{
 			this(vein.getBlock(), vein.getGenBlockCount(), vein.getGenWeight(), vein.getGenRate(), vein.getGenMinHeight(), vein.getGenMaxHeight(), vein.getGenTargetBlock(), vein.getGenBiomes());
+		}
+
+		public CaveVein(NBTTagCompound data)
+		{
+			this();
+			this.loadNBTData(data);
 		}
 
 		@Override
@@ -504,7 +508,7 @@ public class CaveVeinManager implements ICaveVeinManager
 		}
 
 		@Override
-		public void generateVein(World world, Random random, int chunkX, int chunkZ)
+		public void generateVein(World world, Random random, int worldX, int worldZ)
 		{
 			int worldHeight = world.getActualHeight();
 			BlockEntry block = getBlock();
@@ -525,9 +529,9 @@ public class CaveVeinManager implements ICaveVeinManager
 						continue;
 					}
 
-					int x = chunkX + random.nextInt(16);
+					int x = worldX + random.nextInt(16);
 					int y = random.nextInt(Math.min(max, worldHeight - 1) - min) + min;
-					int z = chunkZ + random.nextInt(16);
+					int z = worldZ + random.nextInt(16);
 					float var1 = random.nextFloat() * (float)Math.PI;
 					double var2 = x + 8 + MathHelper.sin(var1) * count / 8.0F;
 					double var3 = x + 8 - MathHelper.sin(var1) * count / 8.0F;
@@ -564,23 +568,14 @@ public class CaveVeinManager implements ICaveVeinManager
 
 											if (xScale * xScale + yScale * yScale + zScale * zScale < 1.0D)
 											{
-												if (target == null)
+												if (world.getBlock(x, y, z).isReplaceableOreGen(world, x, y, z, target.getBlock()) && world.getBlockMetadata(x, y, z) == target.getMetadata())
 												{
-													if (!world.getBlock(x, y, z).isReplaceableOreGen(world, x, y, z, Blocks.stone))
+													if (biomes.length <= 0 || ArrayUtils.contains(biomes, world.getBiomeGenForCoords(x, z).biomeID))
 													{
-														continue;
-													}
-												}
-												else if (!world.getBlock(x, y, z).isReplaceableOreGen(world, x, y, z, target.getBlock()) || world.getBlockMetadata(x, y, z) != target.getMetadata())
-												{
-													continue;
-												}
-
-												if (biomes == null || biomes.length <= 0 || ArrayUtils.contains(biomes, world.getBiomeGenForCoords(x, z).biomeID))
-												{
-													if (world.setBlock(x, y, z, block.getBlock(), block.getMetadata(), 2))
-													{
-														++gen;
+														if (world.setBlock(x, y, z, block.getBlock(), block.getMetadata(), 2))
+														{
+															++gen;
+														}
 													}
 												}
 											}

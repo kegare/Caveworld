@@ -9,7 +9,6 @@
 
 package caveworld.world;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -83,13 +82,16 @@ public class ChunkProviderCaveland implements IChunkProvider
 	{
 		random.setSeed(chunkX * 341873128712L + chunkZ * 132897987541L);
 
-		int worldHeight = worldObj.provider.getActualHeight();
 		biomesForGeneration = worldObj.getWorldChunkManager().getBiomeGenAt(biomesForGeneration, chunkX * 16, chunkZ * 16, 16, 16, false);
+		int worldHeight = worldObj.provider.getActualHeight();
 		Block[] blocks = new Block[65536];
 		byte[] metadata = new byte[blocks.length];
 
-		Arrays.fill(blocks, Blocks.dirt);
-		Arrays.fill(metadata, (byte)0);
+		for (int i = 0; i < blocks.length; ++i)
+		{
+			blocks[i] = Blocks.dirt;
+			metadata[i] = (byte)0;
+		}
 
 		caveGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
 

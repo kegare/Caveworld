@@ -12,6 +12,7 @@ package caveworld.block;
 import caveworld.api.CaveworldAPI;
 import caveworld.client.gui.MenuType;
 import caveworld.world.TeleporterAquaCavern;
+import caveworld.world.WorldProviderAquaCavern;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.WorldServer;
@@ -22,6 +23,12 @@ public class BlockPortalAquaCavern extends BlockCavePortal
 	{
 		super(name);
 		this.setBlockTextureName("caveworld:aqua_cavern_portal");
+	}
+
+	@Override
+	public int getType()
+	{
+		return WorldProviderAquaCavern.TYPE;
 	}
 
 	@Override

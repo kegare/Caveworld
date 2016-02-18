@@ -18,6 +18,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.Facing;
 import net.minecraft.world.World;
 
 public class ItemRope extends ItemBlock
@@ -43,23 +44,11 @@ public class ItemRope extends ItemBlock
 			}
 			while (world.getBlock(x, y, z) == field_150939_a);
 		}
-		else switch (side)
+		else
 		{
-			case 0:
-				--y;
-				break;
-			case 2:
-				--z;
-				break;
-			case 3:
-				++z;
-				break;
-			case 4:
-				--x;
-				break;
-			case 5:
-				++x;
-				break;
+			x += Facing.offsetsXForSide[side];
+			y += Facing.offsetsYForSide[side];
+			z += Facing.offsetsZForSide[side];
 		}
 
 		if (itemstack.stackSize > 0 && player.canPlayerEdit(x, y, z, side, itemstack) &&
@@ -125,23 +114,11 @@ public class ItemRope extends ItemBlock
 			}
 			while (world.getBlock(x, y, z) == field_150939_a);
 		}
-		else switch (side)
+		else
 		{
-			case 0:
-				--y;
-				break;
-			case 2:
-				--z;
-				break;
-			case 3:
-				++z;
-				break;
-			case 4:
-				--x;
-				break;
-			case 5:
-				++x;
-				break;
+			x += Facing.offsetsXForSide[side];
+			y += Facing.offsetsYForSide[side];
+			z += Facing.offsetsZForSide[side];
 		}
 
 		return world.canPlaceEntityOnSide(field_150939_a, x, y, z, false, side, null, itemstack);

@@ -17,8 +17,9 @@ import java.security.SecureRandom;
 import org.apache.logging.log4j.Level;
 
 import caveworld.api.CaveworldAPI;
-import caveworld.core.Caveworld;
-import caveworld.network.client.AquaCavernAdjustMessage;
+import caveworld.api.ICaveBiomeManager;
+import caveworld.core.CaveNetworkRegistry;
+import caveworld.network.client.CaveAdjustMessage;
 import caveworld.network.client.CaveMusicMessage;
 import caveworld.util.CaveLog;
 import net.minecraft.nbt.CompressedStreamTools;
@@ -28,6 +29,8 @@ import net.minecraftforge.common.DimensionManager;
 
 public class WorldProviderAquaCavern extends WorldProviderCaveworld
 {
+	public static final int TYPE = 2;
+
 	private static NBTTagCompound dimData;
 	private static long dimensionSeed;
 	private static int subsurfaceHeight;
@@ -145,9 +148,9 @@ public class WorldProviderAquaCavern extends WorldProviderCaveworld
 	}
 
 	@Override
-	protected void registerWorldChunkManager()
+	public ICaveBiomeManager getBiomeManager()
 	{
-		worldChunkMgr = new WorldChunkManagerCaveworld(worldObj, CaveworldAPI.biomeAquaCavernManager);
+		return CaveworldAPI.biomeAquaCavernManager;
 	}
 
 	@Override
@@ -169,7 +172,7 @@ public class WorldProviderAquaCavern extends WorldProviderCaveworld
 		{
 			loadDimData(getDimData());
 
-			Caveworld.network.sendToAll(new AquaCavernAdjustMessage(dimensionId, getDimData()));
+			CaveNetworkRegistry.sendToAll(new CaveAdjustMessage(TYPE, dimensionId, getDimData()));
 		}
 
 		return dimensionSeed;
@@ -182,7 +185,7 @@ public class WorldProviderAquaCavern extends WorldProviderCaveworld
 		{
 			loadDimData(getDimData());
 
-			Caveworld.network.sendToAll(new AquaCavernAdjustMessage(dimensionId, getDimData()));
+			CaveNetworkRegistry.sendToAll(new CaveAdjustMessage(TYPE, dimensionId, getDimData()));
 		}
 
 		return subsurfaceHeight + 1;
@@ -193,11 +196,11 @@ public class WorldProviderAquaCavern extends WorldProviderCaveworld
 	{
 		if (!worldObj.isRemote)
 		{
-			if (--ambientTickCountdown <= 0)
+			if (--musicTime <= 0)
 			{
-				ambientTickCountdown = worldObj.rand.nextInt(5000) + 10000;
+				musicTime = worldObj.rand.nextInt(5000) + 10000;
 
-				Caveworld.network.sendToDimension(new CaveMusicMessage("cavemusic.aqua"), dimensionId);
+				CaveNetworkRegistry.sendToDimension(new CaveMusicMessage("cavemusic.aqua"), dimensionId);
 			}
 		}
 

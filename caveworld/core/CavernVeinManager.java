@@ -14,6 +14,7 @@ import java.util.List;
 import com.google.common.collect.Lists;
 
 import caveworld.api.ICaveVein;
+import caveworld.world.WorldProviderCavern;
 import net.minecraftforge.common.config.Configuration;
 
 public class CavernVeinManager extends CaveVeinManager
@@ -29,7 +30,7 @@ public class CavernVeinManager extends CaveVeinManager
 	@Override
 	public int getType()
 	{
-		return 1;
+		return WorldProviderCavern.TYPE;
 	}
 
 	@Override

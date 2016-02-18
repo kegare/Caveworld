@@ -11,6 +11,8 @@ package caveworld.network.client;
 
 import caveworld.api.CaveworldAPI;
 import caveworld.api.ICaveVeinManager;
+import caveworld.world.WorldProviderAquaCavern;
+import caveworld.world.WorldProviderCavern;
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
@@ -54,8 +56,11 @@ public class VeinAdjustMessage implements IMessage, IMessageHandler<VeinAdjustMe
 
 		switch (message.type)
 		{
-			case 1:
+			case WorldProviderCavern.TYPE:
 				manager = CaveworldAPI.veinCavernManager;
+				break;
+			case WorldProviderAquaCavern.TYPE:
+				manager = CaveworldAPI.veinAquaCavernManager;
 				break;
 			default:
 				manager = CaveworldAPI.veinManager;

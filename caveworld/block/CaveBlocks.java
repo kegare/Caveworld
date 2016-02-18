@@ -17,15 +17,12 @@ import org.apache.logging.log4j.Level;
 import caveworld.api.CaveworldAPI;
 import caveworld.core.Config;
 import caveworld.entity.TileEntityUniversalChest;
+import caveworld.item.ItemCavePortal;
 import caveworld.item.ItemCaveniumOre;
 import caveworld.item.ItemGemOre;
 import caveworld.item.ItemPervertedLeaves;
 import caveworld.item.ItemPervertedLog;
 import caveworld.item.ItemPervertedSapling;
-import caveworld.item.ItemPortalAquaCavern;
-import caveworld.item.ItemPortalCaveland;
-import caveworld.item.ItemPortalCavern;
-import caveworld.item.ItemPortalCaveworld;
 import caveworld.item.ItemRope;
 import caveworld.item.ItemUniversalChest;
 import caveworld.util.CaveLog;
@@ -58,11 +55,12 @@ public class CaveBlocks
 	public static final BlockPervertedSapling perverted_sapling = new BlockPervertedSapling("pervertedSapling");
 	public static final BlockPortalAquaCavern aqua_cavern_portal = new BlockPortalAquaCavern("portalAquaCavern");
 	public static final BlockPortalCaveland caveland_portal = new BlockPortalCaveland("portalCaveland");
+	public static final BlockPortalCavenia cavenia_portal = new BlockPortalCavenia("portalCavenia");
 
 	public static void registerBlocks()
 	{
 		{
-			GameRegistry.registerBlock(caveworld_portal, ItemPortalCaveworld.class, "caveworld_portal");
+			GameRegistry.registerBlock(caveworld_portal, ItemCavePortal.class, "caveworld_portal");
 
 			OreDictionary.registerOre("portalCaveworld", caveworld_portal);
 
@@ -205,7 +203,7 @@ public class CaveBlocks
 		}
 
 		{
-			GameRegistry.registerBlock(cavern_portal, ItemPortalCavern.class, "cavern_portal");
+			GameRegistry.registerBlock(cavern_portal, ItemCavePortal.class, "cavern_portal");
 
 			OreDictionary.registerOre("portalCavern", cavern_portal);
 
@@ -252,7 +250,7 @@ public class CaveBlocks
 		}
 
 		{
-			GameRegistry.registerBlock(aqua_cavern_portal, ItemPortalAquaCavern.class, "aqua_cavern_portal");
+			GameRegistry.registerBlock(aqua_cavern_portal, ItemCavePortal.class, "aqua_cavern_portal");
 
 			OreDictionary.registerOre("portalAquaCavern", aqua_cavern_portal);
 
@@ -260,11 +258,19 @@ public class CaveBlocks
 		}
 
 		{
-			GameRegistry.registerBlock(caveland_portal, ItemPortalCaveland.class, "caveland_portal");
+			GameRegistry.registerBlock(caveland_portal, ItemCavePortal.class, "caveland_portal");
 
 			OreDictionary.registerOre("portalCaveland", caveland_portal);
 
 			BlockDispenser.dispenseBehaviorRegistry.putObject(Item.getItemFromBlock(caveland_portal), caveland_portal.new DispencePortal());
+		}
+
+		{
+			GameRegistry.registerBlock(cavenia_portal, ItemCavePortal.class, "cavenia_portal");
+
+			OreDictionary.registerOre("portalCavenia", cavenia_portal);
+
+			BlockDispenser.dispenseBehaviorRegistry.putObject(Item.getItemFromBlock(cavenia_portal), cavenia_portal.new DispencePortal());
 		}
 
 		if (Config.mossStoneCraftRecipe)

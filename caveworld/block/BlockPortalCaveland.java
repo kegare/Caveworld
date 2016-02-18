@@ -3,6 +3,7 @@ package caveworld.block;
 import caveworld.api.CaveworldAPI;
 import caveworld.client.gui.MenuType;
 import caveworld.world.TeleporterCaveland;
+import caveworld.world.WorldProviderCaveland;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.WorldServer;
@@ -13,6 +14,12 @@ public class BlockPortalCaveland extends BlockCavePortal
 	{
 		super(name);
 		this.setBlockTextureName("caveworld:caveland_portal");
+	}
+
+	@Override
+	public int getType()
+	{
+		return WorldProviderCaveland.TYPE;
 	}
 
 	@Override

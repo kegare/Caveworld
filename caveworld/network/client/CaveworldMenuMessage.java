@@ -9,8 +9,8 @@
 
 package caveworld.network.client;
 
-import caveworld.client.gui.GuiIngameCaveworldMenu;
-import cpw.mods.fml.client.FMLClientHandler;
+import caveworld.client.gui.MenuType;
+import caveworld.core.Caveworld;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
@@ -30,7 +30,7 @@ public class CaveworldMenuMessage implements IMessage, IMessageHandler<Caveworld
 	@Override
 	public IMessage onMessage(CaveworldMenuMessage message, MessageContext ctx)
 	{
-		FMLClientHandler.instance().getClient().displayGuiScreen(new GuiIngameCaveworldMenu());
+		Caveworld.proxy.displayMenu(MenuType.DEFAULT);
 
 		return null;
 	}

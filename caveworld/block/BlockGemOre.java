@@ -9,29 +9,26 @@
 
 package caveworld.block;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import com.google.common.collect.Lists;
+
+import caveworld.api.CaveworldAPI;
 import caveworld.api.event.RandomiteChanceEvent;
 import caveworld.api.event.RandomiteChanceEvent.EventType;
 import caveworld.core.CaveAchievementList;
 import caveworld.core.Caveworld;
 import caveworld.core.Config;
 import caveworld.item.CaveItems;
-import caveworld.item.ICaveniumTool;
-import caveworld.util.ArrayListExtended;
-import caveworld.util.SubItemHelper;
-import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.BlockOre;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemMonsterPlacer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
@@ -45,7 +42,7 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 {
 	private final Random random = new Random();
 
-	private ArrayListExtended<Item> cachedItems;
+	public final List<ItemStack> randomiteDrops = Lists.newArrayList();
 
 	@SideOnly(Side.CLIENT)
 	private IIcon[] oreIcons;
@@ -100,19 +97,21 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 	}
 
 	@Override
-	public void dropBlockAsItemWithChance(World world, int x, int y, int z, int metadata, float chance, int fortune)
+	public ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int metadata, int fortune)
 	{
-		super.dropBlockAsItemWithChance(world, x, y, z, metadata, chance, fortune);
+		ArrayList<ItemStack> drops = super.getDrops(world, x, y, z, metadata, fortune);
 
 		switch (metadata)
 		{
 			case 2:
-				doRandomiteChance(world, x, y, z, fortune);
+				doRandomiteChance(world, x, y, z, fortune, drops);
 				break;
 		}
+
+		return drops;
 	}
 
-	public void doRandomiteChance(World world, int x, int y, int z, int fortune)
+	public void doRandomiteChance(World world, int x, int y, int z, int fortune, List<ItemStack> drops)
 	{
 		EntityPlayer player = harvesters.get();
 
@@ -123,94 +122,51 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 
 		EventType type = EventType.NONE;
 
-		if (!world.isRemote)
+		if (CaveworldAPI.isEntityInCaves(player))
 		{
-			if (player != null)
+			player.triggerAchievement(CaveAchievementList.randomite);
+		}
+
+		boolean cavenia = CaveworldAPI.isEntityInCavenia(player);
+
+		if (cavenia || player != null && random.nextInt(3) == 0)
+		{
+			if (player.getActivePotionEffects().size() < (cavenia ? 5 : 3))
 			{
-				player.triggerAchievement(CaveAchievementList.randomite);
+				Potion potion = null;
+
+				while (potion == null || potion.getEffectiveness() <= 0.5D || player.isPotionActive(potion))
+				{
+					potion = Potion.potionTypes[player.getRNG().nextInt(Potion.potionTypes.length)];
+				}
+
+				if (potion != null)
+				{
+					player.addPotionEffect(new PotionEffect(potion.getId(), (cavenia ? MathHelper.getRandomIntegerInRange(random, 30, 60) : MathHelper.getRandomIntegerInRange(random, 10, 20)) * 20));
+					world.playSoundAtEntity(player, "dig.glass", 0.75F, 2.0F);
+
+					drops.clear();
+
+					type = EventType.POTION;
+				}
 			}
+		}
 
-			switch (random.nextInt(3))
+		if (type == null || type == EventType.NONE)
+		{
+			if (!randomiteDrops.isEmpty())
 			{
-				case 0:
-					if (player != null && player.getActivePotionEffects().size() < 3)
+				for (int i = 0; i < Math.min(Math.max(fortune, 1), 3); ++i)
+				{
+					ItemStack item = randomiteDrops.get(random.nextInt(randomiteDrops.size()));
+
+					if (item != null)
 					{
-						Potion potion = null;
-
-						while (potion == null || potion.getEffectiveness() <= 0.5D || player.isPotionActive(potion))
-						{
-							potion = Potion.potionTypes[player.getRNG().nextInt(Potion.potionTypes.length)];
-						}
-
-						if (potion != null)
-						{
-							player.addPotionEffect(new PotionEffect(potion.id, MathHelper.getRandomIntegerInRange(random, 10, 20) * 20));
-							world.playSoundAtEntity(player, "dig.glass", 0.75F, 2.0F);
-
-							type = EventType.POTION;
-							break;
-						}
+						drops.add(item.copy());
 					}
-				default:
-					for (int i = 0; i < Math.min(Math.max(fortune, 1), 3); ++i)
-					{
-						float f = random.nextFloat() * 0.8F + 0.1F;
-						float f1 = random.nextFloat() * 0.8F + 0.1F;
-						float f2 = random.nextFloat() * 0.8F + 0.1F;
-						EntityItem entityitem = new EntityItem(world, x + f, y + f1, z + f2);
+				}
 
-						if (cachedItems == null || cachedItems.isEmpty())
-						{
-							cachedItems = new ArrayListExtended();
-
-							for (Item entry : GameData.getItemRegistry().typeSafeIterable())
-							{
-								cachedItems.addIfAbsent(entry);
-							}
-						}
-						Item item;
-
-						do
-						{
-							item = cachedItems.get(random.nextInt(cachedItems.size()));
-						}
-						while (item == null || item == Item.getItemFromBlock(Blocks.bedrock) || item instanceof ItemMonsterPlacer || item instanceof ICaveniumTool);
-
-						if (item.isDamageable())
-						{
-							entityitem.setEntityItemStack(new ItemStack(item));
-						}
-						else
-						{
-							List<ItemStack> list = SubItemHelper.getSubItems(item);
-
-							if (list.isEmpty())
-							{
-								entityitem.setEntityItemStack(new ItemStack(item));
-							}
-							else
-							{
-								if (list.size() == 1)
-								{
-									entityitem.setEntityItemStack(list.get(0));
-								}
-								else
-								{
-									entityitem.setEntityItemStack(list.get(random.nextInt(list.size())));
-								}
-							}
-						}
-
-						f = 0.05F;
-						entityitem.motionX = (float)random.nextGaussian() * f;
-						entityitem.motionY = (float)random.nextGaussian() * f + 0.2F;
-						entityitem.motionZ = (float)random.nextGaussian() * f;
-
-						world.spawnEntityInWorld(entityitem);
-					}
-
-					type = EventType.ITEM;
-					break;
+				type = EventType.ITEM;
 			}
 		}
 

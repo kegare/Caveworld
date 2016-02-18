@@ -55,6 +55,7 @@ public class DimensionEntry extends CaveCategoryEntry
 		list.add(new DimensionElement(getConfig().getCategory("Cavern")));
 		list.add(new DimensionElement(getConfig().getCategory("Aqua Cavern")));
 		list.add(new DimensionElement(getConfig().getCategory("Caveland")));
+		list.add(new DimensionElement(getConfig().getCategory("Cavenia")));
 
 		return list;
 	}
@@ -87,6 +88,7 @@ public class DimensionEntry extends CaveCategoryEntry
 						result.add(new CaveCategoryElement("veinsAquaCavern", VeinsAquaCavernEntry.class));
 						break;
 					case "Caveland":
+					case "Cavenia":
 						break;
 					default:
 						result.add(new CaveCategoryElement("biomes", BiomesEntry.class));

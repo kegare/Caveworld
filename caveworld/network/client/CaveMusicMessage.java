@@ -31,24 +31,34 @@ public class CaveMusicMessage implements IMessage, IMessageHandler<CaveMusicMess
 	public static ISound prevMusic;
 
 	private String name;
+	private boolean stop;
 
 	public CaveMusicMessage() {}
 
 	public CaveMusicMessage(String name)
 	{
 		this.name = name;
+		this.stop = true;
+	}
+
+	public CaveMusicMessage(String name, boolean stop)
+	{
+		this(name);
+		this.stop = stop;
 	}
 
 	@Override
 	public void fromBytes(ByteBuf buffer)
 	{
 		name = ByteBufUtils.readUTF8String(buffer);
+		stop = buffer.readBoolean();
 	}
 
 	@Override
 	public void toBytes(ByteBuf buffer)
 	{
 		ByteBufUtils.writeUTF8String(buffer, name);
+		buffer.writeBoolean(stop);
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -59,9 +69,16 @@ public class CaveMusicMessage implements IMessage, IMessageHandler<CaveMusicMess
 
 		if (prevMusic != null)
 		{
-			handler.stopSound(prevMusic);
+			if (message.stop)
+			{
+				handler.stopSound(prevMusic);
 
-			prevMusic = null;
+				prevMusic = null;
+			}
+			else if (handler.isSoundPlaying(prevMusic))
+			{
+				return null;
+			}
 		}
 
 		if (Config.caveMusicVolume > 0.0D)

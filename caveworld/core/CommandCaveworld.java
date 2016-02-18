@@ -64,7 +64,7 @@ public class CommandCaveworld implements ICommand
 	{
 		if (args.length <= 0 && sender instanceof EntityPlayerMP)
 		{
-			Caveworld.network.sendTo(new CaveworldMenuMessage(), (EntityPlayerMP)sender);
+			CaveNetworkRegistry.sendTo(new CaveworldMenuMessage(), (EntityPlayerMP)sender);
 		}
 		else if (args[0].equalsIgnoreCase("version"))
 		{
@@ -108,7 +108,7 @@ public class CommandCaveworld implements ICommand
 		{
 			if (sender instanceof EntityPlayerMP)
 			{
-				Caveworld.network.sendTo(new OpenUrlMessage(Caveworld.metadata.url), (EntityPlayerMP)sender);
+				CaveNetworkRegistry.sendTo(new OpenUrlMessage(Caveworld.metadata.url), (EntityPlayerMP)sender);
 			}
 			else try
 			{
@@ -139,7 +139,7 @@ public class CommandCaveworld implements ICommand
 
 				if (server.isSinglePlayer() || server.getConfigurationManager().func_152596_g(player.getGameProfile()))
 				{
-					Caveworld.network.sendTo(new RegenerateMessage(backup), player);
+					CaveNetworkRegistry.sendTo(new RegenerateMessage(backup), player);
 				}
 				else
 				{

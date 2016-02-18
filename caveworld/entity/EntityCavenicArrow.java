@@ -42,7 +42,7 @@ public class EntityCavenicArrow extends EntityCaveArrow
 		{
 			++ticksInGround;
 
-			if (tryPlaceBlock() || ticksInGround == 100)
+			if (tryPlaceBlock() || ticksInGround >= 50)
 			{
 				setDead();
 			}

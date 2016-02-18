@@ -15,8 +15,11 @@ import cpw.mods.fml.client.config.GuiConfig;
 import cpw.mods.fml.client.config.GuiConfigEntries;
 import cpw.mods.fml.client.config.GuiConfigEntries.ButtonEntry;
 import cpw.mods.fml.client.config.IConfigElement;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.resources.I18n;
 
+@SideOnly(Side.CLIENT)
 public class CycleIntegerEntry extends ButtonEntry
 {
 	protected final int beforeValue;

@@ -15,7 +15,6 @@ import java.util.Random;
 
 import com.google.common.collect.Lists;
 
-import caveworld.api.CaveworldAPI;
 import caveworld.api.ICaveBiomeManager;
 import caveworld.world.genlayer.CaveworldGenLayer;
 import net.minecraft.world.ChunkPosition;
@@ -27,33 +26,21 @@ import net.minecraft.world.biome.WorldChunkManager;
 import net.minecraft.world.gen.layer.GenLayer;
 import net.minecraft.world.gen.layer.IntCache;
 
-public class WorldChunkManagerCaveworld extends WorldChunkManager
+public class WorldChunkManagerCave extends WorldChunkManager
 {
-	public static final List<BiomeGenBase> spawnInBiomes = Lists.newArrayList();
+	private final GenLayer biomeIndexLayer;
+	private final BiomeCache biomeCache;
+	private final List<BiomeGenBase> biomesToSpawnIn;
 
-	private GenLayer biomeIndexLayer;
-	private BiomeCache biomeCache;
-	private List<BiomeGenBase> biomesToSpawnIn;
-
-	public WorldChunkManagerCaveworld()
+	public WorldChunkManagerCave(long seed, WorldType worldType, ICaveBiomeManager manager)
 	{
-		if (spawnInBiomes.isEmpty())
-		{
-			spawnInBiomes.addAll(CaveworldAPI.getBiomeList());
-		}
-
+		this.biomeIndexLayer = CaveworldGenLayer.makeWorldLayers(seed, worldType, manager)[1];
 		this.biomeCache = new BiomeCache(this);
 		this.biomesToSpawnIn = Lists.newArrayList();
-		this.biomesToSpawnIn.addAll(spawnInBiomes);
+		this.biomesToSpawnIn.addAll(manager.getBiomeList());
 	}
 
-	public WorldChunkManagerCaveworld(long seed, WorldType worldType, ICaveBiomeManager manager)
-	{
-		this();
-		this.biomeIndexLayer = CaveworldGenLayer.makeWorldLayers(seed, worldType, manager)[1];
-	}
-
-	public WorldChunkManagerCaveworld(World world, ICaveBiomeManager manager)
+	public WorldChunkManagerCave(World world, ICaveBiomeManager manager)
 	{
 		this(world.getSeed(), world.getWorldInfo().getTerrainType(), manager);
 	}

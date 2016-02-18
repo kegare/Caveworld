@@ -14,6 +14,7 @@ import caveworld.core.Config;
 import caveworld.util.Version;
 import caveworld.world.ChunkProviderAquaCavern;
 import caveworld.world.ChunkProviderCaveland;
+import caveworld.world.ChunkProviderCavenia;
 import caveworld.world.ChunkProviderCavern;
 import caveworld.world.ChunkProviderCaveworld;
 import net.minecraft.entity.Entity;
@@ -51,6 +52,12 @@ public class CaveAPIHandler implements ICaveAPIHandler
 	}
 
 	@Override
+	public int getCaveniaDimension()
+	{
+		return ChunkProviderCavenia.dimensionId;
+	}
+
+	@Override
 	public boolean isEntityInCaveworld(Entity entity)
 	{
 		return entity != null && entity.dimension == getDimension();
@@ -75,15 +82,21 @@ public class CaveAPIHandler implements ICaveAPIHandler
 	}
 
 	@Override
+	public boolean isEntityInCavenia(Entity entity)
+	{
+		return entity != null && entity.dimension == getCaveniaDimension();
+	}
+
+	@Override
 	public boolean isCaveDimensions(int dim)
 	{
-		return dim == getDimension() || dim == getCavernDimension() || dim == getAquaCavernDimension() || dim == getCavelandDimension();
+		return dim == getDimension() || dim == getCavernDimension() || dim == getAquaCavernDimension() || dim == getCavelandDimension() || dim == getCaveniaDimension();
 	}
 
 	@Override
 	public boolean isEntityInCaves(Entity entity)
 	{
-		return isEntityInCaveworld(entity) || isEntityInCavern(entity) || isEntityInAquaCavern(entity) || isEntityInCaveland(entity);
+		return isEntityInCaveworld(entity) || isEntityInCavern(entity) || isEntityInAquaCavern(entity) || isEntityInCaveland(entity) || isEntityInCavenia(entity);
 	}
 
 	@Override

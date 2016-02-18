@@ -244,9 +244,9 @@ public class GuiSelectItem extends GuiScreen
 								{
 									String str = entry.toString();
 
-									if (str.endsWith("@0"))
+									if (str.endsWith(":0"))
 									{
-										str = str.substring(0, str.lastIndexOf("@"));
+										str = str.substring(0, str.lastIndexOf(":"));
 									}
 
 									return str;

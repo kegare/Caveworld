@@ -69,6 +69,6 @@ public class ItemEntry
 	@Override
 	public String toString()
 	{
-		return GameData.getItemRegistry().getNameForObject(item) + "@" + damage;
+		return GameData.getItemRegistry().getNameForObject(item) + ":" + damage;
 	}
 }

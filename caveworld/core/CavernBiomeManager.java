@@ -14,6 +14,7 @@ import java.util.Map;
 import com.google.common.collect.Maps;
 
 import caveworld.api.ICaveBiome;
+import caveworld.world.WorldProviderCavern;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.config.Configuration;
 
@@ -30,7 +31,7 @@ public class CavernBiomeManager extends CaveBiomeManager
 	@Override
 	public int getType()
 	{
-		return 1;
+		return WorldProviderCavern.TYPE;
 	}
 
 	@Override

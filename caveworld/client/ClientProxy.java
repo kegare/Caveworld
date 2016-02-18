@@ -15,6 +15,7 @@ import caveworld.client.config.CycleIntegerEntry;
 import caveworld.client.config.MiningPointsEntry;
 import caveworld.client.config.SelectBiomeEntry;
 import caveworld.client.config.SelectItemEntry;
+import caveworld.client.config.SelectItemWithBlockEntry;
 import caveworld.client.config.SelectMobEntry;
 import caveworld.client.gui.GuiIngameCaveworldMenu;
 import caveworld.client.gui.MenuType;
@@ -26,6 +27,7 @@ import caveworld.client.renderer.RenderCavenicSkeleton;
 import caveworld.client.renderer.RenderCavenicSpider;
 import caveworld.client.renderer.RenderCavenicZombie;
 import caveworld.client.renderer.RenderCaveniumTool;
+import caveworld.client.renderer.RenderCrazyCavenicSkeleton;
 import caveworld.client.renderer.RenderMasterCavenicCreeper;
 import caveworld.client.renderer.RenderMasterCavenicSkeleton;
 import caveworld.client.renderer.RenderPortalCaveworld;
@@ -38,6 +40,7 @@ import caveworld.entity.EntityCavenicCreeper;
 import caveworld.entity.EntityCavenicSkeleton;
 import caveworld.entity.EntityCavenicSpider;
 import caveworld.entity.EntityCavenicZombie;
+import caveworld.entity.EntityCrazyCavenicSkeleton;
 import caveworld.entity.EntityMasterCavenicCreeper;
 import caveworld.entity.EntityMasterCavenicSkeleton;
 import caveworld.entity.TileEntityUniversalChest;
@@ -56,9 +59,10 @@ import net.minecraftforge.client.MinecraftForgeClient;
 public class ClientProxy extends CommonProxy
 {
 	@Override
-	public void initializeConfigEntries()
+	public void initConfigEntries()
 	{
 		Config.selectItems = SelectItemEntry.class;
+		Config.selectItemsWithBlocks = SelectItemWithBlockEntry.class;
 		Config.selectBiomes = SelectBiomeEntry.class;
 		Config.selectMobs = SelectMobEntry.class;
 		Config.cycleInteger = CycleIntegerEntry.class;
@@ -93,6 +97,7 @@ public class ClientProxy extends CommonProxy
 		RenderingRegistry.registerEntityRenderingHandler(EntityArcherZombie.class, new RenderZombie());
 		RenderingRegistry.registerEntityRenderingHandler(EntityCavenicSkeleton.class, new RenderCavenicSkeleton());
 		RenderingRegistry.registerEntityRenderingHandler(EntityMasterCavenicSkeleton.class, new RenderMasterCavenicSkeleton());
+		RenderingRegistry.registerEntityRenderingHandler(EntityCrazyCavenicSkeleton.class, new RenderCrazyCavenicSkeleton());
 		RenderingRegistry.registerEntityRenderingHandler(EntityCavenicCreeper.class, new RenderCavenicCreeper());
 		RenderingRegistry.registerEntityRenderingHandler(EntityMasterCavenicCreeper.class, new RenderMasterCavenicCreeper());
 		RenderingRegistry.registerEntityRenderingHandler(EntityCavenicZombie.class, new RenderCavenicZombie());

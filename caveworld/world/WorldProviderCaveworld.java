@@ -17,10 +17,11 @@ import java.security.SecureRandom;
 import org.apache.logging.log4j.Level;
 
 import caveworld.api.CaveworldAPI;
+import caveworld.api.ICaveBiomeManager;
 import caveworld.client.renderer.EmptyRenderer;
-import caveworld.core.Caveworld;
+import caveworld.core.CaveNetworkRegistry;
+import caveworld.network.client.CaveAdjustMessage;
 import caveworld.network.client.CaveMusicMessage;
-import caveworld.network.client.CaveworldAdjustMessage;
 import caveworld.util.CaveLog;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -36,6 +37,8 @@ import net.minecraftforge.common.DimensionManager;
 
 public class WorldProviderCaveworld extends WorldProviderSurface
 {
+	public static final int TYPE = 0;
+
 	private static NBTTagCompound dimData;
 	private static long dimensionSeed;
 	private static int subsurfaceHeight;
@@ -146,7 +149,7 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 		}
 	}
 
-	protected int ambientTickCountdown = 0;
+	protected int musicTime = 0;
 
 	public WorldProviderCaveworld()
 	{
@@ -154,10 +157,15 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 		this.hasNoSky = true;
 	}
 
+	public ICaveBiomeManager getBiomeManager()
+	{
+		return CaveworldAPI.biomeManager;
+	}
+
 	@Override
 	protected void registerWorldChunkManager()
 	{
-		worldChunkMgr = new WorldChunkManagerCaveworld(worldObj, CaveworldAPI.biomeManager);
+		worldChunkMgr = new WorldChunkManagerCaveLegacy(worldObj, 1, getBiomeManager());
 	}
 
 	@Override
@@ -288,7 +296,7 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 	{
 		if (!worldObj.isRemote)
 		{
-			ambientTickCountdown = worldObj.rand.nextInt(4000) + 8000;
+			musicTime = worldObj.rand.nextInt(4000) + 8000;
 		}
 
 		worldObj.prevRainingStrength = 0.0F;
@@ -302,11 +310,11 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 	{
 		if (!worldObj.isRemote)
 		{
-			if (--ambientTickCountdown <= 0)
+			if (--musicTime <= 0)
 			{
-				ambientTickCountdown = worldObj.rand.nextInt(5000) + 10000;
+				musicTime = worldObj.rand.nextInt(5000) + 10000;
 
-				Caveworld.network.sendToDimension(new CaveMusicMessage(worldObj.rand.nextInt(3) == 0 ? "cavemusic.cave" : "cavemusic.unrest"), dimensionId);
+				CaveNetworkRegistry.sendToDimension(new CaveMusicMessage(worldObj.rand.nextInt(3) == 0 ? "cavemusic.cave" : "cavemusic.unrest"), dimensionId);
 			}
 		}
 
@@ -323,7 +331,7 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 		{
 			loadDimData(getDimData());
 
-			Caveworld.network.sendToAll(new CaveworldAdjustMessage(dimensionId, getDimData()));
+			CaveNetworkRegistry.sendToAll(new CaveAdjustMessage(TYPE, dimensionId, getDimData()));
 		}
 
 		return dimensionSeed;
@@ -336,7 +344,7 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 		{
 			loadDimData(getDimData());
 
-			Caveworld.network.sendToAll(new CaveworldAdjustMessage(dimensionId, getDimData()));
+			CaveNetworkRegistry.sendToAll(new CaveAdjustMessage(TYPE, dimensionId, getDimData()));
 		}
 
 		return subsurfaceHeight + 1;

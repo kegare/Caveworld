@@ -25,6 +25,7 @@ import caveworld.api.EmptyCaveBiome;
 import caveworld.api.ICaveBiome;
 import caveworld.api.ICaveBiomeManager;
 import caveworld.util.CaveUtils;
+import caveworld.world.WorldProviderCaveworld;
 import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
@@ -78,7 +79,7 @@ public class CaveBiomeManager implements ICaveBiomeManager
 	@Override
 	public int getType()
 	{
-		return 0;
+		return WorldProviderCaveworld.TYPE;
 	}
 
 	@Override
@@ -203,10 +204,7 @@ public class CaveBiomeManager implements ICaveBiomeManager
 		{
 			for (int i = 0; i < list.tagCount(); ++i)
 			{
-				ICaveBiome biome = new CaveBiome();
-				biome.loadNBTData(list.getCompoundTagAt(i));
-
-				addCaveBiome(biome);
+				addCaveBiome(new CaveBiome(list.getCompoundTagAt(i)));
 			}
 		}
 	}
@@ -269,7 +267,7 @@ public class CaveBiomeManager implements ICaveBiomeManager
 		private BlockEntry terrainBlock;
 		private BlockEntry topBlock;
 
-		private CaveBiome()
+		public CaveBiome()
 		{
 			super(0);
 		}
@@ -285,6 +283,12 @@ public class CaveBiomeManager implements ICaveBiomeManager
 			this.biome = biome;
 			this.terrainBlock = terrain;
 			this.topBlock = top;
+		}
+
+		public CaveBiome(NBTTagCompound data)
+		{
+			this();
+			this.loadNBTData(data);
 		}
 
 		@Override

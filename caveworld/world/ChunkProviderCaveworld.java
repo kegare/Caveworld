@@ -9,7 +9,6 @@
 
 package caveworld.world;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -77,6 +76,8 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	private final Random random;
 	private final boolean generateStructures;
 
+	private BiomeGenBase[] biomesForGeneration;
+
 	private final MapGenBase caveGenerator = new MapGenCavesCaveworld();
 	private final MapGenBase cavernsGenerator = new MapGenCaverns();
 	private final MapGenBase ravineGenerator = new MapGenRavineCaveworld();
@@ -111,18 +112,15 @@ public class ChunkProviderCaveworld implements IChunkProvider
 	{
 		random.setSeed(chunkX * 341873128712L + chunkZ * 132897987541L);
 
+		biomesForGeneration = worldObj.getWorldChunkManager().getBiomeGenAt(biomesForGeneration, chunkX * 16, chunkZ * 16, 16, 16, false);
 		int worldHeight = worldObj.provider.getActualHeight();
-		BiomeGenBase biome = worldObj.getWorldChunkManager().getBiomeGenAt(chunkX * 16, chunkZ * 16);
 		Block[] blocks = new Block[65536];
 		byte[] metadata = new byte[blocks.length];
-		ICaveBiome entry = CaveworldAPI.getCaveBiome(biome);
-		Block block = entry.getTerrainBlock().getBlock();
-		int meta = entry.getTerrainBlock().getMetadata();
 
 		for (int i = 0; i < blocks.length; ++i)
 		{
-			blocks[i] = block;
-			metadata[i] = (byte)meta;
+			blocks[i] = Blocks.stone;
+			metadata[i] = (byte)0;
 		}
 
 		if (generateCaves)
@@ -176,18 +174,26 @@ public class ChunkProviderCaveworld implements IChunkProvider
 			{
 				i = (x * 16 + z) * 256;
 
+				BiomeGenBase biome = biomesForGeneration[x * 16 + z];
+				ICaveBiome caveBiome = CaveworldAPI.getCaveBiome(biome);
+				Block top = caveBiome.getTopBlock().getBlock();
+				int topMeta = caveBiome.getTopBlock().getMetadata();
+				Block filler = caveBiome.getTerrainBlock().getBlock();
+				int fillerMeta = caveBiome.getTerrainBlock().getMetadata();
+
 				blocks[i] = Blocks.bedrock;
 				blocks[i + worldHeight - 1] = Blocks.bedrock;
-				blocks[i + worldHeight - 2] = block;
+				blocks[i + worldHeight - 2] = filler;
+				metadata[i + worldHeight - 2] = (byte)fillerMeta;
 
-				if (!entry.getTerrainBlock().equals(entry.getTopBlock()))
+				if (top != filler || topMeta != fillerMeta)
 				{
 					for (int y = 1; y < worldHeight - 4; ++y)
 					{
 						if (blocks[i + y] != null && blocks[i + y].getMaterial().isSolid() && blocks[i + y + 1] == null)
 						{
-							blocks[i + y] = entry.getTopBlock().getBlock();
-							metadata[i + y] = (byte)entry.getTopBlock().getMetadata();
+							blocks[i + y] = top;
+							metadata[i + y] = (byte)topMeta;
 						}
 					}
 				}
@@ -199,16 +205,13 @@ public class ChunkProviderCaveworld implements IChunkProvider
 			}
 		}
 
-		for (i = 0; meta != 0 && i < blocks.length; ++i)
-		{
-			if (blocks[i] != block)
-			{
-				metadata[i] = 0;
-			}
-		}
-
 		Chunk chunk = new Chunk(worldObj, blocks, metadata, chunkX, chunkZ);
-		Arrays.fill(chunk.getBiomeArray(), (byte)biome.biomeID);
+		byte[] biomeArray = chunk.getBiomeArray();
+
+		for (i = 0; i < biomeArray.length; ++i)
+		{
+			biomeArray[i] = (byte)biomesForGeneration[i].biomeID;
+		}
 
 		chunk.resetRelightChecks();
 

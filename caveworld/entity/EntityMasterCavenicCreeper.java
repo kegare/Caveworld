@@ -9,6 +9,7 @@
 
 package caveworld.entity;
 
+import caveworld.api.CaveworldAPI;
 import caveworld.core.CaveAchievementList;
 import caveworld.item.CaveItems;
 import net.minecraft.entity.Entity;
@@ -98,5 +99,11 @@ public class EntityMasterCavenicCreeper extends EntityCavenicCreeper implements 
 	public int getMaxSpawnedInChunk()
 	{
 		return 1;
+	}
+
+	@Override
+	protected boolean canDespawn()
+	{
+		return !CaveworldAPI.isEntityInCavenia(this);
 	}
 }

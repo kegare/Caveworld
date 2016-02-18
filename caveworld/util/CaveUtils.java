@@ -43,6 +43,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import caveworld.api.BlockEntry;
+import caveworld.core.CaveNetworkRegistry;
 import caveworld.core.Caveworld;
 import caveworld.core.Config;
 import caveworld.network.common.RegenerateMessage;
@@ -511,7 +512,7 @@ public class CaveUtils
 
 			if (damage > 0)
 			{
-				name += "@" + damage;
+				name += ":" + damage;
 			}
 
 			return Config.miningPointValidItems != null && ArrayUtils.contains(Config.miningPointValidItems, name);
@@ -677,10 +678,10 @@ public class CaveUtils
 
 		if (server.isSinglePlayer())
 		{
-			Caveworld.network.sendToAll(new RegenerateMessage(backup));
+			CaveNetworkRegistry.sendToAll(new RegenerateMessage(backup));
 		}
 
-		Caveworld.network.sendToAll(new RegenerateMessage.ProgressNotify(0));
+		CaveNetworkRegistry.sendToAll(new RegenerateMessage.ProgressNotify(0));
 
 		try
 		{
@@ -759,7 +760,7 @@ public class CaveUtils
 				component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
 				server.getConfigurationManager().sendChatMsg(component);
 
-				Caveworld.network.sendToAll(new RegenerateMessage.ProgressNotify(1));
+				CaveNetworkRegistry.sendToAll(new RegenerateMessage.ProgressNotify(1));
 
 				if (archiveDirZip(dir, bak))
 				{
@@ -807,7 +808,7 @@ public class CaveUtils
 		component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
 		server.getConfigurationManager().sendChatMsg(component);
 
-		Caveworld.network.sendToAll(new RegenerateMessage.ProgressNotify(2));
+		CaveNetworkRegistry.sendToAll(new RegenerateMessage.ProgressNotify(2));
 
 		if (ret)
 		{

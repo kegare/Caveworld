@@ -5,6 +5,7 @@ import java.util.Map;
 import com.google.common.collect.Maps;
 
 import caveworld.api.ICaveBiome;
+import caveworld.world.WorldProviderAquaCavern;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.config.Configuration;
 
@@ -21,7 +22,7 @@ public class AquaCavernBiomeManager extends CaveBiomeManager
 	@Override
 	public int getType()
 	{
-		return 2;
+		return WorldProviderAquaCavern.TYPE;
 	}
 
 	@Override

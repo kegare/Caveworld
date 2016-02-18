@@ -16,16 +16,17 @@ import java.util.Random;
 import com.google.common.collect.Lists;
 
 import caveworld.api.CaveworldAPI;
+import caveworld.block.BlockCavePortal;
 import caveworld.block.CaveBlocks;
+import caveworld.core.Config;
 import caveworld.util.CaveUtils;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockBed;
-import net.minecraft.block.BlockPortal;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.Direction;
 import net.minecraft.util.LongHashMap;
 import net.minecraft.util.MathHelper;
@@ -38,7 +39,7 @@ public class TeleporterCaveworld extends Teleporter
 	private final WorldServer worldObj;
 	private final Random random;
 
-	public BlockPortal portalBlock;
+	public BlockCavePortal portalBlock;
 
 	protected final LongHashMap coordCache = new LongHashMap();
 	protected final List<Long> coordKeys = Lists.newArrayList();
@@ -60,9 +61,44 @@ public class TeleporterCaveworld extends Teleporter
 		this.brickFrame = brick;
 	}
 
+	public void init(Entity entity)
+	{
+		if (Config.portalCache)
+		{
+			ChunkCoordinates coord = CaveworldAPI.getLastPos(entity, entity.dimension, portalBlock.getType());
+
+			if (coord != null)
+			{
+				int x = coord.posX;
+				int y = coord.posY;
+				int z = coord.posZ;
+
+				if (entity instanceof EntityPlayerMP)
+				{
+					CaveUtils.setPlayerLocation((EntityPlayerMP)entity, x, y, z);
+				}
+				else
+				{
+					entity.setLocationAndAngles(x, y, z, entity.rotationYaw, entity.rotationPitch);
+				}
+			}
+		}
+	}
+
 	@Override
 	public void placeInPortal(Entity entity, double posX, double posY, double posZ, float rotationYaw)
 	{
+		init(entity);
+
+		int x = MathHelper.floor_double(entity.posX);
+		int y = MathHelper.floor_float(MathHelper.floor_double(entity.posY + entity.getEyeHeight()));
+		int z = MathHelper.floor_double(entity.posZ);
+
+		if (worldObj.getBlock(x, y, z) == portalBlock)
+		{
+			return;
+		}
+
 		if (!placeInExistingPortal(entity, posX, posY, posZ, rotationYaw))
 		{
 			makePortal(entity);
@@ -79,11 +115,7 @@ public class TeleporterCaveworld extends Teleporter
 
 			if (CaveworldAPI.isEntityInCaves(player) && player.getBedLocation(player.dimension) == null)
 			{
-				int x = MathHelper.floor_double(player.posX);
-				int y = MathHelper.floor_double(player.posY + 0.5D);
-				int z = MathHelper.floor_double(player.posZ);
-
-				player.setSpawnChunk(BlockBed.func_149977_a(worldObj, x, y, z, 0), true);
+				player.setSpawnChunk(player.getPlayerCoordinates(), true);
 			}
 		}
 	}

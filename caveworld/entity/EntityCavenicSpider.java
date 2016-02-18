@@ -12,6 +12,7 @@ package caveworld.entity;
 import org.apache.commons.lang3.ArrayUtils;
 
 import caveworld.api.CaveworldAPI;
+import caveworld.api.ICavenicMob;
 import caveworld.core.CaveAchievementList;
 import caveworld.item.CaveItems;
 import caveworld.util.CaveUtils;
@@ -32,7 +33,7 @@ import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
 
-public class EntityCavenicSpider extends EntitySpider
+public class EntityCavenicSpider extends EntitySpider implements ICavenicMob
 {
 	public static int spawnWeight;
 	public static int spawnMinHeight;
@@ -196,12 +197,12 @@ public class EntityCavenicSpider extends EntitySpider
 	@Override
 	public boolean getCanSpawnHere()
 	{
-		return CaveworldAPI.isEntityInCaves(this) && !CaveworldAPI.isEntityInCavern(this) && isValidHeight() && super.getCanSpawnHere();
+		return CaveworldAPI.isEntityInCavenia(this) || CaveworldAPI.isEntityInCaves(this) && !CaveworldAPI.isEntityInCavern(this) && isValidHeight() && super.getCanSpawnHere();
 	}
 
 	@Override
 	public int getMaxSpawnedInChunk()
 	{
-		return spawnInChunks;
+		return CaveworldAPI.isEntityInCavenia(this) ? 8 : spawnInChunks;
 	}
 }

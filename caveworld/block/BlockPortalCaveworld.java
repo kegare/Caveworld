@@ -40,6 +40,12 @@ public class BlockPortalCaveworld extends BlockCavePortal implements IInventory
 	}
 
 	@Override
+	public int getType()
+	{
+		return WorldProviderCaveworld.TYPE;
+	}
+
+	@Override
 	public MenuType getMenuType()
 	{
 		return MenuType.CAVEWORLD_PORTAL;

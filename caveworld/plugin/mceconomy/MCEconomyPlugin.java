@@ -16,7 +16,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 
 import caveworld.block.BlockPervertedLog;
 import caveworld.block.CaveBlocks;
-import caveworld.core.Caveworld;
+import caveworld.core.CaveNetworkRegistry;
 import caveworld.core.Config;
 import caveworld.entity.EntityArcherZombie;
 import caveworld.entity.EntityCaveman;
@@ -24,6 +24,7 @@ import caveworld.entity.EntityCavenicCreeper;
 import caveworld.entity.EntityCavenicSkeleton;
 import caveworld.entity.EntityCavenicSpider;
 import caveworld.entity.EntityCavenicZombie;
+import caveworld.entity.EntityCrazyCavenicSkeleton;
 import caveworld.entity.EntityMasterCavenicCreeper;
 import caveworld.entity.EntityMasterCavenicSkeleton;
 import caveworld.item.CaveItems;
@@ -140,15 +141,16 @@ public final class MCEconomyPlugin implements ICavePlugin
 		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCaveman.class, 20);
 		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityArcherZombie.class, 4);
 		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCavenicSkeleton.class, 100);
-		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityMasterCavenicSkeleton.class, 1500);
+		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityMasterCavenicSkeleton.class, 500);
+		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCrazyCavenicSkeleton.class, 10000);
 		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCavenicCreeper.class, 100);
-		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityMasterCavenicCreeper.class, 1500);
+		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityMasterCavenicCreeper.class, 500);
 		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCavenicZombie.class, 100);
 		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCavenicSpider.class, 100);
 
 		SHOP = MCEconomyAPI.registerShop(productManager);
 
-		Caveworld.network.registerMessage(ProductAdjustMessage.class, ProductAdjustMessage.class, Caveworld.messageNext++, Side.CLIENT);
+		CaveNetworkRegistry.registerMessage(ProductAdjustMessage.class, ProductAdjustMessage.class, Side.CLIENT);
 	}
 
 	@Method(modid = MODID)

@@ -17,8 +17,9 @@ import java.security.SecureRandom;
 import org.apache.logging.log4j.Level;
 
 import caveworld.api.CaveworldAPI;
-import caveworld.core.Caveworld;
-import caveworld.network.client.CavernAdjustMessage;
+import caveworld.api.ICaveBiomeManager;
+import caveworld.core.CaveNetworkRegistry;
+import caveworld.network.client.CaveAdjustMessage;
 import caveworld.util.CaveLog;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
@@ -27,6 +28,8 @@ import net.minecraftforge.common.DimensionManager;
 
 public class WorldProviderCavern extends WorldProviderCaveworld
 {
+	public static final int TYPE = 1;
+
 	private static NBTTagCompound dimData;
 	private static long dimensionSeed;
 	private static int subsurfaceHeight;
@@ -144,9 +147,9 @@ public class WorldProviderCavern extends WorldProviderCaveworld
 	}
 
 	@Override
-	protected void registerWorldChunkManager()
+	public ICaveBiomeManager getBiomeManager()
 	{
-		worldChunkMgr = new WorldChunkManagerCaveworld(worldObj, CaveworldAPI.biomeCavernManager);
+		return CaveworldAPI.biomeCavernManager;
 	}
 
 	@Override
@@ -168,7 +171,7 @@ public class WorldProviderCavern extends WorldProviderCaveworld
 		{
 			loadDimData(getDimData());
 
-			Caveworld.network.sendToAll(new CavernAdjustMessage(dimensionId, getDimData()));
+			CaveNetworkRegistry.sendToAll(new CaveAdjustMessage(TYPE, dimensionId, getDimData()));
 		}
 
 		return dimensionSeed;
@@ -181,7 +184,7 @@ public class WorldProviderCavern extends WorldProviderCaveworld
 		{
 			loadDimData(getDimData());
 
-			Caveworld.network.sendToAll(new CavernAdjustMessage(dimensionId, getDimData()));
+			CaveNetworkRegistry.sendToAll(new CaveAdjustMessage(TYPE, dimensionId, getDimData()));
 		}
 
 		return subsurfaceHeight + 1;

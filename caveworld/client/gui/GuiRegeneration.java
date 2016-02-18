@@ -14,7 +14,7 @@ import java.awt.Desktop;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
-import caveworld.core.Caveworld;
+import caveworld.core.CaveNetworkRegistry;
 import caveworld.network.common.RegenerateMessage;
 import caveworld.world.WorldProviderCaveworld;
 import cpw.mods.fml.client.config.GuiButtonExt;
@@ -31,9 +31,10 @@ public class GuiRegeneration extends GuiScreen
 	private boolean cavern = true;
 	private boolean aquaCavern = true;
 	private boolean caveland = true;
+	private boolean cavenia = true;
 
 	protected GuiButton regenButton, openButton, cancelButton;
-	protected GuiCheckBox caveworldCheckBox, cavernCheckBox, aquaCavernCheckBox, cavelandCheckBox, backupCheckBox;
+	protected GuiCheckBox caveworldCheckBox, cavernCheckBox, aquaCavernCheckBox, cavelandCheckBox, caveniaCheckBox, backupCheckBox;
 
 	private HoverChecker backupHoverChecker;
 
@@ -44,13 +45,14 @@ public class GuiRegeneration extends GuiScreen
 		this.backup = backup;
 	}
 
-	public GuiRegeneration(boolean backup, boolean caveworld, boolean cavern, boolean aquaCavern, boolean caveland)
+	public GuiRegeneration(boolean backup, boolean caveworld, boolean cavern, boolean aquaCavern, boolean caveland, boolean cavenia)
 	{
 		this(backup);
 		this.caveworld = caveworld;
 		this.cavern = cavern;
 		this.aquaCavern = aquaCavern;
 		this.caveland = caveland;
+		this.cavenia = cavenia;
 	}
 
 	@Override
@@ -93,17 +95,22 @@ public class GuiRegeneration extends GuiScreen
 
 		if (aquaCavernCheckBox == null)
 		{
-			aquaCavernCheckBox = new GuiCheckBox(4, 10, cavernCheckBox.yPosition + cavernCheckBox.height + 5, "Aqua Cavern", aquaCavern);
+			aquaCavernCheckBox = new GuiCheckBox(5, 10, cavernCheckBox.yPosition + cavernCheckBox.height + 5, "Aqua Cavern", aquaCavern);
 		}
 
 		if (cavelandCheckBox == null)
 		{
-			cavelandCheckBox = new GuiCheckBox(4, 10, aquaCavernCheckBox.yPosition + aquaCavernCheckBox.height + 5, "Caveland", caveland);
+			cavelandCheckBox = new GuiCheckBox(6, 10, aquaCavernCheckBox.yPosition + aquaCavernCheckBox.height + 5, "Caveland", caveland);
+		}
+
+		if (caveniaCheckBox == null)
+		{
+			caveniaCheckBox = new GuiCheckBox(7, 10, cavelandCheckBox.yPosition + cavelandCheckBox.height + 5, "Cavenia", cavenia);
 		}
 
 		if (backupCheckBox == null)
 		{
-			backupCheckBox = new GuiCheckBox(6, 10, 0, I18n.format("caveworld.regenerate.gui.backup"), backup);
+			backupCheckBox = new GuiCheckBox(8, 10, 0, I18n.format("caveworld.regenerate.gui.backup"), backup);
 		}
 
 		backupCheckBox.yPosition = height - 20;
@@ -116,6 +123,7 @@ public class GuiRegeneration extends GuiScreen
 		buttonList.add(cavernCheckBox);
 		buttonList.add(aquaCavernCheckBox);
 		buttonList.add(cavelandCheckBox);
+		buttonList.add(caveniaCheckBox);
 		buttonList.add(backupCheckBox);
 
 		if (backupHoverChecker == null)
@@ -158,13 +166,14 @@ public class GuiRegeneration extends GuiScreen
 					boolean cavern = cavernCheckBox.isChecked();
 					boolean aquaCavern = aquaCavernCheckBox.isChecked();
 					boolean caveland = cavelandCheckBox.isChecked();
+					boolean cavenia = caveniaCheckBox.isChecked();
 
-					if (!caveworld && !cavern && !aquaCavern && !caveland)
+					if (!caveworld && !cavern && !aquaCavern && !caveland && !cavenia)
 					{
 						break;
 					}
 
-					Caveworld.network.sendToServer(new RegenerateMessage(backupCheckBox.isChecked(), caveworld, cavern, aquaCavern, caveland));
+					CaveNetworkRegistry.sendToServer(new RegenerateMessage(backupCheckBox.isChecked(), caveworld, cavern, aquaCavern, caveland, cavenia));
 
 					regenButton.enabled = false;
 					cancelButton.visible = false;
@@ -219,6 +228,7 @@ public class GuiRegeneration extends GuiScreen
 		cavernCheckBox.visible = false;
 		aquaCavernCheckBox.visible = false;
 		cavelandCheckBox.visible = false;
+		caveniaCheckBox.visible = false;
 		backupCheckBox.visible = false;
 
 		if (task < 0)

@@ -42,6 +42,7 @@ import caveworld.util.CaveLog;
 import caveworld.util.CaveUtils;
 import caveworld.world.ChunkProviderAquaCavern;
 import caveworld.world.ChunkProviderCaveland;
+import caveworld.world.ChunkProviderCavenia;
 import caveworld.world.ChunkProviderCavern;
 import caveworld.world.ChunkProviderCaveworld;
 import cpw.mods.fml.client.config.GuiConfigEntries.IConfigEntry;
@@ -64,6 +65,8 @@ import net.minecraft.entity.monster.EntitySpider;
 import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.passive.EntityBat;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -98,12 +101,15 @@ public class Config
 	public static String[] miningPointsDefault;
 	public static String[] miningPointValidItems;
 	public static String[] miningPointValidItemsDefault;
+	public static String[] randomiteDrops;
+	public static String[] randomiteDropsDefault;
 	public static boolean oreRenderOverlay;
 	public static boolean fakeMiningPickaxe;
 	public static boolean fakeLumberingAxe;
 	public static boolean fakeDiggingShovel;
 	public static int modeDisplayTime;
 	public static int quickBreakLimit;
+	public static boolean portalCache;
 
 	public static boolean mossStoneCraftRecipe;
 
@@ -111,6 +117,7 @@ public class Config
 	public static int caveborn;
 
 	public static Class<? extends IConfigEntry> selectItems;
+	public static Class<? extends IConfigEntry> selectItemsWithBlocks;
 	public static Class<? extends IConfigEntry> selectBiomes;
 	public static Class<? extends IConfigEntry> selectMobs;
 	public static Class<? extends IConfigEntry> cycleInteger;
@@ -279,19 +286,27 @@ public class Config
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
+		prop.comment += Configuration.NEW_LINE;
+		prop.comment += "Note: If multiplayer, does not have to match client-side and server-side.";
 		propOrder.add(prop.getName());
 		showMinerRank = prop.getBoolean(showMinerRank);
 		prop = generalCfg.get(category, "miningPoints", miningPointsDefault == null ? new String[0] : miningPointsDefault);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(pointsEntry);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += Configuration.NEW_LINE;
+		prop.comment += "Note: If multiplayer, server-side only.";
 		propOrder.add(prop.getName());
 		miningPoints = prop.getStringList();
-
 		prop = generalCfg.get(category, "miningPointValidItems", miningPointValidItemsDefault == null ? new String[0] : miningPointValidItemsDefault);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(selectItems);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		propOrder.add(prop.getName());
 		miningPointValidItems = prop.getStringList();
+		prop = generalCfg.get(category, "randomiteDrops", randomiteDropsDefault == null ? new String[0] : randomiteDropsDefault);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(selectItemsWithBlocks);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		propOrder.add(prop.getName());
+		randomiteDrops = prop.getStringList();
 
 		if (side.isClient())
 		{
@@ -331,8 +346,18 @@ public class Config
 		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		prop.comment += Configuration.NEW_LINE;
+		prop.comment += "Note: If multiplayer, server-side only.";
 		propOrder.add(prop.getName());
 		quickBreakLimit = MathHelper.clamp_int(prop.getInt(quickBreakLimit), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		prop = generalCfg.get(category, "portalCache", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		prop.comment += Configuration.NEW_LINE;
+		prop.comment += "Note: If multiplayer, server-side only.";
+		propOrder.add(prop.getName());
+		portalCache = prop.getBoolean(portalCache);
 
 		generalCfg.setCategoryPropertyOrder(category, propOrder);
 
@@ -375,6 +400,8 @@ public class Config
 			}
 		}
 
+		prop.comment += Configuration.NEW_LINE;
+		prop.comment += "Note: If multiplayer, server-side only.";
 		propOrder.add(prop.getName());
 		caveborn = MathHelper.clamp_int(prop.getInt(caveborn), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 
@@ -415,6 +442,39 @@ public class Config
 				else
 				{
 					CaveworldAPI.setMiningPointAmount(str2, point);
+				}
+			}
+		}
+	}
+
+	public static void refreshRandomiteDrops()
+	{
+		CaveBlocks.gem_ore.randomiteDrops.clear();
+
+		for (String str : randomiteDrops)
+		{
+			if (!Strings.isNullOrEmpty(str) && str.contains(":"))
+			{
+				str = str.trim();
+
+				if (str.indexOf(':') != str.lastIndexOf(':'))
+				{
+					int i = str.lastIndexOf(':');
+					Item item = GameData.getItemRegistry().getObject(str.substring(0, i));
+
+					if (item != null)
+					{
+						CaveBlocks.gem_ore.randomiteDrops.add(new ItemStack(item, 1, Integer.parseInt(str.substring(i + 1))));
+					}
+				}
+				else
+				{
+					Item item = GameData.getItemRegistry().getObject(str);
+
+					if (item != null)
+					{
+						CaveBlocks.gem_ore.randomiteDrops.add(new ItemStack(item));
+					}
 				}
 			}
 		}
@@ -756,7 +816,7 @@ public class Config
 		{
 			EntityZombie.class, EntitySkeleton.class, EntitySpider.class, EntityCaveSpider.class,
 			EntityCreeper.class, EntityEnderman.class, EntitySilverfish.class, EntityBat.class, EntitySnowman.class,
-			EntityArcherZombie.class, EntityCavenicSkeleton.class, EntityCavenicCreeper.class
+			EntityArcherZombie.class, EntityCavenicSkeleton.class, EntityCavenicCreeper.class, EntityCavenicZombie.class, EntityCavenicSpider.class
 		};
 
 		Set<String> mobs = Sets.newTreeSet();
@@ -906,6 +966,27 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		ChunkProviderCaveland.generateAnimalDungeons = prop.getBoolean(ChunkProviderCaveland.generateAnimalDungeons);
+
+		dimensionCfg.setCategoryPropertyOrder(category, propOrder);
+
+		propOrder = Lists.newArrayList();
+		category = "Cavenia";
+
+		dimensionCfg.addCustomCategoryComment(category, "If multiplayer, server-side only.");
+
+		prop = dimensionCfg.get(category, "dimension", -12);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName()).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderCavenia.dimensionId = prop.getInt(ChunkProviderCavenia.dimensionId);
+
+		if (ChunkProviderCavenia.dimensionId == 0)
+		{
+			prop.set(DimensionManager.getNextFreeDimId());
+
+			ChunkProviderCavenia.dimensionId = prop.getInt();
+		}
 
 		dimensionCfg.setCategoryPropertyOrder(category, propOrder);
 

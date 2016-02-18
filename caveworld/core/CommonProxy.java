@@ -13,7 +13,7 @@ import caveworld.client.gui.MenuType;
 
 public class CommonProxy
 {
-	public void initializeConfigEntries() {}
+	public void initConfigEntries() {}
 
 	public void registerKeyBindings() {}
 

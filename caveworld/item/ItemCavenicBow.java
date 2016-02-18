@@ -373,11 +373,14 @@ public class ItemCavenicBow extends ItemBow
 
 	private EntityArrow createEntityArrow(World world, EntityLivingBase living, float power)
 	{
-		try
+		if (MIMPlugin.enabled())
 		{
-			return (EntityArrow)Class.forName("moreinventory.entity.EntityMIMArrow").getConstructor(World.class, EntityLivingBase.class, float.class).newInstance(world, living, power);
+			try
+			{
+				return (EntityArrow)Class.forName("moreinventory.entity.EntityMIMArrow").getConstructor(World.class, EntityLivingBase.class, float.class).newInstance(world, living, power);
+			}
+			catch (Throwable e) {}
 		}
-		catch (Throwable e) {}
 
 		return new EntityArrow(world, living, power);
 	}

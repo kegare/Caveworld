@@ -39,6 +39,26 @@
       }
     ]
   },
+  "cavemusic.battle1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "cavemusic/battle1",
+        "volume": 0.5,
+        "stream": true
+      }
+    ]
+  },
+  "cavemusic.battle2": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "cavemusic/battle2",
+        "volume": 0.5,
+        "stream": true
+      }
+    ]
+  },
   "caveworld_portal": {
     "category": "block",
     "sounds": [

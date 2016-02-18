@@ -12,6 +12,7 @@ package caveworld.entity;
 import org.apache.commons.lang3.ArrayUtils;
 
 import caveworld.api.CaveworldAPI;
+import caveworld.api.ICavenicMob;
 import caveworld.core.CaveAchievementList;
 import caveworld.item.CaveItems;
 import caveworld.util.CaveUtils;
@@ -36,7 +37,7 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
 
-public class EntityCavenicSkeleton extends EntitySkeleton
+public class EntityCavenicSkeleton extends EntitySkeleton implements ICavenicMob
 {
 	public static int spawnWeight;
 	public static int spawnMinHeight;
@@ -129,6 +130,7 @@ public class EntityCavenicSkeleton extends EntitySkeleton
 		{
 			EntityMasterCavenicSkeleton master = new EntityMasterCavenicSkeleton(worldObj);
 			master.setLocationAndAngles(posX, posY, posZ, rotationYaw, rotationPitch);
+			master.onSpawnWithEgg(null);
 
 			worldObj.spawnEntityInWorld(master);
 			setDead();
@@ -249,12 +251,12 @@ public class EntityCavenicSkeleton extends EntitySkeleton
 	@Override
 	public boolean getCanSpawnHere()
 	{
-		return CaveworldAPI.isEntityInCaves(this) && !CaveworldAPI.isEntityInCavern(this) && isValidHeight() && super.getCanSpawnHere();
+		return CaveworldAPI.isEntityInCavenia(this) || CaveworldAPI.isEntityInCaves(this) && !CaveworldAPI.isEntityInCavern(this) && isValidHeight() && super.getCanSpawnHere();
 	}
 
 	@Override
 	public int getMaxSpawnedInChunk()
 	{
-		return spawnInChunks;
+		return CaveworldAPI.isEntityInCavenia(this) ? 8 : spawnInChunks;
 	}
 }

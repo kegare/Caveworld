@@ -30,6 +30,7 @@ public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMe
 	private boolean cavern = true;
 	private boolean aquaCavern = true;
 	private boolean caveland = true;
+	private boolean cavenia = true;
 
 	public RegenerateMessage() {}
 
@@ -38,13 +39,14 @@ public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMe
 		this.backup = backup;
 	}
 
-	public RegenerateMessage(boolean backup, boolean caveworld, boolean cavern, boolean aquaCavern, boolean caveland)
+	public RegenerateMessage(boolean backup, boolean caveworld, boolean cavern, boolean aquaCavern, boolean caveland, boolean cavenia)
 	{
 		this(backup);
 		this.caveworld = caveworld;
 		this.cavern = cavern;
 		this.aquaCavern = aquaCavern;
 		this.caveland = caveland;
+		this.cavenia = cavenia;
 	}
 
 	@Override
@@ -55,6 +57,7 @@ public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMe
 		cavern = buffer.readBoolean();
 		aquaCavern = buffer.readBoolean();
 		caveland = buffer.readBoolean();
+		cavenia = buffer.readBoolean();
 	}
 
 	@Override
@@ -65,6 +68,7 @@ public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMe
 		buffer.writeBoolean(cavern);
 		buffer.writeBoolean(aquaCavern);
 		buffer.writeBoolean(caveland);
+		buffer.writeBoolean(cavenia);
 	}
 
 	@Override
@@ -100,6 +104,11 @@ public class RegenerateMessage implements IMessage, IMessageHandler<RegenerateMe
 				if (message.caveland)
 				{
 					CaveUtils.regenerateDimension(CaveworldAPI.getCavelandDimension(), message.backup, ret);
+				}
+
+				if (message.cavenia)
+				{
+					CaveUtils.regenerateDimension(CaveworldAPI.getCaveniaDimension(), message.backup, ret);
 				}
 			}
 			else return new ProgressNotify(3);

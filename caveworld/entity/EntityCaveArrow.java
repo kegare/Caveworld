@@ -24,6 +24,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.potion.Potion;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
@@ -45,7 +46,6 @@ public class EntityCaveArrow extends EntityArrow implements IThrowableEntity
 	public int canBePickedUp = 0;
 	public int arrowShake = 0;
 
-	public Entity shootingEntity;
 	protected int ticksInGround;
 	protected int ticksInAir = 0;
 	protected double damage = 2.0D;
@@ -87,7 +87,7 @@ public class EntityCaveArrow extends EntityArrow implements IThrowableEntity
 		if (d3 >= 1.0E-7D)
 		{
 			float f2 = (float)(Math.atan2(d2, d0) * 180.0D / Math.PI) - 90.0F;
-			float f3 = (float)(-(Math.atan2(d1, d3) * 180.0D / Math.PI));
+			float f3 = (float)-(Math.atan2(d1, d3) * 180.0D / Math.PI);
 			double d4 = d0 / d3;
 			double d5 = d2 / d3;
 			this.setLocationAndAngles(player.posX + d4, posY, player.posZ + d5, f2, f3);
@@ -303,6 +303,16 @@ public class EntityCaveArrow extends EntityArrow implements IThrowableEntity
 						var4.entityHit.setFire(5);
 					}
 
+					if (shootingEntity != null && shootingEntity instanceof EntityMasterCavenicSkeleton && var4.entityHit instanceof EntityLivingBase)
+					{
+						EntityLivingBase living = (EntityLivingBase)var4.entityHit;
+
+						if (!living.isPotionActive(Potion.resistance))
+						{
+							living.hurtResistantTime = 0;
+						}
+					}
+
 					if (var4.entityHit.attackEntityFrom(var22, var24))
 					{
 						if (var4.entityHit instanceof EntityLiving)
@@ -323,7 +333,6 @@ public class EntityCaveArrow extends EntityArrow implements IThrowableEntity
 									var4.entityHit.addVelocity(motionX * knockbackStrength * 0.6000000238418579D / var25, 0.1D, motionZ * knockbackStrength * 0.6000000238418579D / var25);
 								}
 							}
-
 						}
 
 						worldObj.playSoundAtEntity(this, "random.bowhit", 1.0F, 1.2F / (rand.nextFloat() * 0.2F + 0.9F));

@@ -9,6 +9,7 @@
 
 package caveworld.entity;
 
+import caveworld.api.CaveworldAPI;
 import caveworld.core.CaveAchievementList;
 import caveworld.item.CaveItems;
 import net.minecraft.enchantment.Enchantment;
@@ -38,6 +39,11 @@ public class EntityMasterCavenicSkeleton extends EntityCavenicSkeleton implement
 		this.setSize(0.95F, 2.65F);
 	}
 
+	public float getHealthScale()
+	{
+		return getHealth() / getMaxHealth();
+	}
+
 	@Override
 	public IChatComponent func_145748_c_()
 	{
@@ -50,7 +56,7 @@ public class EntityMasterCavenicSkeleton extends EntityCavenicSkeleton implement
 	@Override
 	protected void applyCustomValues()
 	{
-		aiArrowAttack = new EntityAIArrowAttack(this, 1.0D, 1, 2, 16.0F);
+		aiArrowAttack = new EntityAIArrowAttack(this, 1.0D, 1, 2, 10.0F);
 
 		super.applyCustomValues();
 	}
@@ -112,7 +118,7 @@ public class EntityMasterCavenicSkeleton extends EntityCavenicSkeleton implement
 		EntityArrow arrow = new EntityCavenicArrow(worldObj, this, entity, 1.6F, 14 - worldObj.difficultySetting.getDifficultyId() * 4);
 		int i = EnchantmentHelper.getEnchantmentLevel(Enchantment.power.effectId, getHeldItem());
 		int j = EnchantmentHelper.getEnchantmentLevel(Enchantment.punch.effectId, getHeldItem());
-		arrow.setDamage(power * 2.0F + rand.nextGaussian() * 0.25D + worldObj.difficultySetting.getDifficultyId() * 0.11F);
+		arrow.setDamage(power * 2.5F + rand.nextGaussian() * 0.25D + worldObj.difficultySetting.getDifficultyId() * 0.11F);
 
 		if (i > 0)
 		{
@@ -155,5 +161,11 @@ public class EntityMasterCavenicSkeleton extends EntityCavenicSkeleton implement
 	public int getMaxSpawnedInChunk()
 	{
 		return 1;
+	}
+
+	@Override
+	protected boolean canDespawn()
+	{
+		return !CaveworldAPI.isEntityInCavenia(this);
 	}
 }

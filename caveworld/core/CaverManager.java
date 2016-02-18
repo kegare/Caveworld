@@ -17,6 +17,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
+import com.google.common.collect.Table.Cell;
 
 import caveworld.api.ICaverManager;
 import caveworld.item.CaveItems;
@@ -33,11 +34,14 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.IExtendedEntityProperties;
+import net.minecraftforge.common.util.Constants.NBT;
 import net.minecraftforge.oredict.OreDictionary;
 import shift.mceconomy2.api.MCEconomyAPI;
 
@@ -208,6 +212,30 @@ public class CaverManager implements ICaverManager
 	}
 
 	@Override
+	public int getCaveniaLastDimension(Entity entity)
+	{
+		return getCaver(entity).getCaveniaLastDimension();
+	}
+
+	@Override
+	public void setCaveniaLastDimension(Entity entity, int dimension)
+	{
+		getCaver(entity).setCaveniaLastDimension(dimension);
+	}
+
+	@Override
+	public ChunkCoordinates getLastPos(Entity entity, int dimension, int type)
+	{
+		return getCaver(entity).getLastPos(dimension, type);
+	}
+
+	@Override
+	public void setLastPos(Entity entity, int dimension, int type, ChunkCoordinates coord)
+	{
+		getCaver(entity).setLastPos(dimension, type, coord);
+	}
+
+	@Override
 	public void saveData(Entity entity, NBTTagCompound compound)
 	{
 		Caver caver = getCaver(entity);
@@ -325,10 +353,9 @@ public class CaverManager implements ICaverManager
 
 		private int point;
 		private int rank;
-		private int caveworld;
-		private int cavern;
-		private int aqua;
-		private int caveland;
+		private int caveworld, cavern, aqua, caveland, cavenia;
+
+		private final Table<Integer, Integer, ChunkCoordinates> lastPos = HashBasedTable.create();
 
 		public Caver(Entity entity)
 		{
@@ -349,7 +376,24 @@ public class CaverManager implements ICaverManager
 			data.setInteger(tag + "Cavern", cavern);
 			data.setInteger(tag + "AquaCavern", aqua);
 			data.setInteger(tag + "Caveland", caveland);
+			data.setInteger(tag + "Cavenia", cavenia);
 
+			NBTTagList list = new NBTTagList();
+
+			for (Cell<Integer, Integer, ChunkCoordinates> entry : lastPos.cellSet())
+			{
+				NBTTagCompound nbt = new NBTTagCompound();
+
+				nbt.setInteger("Dim", entry.getRowKey());
+				nbt.setInteger("Type", entry.getColumnKey());
+				nbt.setInteger("PosX", entry.getValue().posX);
+				nbt.setInteger("PosY", entry.getValue().posY);
+				nbt.setInteger("PosZ", entry.getValue().posZ);
+
+				list.appendTag(nbt);
+			}
+
+			data.setTag("LastPos", list);
 			compound.setTag(CAVER_TAG, data);
 		}
 
@@ -372,6 +416,23 @@ public class CaverManager implements ICaverManager
 			cavern = data.getInteger(tag + "Cavern");
 			aqua = data.getInteger(tag + "AquaCavern");
 			caveland = data.getInteger(tag + "Caveland");
+			cavenia = data.getInteger(tag + "Cavenia");
+
+			NBTTagList list = data.getTagList("LastPos", NBT.TAG_COMPOUND);
+
+			lastPos.clear();
+
+			for (int i = 0; i < list.tagCount(); ++i)
+			{
+				NBTTagCompound nbt = list.getCompoundTagAt(i);
+				int dim = nbt.getInteger("Dim");
+				int type = nbt.getInteger("Type");
+				int x = nbt.getInteger("PosX");
+				int y = nbt.getInteger("PosY");
+				int z = nbt.getInteger("PosZ");
+
+				lastPos.put(dim, type, new ChunkCoordinates(x, y, z));
+			}
 		}
 
 		@Override
@@ -396,7 +457,7 @@ public class CaverManager implements ICaverManager
 			MinerRank current = CaverManager.getRank(rank);
 			boolean promoted = false;
 
-			if (current.getRank() < 7)
+			while (current.getRank() < 7)
 			{
 				MinerRank next = CaverManager.getRank(rank + 1);
 
@@ -409,6 +470,7 @@ public class CaverManager implements ICaverManager
 
 					setMiningPoint(point - current.getPhase());
 				}
+				else break;
 			}
 
 			if (entity instanceof EntityPlayer)
@@ -474,14 +536,14 @@ public class CaverManager implements ICaverManager
 			{
 				EntityPlayerMP player = (EntityPlayerMP)entity;
 
-				Caveworld.network.sendTo(new CaverAdjustMessage(player), player);
+				CaveNetworkRegistry.sendTo(new CaverAdjustMessage(player), player);
 
 				return;
 			}
 
 			if (!entity.worldObj.isRemote)
 			{
-				Caveworld.network.sendToDimension(new CaverAdjustMessage(entity), entity.dimension);
+				CaveNetworkRegistry.sendToDimension(new CaverAdjustMessage(entity), entity.dimension);
 			}
 		}
 
@@ -523,6 +585,26 @@ public class CaverManager implements ICaverManager
 		public void setCavelandLastDimension(int dim)
 		{
 			caveland = dim;
+		}
+
+		public int getCaveniaLastDimension()
+		{
+			return cavenia;
+		}
+
+		public void setCaveniaLastDimension(int dim)
+		{
+			cavenia = dim;
+		}
+
+		public ChunkCoordinates getLastPos(int dim, int type)
+		{
+			return lastPos.get(dim, type);
+		}
+
+		public void setLastPos(int dim, int type, ChunkCoordinates coord)
+		{
+			lastPos.put(dim, type, coord);
 		}
 	}
 }

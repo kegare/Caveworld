@@ -51,6 +51,7 @@ public class CaveEntityRegistry
 		registerMob(EntityArcherZombie.class, "ArcherZombie", 0x00A0A0, 0xAAAAAA);
 		registerMob(EntityCavenicSkeleton.class, "CavenicSkeleton", 0xAAAAAA, 0xDDDDDD);
 		registerMob(EntityMasterCavenicSkeleton.class, "MasterCavenicSkeleton", 0xAAAAAA, 0xDDDDDD);
+		registerMob(EntityCrazyCavenicSkeleton.class, "CrazyCavenicSkeleton");
 		registerMob(EntityCavenicCreeper.class, "CavenicCreeper", 0xAAAAAA, 0x2E8B57);
 		registerMob(EntityMasterCavenicCreeper.class, "MasterCavenicCreeper", 0xAAAAAA, 0x2E8B57);
 		registerMob(EntityCavenicZombie.class, "CavenicZombie", 0xAAAAAA, 0x00A0A0);

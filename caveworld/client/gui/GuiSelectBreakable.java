@@ -27,6 +27,7 @@ import com.google.common.collect.Sets;
 import caveworld.api.BlockEntry;
 import caveworld.client.config.CaveConfigGui;
 import caveworld.client.config.GuiSelectBlock.BlockFilter;
+import caveworld.core.CaveNetworkRegistry;
 import caveworld.core.Caveworld;
 import caveworld.item.ICaveniumTool;
 import caveworld.network.server.SelectBreakableMessage;
@@ -152,7 +153,7 @@ public class GuiSelectBreakable extends GuiScreen
 					String value = Joiner.on("|").join(selected);
 
 					parentItemStack.getTagCompound().setString(key, value);
-					Caveworld.network.sendToServer(new SelectBreakableMessage(key, value));
+					CaveNetworkRegistry.sendToServer(new SelectBreakableMessage(key, value));
 
 					mc.displayGuiScreen(null);
 					mc.setIngameFocus();

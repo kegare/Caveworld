@@ -30,7 +30,7 @@ public abstract class CaveworldGenLayer extends GenLayer
 		genLayer = new GenLayerFuzzyZoom(2000L, genLayer);
 
 		genLayer = new CaveworldGenLayerBiomes(100L, genLayer, manager);
-		genLayer = GenLayerZoom.magnify(2000L, genLayer, 3);
+		genLayer = GenLayerZoom.magnify(2000L, genLayer, 5);
 
 		genLayer = new GenLayerVoronoiZoom(10L, genLayer);
 		genLayer.initWorldGenSeed(seed);

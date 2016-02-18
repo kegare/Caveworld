@@ -13,8 +13,11 @@ import cpw.mods.fml.client.config.GuiConfig;
 import cpw.mods.fml.client.config.GuiConfigEntries;
 import cpw.mods.fml.client.config.GuiConfigEntries.ArrayEntry;
 import cpw.mods.fml.client.config.IConfigElement;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.gui.GuiScreen;
 
+@SideOnly(Side.CLIENT)
 public class MiningPointsEntry extends ArrayEntry
 {
 	public MiningPointsEntry(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement configElement)

@@ -7,6 +7,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ChunkCoordinates;
 
 public interface ICaverManager
 {
@@ -116,6 +117,19 @@ public interface ICaverManager
 	public int getCavelandLastDimension(Entity entity);
 
 	public void setCavelandLastDimension(Entity entity, int dimension);
+
+	/**
+	 * Returns last dimension before Cavenia dimension for the entity.
+	 * @param entity The entity
+	 * @return dimension id
+	 */
+	public int getCaveniaLastDimension(Entity entity);
+
+	public void setCaveniaLastDimension(Entity entity, int dimension);
+
+	public ChunkCoordinates getLastPos(Entity entity, int dimension, int type);
+
+	public void setLastPos(Entity entity, int dimension, int type, ChunkCoordinates coord);
 
 	public void saveData(Entity entity, NBTTagCompound compound);
 

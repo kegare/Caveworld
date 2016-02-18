@@ -14,6 +14,7 @@ import com.google.common.collect.Maps;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.DimensionManager;
 
@@ -25,7 +26,7 @@ public final class CaveworldAPI
 {
 	public static final String
 	MODID = "caveworld",
-	API_VERSION = "2.1.3";
+	API_VERSION = "2.1.4";
 
 	public static ICaveAPIHandler apiHandler;
 	public static ICaveBiomeManager biomeManager;
@@ -79,6 +80,14 @@ public final class CaveworldAPI
 	}
 
 	/**
+	 * @see ICaveAPIHandler#getCaveniaDimension()
+	 */
+	public static int getCaveniaDimension()
+	{
+		return apiHandler == null ? DimensionManager.getNextFreeDimId() : apiHandler.getCaveniaDimension();
+	}
+
+	/**
 	 * @see ICaveAPIHandler#isEntityInCaveworld(Entity)
 	 */
 	public static boolean isEntityInCaveworld(Entity entity)
@@ -108,6 +117,14 @@ public final class CaveworldAPI
 	public static boolean isEntityInCaveland(Entity entity)
 	{
 		return apiHandler != null && apiHandler.isEntityInCaveland(entity);
+	}
+
+	/**
+	 * @see ICaveAPIHandler#isEntityInCavenia(Entity)
+	 */
+	public static boolean isEntityInCavenia(Entity entity)
+	{
+		return apiHandler != null && apiHandler.isEntityInCavenia(entity);
 	}
 
 	/**
@@ -672,6 +689,44 @@ public final class CaveworldAPI
 		if (caverManager != null)
 		{
 			caverManager.setCavelandLastDimension(entity, dimension);
+		}
+	}
+
+	/**
+	 * @see ICaverManager#getCaveniaLastDimension(Entity)
+	 */
+	public static int getCaveniaLastDimension(Entity entity)
+	{
+		return caverManager == null ? 0 : caverManager.getCaveniaLastDimension(entity);
+	}
+
+	/**
+	 * @see ICaverManager#setCaveniaLastDimension(Entity, int)
+	 */
+	public static void setCaveniaLastDimension(Entity entity, int dimension)
+	{
+		if (caverManager != null)
+		{
+			caverManager.setCaveniaLastDimension(entity, dimension);
+		}
+	}
+
+	/**
+	 * @see ICaverManager#getLastPos(Entity, int, int)
+	 */
+	public static ChunkCoordinates getLastPos(Entity entity, int dimension, int type)
+	{
+		return caverManager == null ? null : caverManager.getLastPos(entity, dimension, type);
+	}
+
+	/**
+	 * @see ICaverManager#setLastPos(Entity, int, int, ChunkCoordinates)
+	 */
+	public static void setLastPos(Entity entity, int dimension, int type, ChunkCoordinates coord)
+	{
+		if (caverManager != null)
+		{
+			caverManager.setLastPos(entity, dimension, type, coord);
 		}
 	}
 

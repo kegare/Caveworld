@@ -9,6 +9,8 @@
 
 package caveworld.client.gui;
 
+import org.lwjgl.input.Keyboard;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.network.NetHandlerPlayClient;
@@ -31,11 +33,22 @@ public class GuiLoadCaveTerrain extends GuiDownloadCaveTerrain
 	@Override
 	public void updateScreen()
 	{
-		if (mc.thePlayer != null && mc.thePlayer.onGround)
+		if (mc.thePlayer != null && (mc.thePlayer.onGround || mc.thePlayer.capabilities.isFlying))
 		{
 			mc.displayGuiScreen(null);
+			mc.setIngameFocus();
 		}
 
 		super.updateScreen();
+	}
+
+	@Override
+	protected void keyTyped(char c, int code)
+	{
+		if (code == Keyboard.KEY_ESCAPE)
+		{
+			mc.displayGuiScreen(null);
+			mc.setIngameFocus();
+		}
 	}
 }

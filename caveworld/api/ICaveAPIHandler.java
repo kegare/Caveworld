@@ -30,6 +30,11 @@ public interface ICaveAPIHandler
 	public int getCavelandDimension();
 
 	/**
+	 * Returns dimension id of the Cavenia dimension.
+	 */
+	public int getCaveniaDimension();
+
+	/**
 	 * Checks if entity is in Caveworld.
 	 * @param entity The entity
 	 * @return <tt>true</tt> if the entity is in the Caveworld dimension.
@@ -56,6 +61,13 @@ public interface ICaveAPIHandler
 	 * @return <tt>true</tt> if the entity is in the Caveland dimension.
 	 */
 	public boolean isEntityInCaveland(Entity entity);
+
+	/**
+	 * Checks if entity is in Cavenia.
+	 * @param entity The entity
+	 * @return <tt>true</tt> if the entity is in the Cavenia dimension.
+	 */
+	public boolean isEntityInCavenia(Entity entity);
 
 	/**
 	 * Checks if entity is in dimensions for Caveworld mod.

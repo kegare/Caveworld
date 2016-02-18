@@ -17,9 +17,9 @@ import java.security.SecureRandom;
 import org.apache.logging.log4j.Level;
 
 import caveworld.api.CaveworldAPI;
-import caveworld.core.Caveworld;
+import caveworld.core.CaveNetworkRegistry;
+import caveworld.network.client.CaveAdjustMessage;
 import caveworld.network.client.CaveMusicMessage;
-import caveworld.network.client.CavelandAdjustMessage;
 import caveworld.util.CaveLog;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
@@ -29,6 +29,8 @@ import net.minecraftforge.common.DimensionManager;
 
 public class WorldProviderCaveland extends WorldProviderCaveworld
 {
+	public static final int TYPE = 3;
+
 	private static NBTTagCompound dimData;
 	private static long dimensionSeed;
 	private static int subsurfaceHeight;
@@ -170,7 +172,7 @@ public class WorldProviderCaveland extends WorldProviderCaveworld
 		{
 			loadDimData(getDimData());
 
-			Caveworld.network.sendToAll(new CavelandAdjustMessage(dimensionId, getDimData()));
+			CaveNetworkRegistry.sendToAll(new CaveAdjustMessage(TYPE, dimensionId, getDimData()));
 		}
 
 		return dimensionSeed;
@@ -183,7 +185,7 @@ public class WorldProviderCaveland extends WorldProviderCaveworld
 		{
 			loadDimData(getDimData());
 
-			Caveworld.network.sendToAll(new CavelandAdjustMessage(dimensionId, getDimData()));
+			CaveNetworkRegistry.sendToAll(new CaveAdjustMessage(TYPE, dimensionId, getDimData()));
 		}
 
 		return subsurfaceHeight + 1;
@@ -194,11 +196,11 @@ public class WorldProviderCaveland extends WorldProviderCaveworld
 	{
 		if (!worldObj.isRemote)
 		{
-			if (--ambientTickCountdown <= 0)
+			if (--musicTime <= 0)
 			{
-				ambientTickCountdown = worldObj.rand.nextInt(5000) + 10000;
+				musicTime = worldObj.rand.nextInt(5000) + 10000;
 
-				Caveworld.network.sendToDimension(new CaveMusicMessage("cavemusic.hope"), dimensionId);
+				CaveNetworkRegistry.sendToDimension(new CaveMusicMessage("cavemusic.hope"), dimensionId);
 			}
 		}
 
