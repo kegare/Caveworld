@@ -448,7 +448,10 @@ public class GuiSelectItem extends GuiScreen
 			}
 			else if (isCtrlKeyDown() && code == Keyboard.KEY_A)
 			{
-				itemList.selected.addAll(itemList.contents);
+				if (parentElement == null || parentElement.getConfigElement().getMaxListLength() <= 0)
+				{
+					itemList.selected.addAll(itemList.contents);
+				}
 			}
 		}
 	}
@@ -642,6 +645,16 @@ public class GuiSelectItem extends GuiScreen
 				if (parentNameField != null || parentDamageField != null)
 				{
 					selected.clear();
+				}
+
+				if (parentElement != null)
+				{
+					int i = parentElement.getConfigElement().getMaxListLength();
+
+					if (i > 0 && selected.size() >= i)
+					{
+						return;
+					}
 				}
 
 				selected.add(entry);

@@ -28,8 +28,6 @@ import caveworld.handler.CaveEventHooks;
 import caveworld.handler.CaveFuelHandler;
 import caveworld.handler.CaveGuiHandler;
 import caveworld.item.CaveItems;
-import caveworld.item.ICaveniumTool;
-import caveworld.item.ItemCavePortal;
 import caveworld.item.ItemDiggingShovel;
 import caveworld.item.ItemLumberingAxe;
 import caveworld.item.ItemMiningPickaxe;
@@ -65,17 +63,31 @@ import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockClay;
+import net.minecraft.block.BlockCocoa;
+import net.minecraft.block.BlockGlass;
 import net.minecraft.block.BlockGlowstone;
+import net.minecraft.block.BlockGrass;
+import net.minecraft.block.BlockLog;
 import net.minecraft.block.BlockOre;
 import net.minecraft.block.BlockRedstoneOre;
+import net.minecraft.block.BlockReed;
 import net.minecraft.block.BlockRotatedPillar;
+import net.minecraft.block.BlockSand;
+import net.minecraft.block.BlockTorch;
 import net.minecraft.block.material.Material;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemMonsterPlacer;
-import net.minecraft.item.ItemPotion;
-import net.minecraft.item.ItemRecord;
+import net.minecraft.item.ItemArmor;
+import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemBow;
+import net.minecraft.item.ItemFood;
+import net.minecraft.item.ItemHoe;
+import net.minecraft.item.ItemSeeds;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemSword;
+import net.minecraft.item.ItemTool;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.StatCollector;
@@ -435,30 +447,58 @@ public class Caveworld
 
 			for (Item item : GameData.getItemRegistry().typeSafeIterable())
 			{
-				if (item != null && item != Item.getItemFromBlock(Blocks.bedrock) && !(item instanceof ItemMonsterPlacer) && !(item instanceof ItemCavePortal) && !(item instanceof ICaveniumTool) &&
-					!(item instanceof ItemPotion) && !(item instanceof ItemRecord))
+				if (entries.size() >= 100)
 				{
-					String name = GameData.getItemRegistry().getNameForObject(item);
+					break;
+				}
 
-					if (item.isDamageable())
+				String name = GameData.getItemRegistry().getNameForObject(item);
+
+				if (name != null && name.startsWith("minecraft"))
+				{
+					boolean flag = false;
+
+					if (item instanceof ItemTool || item instanceof ItemSword || item instanceof ItemHoe || item instanceof ItemBow || item instanceof ItemArmor || item instanceof ItemSeeds || item instanceof ItemFood)
 					{
-						entries.add(name);
+						flag = true;
 					}
-					else
+					else if (item instanceof ItemBlock)
 					{
-						List<ItemStack> list = SubItemHelper.getSubItems(item);
+						Block block = Block.getBlockFromItem(item);
 
-						for (ItemStack itemstack : list)
+						if (block instanceof BlockSand || block instanceof BlockGrass || block instanceof BlockGlass || block instanceof BlockClay || block instanceof BlockLog ||
+							block instanceof BlockReed || block instanceof BlockTorch || block instanceof BlockCocoa)
 						{
-							int i = itemstack.getItemDamage();
+							flag = true;
+						}
+					}
+					else if (item == Items.diamond || item == Items.emerald || item == Items.iron_ingot || item == Items.gold_ingot || item == Items.ender_pearl || item == Items.blaze_rod)
+					{
+						flag = true;
+					}
 
-							if (i <= 0)
+					if (flag)
+					{
+						if (item.isDamageable())
+						{
+							entries.add(name);
+						}
+						else
+						{
+							List<ItemStack> list = SubItemHelper.getSubItems(item);
+
+							for (ItemStack itemstack : list)
 							{
-								entries.add(name);
-							}
-							else
-							{
-								entries.add(name + ":" + i);
+								int i = itemstack.getItemDamage();
+
+								if (i <= 0)
+								{
+									entries.add(name);
+								}
+								else
+								{
+									entries.add(name + ":" + i);
+								}
 							}
 						}
 					}

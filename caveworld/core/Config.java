@@ -334,7 +334,7 @@ public class Config
 		propOrder.add(prop.getName());
 		miningPointValidItems = prop.getStringList();
 		prop = generalCfg.get(category, "randomiteDrops", new String[0]);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(selectItemsWithBlocks);
+		prop.setMaxListLength(100).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(selectItemsWithBlocks);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		propOrder.add(prop.getName());
 		randomiteDrops = prop.getStringList();
