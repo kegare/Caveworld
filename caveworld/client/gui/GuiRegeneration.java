@@ -16,13 +16,13 @@ import org.lwjgl.opengl.GL11;
 
 import caveworld.core.CaveNetworkRegistry;
 import caveworld.network.common.RegenerateMessage;
-import caveworld.world.WorldProviderCaveworld;
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
 import cpw.mods.fml.client.config.HoverChecker;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
+import net.minecraftforge.common.DimensionManager;
 
 public class GuiRegeneration extends GuiScreen
 {
@@ -181,7 +181,7 @@ public class GuiRegeneration extends GuiScreen
 				case 1:
 					try
 					{
-						Desktop.getDesktop().open(WorldProviderCaveworld.getDimDir().getParentFile());
+						Desktop.getDesktop().open(DimensionManager.getCurrentSaveRootDirectory());
 					}
 					catch (Exception e) {}
 

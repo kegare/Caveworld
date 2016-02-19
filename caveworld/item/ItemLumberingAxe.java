@@ -145,7 +145,7 @@ public class ItemLumberingAxe extends ItemAxe implements ICaveniumTool
 		return "axe";
 	}
 
-	protected void initializeItemStackNBT(ItemStack itemstack)
+	protected void initItemStackNBT(ItemStack itemstack)
 	{
 		if (itemstack == null || itemstack.getItem() == null)
 		{
@@ -191,13 +191,13 @@ public class ItemLumberingAxe extends ItemAxe implements ICaveniumTool
 	@Override
 	public void onCreated(ItemStack itemstack, World world, EntityPlayer player)
 	{
-		initializeItemStackNBT(itemstack);
+		initItemStackNBT(itemstack);
 	}
 
 	@Override
 	public void onUpdate(ItemStack itemstack, World world, Entity entity, int slot, boolean selected)
 	{
-		initializeItemStackNBT(itemstack);
+		initItemStackNBT(itemstack);
 	}
 
 	@Override

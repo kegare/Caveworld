@@ -20,9 +20,7 @@ import caveworld.entity.TileEntityUniversalChest;
 import caveworld.item.ItemCavePortal;
 import caveworld.item.ItemCaveniumOre;
 import caveworld.item.ItemGemOre;
-import caveworld.item.ItemPervertedLeaves;
-import caveworld.item.ItemPervertedLog;
-import caveworld.item.ItemPervertedSapling;
+import caveworld.item.ItemPerverted;
 import caveworld.item.ItemRope;
 import caveworld.item.ItemUniversalChest;
 import caveworld.util.CaveLog;
@@ -211,7 +209,7 @@ public class CaveBlocks
 		}
 
 		{
-			GameRegistry.registerBlock(perverted_log, ItemPervertedLog.class, "perverted_log");
+			GameRegistry.registerBlock(perverted_log, ItemPerverted.class, "perverted_log");
 
 			GameRegistry.addShapelessRecipe(new ItemStack(Items.stick, 8), new ItemStack(perverted_log, 1, OreDictionary.WILDCARD_VALUE));
 
@@ -229,7 +227,7 @@ public class CaveBlocks
 		}
 
 		{
-			GameRegistry.registerBlock(perverted_leaves, ItemPervertedLeaves.class, "perverted_leaves");
+			GameRegistry.registerBlock(perverted_leaves, ItemPerverted.class, "perverted_leaves");
 
 			OreDictionary.registerOre("treeLeavesPerverted", new ItemStack(perverted_leaves, 1, OreDictionary.WILDCARD_VALUE));
 
@@ -237,7 +235,7 @@ public class CaveBlocks
 		}
 
 		{
-			GameRegistry.registerBlock(perverted_sapling, ItemPervertedSapling.class, "perverted_sapling");
+			GameRegistry.registerBlock(perverted_sapling, ItemPerverted.class, "perverted_sapling");
 
 			for (int i = 0; i < BlockPervertedLog.types.length; ++i)
 			{

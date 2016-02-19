@@ -251,9 +251,6 @@ public class GuiIngameCaveworldMenu extends GuiScreen implements IVolume
 	@Override
 	public void onGuiClosed()
 	{
-		if (Config.generalCfg.hasChanged())
-		{
-			Config.generalCfg.save();
-		}
+		Config.saveConfig(Config.generalCfg);
 	}
 }

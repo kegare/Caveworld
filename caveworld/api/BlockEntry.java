@@ -1,13 +1,17 @@
 package caveworld.api;
 
+import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
 
 public class BlockEntry
 {
 	private Block block;
 	private int metadata;
+
+	private ItemStack itemstack;
 
 	public BlockEntry(Block block, int metadata)
 	{
@@ -30,6 +34,16 @@ public class BlockEntry
 		return MathHelper.clamp_int(metadata, 0, 15);
 	}
 
+	public ItemStack getItemStack()
+	{
+		if (itemstack == null)
+		{
+			itemstack = new ItemStack(getBlock(), 1, getMetadata());
+		}
+
+		return itemstack;
+	}
+
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -50,14 +64,19 @@ public class BlockEntry
 	@Override
 	public int hashCode()
 	{
-		Object[] elements = {getBlock().getUnlocalizedName(), getMetadata()};
-		int result = 0;
+		return toString().hashCode();
+	}
 
-		for (Object element : elements)
-		{
-			result = 31 * result + (element == null ? 0 : element.hashCode());
-		}
+	public String getString()
+	{
+		String name = GameData.getBlockRegistry().getNameForObject(block);
 
-		return result;
+		return metadata == 0 ? name : name + ":" + metadata;
+	}
+
+	@Override
+	public String toString()
+	{
+		return GameData.getBlockRegistry().getNameForObject(block) + ":" + metadata;
 	}
 }

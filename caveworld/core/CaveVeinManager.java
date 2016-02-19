@@ -516,7 +516,7 @@ public class CaveVeinManager implements ICaveVeinManager
 			int weight = getGenWeight();
 			int rate = getGenRate();
 			int min = getGenMinHeight();
-			int max = getGenMaxHeight();
+			int max = Math.min(getGenMaxHeight(), worldHeight);
 			BlockEntry target = getGenTargetBlock();
 			int[] biomes = getGenBiomes();
 

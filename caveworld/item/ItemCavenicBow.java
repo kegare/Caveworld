@@ -34,7 +34,7 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 
-public class ItemCavenicBow extends ItemBow
+public class ItemCavenicBow extends ItemBow implements IModeItem
 {
 	public enum BowMode
 	{
@@ -65,6 +65,18 @@ public class ItemCavenicBow extends ItemBow
 		int mode = MathHelper.clamp_int(itemstack.getTagCompound().getInteger("Mode"), 0, modes.length - 1);
 
 		return modes[mode];
+	}
+
+	@Override
+	public long getHighlightStart()
+	{
+		return highlightStart;
+	}
+
+	@Override
+	public void setHighlightStart(long time)
+	{
+		highlightStart = time;
 	}
 
 	@Override
@@ -385,16 +397,19 @@ public class ItemCavenicBow extends ItemBow
 		return new EntityArrow(world, living, power);
 	}
 
+	@Override
 	public String getModeName(ItemStack itemstack)
 	{
 		return getMode(itemstack).name();
 	}
 
+	@Override
 	public String getModeDisplayName(ItemStack itemstack)
 	{
 		return StatCollector.translateToLocal("caveworld.bowmode." + getModeName(itemstack).toLowerCase(Locale.ENGLISH));
 	}
 
+	@Override
 	public String getModeInfomation(ItemStack itemstack)
 	{
 		return StatCollector.translateToLocal("caveworld.bowmode") + ": " + getModeDisplayName(itemstack);

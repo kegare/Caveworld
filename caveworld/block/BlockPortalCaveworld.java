@@ -209,7 +209,7 @@ public class BlockPortalCaveworld extends BlockCavePortal implements IInventory
 
 	public void loadInventoryFromDimData()
 	{
-		NBTTagCompound data = WorldProviderCaveworld.getDimData();
+		NBTTagCompound data = WorldProviderCaveworld.saveHandler.getData();
 
 		if (!data.hasKey("PortalItems"))
 		{
@@ -254,7 +254,7 @@ public class BlockPortalCaveworld extends BlockCavePortal implements IInventory
 			}
 		}
 
-		WorldProviderCaveworld.getDimData().setTag("PortalItems", list);
+		WorldProviderCaveworld.saveHandler.getData().setTag("PortalItems", list);
 	}
 
 	@Override

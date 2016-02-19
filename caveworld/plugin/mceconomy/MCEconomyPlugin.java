@@ -220,9 +220,6 @@ public final class MCEconomyPlugin implements ICavePlugin
 			}
 		}
 
-		if (shopCfg.hasChanged())
-		{
-			shopCfg.save();
-		}
+		Config.saveConfig(shopCfg);
 	}
 }

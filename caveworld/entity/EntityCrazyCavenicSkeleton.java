@@ -24,6 +24,7 @@ import com.google.common.collect.Maps;
 import caveworld.core.CaveAchievementList;
 import caveworld.entity.EntityCrazyCavenicSkeleton.Attacker;
 import caveworld.item.CaveItems;
+import caveworld.util.CaveUtils;
 import cpw.mods.fml.common.FMLCommonHandler;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -235,7 +236,7 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 						{
 							setLocationAndAngles(player.posX, player.posY, player.posZ, player.rotationYaw, player.rotationPitch);
 
-							player.playerNetServerHandler.setPlayerLocation(currentX, currentY, currentZ, yaw, pitch);
+							CaveUtils.setPlayerLocation(player, currentX, currentY, currentZ, yaw, pitch);
 
 							break;
 						}

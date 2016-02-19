@@ -53,7 +53,7 @@ import net.minecraft.item.ItemStack;
 @SideOnly(Side.CLIENT)
 public class GuiSelectBlock extends GuiScreen
 {
-	protected static final ArrayListExtended<BlockEntry> blocks = new ArrayListExtended();
+	private static final ArrayListExtended<BlockEntry> blocks = new ArrayListExtended();
 
 	static
 	{
@@ -331,7 +331,7 @@ public class GuiSelectBlock extends GuiScreen
 				{
 					try
 					{
-						ItemStack itemstack = new ItemStack(entry.getBlock(), 1, entry.getMetadata());
+						ItemStack itemstack = entry.getItemStack();
 
 						if (entry.getBlock() instanceof BlockRotatedPillar)
 						{
@@ -559,18 +559,19 @@ public class GuiSelectBlock extends GuiScreen
 
 			Block block = entry.getBlock();
 			int meta = entry.getMetadata();
-			ItemStack itemstack = new ItemStack(block, 1, meta);
+			ItemStack itemstack = entry.getItemStack();
 			String name = null;
 
 			try
 			{
-				if (itemstack.getItem() == null)
+				if (nameType == 1)
+				{
+					name = entry.getString();
+				}
+				else if (itemstack.getItem() == null)
 				{
 					switch (nameType)
 					{
-						case 1:
-							name = GameData.getBlockRegistry().getNameForObject(block);
-							break;
 						case 2:
 							name = block.getUnlocalizedName();
 							name = name.substring(name.indexOf(".") + 1);
@@ -596,9 +597,6 @@ public class GuiSelectBlock extends GuiScreen
 
 					switch (nameType)
 					{
-						case 1:
-							name = GameData.getBlockRegistry().getNameForObject(block) + ", " + itemstack.getItemDamage();
-							break;
 						case 2:
 							name = itemstack.getUnlocalizedName();
 							name = name.substring(name.indexOf(".") + 1);
@@ -660,6 +658,10 @@ public class GuiSelectBlock extends GuiScreen
 					if (Strings.isNullOrEmpty(filter))
 					{
 						result = entries;
+					}
+					else if (filter.equals("selected"))
+					{
+						result = Lists.newArrayList(selected);
 					}
 					else
 					{

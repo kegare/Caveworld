@@ -26,7 +26,7 @@ public final class CaveworldAPI
 {
 	public static final String
 	MODID = "caveworld",
-	API_VERSION = "2.1.4";
+	API_VERSION = "2.1.5";
 
 	public static ICaveAPIHandler apiHandler;
 	public static ICaveBiomeManager biomeManager;
@@ -712,11 +712,68 @@ public final class CaveworldAPI
 	}
 
 	/**
+	 * @see ICaverManager#getLastSleepTime(Entity)
+	 */
+	public static long getLastSleepTime(Entity entity)
+	{
+		return caverManager == null ? 0L : caverManager.getLastSleepTime(entity);
+	}
+
+	/**
+	 * @see ICaverManager#getLastSleepTime(Entity, int)
+	 */
+	public static long getLastSleepTime(Entity entity, int dimension)
+	{
+		return caverManager == null ? 0L : caverManager.getLastSleepTime(entity, dimension);
+	}
+
+	/**
+	 * @see ICaverManager#setLastSleepTime(Entity, long)
+	 */
+	public static void setLastSleepTime(Entity entity, long time)
+	{
+		if (caverManager != null)
+		{
+			caverManager.setLastSleepTime(entity, time);
+		}
+	}
+
+	/**
+	 * @see ICaverManager#setLastSleepTime(Entity, int, long)
+	 */
+	public static void setLastSleepTime(Entity entity, int dimension, long time)
+	{
+		if (caverManager != null)
+		{
+			caverManager.setLastSleepTime(entity, dimension, time);
+		}
+	}
+
+	/**
+	 * @see ICaverManager#getLastPos(Entity, int)
+	 */
+	public static ChunkCoordinates getLastPos(Entity entity, int type)
+	{
+		return caverManager == null ? null : caverManager.getLastPos(entity, type);
+	}
+
+	/**
 	 * @see ICaverManager#getLastPos(Entity, int, int)
 	 */
 	public static ChunkCoordinates getLastPos(Entity entity, int dimension, int type)
 	{
 		return caverManager == null ? null : caverManager.getLastPos(entity, dimension, type);
+	}
+
+	/**
+	 * @see ICaverManager#setLastPos(Entity, int, ChunkCoordinates)
+	 */
+	public static void setLastPos(Entity entity, int type, ChunkCoordinates coord)
+	{
+		if (caverManager != null)
+		{
+			caverManager.setLastPos(entity, type, coord);
+		}
 	}
 
 	/**

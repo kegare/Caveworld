@@ -15,18 +15,20 @@ import java.util.Random;
 import caveworld.core.Caveworld;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockLeaves;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.ColorizerFoliage;
 import net.minecraft.world.IBlockAccess;
 
-public class BlockPervertedLeaves extends BlockLeaves
+public class BlockPervertedLeaves extends BlockLeaves implements IBlockPreverted
 {
 	public static final String[][] types = new String[][] {{"leaves_oak", "leaves_spruce", "leaves_birch", "leaves_jungle"}, {"leaves_oak_opaque", "leaves_spruce_opaque", "leaves_birch_opaque", "leaves_jungle_opaque"}};
 
@@ -82,6 +84,12 @@ public class BlockPervertedLeaves extends BlockLeaves
 		int meta = blockAccess.getBlockMetadata(x, y, z);
 
 		return (meta & 3) == 1 ? ColorizerFoliage.getFoliageColorPine() : (meta & 3) == 2 ? ColorizerFoliage.getFoliageColorBirch() : super.colorMultiplier(blockAccess, x, y, z);
+	}
+
+	@Override
+	public Block getBasedBlock()
+	{
+		return Blocks.leaves;
 	}
 
 	@Override

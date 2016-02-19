@@ -89,6 +89,11 @@ public interface ICaverManager
 	 */
 	public int getLastDimension(Entity entity);
 
+	/**
+	 * Sets the last dimension before Caveworld dimension for the entity.
+	 * @param entity The entity
+	 * @param dimension The last dimension
+	 */
 	public void setLastDimension(Entity entity, int dimension);
 
 	/**
@@ -98,6 +103,11 @@ public interface ICaverManager
 	 */
 	public int getCavernLastDimension(Entity entity);
 
+	/**
+	 * Sets the last dimension before Cavern dimension for the entity.
+	 * @param entity The entity
+	 * @param dimension The last dimension
+	 */
 	public void setCavernLastDimension(Entity entity, int dimension);
 
 	/**
@@ -107,6 +117,11 @@ public interface ICaverManager
 	 */
 	public int getAquaCavernLastDimension(Entity entity);
 
+	/**
+	 * Sets the last dimension before Aqua Cavern dimension for the entity.
+	 * @param entity The entity
+	 * @param dimension The last dimension
+	 */
 	public void setAquaCavernLastDimension(Entity entity, int dimension);
 
 	/**
@@ -116,6 +131,11 @@ public interface ICaverManager
 	 */
 	public int getCavelandLastDimension(Entity entity);
 
+	/**
+	 * Sets the last dimension before Caveland dimension for the entity.
+	 * @param entity The entity
+	 * @param dimension The last dimension
+	 */
 	public void setCavelandLastDimension(Entity entity, int dimension);
 
 	/**
@@ -125,9 +145,47 @@ public interface ICaverManager
 	 */
 	public int getCaveniaLastDimension(Entity entity);
 
+	/**
+	 * Sets the last dimension before Cavenia dimension for the entity.
+	 * @param entity The entity
+	 * @param dimension The last dimension
+	 */
 	public void setCaveniaLastDimension(Entity entity, int dimension);
 
+	/**
+	 * Returns last sleep time of the entity at current dimension.
+	 * @param entity The entity
+	 * @param dimension The dimension
+	 */
+	public long getLastSleepTime(Entity entity);
+
+	/**
+	 * Returns last sleep time of the entity at the dimension.
+	 * @param entity The entity
+	 * @param dimension The dimension
+	 */
+	public long getLastSleepTime(Entity entity, int dimension);
+
+	/**
+	 * Sets last sleep time of the entity at current dimension.
+	 * @param entity The entity
+	 * @param time The sleep time
+	 */
+	public void setLastSleepTime(Entity entity, long time);
+
+	/**
+	 * Sets last sleep time of the entity at current dimension.
+	 * @param entity The entity
+	 * @param dimension The dimension
+	 * @param time The sleep time
+	 */
+	public void setLastSleepTime(Entity entity, int dimension, long time);
+
+	public ChunkCoordinates getLastPos(Entity entity, int type);
+
 	public ChunkCoordinates getLastPos(Entity entity, int dimension, int type);
+
+	public void setLastPos(Entity entity, int type, ChunkCoordinates coord);
 
 	public void setLastPos(Entity entity, int dimension, int type, ChunkCoordinates coord);
 

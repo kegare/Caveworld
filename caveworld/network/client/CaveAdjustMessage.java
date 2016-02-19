@@ -9,6 +9,7 @@
 
 package caveworld.network.client;
 
+import caveworld.world.CaveSaveHandler;
 import caveworld.world.ChunkProviderAquaCavern;
 import caveworld.world.ChunkProviderCaveland;
 import caveworld.world.ChunkProviderCavenia;
@@ -34,11 +35,11 @@ public class CaveAdjustMessage implements IMessage, IMessageHandler<CaveAdjustMe
 
 	public CaveAdjustMessage() {}
 
-	public CaveAdjustMessage(int type, int dim, NBTTagCompound data)
+	public CaveAdjustMessage(int type, int dim, CaveSaveHandler handler)
 	{
 		this.type = type;
 		this.dimensionId = dim;
-		this.data = data;
+		this.data = handler.getData();
 	}
 
 	@Override
@@ -67,23 +68,23 @@ public class CaveAdjustMessage implements IMessage, IMessageHandler<CaveAdjustMe
 		{
 			case WorldProviderCaveworld.TYPE:
 				ChunkProviderCaveworld.dimensionId = dim;
-				WorldProviderCaveworld.loadDimData(dat);
+				WorldProviderCaveworld.saveHandler.loadFromNBT(dat);
 				break;
 			case WorldProviderCavern.TYPE:
 				ChunkProviderCavern.dimensionId = dim;
-				WorldProviderCavern.loadDimData(dat);
+				WorldProviderCavern.saveHandler.loadFromNBT(dat);
 				break;
 			case WorldProviderAquaCavern.TYPE:
 				ChunkProviderAquaCavern.dimensionId = dim;
-				WorldProviderAquaCavern.loadDimData(dat);
+				WorldProviderAquaCavern.saveHandler.loadFromNBT(dat);
 				break;
 			case WorldProviderCaveland.TYPE:
 				ChunkProviderCaveland.dimensionId = dim;
-				WorldProviderCaveland.loadDimData(dat);
+				WorldProviderCaveland.saveHandler.loadFromNBT(dat);
 				break;
 			case WorldProviderCavenia.TYPE:
 				ChunkProviderCavenia.dimensionId = dim;
-				WorldProviderCavenia.loadDimData(dat);
+				WorldProviderCavenia.saveHandler.loadFromNBT(dat);
 				break;
 		}
 

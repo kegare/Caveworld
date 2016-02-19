@@ -149,7 +149,7 @@ public class ItemMiningPickaxe extends ItemPickaxe implements ICaveniumTool
 		return "pickaxe";
 	}
 
-	protected void initializeItemStackNBT(ItemStack itemstack)
+	protected void initItemStackNBT(ItemStack itemstack)
 	{
 		if (itemstack == null || itemstack.getItem() == null)
 		{
@@ -202,13 +202,13 @@ public class ItemMiningPickaxe extends ItemPickaxe implements ICaveniumTool
 	@Override
 	public void onCreated(ItemStack itemstack, World world, EntityPlayer player)
 	{
-		initializeItemStackNBT(itemstack);
+		initItemStackNBT(itemstack);
 	}
 
 	@Override
 	public void onUpdate(ItemStack itemstack, World world, Entity entity, int slot, boolean selected)
 	{
-		initializeItemStackNBT(itemstack);
+		initItemStackNBT(itemstack);
 	}
 
 	@Override

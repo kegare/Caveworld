@@ -65,7 +65,7 @@ public class TeleporterCaveworld extends Teleporter
 	{
 		if (Config.portalCache)
 		{
-			ChunkCoordinates coord = CaveworldAPI.getLastPos(entity, entity.dimension, portalBlock.getType());
+			ChunkCoordinates coord = CaveworldAPI.getLastPos(entity, portalBlock.getType());
 
 			if (coord != null)
 			{

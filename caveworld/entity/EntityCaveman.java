@@ -113,7 +113,6 @@ public class EntityCaveman extends EntityMob implements IInventory
 		this.setSize(0.45F, 1.75F);
 		this.getNavigator().setAvoidSun(true);
 		this.getNavigator().setCanSwim(true);
-		this.stepHeight = 1.0F;
 		this.tasks.addTask(1, new EntityAISwimming(this));
 		this.tasks.addTask(2, new EntityAIMoveTowardsRestriction(this, 1.0D));
 		this.tasks.addTask(3, new EntityAIRestrictSun(this));

@@ -12,6 +12,7 @@ package caveworld.core;
 import java.io.File;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.RecursiveAction;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -45,6 +46,10 @@ import caveworld.world.ChunkProviderCaveland;
 import caveworld.world.ChunkProviderCavenia;
 import caveworld.world.ChunkProviderCavern;
 import caveworld.world.ChunkProviderCaveworld;
+import caveworld.world.WorldProviderAquaCavern;
+import caveworld.world.WorldProviderCaveland;
+import caveworld.world.WorldProviderCavern;
+import caveworld.world.WorldProviderCaveworld;
 import cpw.mods.fml.client.config.GuiConfigEntries.IConfigEntry;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
@@ -98,11 +103,8 @@ public class Config
 	public static int miningPointRenderType;
 	public static boolean showMinerRank;
 	public static String[] miningPoints;
-	public static String[] miningPointsDefault;
 	public static String[] miningPointValidItems;
-	public static String[] miningPointValidItemsDefault;
 	public static String[] randomiteDrops;
-	public static String[] randomiteDropsDefault;
 	public static boolean oreRenderOverlay;
 	public static boolean fakeMiningPickaxe;
 	public static boolean fakeLumberingAxe;
@@ -211,6 +213,35 @@ public class Config
 		return config;
 	}
 
+	public static void saveConfig(final Configuration config)
+	{
+		if (config.hasChanged())
+		{
+			CaveUtils.getPool().execute(new RecursiveAction()
+			{
+				@Override
+				protected void compute()
+				{
+					config.save();
+				}
+			});
+		}
+	}
+
+	public static void saveAllConfigs()
+	{
+		saveConfig(generalCfg);
+		saveConfig(mobsCfg);
+		saveConfig(dimensionCfg);
+		saveConfig(biomesCfg);
+		saveConfig(biomesCavernCfg);
+		saveConfig(biomesAquaCavernCfg);
+		saveConfig(veinsCfg);
+		saveConfig(veinsCavernCfg);
+		saveConfig(veinsAquaCavernCfg);
+		saveConfig(pluginsCfg);
+	}
+
 	public static void syncGeneralCfg()
 	{
 		String category = Configuration.CATEGORY_GENERAL;
@@ -290,19 +321,19 @@ public class Config
 		prop.comment += "Note: If multiplayer, does not have to match client-side and server-side.";
 		propOrder.add(prop.getName());
 		showMinerRank = prop.getBoolean(showMinerRank);
-		prop = generalCfg.get(category, "miningPoints", miningPointsDefault == null ? new String[0] : miningPointsDefault);
+		prop = generalCfg.get(category, "miningPoints", new String[0]);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(pointsEntry);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += Configuration.NEW_LINE;
 		prop.comment += "Note: If multiplayer, server-side only.";
 		propOrder.add(prop.getName());
 		miningPoints = prop.getStringList();
-		prop = generalCfg.get(category, "miningPointValidItems", miningPointValidItemsDefault == null ? new String[0] : miningPointValidItemsDefault);
+		prop = generalCfg.get(category, "miningPointValidItems", new String[0]);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(selectItems);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		propOrder.add(prop.getName());
 		miningPointValidItems = prop.getStringList();
-		prop = generalCfg.get(category, "randomiteDrops", randomiteDropsDefault == null ? new String[0] : randomiteDropsDefault);
+		prop = generalCfg.get(category, "randomiteDrops", new String[0]);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(selectItemsWithBlocks);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		propOrder.add(prop.getName());
@@ -407,10 +438,7 @@ public class Config
 
 		generalCfg.setCategoryPropertyOrder(category, propOrder);
 
-		if (generalCfg.hasChanged())
-		{
-			generalCfg.save();
-		}
+		saveConfig(generalCfg);
 	}
 
 	public static void refreshMiningPoints()
@@ -453,9 +481,14 @@ public class Config
 
 		for (String str : randomiteDrops)
 		{
-			if (!Strings.isNullOrEmpty(str) && str.contains(":"))
+			if (!Strings.isNullOrEmpty(str))
 			{
 				str = str.trim();
+
+				if (!str.contains(":"))
+				{
+					str = "minecraft:" + str;
+				}
 
 				if (str.indexOf(':') != str.lastIndexOf(':'))
 				{
@@ -706,10 +739,7 @@ public class Config
 		mobsCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
 		mobsCfg.setCategoryPropertyOrder(category, propOrder);
 
-		if (mobsCfg.hasChanged())
-		{
-			mobsCfg.save();
-		}
+		saveConfig(mobsCfg);
 	}
 
 	public static void syncDimensionCfg()
@@ -745,6 +775,7 @@ public class Config
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		ChunkProviderCaveworld.subsurfaceHeight = MathHelper.clamp_int(prop.getInt(ChunkProviderCaveworld.subsurfaceHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		WorldProviderCaveworld.saveHandler.setSubsurfaceHeight(ChunkProviderCaveworld.subsurfaceHeight);
 		prop = dimensionCfg.get(category, "generateCaves", true);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -859,6 +890,7 @@ public class Config
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		ChunkProviderCavern.subsurfaceHeight = MathHelper.clamp_int(prop.getInt(ChunkProviderCavern.subsurfaceHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		WorldProviderCavern.saveHandler.setSubsurfaceHeight(ChunkProviderCavern.subsurfaceHeight);
 		prop = dimensionCfg.get(category, "generateCaves", true);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -920,6 +952,7 @@ public class Config
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		ChunkProviderAquaCavern.subsurfaceHeight = MathHelper.clamp_int(prop.getInt(ChunkProviderAquaCavern.subsurfaceHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		WorldProviderAquaCavern.saveHandler.setSubsurfaceHeight(ChunkProviderAquaCavern.subsurfaceHeight);
 		prop = dimensionCfg.get(category, "generateRavine", true);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -954,6 +987,7 @@ public class Config
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		ChunkProviderCaveland.subsurfaceHeight = MathHelper.clamp_int(prop.getInt(ChunkProviderCaveland.subsurfaceHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		WorldProviderCaveland.saveHandler.setSubsurfaceHeight(ChunkProviderCaveland.subsurfaceHeight);
 		prop = dimensionCfg.get(category, "generateLakes", true);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -990,10 +1024,7 @@ public class Config
 
 		dimensionCfg.setCategoryPropertyOrder(category, propOrder);
 
-		if (dimensionCfg.hasChanged())
-		{
-			dimensionCfg.save();
-		}
+		saveConfig(dimensionCfg);
 	}
 
 	public static void syncBiomesCfg()
@@ -1095,10 +1126,7 @@ public class Config
 			}
 		}
 
-		if (biomesCfg.hasChanged())
-		{
-			biomesCfg.save();
-		}
+		saveConfig(biomesCfg);
 	}
 
 	public static void syncBiomesCavernCfg()
@@ -1200,10 +1228,7 @@ public class Config
 			}
 		}
 
-		if (biomesCavernCfg.hasChanged())
-		{
-			biomesCavernCfg.save();
-		}
+		saveConfig(biomesCavernCfg);
 	}
 
 	public static void syncBiomesAquaCavernCfg()
@@ -1305,10 +1330,7 @@ public class Config
 			}
 		}
 
-		if (biomesAquaCavernCfg.hasChanged())
-		{
-			biomesAquaCavernCfg.save();
-		}
+		saveConfig(biomesAquaCavernCfg);
 	}
 
 	public static void syncVeinsCfg()
@@ -1419,10 +1441,7 @@ public class Config
 			}
 		}
 
-		if (veinsCfg.hasChanged())
-		{
-			veinsCfg.save();
-		}
+		saveConfig(veinsCfg);
 	}
 
 	public static void syncVeinsCavernCfg()
@@ -1495,10 +1514,7 @@ public class Config
 			}
 		}
 
-		if (veinsCavernCfg.hasChanged())
-		{
-			veinsCavernCfg.save();
-		}
+		saveConfig(veinsCavernCfg);
 	}
 
 	public static void syncVeinsAquaCavernCfg()
@@ -1578,10 +1594,7 @@ public class Config
 			}
 		}
 
-		if (veinsAquaCavernCfg.hasChanged())
-		{
-			veinsAquaCavernCfg.save();
-		}
+		saveConfig(veinsAquaCavernCfg);
 	}
 
 	public static void syncPluginsCfg()
@@ -1635,9 +1648,6 @@ public class Config
 		pluginsCfg.setCategoryPropertyOrder(category, propOrder);
 		pluginsCfg.setCategoryRequiresMcRestart(category, true);
 
-		if (pluginsCfg.hasChanged())
-		{
-			pluginsCfg.save();
-		}
+		saveConfig(pluginsCfg);
 	}
 }

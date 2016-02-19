@@ -9,8 +9,6 @@
 
 package caveworld.util;
 
-import com.google.common.base.Objects;
-
 import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -19,13 +17,13 @@ public class ItemEntry
 {
 	public Item item;
 	public int damage;
+
 	private ItemStack itemstack;
 
 	public ItemEntry(Item item, int damage)
 	{
 		this.item = item;
 		this.damage = damage;
-		this.itemstack = new ItemStack(item, 1, damage);
 	}
 
 	public ItemEntry(String name, int damage)
@@ -63,7 +61,14 @@ public class ItemEntry
 	@Override
 	public int hashCode()
 	{
-		return Objects.hashCode(item, damage);
+		return toString().hashCode();
+	}
+
+	public String getString()
+	{
+		String name = GameData.getItemRegistry().getNameForObject(item);
+
+		return damage == 0 ? name : name + ":" + damage;
 	}
 
 	@Override

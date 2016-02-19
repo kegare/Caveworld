@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.RecursiveTask;
 
 import org.apache.commons.lang3.math.NumberUtils;
 import org.lwjgl.input.Keyboard;
@@ -54,19 +55,10 @@ import net.minecraft.item.ItemStack;
 @SideOnly(Side.CLIENT)
 public class GuiSelectItem extends GuiScreen
 {
-	protected static final ArrayListExtended<ItemEntry> items = new ArrayListExtended();
-
-	private static final Map<String, List<ItemEntry>> filterCache = Maps.newHashMap();
+	private static final ArrayListExtended<ItemEntry> items = new ArrayListExtended();
 
 	static
 	{
-		refreshItems();
-	}
-
-	private static void refreshItems()
-	{
-		items.clear();
-
 		List list = Lists.newArrayList();
 
 		for (Item item : GameData.getItemRegistry().typeSafeIterable())
@@ -237,25 +229,32 @@ public class GuiSelectItem extends GuiScreen
 
 						if (parentElement != null)
 						{
-							List<String> result = Lists.newArrayList(Collections2.transform(itemList.selected, new Function<ItemEntry, String>()
+							parentElement.setListFromChildScreen(CaveUtils.getPool().invoke(new RecursiveTask<Object[]>()
 							{
 								@Override
-								public String apply(ItemEntry entry)
+								protected Object[] compute()
 								{
-									String str = entry.toString();
-
-									if (str.endsWith(":0"))
+									List<String> result = Lists.newArrayList(Collections2.transform(itemList.selected, new Function<ItemEntry, String>()
 									{
-										str = str.substring(0, str.lastIndexOf(":"));
-									}
+										@Override
+										public String apply(ItemEntry entry)
+										{
+											String str = entry.toString();
 
-									return str;
+											if (str.endsWith(":0"))
+											{
+												str = str.substring(0, str.lastIndexOf(":"));
+											}
+
+											return str;
+										}
+									}));
+
+									Collections.sort(result);
+
+									return result.toArray();
 								}
 							}));
-
-							Collections.sort(result);
-
-							parentElement.setListFromChildScreen(result.toArray());
 						}
 					}
 
@@ -454,26 +453,13 @@ public class GuiSelectItem extends GuiScreen
 		}
 	}
 
-	@Override
-	public void onGuiClosed()
-	{
-		if (hideBlocks)
-		{
-			CaveUtils.getPool().execute(new RecursiveAction()
-			{
-				@Override
-				protected void compute()
-				{
-					refreshItems();
-				}
-			});
-		}
-	}
-
 	class ItemList extends GuiListSlot
 	{
+		protected final ArrayListExtended<ItemEntry> entries = new ArrayListExtended(items);
 		protected final ArrayListExtended<ItemEntry> contents = new ArrayListExtended(items);
 		protected final Set<ItemEntry> selected = Sets.newHashSet();
+
+		private final Map<String, List<ItemEntry>> filterCache = Maps.newHashMap();
 
 		protected int nameType;
 
@@ -490,9 +476,9 @@ public class GuiSelectItem extends GuiScreen
 					{
 						Set<ItemEntry> hidden = Sets.newHashSet();
 
-						for (ItemEntry item : items)
+						for (ItemEntry item : entries)
 						{
-							if (item.item instanceof ItemBlock ||Block.getBlockFromItem(item.item) != Blocks.air)
+							if (item.item instanceof ItemBlock || Block.getBlockFromItem(item.item) != Blocks.air || item.item.getUnlocalizedName().startsWith("tile."))
 							{
 								hidden.add(item);
 							}
@@ -500,7 +486,7 @@ public class GuiSelectItem extends GuiScreen
 
 						for (ItemEntry item : hidden)
 						{
-							items.remove(item);
+							entries.remove(item);
 							contents.remove(item);
 						}
 					}
@@ -514,7 +500,7 @@ public class GuiSelectItem extends GuiScreen
 							damage = NumberUtils.toInt(parentDamageField.getText());
 						}
 
-						for (ItemEntry entry : items)
+						for (ItemEntry entry : entries)
 						{
 							if (GameData.getItemRegistry().getNameForObject(entry.item).equals(parentNameField.getText()) && entry.damage == damage)
 							{
@@ -529,17 +515,34 @@ public class GuiSelectItem extends GuiScreen
 						{
 							String str = String.valueOf(obj);
 
-							if (!str.contains("@"))
+							if (!Strings.isNullOrEmpty(str))
 							{
-								str += "@0";
-							}
+								str = str.trim();
 
-							String[] args = str.split("@");
-							ItemEntry entry = new ItemEntry(args[0], NumberUtils.toInt(args[1]));
+								if (!str.contains(":"))
+								{
+									str = "minecraft:" + str;
+								}
 
-							if (entry.item != null)
-							{
-								selected.add(entry);
+								if (str.indexOf(':') != str.lastIndexOf(':'))
+								{
+									int i = str.lastIndexOf(':');
+									Item item = GameData.getItemRegistry().getObject(str.substring(0, i));
+
+									if (item != null)
+									{
+										selected.add(new ItemEntry(item, Integer.parseInt(str.substring(i + 1))));
+									}
+								}
+								else
+								{
+									Item item = GameData.getItemRegistry().getObject(str);
+
+									if (item != null)
+									{
+										selected.add(new ItemEntry(item, 0));
+									}
+								}
 							}
 						}
 					}
@@ -605,7 +608,7 @@ public class GuiSelectItem extends GuiScreen
 				switch (nameType)
 				{
 					case 1:
-						name = GameData.getItemRegistry().getNameForObject(itemstack.getItem());
+						name = entry.getString();
 						break;
 					case 2:
 						name = itemstack.getUnlocalizedName();
@@ -664,13 +667,17 @@ public class GuiSelectItem extends GuiScreen
 
 					if (Strings.isNullOrEmpty(filter))
 					{
-						result = items;
+						result = entries;
+					}
+					else if (filter.equals("selected"))
+					{
+						result = Lists.newArrayList(selected);
 					}
 					else
 					{
 						if (!filterCache.containsKey(filter))
 						{
-							filterCache.put(filter, Lists.newArrayList(Collections2.filter(items, new ItemFilter(filter))));
+							filterCache.put(filter, Lists.newArrayList(Collections2.filter(entries, new ItemFilter(filter))));
 						}
 
 						result = filterCache.get(filter);

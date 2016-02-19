@@ -17,15 +17,11 @@ import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
-public interface ICaveniumTool
+public interface ICaveniumTool extends IModeItem
 {
 	public String getToolClass();
 
 	public List<BlockEntry> getBreakableBlocks();
-
-	public long getHighlightStart();
-
-	public void setHighlightStart(long time);
 
 	public int getRefined(ItemStack itemstack);
 
@@ -34,12 +30,6 @@ public interface ICaveniumTool
 	public Item getBase(ItemStack itemstack);
 
 	public IBreakMode getMode(ItemStack itemstack);
-
-	public String getModeName(ItemStack itemstack);
-
-	public String getModeDisplayName(ItemStack itemstack);
-
-	public String getModeInfomation(ItemStack itemstack);
 
 	public Set<Item> getBaseableItems();
 }

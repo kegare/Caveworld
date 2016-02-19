@@ -45,6 +45,7 @@ import caveworld.inventory.InventoryCaverBackpack;
 import caveworld.item.CaveItems;
 import caveworld.item.IAquamarineTool;
 import caveworld.item.ICaveniumTool;
+import caveworld.item.IModeItem;
 import caveworld.item.ItemCavenicBow;
 import caveworld.item.ItemCavenicBow.BowMode;
 import caveworld.item.ItemCavenium;
@@ -52,6 +53,7 @@ import caveworld.item.ItemCaverBackpack;
 import caveworld.item.ItemDiggingShovel;
 import caveworld.item.ItemLumberingAxe;
 import caveworld.item.ItemMiningPickaxe;
+import caveworld.item.ItemOreCompass;
 import caveworld.network.client.BiomeAdjustMessage;
 import caveworld.network.client.CaveAdjustMessage;
 import caveworld.network.client.CaveMusicMessage;
@@ -122,7 +124,6 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.stats.AchievementList;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
@@ -201,6 +202,8 @@ public class CaveEventHooks
 					Config.syncDimensionCfg();
 					break;
 			}
+
+			Config.saveAllConfigs();
 		}
 	}
 
@@ -237,88 +240,49 @@ public class CaveEventHooks
 		}
 
 		Minecraft mc = FMLClientHandler.instance().getClient();
-		EntityPlayer player = mc.thePlayer;
 
-		if (player != null)
+		if (mc.thePlayer != null)
 		{
-			ItemStack current = player.getCurrentEquippedItem();
+			ItemStack current = mc.thePlayer.getCurrentEquippedItem();
 
-			if (current != null && current.getItem() != null)
+			if (current != null && current.getItem() != null && current.getItem() instanceof IModeItem)
 			{
-				if (current.getItem() instanceof ICaveniumTool)
+				IModeItem item = (IModeItem)current.getItem();
+
+				if (item.getHighlightStart() > 0 && System.currentTimeMillis() - item.getHighlightStart() < Config.modeDisplayTime)
 				{
-					ICaveniumTool tool = (ICaveniumTool)current.getItem();
+					long time = System.currentTimeMillis() - item.getHighlightStart();
 
-					if (tool.getHighlightStart() > 0 && System.currentTimeMillis() - tool.getHighlightStart() < Config.modeDisplayTime)
+					if (time > Config.modeDisplayTime - 255)
 					{
-						long time = System.currentTimeMillis() - tool.getHighlightStart();
-
-						if (time > Config.modeDisplayTime - 255)
-						{
-							time = tool.getHighlightStart() + Config.modeDisplayTime - System.currentTimeMillis();
-						}
-
-						int i = MathHelper.clamp_int((int)time, 0, 255);
-
-						if (i > 0)
-						{
-							GL11.glPushMatrix();
-							GL11.glEnable(GL11.GL_BLEND);
-							OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-							mc.fontRenderer.drawStringWithShadow(tool.getModeInfomation(current), 18, event.resolution.getScaledHeight() - 20, 16777215 + (i << 24));
-							GL11.glDisable(GL11.GL_BLEND);
-							GL11.glPopMatrix();
-						}
+						time = item.getHighlightStart() + Config.modeDisplayTime - System.currentTimeMillis();
 					}
-					else
-					{
-						int highlight = ObfuscationReflectionHelper.getPrivateValue(GuiIngame.class, mc.ingameGUI, "remainingHighlightTicks", "field_92017_k");
 
-						if (highlight == 40)
-						{
-							tool.setHighlightStart(System.currentTimeMillis());
-						}
+					int i = MathHelper.clamp_int((int)time, 0, 255);
+
+					if (i > 0)
+					{
+						GL11.glPushMatrix();
+						GL11.glEnable(GL11.GL_BLEND);
+						OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+						mc.fontRenderer.drawStringWithShadow(item.getModeInfomation(current), 18, event.resolution.getScaledHeight() - 20, 16777215 + (i << 24));
+						GL11.glDisable(GL11.GL_BLEND);
+						GL11.glPopMatrix();
 					}
 				}
-				else if (current.getItem() instanceof ItemCavenicBow)
+				else
 				{
-					ItemCavenicBow bow = (ItemCavenicBow)current.getItem();
+					int highlight = ObfuscationReflectionHelper.getPrivateValue(GuiIngame.class, mc.ingameGUI, "remainingHighlightTicks", "field_92017_k");
 
-					if (bow.highlightStart > 0 && System.currentTimeMillis() - bow.highlightStart < Config.modeDisplayTime)
+					if (highlight == 40)
 					{
-						long time = System.currentTimeMillis() - bow.highlightStart;
-
-						if (time > Config.modeDisplayTime - 255)
-						{
-							time = bow.highlightStart + Config.modeDisplayTime - System.currentTimeMillis();
-						}
-
-						int i = MathHelper.clamp_int((int)time, 0, 255);
-
-						if (i > 0)
-						{
-							GL11.glPushMatrix();
-							GL11.glEnable(GL11.GL_BLEND);
-							OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-							mc.fontRenderer.drawStringWithShadow(bow.getModeInfomation(current), 18, event.resolution.getScaledHeight() - 20, 16777215 + (i << 24));
-							GL11.glDisable(GL11.GL_BLEND);
-							GL11.glPopMatrix();
-						}
-					}
-					else
-					{
-						int highlight = ObfuscationReflectionHelper.getPrivateValue(GuiIngame.class, mc.ingameGUI, "remainingHighlightTicks", "field_92017_k");
-
-						if (highlight == 40)
-						{
-							bow.highlightStart = System.currentTimeMillis();
-						}
+						item.setHighlightStart(System.currentTimeMillis());
 					}
 				}
 			}
 
-			if (CaveworldAPI.isEntityInCaves(player) && (mc.currentScreen == null || GuiChat.class.isInstance(mc.currentScreen)) &&
-				(player.capabilities.isCreativeMode || mc.gameSettings.advancedItemTooltips || CaveUtils.isItemPickaxe(current) || CaveUtils.isMiningPointValidItem(current)))
+			if (CaveworldAPI.isEntityInCaves(mc.thePlayer) && (mc.currentScreen == null || GuiChat.class.isInstance(mc.currentScreen)) &&
+				(mc.thePlayer.capabilities.isCreativeMode || mc.gameSettings.advancedItemTooltips || CaveUtils.isItemPickaxe(current) || CaveUtils.isMiningPointValidItem(current)))
 			{
 				int type = Config.miningPointRenderType;
 
@@ -723,7 +687,7 @@ public class CaveEventHooks
 			MCEconomyPlugin.prevProductManager = null;
 		}
 
-		CaveItems.ore_compass.resetFinder();
+		ItemOreCompass.resetFinder();
 	}
 
 	@SubscribeEvent
@@ -733,11 +697,11 @@ public class CaveEventHooks
 
 		if (!manager.isLocalChannel())
 		{
-			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderCaveworld.TYPE, CaveworldAPI.getDimension(), WorldProviderCaveworld.getDimData())));
-			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderCavern.TYPE, CaveworldAPI.getCavernDimension(), WorldProviderCavern.getDimData())));
-			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderAquaCavern.TYPE, CaveworldAPI.getAquaCavernDimension(), WorldProviderAquaCavern.getDimData())));
-			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderCaveland.TYPE, CaveworldAPI.getCavelandDimension(), WorldProviderCaveland.getDimData())));
-			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderCavenia.TYPE, CaveworldAPI.getCaveniaDimension(), WorldProviderCavenia.getDimData())));
+			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderCaveworld.TYPE, CaveworldAPI.getDimension(), WorldProviderCaveworld.saveHandler)));
+			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderCavern.TYPE, CaveworldAPI.getCavernDimension(), WorldProviderCavern.saveHandler)));
+			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderAquaCavern.TYPE, CaveworldAPI.getAquaCavernDimension(), WorldProviderAquaCavern.saveHandler)));
+			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderCaveland.TYPE, CaveworldAPI.getCavelandDimension(), WorldProviderCaveland.saveHandler)));
+			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderCavenia.TYPE, CaveworldAPI.getCaveniaDimension(), WorldProviderCavenia.saveHandler)));
 			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new BiomeAdjustMessage(CaveworldAPI.biomeManager)));
 			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new BiomeAdjustMessage(CaveworldAPI.biomeCavernManager)));
 			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new BiomeAdjustMessage(CaveworldAPI.biomeAquaCavernManager)));
@@ -899,16 +863,18 @@ public class CaveEventHooks
 				return;
 			}
 
+			String suffix = ":LastTeleportTime";
+
 			if (CaveworldAPI.isEntityInCaveworld(player))
 			{
 				NBTTagCompound data = player.getEntityData();
 
-				if (!player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.caveworld) || data.getLong("Caveworld:LastTeleportTime") + 18000L < world.getTotalWorldTime())
+				if (!player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.caveworld) || data.getLong("Caveworld" + suffix) + 18000L < world.getTotalWorldTime())
 				{
 					CaveNetworkRegistry.sendTo(new CaveMusicMessage(world.rand.nextInt(3) == 0 ? "cavemusic.cave" : "cavemusic.unrest"), player);
 				}
 
-				data.setLong("Caveworld:LastTeleportTime", world.getTotalWorldTime());
+				data.setLong("Caveworld" + suffix, world.getTotalWorldTime());
 
 				player.triggerAchievement(CaveAchievementList.caveworld);
 			}
@@ -916,12 +882,12 @@ public class CaveEventHooks
 			{
 				NBTTagCompound data = player.getEntityData();
 
-				if (!player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.cavern) || data.getLong("Cavern:LastTeleportTime") + 18000L < world.getTotalWorldTime())
+				if (!player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.cavern) || data.getLong("Cavern" + suffix) + 18000L < world.getTotalWorldTime())
 				{
 					CaveNetworkRegistry.sendTo(new CaveMusicMessage(world.rand.nextInt(3) == 0 ? "cavemusic.cave" : "cavemusic.unrest"), player);
 				}
 
-				data.setLong("Cavern:LastTeleportTime", world.getTotalWorldTime());
+				data.setLong("Cavern" + suffix, world.getTotalWorldTime());
 
 				player.triggerAchievement(CaveAchievementList.cavern);
 			}
@@ -929,12 +895,12 @@ public class CaveEventHooks
 			{
 				NBTTagCompound data = player.getEntityData();
 
-				if (!player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.aquaCavern) || data.getLong("AquaCavern:LastTeleportTime") + 18000L < world.getTotalWorldTime())
+				if (!player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.aquaCavern) || data.getLong("AquaCavern" + suffix) + 18000L < world.getTotalWorldTime())
 				{
 					CaveNetworkRegistry.sendTo(new CaveMusicMessage("cavemusic.aqua"), player);
 				}
 
-				data.setLong("AquaCavern:LastTeleportTime", world.getTotalWorldTime());
+				data.setLong("AquaCavern" + suffix, world.getTotalWorldTime());
 
 				player.triggerAchievement(CaveAchievementList.aquaCavern);
 			}
@@ -942,12 +908,12 @@ public class CaveEventHooks
 			{
 				NBTTagCompound data = player.getEntityData();
 
-				if (!player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.caveland) || data.getLong("Caveland:LastTeleportTime") + 18000L < world.getTotalWorldTime())
+				if (!player.func_147099_x().hasAchievementUnlocked(CaveAchievementList.caveland) || data.getLong("Caveland" + suffix) + 18000L < world.getTotalWorldTime())
 				{
 					CaveNetworkRegistry.sendTo(new CaveMusicMessage("cavemusic.hope"), player);
 				}
 
-				data.setLong("Caveland:LastTeleportTime", world.getTotalWorldTime());
+				data.setLong("Caveland" + suffix, world.getTotalWorldTime());
 
 				player.triggerAchievement(CaveAchievementList.caveland);
 			}
@@ -1075,9 +1041,7 @@ public class CaveEventHooks
 
 			if (CaveworldAPI.isEntityInCaves(player))
 			{
-				ItemStack current = player.getCurrentEquippedItem();
-
-				if (CaveUtils.isMiningPointValidItem(current))
+				if (CaveUtils.isMiningPointValidItem(player.getCurrentEquippedItem()))
 				{
 					Block block = event.block;
 					int meta = event.blockMetadata;
@@ -1113,7 +1077,7 @@ public class CaveEventHooks
 			switch (event.action)
 			{
 				case LEFT_CLICK_BLOCK:
-					if (current != null && current.getItem() != null && current.getItem() instanceof ICaveniumTool && current.getItemDamage() < current.getMaxDamage())
+					if (current != null && current.getItem() instanceof ICaveniumTool && current.getItemDamage() < current.getMaxDamage())
 					{
 						ICaveniumTool tool = (ICaveniumTool)current.getItem();
 
@@ -1215,7 +1179,7 @@ public class CaveEventHooks
 			event.newSpeed = event.originalSpeed;
 		}
 
-		if (current != null && current.getItem() != null && current.getItem() instanceof ICaveniumTool)
+		if (current != null && current.getItem() instanceof ICaveniumTool)
 		{
 			ICaveniumTool tool = (ICaveniumTool)current.getItem();
 
@@ -1228,18 +1192,7 @@ public class CaveEventHooks
 					return;
 				}
 
-				int count;
-
-				if (player.worldObj.isRemote)
-				{
-					count = MultiBreakExecutor.positionsCount.get();
-				}
-				else
-				{
-					count = tool.getMode(current).getExecutor(player).getBreakPositions().size();
-				}
-
-				event.newSpeed = Math.min(event.newSpeed / (count * (0.5F - refined * 0.1245F)), event.newSpeed);
+				event.newSpeed = Math.min(event.newSpeed / (Caveworld.proxy.getMultiBreakCount(player) * (0.5F - refined * 0.1245F)), event.newSpeed);
 			}
 		}
 
@@ -1264,25 +1217,26 @@ public class CaveEventHooks
 		if (event.entityPlayer instanceof EntityPlayerMP)
 		{
 			EntityPlayerMP player = (EntityPlayerMP)event.entityPlayer;
-			WorldServer world = player.getServerForPlayer();
 
 			if (CaveworldAPI.isEntityInCaves(player) && !(player.capabilities.isCreativeMode || CaveworldAPI.getMinerRank(player) >= MinerRank.DIAMOND_MINER.getRank()))
 			{
-				NBTTagCompound data = player.getEntityData();
-				ChunkCoordinates spawn = player.getBedLocation(player.dimension);
+				long last = CaveworldAPI.getLastSleepTime(player);
+				long time = player.getServerForPlayer().getTotalWorldTime();
+				long require = 6000L;
+				long remaining = require - (time - last);
 
-				if (data.getLong("Caveworld:LastSleepTime") + 6000L > world.getTotalWorldTime())
+				if (last + require > time)
 				{
 					event.result = EnumStatus.OTHER_PROBLEM;
-				}
-				else if (spawn != null && player.getDistance(spawn.posX, spawn.posY, spawn.posZ) <= 32.0D)
-				{
-					event.result = EnumStatus.OTHER_PROBLEM;
-				}
 
-				if (event.result == null)
+					IChatComponent component = new ChatComponentTranslation("caveworld.message.sleep.still", remaining / 20 / 60 + 1);
+					component.getChatStyle().setColor(EnumChatFormatting.RED);
+
+					player.addChatMessage(component);
+				}
+				else
 				{
-					data.setLong("Caveworld:LastSleepTime", world.getTotalWorldTime());
+					CaveworldAPI.setLastSleepTime(player, time);
 				}
 			}
 		}
@@ -1505,23 +1459,23 @@ public class CaveEventHooks
 			}
 			else if (dim == CaveworldAPI.getDimension())
 			{
-				WorldProviderCaveworld.saveDimData();
+				WorldProviderCaveworld.saveHandler.writeToFile();
 			}
 			else if (dim == CaveworldAPI.getCavernDimension())
 			{
-				WorldProviderCavern.saveDimData();
+				WorldProviderCavern.saveHandler.writeToFile();
 			}
 			else if (dim == CaveworldAPI.getAquaCavernDimension())
 			{
-				WorldProviderAquaCavern.saveDimData();
+				WorldProviderAquaCavern.saveHandler.writeToFile();
 			}
 			else if (dim == CaveworldAPI.getCavelandDimension())
 			{
-				WorldProviderCaveland.saveDimData();
+				WorldProviderCaveland.saveHandler.writeToFile();
 			}
 			else if (dim == CaveworldAPI.getCaveniaDimension())
 			{
-				WorldProviderCavenia.saveDimData();
+				WorldProviderCavenia.saveHandler.writeToFile();
 			}
 		}
 	}
@@ -1577,6 +1531,10 @@ public class CaveEventHooks
 				else if (CaveworldAPI.isEntityInCaveland(player))
 				{
 					CaveNetworkRegistry.sendTo(new CaveMusicMessage("cavemusic.hope"), player);
+				}
+				else if (CaveworldAPI.isEntityInCavenia(player))
+				{
+					CaveNetworkRegistry.sendTo(new CaveMusicMessage("cavemusic.battle" + (random.nextInt(2) + 1)), player);
 				}
 				else
 				{

@@ -37,7 +37,7 @@ public class TeleporterCavenia extends TeleporterCaveworld
 		int x = 0;
 		int y = 0;
 		int z = 0;
-		ChunkCoordinates coord = CaveworldAPI.getLastPos(entity, entity.dimension, portalBlock.getType());
+		ChunkCoordinates coord = CaveworldAPI.getLastPos(entity, portalBlock.getType());
 
 		if (coord != null)
 		{

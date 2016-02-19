@@ -11,6 +11,7 @@ package caveworld.core;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -224,9 +225,45 @@ public class CaverManager implements ICaverManager
 	}
 
 	@Override
+	public long getLastSleepTime(Entity entity)
+	{
+		return getCaver(entity).getLastSleepTime();
+	}
+
+	@Override
+	public long getLastSleepTime(Entity entity, int dimension)
+	{
+		return getCaver(entity).getLastSleepTime(dimension);
+	}
+
+	@Override
+	public void setLastSleepTime(Entity entity, long time)
+	{
+		getCaver(entity).setLastSleepTime(time);
+	}
+
+	@Override
+	public void setLastSleepTime(Entity entity, int dimension, long time)
+	{
+		getCaver(entity).setLastSleepTime(dimension, time);
+	}
+
+	@Override
+	public ChunkCoordinates getLastPos(Entity entity, int type)
+	{
+		return getCaver(entity).getLastPos(type);
+	}
+
+	@Override
 	public ChunkCoordinates getLastPos(Entity entity, int dimension, int type)
 	{
 		return getCaver(entity).getLastPos(dimension, type);
+	}
+
+	@Override
+	public void setLastPos(Entity entity, int type, ChunkCoordinates coord)
+	{
+		getCaver(entity).setLastPos(type, coord);
 	}
 
 	@Override
@@ -355,6 +392,7 @@ public class CaverManager implements ICaverManager
 		private int rank;
 		private int caveworld, cavern, aqua, caveland, cavenia;
 
+		private final Map<Integer, Long> lastSleepTime = Maps.newHashMap();
 		private final Table<Integer, Integer, ChunkCoordinates> lastPos = HashBasedTable.create();
 
 		public Caver(Entity entity)
@@ -379,6 +417,20 @@ public class CaverManager implements ICaverManager
 			data.setInteger(tag + "Cavenia", cavenia);
 
 			NBTTagList list = new NBTTagList();
+
+			for (Entry<Integer, Long> entry : lastSleepTime.entrySet())
+			{
+				NBTTagCompound nbt = new NBTTagCompound();
+
+				nbt.setInteger("Dim", entry.getKey());
+				nbt.setLong("Time", entry.getValue());
+
+				list.appendTag(nbt);
+			}
+
+			data.setTag("LastSleepTime", list);
+
+			list = new NBTTagList();
 
 			for (Cell<Integer, Integer, ChunkCoordinates> entry : lastPos.cellSet())
 			{
@@ -418,7 +470,20 @@ public class CaverManager implements ICaverManager
 			caveland = data.getInteger(tag + "Caveland");
 			cavenia = data.getInteger(tag + "Cavenia");
 
-			NBTTagList list = data.getTagList("LastPos", NBT.TAG_COMPOUND);
+			NBTTagList list = data.getTagList("LastSleepTime", NBT.TAG_COMPOUND);
+
+			lastSleepTime.clear();
+
+			for (int i = 0; i < list.tagCount(); ++i)
+			{
+				NBTTagCompound nbt = list.getCompoundTagAt(i);
+				int dim = nbt.getInteger("Dim");
+				long time = nbt.getLong("Time");
+
+				lastSleepTime.put(dim, time);
+			}
+
+			list = data.getTagList("LastPos", NBT.TAG_COMPOUND);
 
 			lastPos.clear();
 
@@ -597,9 +662,41 @@ public class CaverManager implements ICaverManager
 			cavenia = dim;
 		}
 
+		public long getLastSleepTime()
+		{
+			return getLastSleepTime(entity.dimension);
+		}
+
+		public long getLastSleepTime(int dim)
+		{
+			Long ret = lastSleepTime.get(dim);
+
+			return ret == null ? 0L : ret.longValue();
+		}
+
+		public void setLastSleepTime(long time)
+		{
+			setLastSleepTime(entity.dimension, time);
+		}
+
+		public void setLastSleepTime(int dim, long time)
+		{
+			lastSleepTime.put(dim, time);
+		}
+
+		public ChunkCoordinates getLastPos(int type)
+		{
+			return getLastPos(entity.dimension, type);
+		}
+
 		public ChunkCoordinates getLastPos(int dim, int type)
 		{
 			return lastPos.get(dim, type);
+		}
+
+		public void setLastPos(int type, ChunkCoordinates coord)
+		{
+			setLastPos(entity.dimension, type, coord);
 		}
 
 		public void setLastPos(int dim, int type, ChunkCoordinates coord)

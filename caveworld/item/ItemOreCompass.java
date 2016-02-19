@@ -39,17 +39,12 @@ import net.minecraft.world.World;
 public class ItemOreCompass extends Item
 {
 	@SideOnly(Side.CLIENT)
-	private static ThreadFinder finderThread;
+	private static OreFinder oreFinder;
+	@SideOnly(Side.CLIENT)
+	public static BreakPos nearestOrePos;
 
 	@SideOnly(Side.CLIENT)
 	protected IIcon[] compassIcons;
-
-	@SideOnly(Side.CLIENT)
-	private long prevFindTime;
-	@SideOnly(Side.CLIENT)
-	private BreakPos nearestOrePos;
-	@SideOnly(Side.CLIENT)
-	private int findFailedCount;
 
 	private static final BreakPos failedPos = new BreakPos(null, 0, 0, 0)
 	{
@@ -261,35 +256,37 @@ public class ItemOreCompass extends Item
 	}
 
 	@SideOnly(Side.CLIENT)
-	public void initFinder()
+	public static void initFinder()
 	{
-		if (finderThread == null || !finderThread.isAlive())
+		if (oreFinder == null || !oreFinder.isAlive())
 		{
-			finderThread = new ThreadFinder();
-			finderThread.setDaemon(true);
-			finderThread.setPriority(Thread.MIN_PRIORITY);
-			finderThread.start();
+			oreFinder = new OreFinder();
+			oreFinder.setName("OreFinder");
+			oreFinder.setDaemon(true);
+			oreFinder.setPriority(Thread.MIN_PRIORITY);
+			oreFinder.start();
 		}
 	}
 
 	@SideOnly(Side.CLIENT)
-	public void resetFinder()
+	public static void resetFinder()
 	{
-		if (finderThread != null)
+		if (oreFinder != null)
 		{
-			finderThread.setFinding(false);
-			finderThread = null;
+			oreFinder.setFinding(false);
+			oreFinder = null;
 		}
 
-		prevFindTime = 0;
 		nearestOrePos = null;
-		findFailedCount = 0;
 	}
 
 	@SideOnly(Side.CLIENT)
-	public class ThreadFinder extends Thread
+	private static class OreFinder extends Thread
 	{
 		private final List<BreakPos> result = Lists.newArrayList();
+
+		private long prevFindTime;
+		private int findFailedCount;
 
 		private boolean finding = true;
 
@@ -301,15 +298,16 @@ public class ItemOreCompass extends Item
 		@Override
 		public void run()
 		{
-			while (finding)
+			Minecraft mc = FMLClientHandler.instance().getClient();
+
+			while (finding && mc != null && mc.isIntegratedServerRunning())
 			{
-				Minecraft mc = FMLClientHandler.instance().getClient();
 				World world = mc.theWorld;
 				EntityPlayer player = mc.thePlayer;
 
 				if (world == null || player == null || findFailedCount > 10 && Minecraft.getSystemTime() - prevFindTime < 10000L)
 				{
-					continue;
+					break;
 				}
 
 				boolean first = false;

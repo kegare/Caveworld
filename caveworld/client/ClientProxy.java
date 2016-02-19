@@ -45,6 +45,7 @@ import caveworld.entity.EntityMasterCavenicCreeper;
 import caveworld.entity.EntityMasterCavenicSkeleton;
 import caveworld.entity.TileEntityUniversalChest;
 import caveworld.item.CaveItems;
+import caveworld.util.breaker.MultiBreakExecutor;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.client.registry.RenderingRegistry;
@@ -52,6 +53,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.renderer.entity.RenderZombie;
 import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.client.IItemRenderer;
 import net.minecraftforge.client.MinecraftForgeClient;
 
@@ -120,5 +122,11 @@ public class ClientProxy extends CommonProxy
 	public void displayPortalMenu(MenuType type, int x, int y, int z)
 	{
 		FMLClientHandler.instance().showGuiScreen(new GuiIngameCaveworldMenu().setMenuType(type).setPortalCoord(x, y, z));
+	}
+
+	@Override
+	public int getMultiBreakCount(EntityPlayer player)
+	{
+		return MultiBreakExecutor.positionsCount.get();
 	}
 }

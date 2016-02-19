@@ -10,15 +10,15 @@
 package caveworld.item;
 
 import caveworld.block.BlockPervertedLog;
+import caveworld.block.IBlockPreverted;
 import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemBlockWithMetadata;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.StatCollector;
 
-public class ItemPervertedLog extends ItemBlockWithMetadata
+public class ItemPerverted extends ItemBlockWithMetadata
 {
-	public ItemPervertedLog(Block block)
+	public ItemPerverted(Block block)
 	{
 		super(block, block);
 	}
@@ -33,7 +33,7 @@ public class ItemPervertedLog extends ItemBlockWithMetadata
 			i = 0;
 		}
 
-		String name = ("" + StatCollector.translateToLocal(Blocks.log.getUnlocalizedName() + "." + BlockPervertedLog.types[i] + ".name")).trim();
+		String name = ("" + StatCollector.translateToLocal(((IBlockPreverted)field_150939_a).getBasedBlock().getUnlocalizedName() + "." + BlockPervertedLog.types[i] + ".name")).trim();
 
 		return ("" + StatCollector.translateToLocal(getUnlocalizedName() + ".type.name")).trim() + " " + name;
 	}

@@ -81,6 +81,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.StatCollector;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 import net.minecraftforge.oredict.RecipeSorter;
@@ -404,78 +405,70 @@ public class Caveworld
 
 		CaveworldAPI.caverManager.clearMiningPointAmounts();
 
-		Config.miningPointsDefault = entries.toArray(new String[entries.size()]);
-
-		Property prop = Config.generalCfg.getCategory(Configuration.CATEGORY_GENERAL).get("miningPoints");
-
-		if (prop.getStringList() == null || prop.getStringList().length <= 0)
-		{
-			prop.set(Config.miningPointsDefault);
-		}
-
-		entries.clear();
-
-		for (Item item : CaveUtils.pickaxeItems)
-		{
-			entries.add(GameData.getItemRegistry().getNameForObject(item));
-		}
-
-		Config.miningPointValidItemsDefault = entries.toArray(new String[entries.size()]);
-
-		prop = Config.generalCfg.getCategory(Configuration.CATEGORY_GENERAL).get("miningPointValidItems");
+		ConfigCategory category = Config.generalCfg.getCategory(Configuration.CATEGORY_GENERAL);
+		Property prop = category.get("miningPoints");
 
 		if (prop.getStringList() == null || prop.getStringList().length <= 0)
 		{
-			prop.set(Config.miningPointValidItemsDefault);
+			prop.set(entries.toArray(new String[entries.size()]));
 		}
 
-		entries.clear();
+		prop = category.get("miningPointValidItems");
 
-		for (Item item : GameData.getItemRegistry().typeSafeIterable())
+		if (prop.getStringList() == null || prop.getStringList().length <= 0)
 		{
-			if (item != null && item != Item.getItemFromBlock(Blocks.bedrock) && !(item instanceof ItemMonsterPlacer) && !(item instanceof ItemCavePortal) && !(item instanceof ICaveniumTool) &&
-				!(item instanceof ItemPotion) && !(item instanceof ItemRecord))
+			entries.clear();
+
+			for (Item item : CaveUtils.pickaxeItems)
 			{
-				String name = GameData.getItemRegistry().getNameForObject(item);
+				entries.add(GameData.getItemRegistry().getNameForObject(item));
+			}
 
-				if (item.isDamageable())
-				{
-					entries.add(name);
-				}
-				else
-				{
-					List<ItemStack> list = SubItemHelper.getSubItems(item);
+			prop.set(entries.toArray(new String[entries.size()]));
+		}
 
-					for (ItemStack itemstack : list)
+		prop = category.get("randomiteDrops");
+
+		if (prop.getStringList() == null || prop.getStringList().length <= 0)
+		{
+			entries.clear();
+
+			for (Item item : GameData.getItemRegistry().typeSafeIterable())
+			{
+				if (item != null && item != Item.getItemFromBlock(Blocks.bedrock) && !(item instanceof ItemMonsterPlacer) && !(item instanceof ItemCavePortal) && !(item instanceof ICaveniumTool) &&
+					!(item instanceof ItemPotion) && !(item instanceof ItemRecord))
+				{
+					String name = GameData.getItemRegistry().getNameForObject(item);
+
+					if (item.isDamageable())
 					{
-						int i = itemstack.getItemDamage();
+						entries.add(name);
+					}
+					else
+					{
+						List<ItemStack> list = SubItemHelper.getSubItems(item);
 
-						if (i <= 0)
+						for (ItemStack itemstack : list)
 						{
-							entries.add(name);
-						}
-						else
-						{
-							entries.add(name + ":" + i);
+							int i = itemstack.getItemDamage();
+
+							if (i <= 0)
+							{
+								entries.add(name);
+							}
+							else
+							{
+								entries.add(name + ":" + i);
+							}
 						}
 					}
 				}
 			}
+
+			prop.set(entries.toArray(new String[entries.size()]));
 		}
 
-		Config.randomiteDropsDefault = entries.toArray(new String[entries.size()]);
-
-		prop = Config.generalCfg.getCategory(Configuration.CATEGORY_GENERAL).get("randomiteDrops");
-
-		if (prop.getStringList() == null || prop.getStringList().length <= 0)
-		{
-			prop.set(Config.randomiteDropsDefault);
-		}
-
-		if (Config.generalCfg.hasChanged())
-		{
-			Config.generalCfg.save();
-		}
+		Config.saveConfig(Config.generalCfg);
 	}
 
 	@EventHandler

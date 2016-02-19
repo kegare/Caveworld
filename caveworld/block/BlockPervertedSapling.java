@@ -31,7 +31,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.WorldGenerator;
 import net.minecraftforge.event.terraingen.TerrainGen;
 
-public class BlockPervertedSapling extends BlockSapling
+public class BlockPervertedSapling extends BlockSapling implements IBlockPreverted
 {
 	@SideOnly(Side.CLIENT)
 	public IIcon[] icons;
@@ -63,6 +63,12 @@ public class BlockPervertedSapling extends BlockSapling
 	public IIcon getIcon(int side, int metadata)
 	{
 		return icons[MathHelper.clamp_int(metadata & 7, 0, 3)];
+	}
+
+	@Override
+	public Block getBasedBlock()
+	{
+		return Blocks.sapling;
 	}
 
 	@Override

@@ -14,14 +14,16 @@ import java.util.List;
 import caveworld.core.Caveworld;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockLog;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 
-public class BlockPervertedLog extends BlockLog
+public class BlockPervertedLog extends BlockLog implements IBlockPreverted
 {
 	public static final String[] types = new String[] {"oak", "spruce", "birch", "jungle"};
 
@@ -56,5 +58,11 @@ public class BlockPervertedLog extends BlockLog
 		{
 			list.add(new ItemStack(item, 1, i));
 		}
+	}
+
+	@Override
+	public Block getBasedBlock()
+	{
+		return Blocks.log;
 	}
 }

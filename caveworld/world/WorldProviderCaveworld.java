@@ -9,145 +9,25 @@
 
 package caveworld.world;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.security.SecureRandom;
-
-import org.apache.logging.log4j.Level;
-
 import caveworld.api.CaveworldAPI;
 import caveworld.api.ICaveBiomeManager;
 import caveworld.client.renderer.EmptyRenderer;
 import caveworld.core.CaveNetworkRegistry;
 import caveworld.network.client.CaveAdjustMessage;
 import caveworld.network.client.CaveMusicMessage;
-import caveworld.util.CaveLog;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.WorldProviderSurface;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.client.IRenderHandler;
-import net.minecraftforge.common.DimensionManager;
 
 public class WorldProviderCaveworld extends WorldProviderSurface
 {
 	public static final int TYPE = 0;
-
-	private static NBTTagCompound dimData;
-	private static long dimensionSeed;
-	private static int subsurfaceHeight;
-
-	public static NBTTagCompound getDimData()
-	{
-		if (dimData == null)
-		{
-			dimData = readDimData();
-		}
-
-		return dimData;
-	}
-
-	public static File getDimDir()
-	{
-		File root = DimensionManager.getCurrentSaveRootDirectory();
-
-		if (root == null || !root.exists() || root.isFile())
-		{
-			return null;
-		}
-
-		File dir = new File(root, new WorldProviderCaveworld().getSaveFolder());
-
-		if (!dir.exists())
-		{
-			dir.mkdirs();
-		}
-
-		return dir.isDirectory() ? dir : null;
-	}
-
-	private static NBTTagCompound readDimData()
-	{
-		NBTTagCompound data;
-		File dir = getDimDir();
-
-		if (dir == null)
-		{
-			data = null;
-		}
-		else
-		{
-			File file = new File(dir, "caveworld.dat");
-
-			if (!file.exists() || !file.isFile() || !file.canRead())
-			{
-				data = null;
-			}
-			else try (FileInputStream input = new FileInputStream(file))
-			{
-				data = CompressedStreamTools.readCompressed(input);
-			}
-			catch (Exception e)
-			{
-				CaveLog.log(Level.ERROR, e, "An error occurred trying to reading Caveworld dimension data");
-
-				data = null;
-			}
-		}
-
-		return data == null ? new NBTTagCompound() : data;
-	}
-
-	private static void writeDimData()
-	{
-		File dir = getDimDir();
-
-		if (dir == null)
-		{
-			return;
-		}
-
-		try (FileOutputStream output = new FileOutputStream(new File(dir, "caveworld.dat")))
-		{
-			CompressedStreamTools.writeCompressed(getDimData(), output);
-		}
-		catch (Exception e)
-		{
-			CaveLog.log(Level.ERROR, e, "An error occurred trying to writing Caveworld dimension data");
-		}
-	}
-
-	public static void loadDimData(NBTTagCompound data)
-	{
-		if (!data.hasKey("Seed"))
-		{
-			data.setLong("Seed", new SecureRandom().nextLong());
-		}
-
-		if (!data.hasKey("SubsurfaceHeight"))
-		{
-			data.setInteger("SubsurfaceHeight", ChunkProviderCaveworld.subsurfaceHeight);
-		}
-
-		dimensionSeed = data.getLong("Seed");
-		subsurfaceHeight = data.getInteger("SubsurfaceHeight");
-	}
-
-	public static void saveDimData()
-	{
-		if (dimData != null)
-		{
-			writeDimData();
-
-			dimData = null;
-		}
-	}
+	public static final CaveSaveHandler saveHandler = new CaveSaveHandler("Caveworld");
 
 	protected int musicTime = 0;
 
@@ -327,27 +207,23 @@ public class WorldProviderCaveworld extends WorldProviderSurface
 	@Override
 	public long getSeed()
 	{
-		if (!worldObj.isRemote && dimData == null)
+		if (!worldObj.isRemote && saveHandler.getRawData() == null)
 		{
-			loadDimData(getDimData());
-
-			CaveNetworkRegistry.sendToAll(new CaveAdjustMessage(TYPE, dimensionId, getDimData()));
+			CaveNetworkRegistry.sendToAll(new CaveAdjustMessage(TYPE, dimensionId, saveHandler));
 		}
 
-		return dimensionSeed;
+		return saveHandler.getWorldSeed();
 	}
 
 	@Override
 	public int getActualHeight()
 	{
-		if (!worldObj.isRemote && dimData == null)
+		if (!worldObj.isRemote && saveHandler.getRawData() == null)
 		{
-			loadDimData(getDimData());
-
-			CaveNetworkRegistry.sendToAll(new CaveAdjustMessage(TYPE, dimensionId, getDimData()));
+			CaveNetworkRegistry.sendToAll(new CaveAdjustMessage(TYPE, dimensionId, saveHandler));
 		}
 
-		return subsurfaceHeight + 1;
+		return saveHandler.getSubsurfaceHeight() + 1;
 	}
 
 	@Override
