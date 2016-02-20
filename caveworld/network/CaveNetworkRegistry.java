@@ -7,16 +7,16 @@
  * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
  */
 
-package caveworld.core;
+package caveworld.network;
 
-import caveworld.network.client.BiomeAdjustMessage;
+import caveworld.core.Caveworld;
 import caveworld.network.client.CaveAdjustMessage;
 import caveworld.network.client.CaveMusicMessage;
 import caveworld.network.client.CaverAdjustMessage;
 import caveworld.network.client.CaveworldMenuMessage;
+import caveworld.network.client.ConfigAdjustMessage;
 import caveworld.network.client.MultiBreakCountMessage;
 import caveworld.network.client.OpenUrlMessage;
-import caveworld.network.client.VeinAdjustMessage;
 import caveworld.network.common.RegenerateMessage;
 import caveworld.network.server.CaveAchievementMessage;
 import caveworld.network.server.PortalInventoryMessage;
@@ -67,10 +67,9 @@ public class CaveNetworkRegistry
 
 	public static void registerMessages()
 	{
+		registerMessage(ConfigAdjustMessage.class, ConfigAdjustMessage.class, Side.CLIENT);
 		registerMessage(CaveAdjustMessage.class, CaveAdjustMessage.class, Side.CLIENT);
 		registerMessage(CaverAdjustMessage.class, CaverAdjustMessage.class, Side.CLIENT);
-		registerMessage(BiomeAdjustMessage.class, BiomeAdjustMessage.class, Side.CLIENT);
-		registerMessage(VeinAdjustMessage.class, VeinAdjustMessage.class, Side.CLIENT);
 		registerMessage(OpenUrlMessage.class, OpenUrlMessage.class, Side.CLIENT);
 		registerMessage(CaveMusicMessage.class, CaveMusicMessage.class, Side.CLIENT);
 		registerMessage(RegenerateMessage.class, RegenerateMessage.class, Side.CLIENT);

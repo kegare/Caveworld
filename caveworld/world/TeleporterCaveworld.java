@@ -73,13 +73,16 @@ public class TeleporterCaveworld extends Teleporter
 				int y = coord.posY;
 				int z = coord.posZ;
 
-				if (entity instanceof EntityPlayerMP)
+				if (worldObj.getBlock(x, y, z) == portalBlock)
 				{
-					CaveUtils.setPlayerLocation((EntityPlayerMP)entity, x, y, z);
-				}
-				else
-				{
-					entity.setLocationAndAngles(x, y, z, entity.rotationYaw, entity.rotationPitch);
+					if (entity instanceof EntityPlayerMP)
+					{
+						CaveUtils.setPlayerLocation((EntityPlayerMP)entity, x, y, z);
+					}
+					else
+					{
+						entity.setLocationAndAngles(x, y, z, entity.rotationYaw, entity.rotationPitch);
+					}
 				}
 			}
 		}
@@ -89,15 +92,6 @@ public class TeleporterCaveworld extends Teleporter
 	public void placeInPortal(Entity entity, double posX, double posY, double posZ, float rotationYaw)
 	{
 		init(entity);
-
-		int x = MathHelper.floor_double(entity.posX);
-		int y = MathHelper.floor_float(MathHelper.floor_double(entity.posY + entity.getEyeHeight()));
-		int z = MathHelper.floor_double(entity.posZ);
-
-		if (worldObj.getBlock(x, y, z) == portalBlock)
-		{
-			return;
-		}
 
 		if (!placeInExistingPortal(entity, posX, posY, posZ, rotationYaw))
 		{

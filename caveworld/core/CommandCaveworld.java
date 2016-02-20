@@ -14,6 +14,7 @@ import java.net.URI;
 import java.util.List;
 
 import caveworld.api.CaveworldAPI;
+import caveworld.network.CaveNetworkRegistry;
 import caveworld.network.client.CaveworldMenuMessage;
 import caveworld.network.client.OpenUrlMessage;
 import caveworld.network.common.RegenerateMessage;

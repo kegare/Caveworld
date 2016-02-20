@@ -11,19 +11,22 @@ package caveworld.world;
 
 import caveworld.api.CaveworldAPI;
 import caveworld.api.ICaveBiomeManager;
-import caveworld.core.CaveNetworkRegistry;
+import caveworld.network.CaveNetworkRegistry;
 import caveworld.network.client.CaveAdjustMessage;
 import net.minecraft.world.chunk.IChunkProvider;
 
 public class WorldProviderCavern extends WorldProviderCaveworld
 {
+	public static final String NAME = "Cavern";
 	public static final int TYPE = 1;
-	public static final CaveSaveHandler saveHandler = new CaveSaveHandler("Cavern");
+	public static final CaveSaveHandler saveHandler = new CaveSaveHandler(NAME);
 
 	public WorldProviderCavern()
 	{
 		this.dimensionId = CaveworldAPI.getCavernDimension();
 		this.hasNoSky = true;
+
+		saveHandler.setDimension(dimensionId);
 	}
 
 	@Override
@@ -41,16 +44,24 @@ public class WorldProviderCavern extends WorldProviderCaveworld
 	@Override
 	public String getDimensionName()
 	{
-		return "Cavern";
+		return NAME;
+	}
+
+	@Override
+	public void adjustData()
+	{
+		if (!worldObj.isRemote && saveHandler.getRawData() == null)
+		{
+			saveHandler.getData();
+
+			CaveNetworkRegistry.sendToAll(new CaveAdjustMessage(TYPE, saveHandler));
+		}
 	}
 
 	@Override
 	public long getSeed()
 	{
-		if (!worldObj.isRemote && saveHandler.getRawData() == null)
-		{
-			CaveNetworkRegistry.sendToAll(new CaveAdjustMessage(TYPE, dimensionId, saveHandler));
-		}
+		adjustData();
 
 		return saveHandler.getWorldSeed();
 	}
@@ -58,10 +69,7 @@ public class WorldProviderCavern extends WorldProviderCaveworld
 	@Override
 	public int getActualHeight()
 	{
-		if (!worldObj.isRemote && saveHandler.getRawData() == null)
-		{
-			CaveNetworkRegistry.sendToAll(new CaveAdjustMessage(TYPE, dimensionId, saveHandler));
-		}
+		adjustData();
 
 		return saveHandler.getSubsurfaceHeight() + 1;
 	}

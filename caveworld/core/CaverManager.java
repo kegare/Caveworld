@@ -22,6 +22,7 @@ import com.google.common.collect.Table.Cell;
 
 import caveworld.api.ICaverManager;
 import caveworld.item.CaveItems;
+import caveworld.network.CaveNetworkRegistry;
 import caveworld.network.client.CaverAdjustMessage;
 import caveworld.plugin.mceconomy.MCEconomyPlugin;
 import cpw.mods.fml.relauncher.Side;

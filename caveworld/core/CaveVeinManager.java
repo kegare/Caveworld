@@ -27,8 +27,6 @@ import caveworld.world.WorldProviderCaveworld;
 import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.util.WeightedRandom;
@@ -265,31 +263,6 @@ public class CaveVeinManager implements ICaveVeinManager
 		}
 	}
 
-	@Override
-	public NBTTagList saveNBTData()
-	{
-		NBTTagList list = new NBTTagList();
-
-		for (ICaveVein vein : getCaveVeins())
-		{
-			list.appendTag(vein.saveNBTData());
-		}
-
-		return list;
-	}
-
-	@Override
-	public void loadNBTData(NBTTagList list)
-	{
-		if (!isReadOnly())
-		{
-			for (int i = 0; i < list.tagCount(); ++i)
-			{
-				getCaveVeins().add(new CaveVein(list.getCompoundTagAt(i)));
-			}
-		}
-	}
-
 	public static class CaveVein extends WeightedRandom.Item implements ICaveVein
 	{
 		private BlockEntry block;
@@ -333,12 +306,6 @@ public class CaveVeinManager implements ICaveVeinManager
 		public CaveVein(ICaveVein vein)
 		{
 			this(vein.getBlock(), vein.getGenBlockCount(), vein.getGenWeight(), vein.getGenRate(), vein.getGenMinHeight(), vein.getGenMaxHeight(), vein.getGenTargetBlock(), vein.getGenBiomes());
-		}
-
-		public CaveVein(NBTTagCompound data)
-		{
-			this();
-			this.loadNBTData(data);
 		}
 
 		@Override
@@ -468,43 +435,6 @@ public class CaveVeinManager implements ICaveVeinManager
 			}
 
 			return Ints.toArray(biomes);
-		}
-
-		@Override
-		public NBTTagCompound saveNBTData()
-		{
-			NBTTagCompound data = new NBTTagCompound();
-
-			data.setString("Block", GameData.getBlockRegistry().getNameForObject(getBlock().getBlock()));
-			data.setInteger("BlockMeta", getBlock().getMetadata());
-			data.setInteger("Count", getGenBlockCount());
-			data.setInteger("Weight", getGenWeight());
-			data.setInteger("Rate", getGenRate());
-			data.setInteger("MinHeight", getGenMinHeight());
-			data.setInteger("MaxHeight", getGenMaxHeight());
-			data.setString("TargetBlock", GameData.getBlockRegistry().getNameForObject(getGenTargetBlock().getBlock()));
-			data.setInteger("TargetBlockMeta", getGenTargetBlock().getMetadata());
-			data.setIntArray("Biomes", getGenBiomes());
-
-			return data;
-		}
-
-		@Override
-		public void loadNBTData(NBTTagCompound data)
-		{
-			if (data == null || data.hasNoTags())
-			{
-				return;
-			}
-
-			setBlock(new BlockEntry(data.getString("Block"), data.getInteger("BlockMeta")));
-			setGenBlockCount(data.getInteger("Count"));
-			setGenWeight(data.getInteger("Weight"));
-			setGenRate(data.getInteger("Rate"));
-			setGenMinHeight(data.getInteger("MinHeight"));
-			setGenMaxHeight(data.getInteger("MaxHeight"));
-			setGenTargetBlock(new BlockEntry(data.getString("TargetBlock"), data.getInteger("TargetBlockMeta")));
-			setGenBiomes(data.getIntArray("Biomes"));
 		}
 
 		@Override

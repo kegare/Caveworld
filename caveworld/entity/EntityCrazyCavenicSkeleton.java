@@ -24,6 +24,7 @@ import com.google.common.collect.Maps;
 import caveworld.core.CaveAchievementList;
 import caveworld.entity.EntityCrazyCavenicSkeleton.Attacker;
 import caveworld.item.CaveItems;
+import caveworld.plugin.mceconomy.MCEconomyPlugin;
 import caveworld.util.CaveUtils;
 import cpw.mods.fml.common.FMLCommonHandler;
 import net.minecraft.enchantment.Enchantment;
@@ -416,17 +417,22 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 
 				if (player != null && entry.getDamage() > 0.0F)
 				{
-					switch (i)
+					int amount = 5000;
+
+					if (i <= 1)
 					{
-						case 1:
-							MCEconomyAPI.addPlayerMP(player, 10000, false);
-							break;
-						case 2:
-							MCEconomyAPI.addPlayerMP(player, 8000, false);
-							break;
-						default:
-							MCEconomyAPI.addPlayerMP(player, 5000, false);
-							break;
+						amount = 10000;
+					}
+					else if (i == 2)
+					{
+						amount = 8000;
+					}
+
+					player.addExperience(amount / 5);
+
+					if (MCEconomyPlugin.enabled())
+					{
+						MCEconomyAPI.addPlayerMP(player, amount, false);
 					}
 				}
 			}

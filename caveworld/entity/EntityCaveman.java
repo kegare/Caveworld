@@ -9,7 +9,6 @@
 
 package caveworld.entity;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -27,8 +26,6 @@ import caveworld.util.CaveUtils;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.EnumCreatureType;
@@ -51,13 +48,12 @@ import net.minecraft.item.Item.ToolMaterial;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraftforge.common.util.Constants.NBT;
 
 public class EntityCaveman extends EntityMob implements IInventory
 {
@@ -102,7 +98,6 @@ public class EntityCaveman extends EntityMob implements IInventory
 	private final ItemStack[] inventoryContents = new ItemStack[getSizeInventory()];
 
 	private long stoppedTime;
-	private boolean needsSort;
 
 	public boolean isCollecting;
 	public boolean inventoryFull;
@@ -130,7 +125,7 @@ public class EntityCaveman extends EntityMob implements IInventory
 		super.applyEntityAttributes();
 
 		getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(30.0D);
-		getEntityAttribute(SharedMonsterAttributes.knockbackResistance).setBaseValue(0.35D);
+		getEntityAttribute(SharedMonsterAttributes.knockbackResistance).setBaseValue(0.5D);
 		getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.325D);
 	}
 
@@ -254,7 +249,7 @@ public class EntityCaveman extends EntityMob implements IInventory
 			heal(0.5F + rand.nextFloat() / 2);
 		}
 
-		if (!worldObj.isRemote && isEntityAlive())
+		if (!worldObj.isRemote && isEntityAlive() && !isStopped())
 		{
 			List<EntityItem> list = worldObj.getEntitiesWithinAABB(EntityItem.class, boundingBox.expand(1.0D, 0.5D, 1.0D));
 
@@ -262,11 +257,6 @@ public class EntityCaveman extends EntityMob implements IInventory
 			{
 				onItemPickup(item, item.getEntityItem().stackSize);
 			}
-		}
-
-		if (needsSort)
-		{
-			sort();
 		}
 
 		if (!worldObj.isRemote && inventoryFull && ticksExisted % 200 == 0 && getFirstEmptySlot() >= 0)
@@ -291,12 +281,9 @@ public class EntityCaveman extends EntityMob implements IInventory
 					worldObj.setEntityState(this, (byte)19);
 				}
 			}
-			else
+			else if (!worldObj.isRemote)
 			{
-				if (!worldObj.isRemote)
-				{
-					inventoryFull = true;
-				}
+				inventoryFull = true;
 			}
 		}
 	}
@@ -326,55 +313,35 @@ public class EntityCaveman extends EntityMob implements IInventory
 	@Override
 	public boolean attackEntityFrom(DamageSource source, float damage)
 	{
-		Entity entity = source.getSourceOfDamage();
-
-		if (entity != null)
+		if (!source.isProjectile() && !source.isMagicDamage())
 		{
-			if (entity instanceof EntityLivingBase)
+			Entity entity = source.getEntity();
+
+			if (entity == null)
 			{
-				ItemStack itemstack = ((EntityLivingBase)entity).getHeldItem();
+				entity = source.getSourceOfDamage();
+			}
 
-				if (itemstack == null)
+			if (entity != null)
+			{
+				if (entity instanceof EntityLivingBase)
 				{
-					return super.attackEntityFrom(source, damage * 0.5F);
-				}
+					ItemStack itemstack = ((EntityLivingBase)entity).getHeldItem();
 
-				if (CaveUtils.isItemPickaxe(itemstack))
-				{
-					return super.attackEntityFrom(source, damage * 2.0F);
+					if (itemstack == null)
+					{
+						return super.attackEntityFrom(source, damage * 0.5F);
+					}
+
+					if (CaveUtils.isItemPickaxe(itemstack))
+					{
+						return super.attackEntityFrom(source, damage * 2.0F);
+					}
 				}
 			}
 		}
 
-		if (source.isFireDamage())
-		{
-			return false;
-		}
-
-		return super.attackEntityFrom(source, damage);
-	}
-
-	@Override
-	protected void fall(float damage)
-	{
-		PotionEffect potion = getActivePotionEffect(Potion.jump);
-		float f1 = potion != null ? (float)(potion.getAmplifier() + 1) : 0.0F;
-		int i = MathHelper.ceiling_float_int(damage - 3.0F - f1);
-
-		if (i > 0)
-		{
-			playSound(func_146067_o(i), 1.0F, 1.0F);
-
-			int x = MathHelper.floor_double(posX);
-			int y = MathHelper.floor_double(posY - 0.20000000298023224D - yOffset);
-			int z = MathHelper.floor_double(posZ);
-			Block block = worldObj.getBlock(x, y, z);
-
-			if (block.getMaterial() != Material.air)
-			{
-				playSound(block.stepSound.getStepResourcePath(), block.stepSound.getVolume() * 0.5F, block.stepSound.getPitch() * 0.75F);
-			}
-		}
+		return source.isFireDamage() && source != DamageSource.fall && super.attackEntityFrom(source, damage);
 	}
 
 	@Override
@@ -430,7 +397,7 @@ public class EntityCaveman extends EntityMob implements IInventory
 
 		if (nbt.hasKey("Items"))
 		{
-			NBTTagList list = (NBTTagList)nbt.getTag("Items");
+			NBTTagList list = nbt.getTagList("Items", NBT.TAG_COMPOUND);
 
 			for (int slot = 0; slot < getSizeInventory(); ++slot)
 			{
@@ -448,12 +415,6 @@ public class EntityCaveman extends EntityMob implements IInventory
 				}
 			}
 		}
-	}
-
-	@Override
-	protected boolean canDespawn()
-	{
-		return !getLeashed();
 	}
 
 	public boolean isValidHeight()
@@ -520,7 +481,7 @@ public class EntityCaveman extends EntityMob implements IInventory
 	@Override
 	public int getSizeInventory()
 	{
-		return 9 * 5;
+		return 9 * 4;
 	}
 
 	@Override
@@ -701,8 +662,6 @@ public class EntityCaveman extends EntityMob implements IInventory
 		}
 		while (itemstack.stackSize > 0 && itemstack.stackSize < i);
 
-		needsSort = true;
-
 		return itemstack.stackSize < i;
 	}
 
@@ -723,8 +682,6 @@ public class EntityCaveman extends EntityMob implements IInventory
 				content.stackSize = getInventoryStackLimit();
 			}
 		}
-
-		needsSort = true;
 	}
 
 	@Override
@@ -747,60 +704,4 @@ public class EntityCaveman extends EntityMob implements IInventory
 
 	@Override
 	public void closeInventory() {}
-
-	public void sort()
-	{
-		ItemStack[] contents = Arrays.copyOf(inventoryContents, inventoryContents.length);
-
-		Arrays.sort(contents, CaveUtils.itemStackComparator);
-		contents = compact(contents);
-
-		for (int i = 0; i < contents.length; ++i)
-		{
-			setInventorySlotContents(i, contents[i]);
-		}
-
-		needsSort = false;
-	}
-
-	private ItemStack[] compact(ItemStack[] contents)
-	{
-		int count = 0;
-		ItemStack[] compact = new ItemStack[contents.length];
-
-		for (int i = 0; i < contents.length && contents[i] != null; ++i)
-		{
-			while (contents[i] != null)
-			{
-				if (compact[count] == null)
-				{
-					compact[count] = contents[i];
-					contents[i] = null;
-				}
-				else if (CaveUtils.canMerge(compact[count], contents[i]))
-				{
-					int trans = Math.min(compact[count].getMaxStackSize() - compact[count].stackSize, contents[i].stackSize);
-
-					compact[count].stackSize += trans;
-					contents[i].stackSize -= trans;
-
-					if (contents[i].stackSize == 0)
-					{
-						contents[i] = null;
-					}
-
-					if (compact[count].stackSize == compact[count].getMaxStackSize())
-					{
-						++count;
-					}
-				}
-				else
-				{
-					++count;
-				}
-			}
-		}
-
-		return compact;
-	}
 }

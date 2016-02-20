@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.config.Configuration;
 
@@ -19,13 +18,13 @@ public interface ICaveBiomeManager
 	public ICaveBiomeManager setReadOnly(boolean flag);
 
 	/**
-	 * Add a cave biome.
+	 * Adds a cave biome.
 	 * @return <tt>true</tt> if has been added successfully.
 	 */
 	public boolean addCaveBiome(ICaveBiome biome);
 
 	/**
-	 * Remove a cave biome.
+	 * Removes a cave biome.
 	 * @param biome The removing biome
 	 * @return <tt>true</tt> if has been removed successfully.
 	 */
@@ -42,11 +41,7 @@ public interface ICaveBiomeManager
 	public List<BiomeGenBase> getBiomeList();
 
 	/**
-	 * Remove all cave biomes.
+	 * Removes all cave biomes.
 	 */
 	public void clearCaveBiomes();
-
-	public NBTTagList saveNBTData();
-
-	public void loadNBTData(NBTTagList list);
 }

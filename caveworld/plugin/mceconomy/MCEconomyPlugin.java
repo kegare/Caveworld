@@ -16,7 +16,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 
 import caveworld.block.BlockPervertedLog;
 import caveworld.block.CaveBlocks;
-import caveworld.core.CaveNetworkRegistry;
 import caveworld.core.Config;
 import caveworld.entity.EntityArcherZombie;
 import caveworld.entity.EntityCaveman;
@@ -149,8 +148,6 @@ public final class MCEconomyPlugin implements ICavePlugin
 		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCavenicSpider.class, 100);
 
 		SHOP = MCEconomyAPI.registerShop(productManager);
-
-		CaveNetworkRegistry.registerMessage(ProductAdjustMessage.class, ProductAdjustMessage.class, Side.CLIENT);
 	}
 
 	@Method(modid = MODID)

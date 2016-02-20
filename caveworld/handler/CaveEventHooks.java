@@ -32,7 +32,6 @@ import caveworld.core.AquaCavernBiomeManager;
 import caveworld.core.AquaCavernVeinManager;
 import caveworld.core.CaveAchievementList;
 import caveworld.core.CaveBiomeManager;
-import caveworld.core.CaveNetworkRegistry;
 import caveworld.core.CaveVeinManager;
 import caveworld.core.CaverManager;
 import caveworld.core.CaverManager.MinerRank;
@@ -54,15 +53,14 @@ import caveworld.item.ItemDiggingShovel;
 import caveworld.item.ItemLumberingAxe;
 import caveworld.item.ItemMiningPickaxe;
 import caveworld.item.ItemOreCompass;
-import caveworld.network.client.BiomeAdjustMessage;
+import caveworld.network.CaveNetworkRegistry;
 import caveworld.network.client.CaveAdjustMessage;
 import caveworld.network.client.CaveMusicMessage;
+import caveworld.network.client.ConfigAdjustMessage;
 import caveworld.network.client.MultiBreakCountMessage;
-import caveworld.network.client.VeinAdjustMessage;
 import caveworld.network.server.CaveAchievementMessage;
 import caveworld.plugin.enderstorage.EnderStoragePlugin;
 import caveworld.plugin.mceconomy.MCEconomyPlugin;
-import caveworld.plugin.mceconomy.ProductAdjustMessage;
 import caveworld.plugin.mceconomy.ShopProductManager;
 import caveworld.plugin.sextiarysector.SextiarySectorPlugin;
 import caveworld.util.CaveUtils;
@@ -450,11 +448,11 @@ public class CaveEventHooks
 
 				if (f > 1.0F)
 				{
-					 f = 1.0F;
+					f = 1.0F;
 				}
 				else
 				{
-					 f *= f;
+					f *= f;
 				}
 
 				event.newfov *= 1.0F - f * 0.15F;
@@ -619,22 +617,22 @@ public class CaveEventHooks
 		if (!mc.isIntegratedServerRunning())
 		{
 			prevBiomeManager = CaveworldAPI.biomeManager;
-			CaveworldAPI.biomeManager = new CaveBiomeManager();
+			CaveworldAPI.biomeManager = new CaveBiomeManager().setReadOnly(true);
 			prevBiomeCavernManager = CaveworldAPI.biomeCavernManager;
-			CaveworldAPI.biomeCavernManager = new CavernBiomeManager();
+			CaveworldAPI.biomeCavernManager = new CavernBiomeManager().setReadOnly(true);
 			prevBiomeAquaCavernManager = CaveworldAPI.biomeAquaCavernManager;
-			CaveworldAPI.biomeAquaCavernManager = new AquaCavernBiomeManager();
+			CaveworldAPI.biomeAquaCavernManager = new AquaCavernBiomeManager().setReadOnly(true);
 			prevVeinManager = CaveworldAPI.veinManager;
-			CaveworldAPI.veinManager = new CaveVeinManager();
+			CaveworldAPI.veinManager = new CaveVeinManager().setReadOnly(true);
 			prevVeinCavernManager = CaveworldAPI.veinCavernManager;
-			CaveworldAPI.veinCavernManager = new CavernVeinManager();
+			CaveworldAPI.veinCavernManager = new CavernVeinManager().setReadOnly(true);
 			prevVeinAquaCavernManager = CaveworldAPI.veinAquaCavernManager;
-			CaveworldAPI.veinAquaCavernManager = new AquaCavernVeinManager();
+			CaveworldAPI.veinAquaCavernManager = new AquaCavernVeinManager().setReadOnly(true);
 
 			if (MCEconomyPlugin.enabled())
 			{
 				MCEconomyPlugin.prevProductManager = MCEconomyPlugin.productManager;
-				MCEconomyPlugin.productManager = new ShopProductManager();
+				MCEconomyPlugin.productManager = (ShopProductManager)new ShopProductManager().setReadOnly(true);
 			}
 		}
 	}
@@ -697,22 +695,18 @@ public class CaveEventHooks
 
 		if (!manager.isLocalChannel())
 		{
-			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderCaveworld.TYPE, CaveworldAPI.getDimension(), WorldProviderCaveworld.saveHandler)));
-			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderCavern.TYPE, CaveworldAPI.getCavernDimension(), WorldProviderCavern.saveHandler)));
-			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderAquaCavern.TYPE, CaveworldAPI.getAquaCavernDimension(), WorldProviderAquaCavern.saveHandler)));
-			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderCaveland.TYPE, CaveworldAPI.getCavelandDimension(), WorldProviderCaveland.saveHandler)));
-			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderCavenia.TYPE, CaveworldAPI.getCaveniaDimension(), WorldProviderCavenia.saveHandler)));
-			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new BiomeAdjustMessage(CaveworldAPI.biomeManager)));
-			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new BiomeAdjustMessage(CaveworldAPI.biomeCavernManager)));
-			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new BiomeAdjustMessage(CaveworldAPI.biomeAquaCavernManager)));
-			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new VeinAdjustMessage(CaveworldAPI.veinManager)));
-			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new VeinAdjustMessage(CaveworldAPI.veinCavernManager)));
-			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new VeinAdjustMessage(CaveworldAPI.veinAquaCavernManager)));
+			int caveworld = CaveworldAPI.getDimension();
+			int cavern = CaveworldAPI.getCavernDimension();
+			int aqua = CaveworldAPI.getAquaCavernDimension();
+			int caveland = CaveworldAPI.getCavelandDimension();
+			int cavenia = CaveworldAPI.getCaveniaDimension();
 
-			if (MCEconomyPlugin.enabled())
-			{
-				manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new ProductAdjustMessage(MCEconomyPlugin.productManager)));
-			}
+			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new ConfigAdjustMessage(caveworld, cavern, aqua, caveland, cavenia)));
+			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderCaveworld.TYPE, WorldProviderCaveworld.saveHandler)));
+			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderCavern.TYPE, WorldProviderCavern.saveHandler)));
+			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderAquaCavern.TYPE, WorldProviderAquaCavern.saveHandler)));
+			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderCaveland.TYPE, WorldProviderCaveland.saveHandler)));
+			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderCavenia.TYPE, WorldProviderCavenia.saveHandler)));
 		}
 	}
 
@@ -740,7 +734,7 @@ public class CaveEventHooks
 			}
 			else
 			{
-				if (CaveworldAPI.isCaveborn() && firstJoinPlayers.contains(player.getGameProfile().getId().toString()))
+				if (CaveworldAPI.isCaveborn() && firstJoinPlayers.contains(player.getUniqueID().toString()))
 				{
 					List<ItemStack> bonus = Lists.newArrayList();
 
@@ -818,7 +812,6 @@ public class CaveEventHooks
 						}
 
 						world.playSoundAtEntity(player, "dig.glass", 1.0F, 0.65F);
-						player.addChatMessage(new ChatComponentTranslation("caveworld.message.caveborn"));
 					}
 				}
 			}
@@ -830,7 +823,7 @@ public class CaveEventHooks
 	{
 		EntityPlayer player = event.player;
 
-		firstJoinPlayers.remove(player.getGameProfile().getId().toString());
+		firstJoinPlayers.remove(player.getUniqueID().toString());
 
 		for (ItemMiningPickaxe.BreakMode mode : ItemMiningPickaxe.BreakMode.values())
 		{
@@ -1143,6 +1136,7 @@ public class CaveEventHooks
 
 					break;
 				default:
+					break;
 			}
 		}
 	}
@@ -1154,8 +1148,7 @@ public class CaveEventHooks
 		ItemStack current = player.getCurrentEquippedItem();
 		boolean miner = CaveworldAPI.isEntityInCaves(player) && CaveUtils.isItemPickaxe(current);
 
-		if (current != null && (current.getItem() instanceof IAquamarineTool ||
-			current.getItem() instanceof ICaveniumTool && ((ICaveniumTool)current.getItem()).getBase(current) instanceof IAquamarineTool ||
+		if (current != null && (current.getItem() instanceof IAquamarineTool || current.getItem() instanceof ICaveniumTool && ((ICaveniumTool)current.getItem()).getBase(current) instanceof IAquamarineTool ||
 			miner && CaveworldAPI.getMinerRank(player) >= MinerRank.AQUA_MINER.getRank()))
 		{
 			if (player.isInsideOfMaterial(Material.water) && !EnchantmentHelper.getAquaAffinityModifier(player))

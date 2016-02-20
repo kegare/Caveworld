@@ -209,7 +209,6 @@ caveworld.terrain.wait=しばらくお待ちください
 caveworld.terrain.load=地形情報を読み込んでいます
 
 caveworld.message.sleep.still=まだ疲れていません。少なくとも、%d分は眠ることができません。
-caveworld.message.caveborn=うわ、ポータルが壊れてしまった！
 caveworld.message.crazy.kill=%s が勇敢な英雄により討伐されました！
 caveworld.message.crazy.member=メンバー : %s
 caveworld.message.crazy.result=%s との戦闘結果

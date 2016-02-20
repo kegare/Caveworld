@@ -214,7 +214,6 @@ caveworld.terrain.wait=Please wait a moment
 caveworld.terrain.load=Loading terrain
 
 caveworld.message.sleep.still=You are not tired. You cannot sleep until %d minutes at least.
-caveworld.message.caveborn=Oh.. Portal is broken.
 caveworld.message.crazy.kill=%s has been killed by the brave hero!
 caveworld.message.crazy.member=Member : %s
 caveworld.message.crazy.result=Battle Results of %s

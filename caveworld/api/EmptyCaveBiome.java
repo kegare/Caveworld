@@ -1,7 +1,6 @@
 package caveworld.api;
 
 import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.biome.BiomeGenBase;
 
 public class EmptyCaveBiome implements ICaveBiome
@@ -59,13 +58,4 @@ public class EmptyCaveBiome implements ICaveBiome
 	{
 		return getTerrainBlock();
 	}
-
-	@Override
-	public NBTTagCompound saveNBTData()
-	{
-		return new NBTTagCompound();
-	}
-
-	@Override
-	public void loadNBTData(NBTTagCompound data) {}
 }

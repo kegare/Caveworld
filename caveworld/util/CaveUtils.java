@@ -43,9 +43,9 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import caveworld.api.BlockEntry;
-import caveworld.core.CaveNetworkRegistry;
 import caveworld.core.Caveworld;
 import caveworld.core.Config;
+import caveworld.network.CaveNetworkRegistry;
 import caveworld.network.common.RegenerateMessage;
 import caveworld.world.TeleporterDummy;
 import cpw.mods.fml.common.FMLCommonHandler;

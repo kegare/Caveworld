@@ -10,7 +10,7 @@
 package caveworld.world;
 
 import caveworld.api.CaveworldAPI;
-import caveworld.core.CaveNetworkRegistry;
+import caveworld.network.CaveNetworkRegistry;
 import caveworld.network.client.CaveAdjustMessage;
 import caveworld.network.client.CaveMusicMessage;
 import net.minecraft.world.biome.WorldChunkManager;
@@ -18,13 +18,16 @@ import net.minecraft.world.chunk.IChunkProvider;
 
 public class WorldProviderCaveland extends WorldProviderCaveworld
 {
+	public static final String NAME = "Caveland";
 	public static final int TYPE = 3;
-	public static final CaveSaveHandler saveHandler = new CaveSaveHandler("Caveland");
+	public static final CaveSaveHandler saveHandler = new CaveSaveHandler(NAME);
 
 	public WorldProviderCaveland()
 	{
 		this.dimensionId = CaveworldAPI.getCavelandDimension();
 		this.hasNoSky = true;
+
+		saveHandler.setDimension(dimensionId);
 	}
 
 	@Override
@@ -42,16 +45,24 @@ public class WorldProviderCaveland extends WorldProviderCaveworld
 	@Override
 	public String getDimensionName()
 	{
-		return "Caveland";
+		return NAME;
+	}
+
+	@Override
+	public void adjustData()
+	{
+		if (!worldObj.isRemote && saveHandler.getRawData() == null)
+		{
+			saveHandler.getData();
+
+			CaveNetworkRegistry.sendToAll(new CaveAdjustMessage(TYPE, saveHandler));
+		}
 	}
 
 	@Override
 	public long getSeed()
 	{
-		if (!worldObj.isRemote && saveHandler.getRawData() == null)
-		{
-			CaveNetworkRegistry.sendToAll(new CaveAdjustMessage(TYPE, dimensionId, saveHandler));
-		}
+		adjustData();
 
 		return saveHandler.getWorldSeed();
 	}
@@ -59,10 +70,7 @@ public class WorldProviderCaveland extends WorldProviderCaveworld
 	@Override
 	public int getActualHeight()
 	{
-		if (!worldObj.isRemote && saveHandler.getRawData() == null)
-		{
-			CaveNetworkRegistry.sendToAll(new CaveAdjustMessage(TYPE, dimensionId, saveHandler));
-		}
+		adjustData();
 
 		return saveHandler.getSubsurfaceHeight() + 1;
 	}

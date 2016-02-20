@@ -19,7 +19,9 @@ import org.apache.logging.log4j.Level;
 
 import com.google.common.base.Strings;
 
+import caveworld.core.Config;
 import caveworld.util.CaveLog;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.DimensionManager;
@@ -27,6 +29,7 @@ import net.minecraftforge.common.DimensionManager;
 public class CaveSaveHandler
 {
 	private String name;
+	private int dimension;
 
 	private NBTTagCompound data;
 	private long worldSeed;
@@ -35,6 +38,18 @@ public class CaveSaveHandler
 	public CaveSaveHandler(String name)
 	{
 		this.name = name;
+	}
+
+	public CaveSaveHandler setDimension(int dim)
+	{
+		dimension = dim;
+
+		return this;
+	}
+
+	public String getSaveFolder()
+	{
+		return Config.cauldron ? "DIM" + dimension : "DIM-" + name;
 	}
 
 	public NBTTagCompound getData()
@@ -91,7 +106,7 @@ public class CaveSaveHandler
 			return root;
 		}
 
-		File dir = new File(root, "DIM-" + name);
+		File dir = new File(root, getSaveFolder());
 
 		if (!dir.exists())
 		{
@@ -151,11 +166,21 @@ public class CaveSaveHandler
 			{
 				CaveLog.log(Level.ERROR, e, "An error occurred trying to reading " + name + " dimension data");
 			}
-			finally
-			{
-				data = null;
-			}
 		}
+
+		data = null;
+	}
+
+	public void readFromBuffer(ByteBuf buffer)
+	{
+		worldSeed = buffer.readLong();
+		subsurfaceHeight = buffer.readInt();
+	}
+
+	public void writeToBuffer(ByteBuf buffer)
+	{
+		buffer.writeLong(worldSeed);
+		buffer.writeInt(subsurfaceHeight);
 	}
 
 	public void loadFromNBT()

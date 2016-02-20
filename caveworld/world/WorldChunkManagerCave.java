@@ -13,169 +13,115 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import com.google.common.collect.Lists;
-
 import caveworld.api.ICaveBiomeManager;
-import caveworld.world.genlayer.CaveworldGenLayer;
+import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.BiomeCache;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.biome.WorldChunkManager;
-import net.minecraft.world.gen.layer.GenLayer;
-import net.minecraft.world.gen.layer.IntCache;
 
 public class WorldChunkManagerCave extends WorldChunkManager
 {
-	private final GenLayer biomeIndexLayer;
+	private final World worldObj;
+	private final Random random;
 	private final BiomeCache biomeCache;
-	private final List<BiomeGenBase> biomesToSpawnIn;
+	private final int biomeSize;
+	private final ICaveBiomeManager biomeManager;
 
-	public WorldChunkManagerCave(long seed, WorldType worldType, ICaveBiomeManager manager)
+	public WorldChunkManagerCave(World world, int biomeSize, ICaveBiomeManager manager)
 	{
-		this.biomeIndexLayer = CaveworldGenLayer.makeWorldLayers(seed, worldType, manager)[1];
+		this.worldObj = world;
+		this.random = new Random(world.getSeed());
 		this.biomeCache = new BiomeCache(this);
-		this.biomesToSpawnIn = Lists.newArrayList();
-		this.biomesToSpawnIn.addAll(manager.getBiomeList());
-	}
-
-	public WorldChunkManagerCave(World world, ICaveBiomeManager manager)
-	{
-		this(world.getSeed(), world.getWorldInfo().getTerrainType(), manager);
+		this.biomeSize = biomeSize;
+		this.biomeManager = manager;
 	}
 
 	@Override
-	public List<BiomeGenBase> getBiomesToSpawnIn()
+	public List getBiomesToSpawnIn()
 	{
-		return biomesToSpawnIn;
+		return biomeManager.getBiomeList();
+	}
+
+	private BiomeGenBase getCaveBiomeGenAt(int x, int z)
+	{
+		int chunkX = x >> 4;
+		int chunkZ = z >> 4;
+
+		if (biomeSize <= 0)
+		{
+			random.setSeed(ChunkCoordIntPair.chunkXZ2Int(chunkX, chunkZ) ^ worldObj.getSeed());
+		}
+		else
+		{
+			random.setSeed(ChunkCoordIntPair.chunkXZ2Int((chunkX + 1) / biomeSize, (chunkZ + 1) / biomeSize) ^ worldObj.getSeed());
+		}
+
+		return biomeManager.getRandomCaveBiome(random).getBiome();
 	}
 
 	@Override
 	public BiomeGenBase getBiomeGenAt(int x, int z)
 	{
-		return biomeCache.getBiomeGenAt(x, z);
+		BiomeGenBase biome = biomeCache.getBiomeGenAt(x, z);
+
+		if (biome == null)
+		{
+			biome = getCaveBiomeGenAt(x, z);
+		}
+
+		return biome == null ? BiomeGenBase.plains : biome;
 	}
 
 	@Override
-	public float[] getRainfall(float[] rainfalls, int x, int z, int sizeX, int sizeZ)
+	public float[] getRainfall(float[] rainfalls, int x, int z, int xSize, int zSize)
 	{
-		if (rainfalls == null || rainfalls.length < sizeX * sizeZ)
+		if (rainfalls == null || rainfalls.length < xSize * zSize)
 		{
-			rainfalls = new float[sizeX * sizeZ];
+			rainfalls = new float[xSize * zSize];
 		}
 
-		Arrays.fill(rainfalls, 0, sizeX * sizeZ, 0.0F);
+		Arrays.fill(rainfalls, 0.0F);
 
 		return rainfalls;
 	}
 
 	@Override
-	public BiomeGenBase[] getBiomesForGeneration(BiomeGenBase[] biomes, int x, int z, int sizeX, int sizeZ)
+	public BiomeGenBase[] getBiomesForGeneration(BiomeGenBase[] biomes, int x, int z, int xSize, int zSize)
 	{
-		IntCache.resetIntCache();
-
-		if (biomes == null || biomes.length < sizeX * sizeZ)
+		if (biomes == null || biomes.length < xSize * zSize)
 		{
-			biomes = new BiomeGenBase[sizeX * sizeZ];
+			biomes = new BiomeGenBase[xSize * zSize];
 		}
 
-		int[] biomeArray = biomeIndexLayer.getInts(x, z, sizeX, sizeZ);
-
-		for (int i = 0; i < sizeX * sizeZ; ++i)
-		{
-			biomes[i] = BiomeGenBase.getBiome(biomeArray[i]);
-		}
+		Arrays.fill(biomes, getCaveBiomeGenAt(x, z));
 
 		return biomes;
 	}
 
 	@Override
-	public BiomeGenBase[] loadBlockGeneratorData(BiomeGenBase[] biomes, int x, int z, int sizeX, int sizeY)
+	public BiomeGenBase[] loadBlockGeneratorData(BiomeGenBase[] biomes, int x, int z, int xSize, int zSize)
 	{
-		return getBiomeGenAt(biomes, x, z, sizeX, sizeY, true);
+		return getBiomesForGeneration(biomes, x, z, xSize, zSize);
 	}
 
 	@Override
-	public BiomeGenBase[] getBiomeGenAt(BiomeGenBase[] biomes, int x, int z, int sizeX, int sizeY, boolean cache)
+	public BiomeGenBase[] getBiomeGenAt(BiomeGenBase[] biomes, int x, int z, int xSize, int zSize, boolean flag)
 	{
-		IntCache.resetIntCache();
-
-		if (biomes == null || biomes.length < sizeX * sizeY)
-		{
-			biomes = new BiomeGenBase[sizeX * sizeY];
-		}
-
-		if (cache && sizeX == 16 && sizeY == 16 && (x & 15) == 0 && (z & 15) == 0)
-		{
-			BiomeGenBase[] cachedBiomes = biomeCache.getCachedBiomes(x, z);
-			System.arraycopy(cachedBiomes, 0, biomes, 0, sizeX * sizeY);
-
-			return biomes;
-		}
-
-		int[] biomeArray = biomeIndexLayer.getInts(x, z, sizeX, sizeY);
-
-		for (int i = 0; i < sizeX * sizeY; ++i)
-		{
-				biomes[i] = BiomeGenBase.getBiome(biomeArray[i]);
-		}
-
-		return biomes;
+		return getBiomesForGeneration(biomes, x, z, xSize, zSize);
 	}
 
 	@Override
-	public boolean areBiomesViable(int x, int z, int radius, List list)
+	public boolean areBiomesViable(int x, int y, int z, List list)
 	{
-		IntCache.resetIntCache();
-		int minX = x - radius >> 2;
-		int minZ = z - radius >> 2;
-		int maxX = x + radius >> 2;
-		int maxZ = z + radius >> 2;
-		int sizeX = maxX - minX + 1;
-		int sizeZ = maxZ - minZ + 1;
-		int[] biomes = biomeIndexLayer.getInts(minX, minZ, sizeX, sizeZ);
-
-		for (int i = 0; i < sizeX * sizeZ; ++i)
-		{
-			if (!list.contains(BiomeGenBase.getBiome(biomes[i])))
-			{
-				return false;
-			}
-		}
-
-		return true;
+		return list.contains(getBiomeGenAt(x, z));
 	}
 
 	@Override
-	public ChunkPosition findBiomePosition(int x, int z, int radius, List list, Random random)
+	public ChunkPosition findBiomePosition(int x, int y, int z, List list, Random random)
 	{
-		IntCache.resetIntCache();
-		int minX = x - radius >> 2;
-		int minZ = z - radius >> 2;
-		int maxX = x + radius >> 2;
-		int maxZ = z + radius >> 2;
-		int sizeX = maxX - minX + 1;
-		int sizeZ = maxZ - minZ + 1;
-		int[] biomes = biomeIndexLayer.getInts(minX, minZ, sizeX, sizeZ);
-		ChunkPosition pos = null;
-		int attempts = 0;
-
-		for (int i = 0; i < sizeX * sizeZ; ++i)
-		{
-			int finalX = minX + i % sizeX << 2;
-			int finalZ = minZ + i / sizeX << 2;
-			BiomeGenBase biome = BiomeGenBase.getBiome(biomes[i]);
-
-			if (list.contains(biome) && (pos == null || random.nextInt(attempts + 1) == 0))
-			{
-				pos = new ChunkPosition(finalX, 0, finalZ);
-
-				++attempts;
-			}
-		}
-
-		return pos;
+		return new ChunkPosition(x - z + random.nextInt(z * 2 + 1), 0, y - z + random.nextInt(z * 2 + 1));
 	}
 
 	@Override

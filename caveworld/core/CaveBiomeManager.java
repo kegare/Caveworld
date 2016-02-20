@@ -26,10 +26,7 @@ import caveworld.api.ICaveBiome;
 import caveworld.api.ICaveBiomeManager;
 import caveworld.util.CaveUtils;
 import caveworld.world.WorldProviderCaveworld;
-import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.WeightedRandom;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.config.Configuration;
@@ -184,31 +181,6 @@ public class CaveBiomeManager implements ICaveBiomeManager
 		}
 	}
 
-	@Override
-	public NBTTagList saveNBTData()
-	{
-		NBTTagList list = new NBTTagList();
-
-		for (ICaveBiome biome : getRaw().values())
-		{
-			list.appendTag(biome.saveNBTData());
-		}
-
-		return list;
-	}
-
-	@Override
-	public void loadNBTData(NBTTagList list)
-	{
-		if (!isReadOnly())
-		{
-			for (int i = 0; i < list.tagCount(); ++i)
-			{
-				addCaveBiome(new CaveBiome(list.getCompoundTagAt(i)));
-			}
-		}
-	}
-
 	public static class CaveBiome extends WeightedRandom.Item implements ICaveBiome, Comparable
 	{
 		public static final Comparator<ICaveBiome> caveBiomeComparator = new Comparator<ICaveBiome>()
@@ -285,12 +257,6 @@ public class CaveBiomeManager implements ICaveBiomeManager
 			this.topBlock = top;
 		}
 
-		public CaveBiome(NBTTagCompound data)
-		{
-			this();
-			this.loadNBTData(data);
-		}
-
 		@Override
 		public boolean equals(Object obj)
 		{
@@ -360,35 +326,6 @@ public class CaveBiomeManager implements ICaveBiomeManager
 		public BlockEntry getTopBlock()
 		{
 			return topBlock == null ? getTerrainBlock() : topBlock;
-		}
-
-		@Override
-		public NBTTagCompound saveNBTData()
-		{
-			NBTTagCompound data = new NBTTagCompound();
-
-			data.setInteger("BiomeID", getBiome().biomeID);
-			data.setInteger("Weight", getGenWeight());
-			data.setString("TerrainBlock", GameData.getBlockRegistry().getNameForObject(getTerrainBlock().getBlock()));
-			data.setInteger("TerrainBlockMeta", getTerrainBlock().getMetadata());
-			data.setString("TopBlock", GameData.getBlockRegistry().getNameForObject(getTopBlock().getBlock()));
-			data.setInteger("TopBlockMeta", getTopBlock().getMetadata());
-
-			return data;
-		}
-
-		@Override
-		public void loadNBTData(NBTTagCompound data)
-		{
-			if (data == null || data.hasNoTags())
-			{
-				return;
-			}
-
-			biome = BiomeGenBase.getBiome(data.getInteger("BiomeID"));
-			setGenWeight(data.getInteger("Weight"));
-			setTerrainBlock(new BlockEntry(data.getString("TerrainBlock"), data.getInteger("TerrainBlockMeta")));
-			setTopBlock(new BlockEntry(data.getString("TopBlock"), data.getInteger("TopBlockMeta")));
 		}
 	}
 }

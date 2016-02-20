@@ -95,6 +95,7 @@ public class Config
 	public static Configuration veinsCavernCfg;
 	public static Configuration veinsAquaCavernCfg;
 	public static Configuration pluginsCfg;
+	public static Configuration serverCfg;
 
 	public static float caveMusicVolume;
 	public static boolean versionNotify;
@@ -117,6 +118,8 @@ public class Config
 
 	public static boolean hardcore;
 	public static int caveborn;
+
+	public static boolean cauldron;
 
 	public static Class<? extends IConfigEntry> selectItems;
 	public static Class<? extends IConfigEntry> selectItemsWithBlocks;
@@ -1649,5 +1652,24 @@ public class Config
 		pluginsCfg.setCategoryRequiresMcRestart(category, true);
 
 		saveConfig(pluginsCfg);
+	}
+
+	public static void syncServerCfg()
+	{
+		String category = "server";
+		Property prop;
+		List<String> propOrder = Lists.newArrayList();
+
+		if (serverCfg == null)
+		{
+			serverCfg = loadConfig(category);
+		}
+
+		prop = serverCfg.get(category, "cauldron", Loader.isModLoaded("kimagine"));
+		prop.comment = "Whether the server is Cauldron";
+		propOrder.add(prop.getName());
+		cauldron = prop.getBoolean(cauldron);
+
+		saveConfig(serverCfg);
 	}
 }

@@ -31,6 +31,7 @@ import caveworld.item.CaveItems;
 import caveworld.item.ItemDiggingShovel;
 import caveworld.item.ItemLumberingAxe;
 import caveworld.item.ItemMiningPickaxe;
+import caveworld.network.CaveNetworkRegistry;
 import caveworld.plugin.CavePlugins;
 import caveworld.recipe.RecipeCaveniumTool;
 import caveworld.util.CaveLog;
@@ -145,6 +146,11 @@ public class Caveworld
 		CaveNetworkRegistry.registerMessages();
 
 		Config.syncGeneralCfg();
+
+		if (event.getSide().isServer())
+		{
+			Config.syncServerCfg();
+		}
 
 		CaveBlocks.registerBlocks();
 		CaveItems.registerItems();

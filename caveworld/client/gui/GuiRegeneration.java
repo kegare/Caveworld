@@ -14,7 +14,7 @@ import java.awt.Desktop;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
-import caveworld.core.CaveNetworkRegistry;
+import caveworld.network.CaveNetworkRegistry;
 import caveworld.network.common.RegenerateMessage;
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
