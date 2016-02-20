@@ -13,11 +13,9 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import caveworld.api.CaveworldAPI;
 import caveworld.util.CaveUtils;
-import cpw.mods.fml.common.registry.EntityRegistry;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.IRangedAttackMob;
 import net.minecraft.entity.ai.EntityAIArrowAttack;
@@ -71,11 +69,11 @@ public class EntityArcherZombie extends EntityZombie implements IRangedAttackMob
 			biomes = def;
 		}
 
-		EntityRegistry.removeSpawn(EntityArcherZombie.class, EnumCreatureType.monster, def);
+		CaveEntityRegistry.removeSpawn(EntityArcherZombie.class, def);
 
 		if (spawnWeight > 0)
 		{
-			EntityRegistry.addSpawn(EntityArcherZombie.class, spawnWeight, 4, 4, EnumCreatureType.monster, biomes);
+			CaveEntityRegistry.addSpawn(EntityArcherZombie.class, spawnWeight, 4, 4, biomes);
 		}
 	}
 

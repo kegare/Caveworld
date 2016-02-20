@@ -16,11 +16,9 @@ import caveworld.api.ICavenicMob;
 import caveworld.core.CaveAchievementList;
 import caveworld.item.CaveItems;
 import caveworld.util.CaveUtils;
-import cpw.mods.fml.common.registry.EntityRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.monster.EntitySpider;
 import net.minecraft.entity.player.EntityPlayer;
@@ -65,11 +63,11 @@ public class EntityCavenicSpider extends EntitySpider implements ICavenicMob
 			biomes = def;
 		}
 
-		EntityRegistry.removeSpawn(EntityCavenicSpider.class, EnumCreatureType.monster, def);
+		CaveEntityRegistry.removeSpawn(EntityCavenicSpider.class, def);
 
 		if (spawnWeight > 0)
 		{
-			EntityRegistry.addSpawn(EntityCavenicSpider.class, spawnWeight, 4, 4, EnumCreatureType.monster, biomes);
+			CaveEntityRegistry.addSpawn(EntityCavenicSpider.class, spawnWeight, 4, 4, biomes);
 		}
 	}
 

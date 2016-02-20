@@ -16,6 +16,7 @@ import java.util.Random;
 import caveworld.api.BlockEntry;
 import caveworld.block.CaveBlocks;
 import caveworld.core.CaveVeinManager.CaveVein;
+import caveworld.entity.CaveEntityRegistry;
 import caveworld.entity.EntityCrazyCavenicSkeleton;
 import caveworld.world.gen.MapGenCaveniaCaves;
 import net.minecraft.block.Block;
@@ -36,13 +37,16 @@ import net.minecraftforge.event.terraingen.PopulateChunkEvent;
 public class ChunkProviderCavenia implements IChunkProvider
 {
 	public static int dimensionId;
+	public static int caveMonsterSpawn;
+
+	public static EnumCreatureType caveMonster;
 
 	private final World worldObj;
 	private final Random random;
 
 	private final MapGenBase caveGenerator = new MapGenCaveniaCaves();
 
-	public final CaveVein veinRandomite = new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 2), 30, 100, 100, 2, 125);
+	public final CaveVein veinRandomite = new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 2), 30, 100, 100, 3, 95);
 
 	public ChunkProviderCavenia(World world)
 	{
@@ -124,7 +128,7 @@ public class ChunkProviderCavenia implements IChunkProvider
 		MinecraftForge.EVENT_BUS.post(new PopulateChunkEvent.Pre(chunkProvider, worldObj, random, chunkX, chunkZ, false));
 		MinecraftForge.ORE_GEN_BUS.post(new OreGenEvent.Pre(worldObj, random, worldX, worldZ));
 
-		veinRandomite.generateVein(worldObj, random, worldX, worldZ);
+		veinRandomite.generateVeins(worldObj, random, worldX, worldZ);
 
 		MinecraftForge.ORE_GEN_BUS.post(new OreGenEvent.Post(worldObj, random, worldX, worldZ));
 
@@ -188,6 +192,11 @@ public class ChunkProviderCavenia implements IChunkProvider
 		if (y <= 0 || y >= worldObj.getActualHeight())
 		{
 			return null;
+		}
+
+		if (creature == caveMonster)
+		{
+			return CaveEntityRegistry.spawns;
 		}
 
 		BiomeGenBase biome = worldObj.getBiomeGenForCoords(x, z);

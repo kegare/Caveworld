@@ -23,12 +23,10 @@ import caveworld.entity.ai.EntityAISoldier;
 import caveworld.item.CaveItems;
 import caveworld.item.ItemCavenium;
 import caveworld.util.CaveUtils;
-import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAILookIdle;
@@ -87,11 +85,11 @@ public class EntityCaveman extends EntityMob implements IInventory
 			biomes = def;
 		}
 
-		EntityRegistry.removeSpawn(EntityCaveman.class, EnumCreatureType.ambient, def);
+		CaveEntityRegistry.removeSpawn(EntityCaveman.class, def);
 
 		if (spawnWeight > 0)
 		{
-			EntityRegistry.addSpawn(EntityCaveman.class, spawnWeight, 1, 1, EnumCreatureType.ambient, biomes);
+			CaveEntityRegistry.addSpawn(EntityCaveman.class, spawnWeight, 4, 4, biomes);
 		}
 	}
 

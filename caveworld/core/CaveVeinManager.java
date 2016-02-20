@@ -438,20 +438,21 @@ public class CaveVeinManager implements ICaveVeinManager
 		}
 
 		@Override
-		public void generateVein(World world, Random random, int worldX, int worldZ)
+		public void generateVeins(World world, Random random, int worldX, int worldZ)
 		{
 			int worldHeight = world.getActualHeight();
-			BlockEntry block = getBlock();
-			int count = getGenBlockCount();
 			int weight = getGenWeight();
-			int rate = getGenRate();
 			int min = getGenMinHeight();
-			int max = Math.min(getGenMaxHeight(), worldHeight);
-			BlockEntry target = getGenTargetBlock();
-			int[] biomes = getGenBiomes();
+			int max = Math.min(getGenMaxHeight(), worldHeight - 2);
 
-			if (weight > 0 && min < worldHeight && max < worldHeight && min < max)
+			if (weight > 0 && min < max)
 			{
+				BlockEntry block = getBlock();
+				int count = getGenBlockCount();
+				int rate = getGenRate();
+				BlockEntry target = getGenTargetBlock();
+				int[] biomes = getGenBiomes();
+
 				for (int i = 0; i < weight; ++i)
 				{
 					if (random.nextInt(100) + 1 > rate)

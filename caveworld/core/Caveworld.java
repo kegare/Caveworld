@@ -164,6 +164,7 @@ public class Caveworld
 	public void init(FMLInitializationEvent event)
 	{
 		CaveEntityRegistry.registerEntities();
+		CaveEntityRegistry.addVallilaSpawns();
 
 		proxy.registerRenderers();
 

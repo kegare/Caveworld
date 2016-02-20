@@ -15,6 +15,7 @@ import java.util.Random;
 import caveworld.api.CaveworldAPI;
 import caveworld.api.ICaveBiome;
 import caveworld.api.ICaveVein;
+import caveworld.entity.CaveEntityRegistry;
 import caveworld.world.gen.MapGenAquaCaves;
 import caveworld.world.gen.MapGenAquaRavine;
 import net.minecraft.block.Block;
@@ -37,6 +38,9 @@ public class ChunkProviderAquaCavern implements IChunkProvider
 	public static int dimensionId;
 	public static int subsurfaceHeight;
 	public static boolean generateRavine;
+	public static int caveMonsterSpawn;
+
+	public static EnumCreatureType caveMonster;
 
 	private final World worldObj;
 	private final Random random;
@@ -146,7 +150,7 @@ public class ChunkProviderAquaCavern implements IChunkProvider
 
 		for (ICaveVein vein : CaveworldAPI.getAquaCavernVeins())
 		{
-			vein.generateVein(worldObj, random, worldX, worldZ);
+			vein.generateVeins(worldObj, random, worldX, worldZ);
 		}
 
 		MinecraftForge.ORE_GEN_BUS.post(new OreGenEvent.Post(worldObj, random, worldX, worldZ));
@@ -194,6 +198,11 @@ public class ChunkProviderAquaCavern implements IChunkProvider
 		if (y <= 0 || y >= worldObj.getActualHeight())
 		{
 			return null;
+		}
+
+		if (creature == caveMonster)
+		{
+			return CaveEntityRegistry.spawns;
 		}
 
 		BiomeGenBase biome = worldObj.getBiomeGenForCoords(x, z);

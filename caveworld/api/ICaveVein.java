@@ -38,5 +38,5 @@ public interface ICaveVein
 
 	public int[] getGenBiomes();
 
-	public void generateVein(World world, Random random, int chunkX, int chunkZ);
+	public void generateVeins(World world, Random random, int chunkX, int chunkZ);
 }

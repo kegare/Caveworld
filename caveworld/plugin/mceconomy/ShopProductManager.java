@@ -19,8 +19,6 @@ import caveworld.core.Caveworld;
 import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
@@ -147,34 +145,6 @@ public class ShopProductManager implements IShopProductManager, IShop
 		getProducts().clear();
 	}
 
-	@Override
-	public NBTTagList saveNBTData()
-	{
-		NBTTagList list = new NBTTagList();
-
-		for (IShopProduct product : getProducts())
-		{
-			list.appendTag(product.saveNBTData());
-		}
-
-		return list;
-	}
-
-	@Override
-	public void loadNBTData(NBTTagList list)
-	{
-		if (!isReadOnly())
-		{
-			for (int i = 0; i < list.tagCount(); ++i)
-			{
-				IShopProduct product = new ShopProduct();
-				product.loadNBTData(list.getCompoundTagAt(i));
-
-				getProducts().add(product);
-			}
-		}
-	}
-
 	public static class ShopProduct implements IShopProduct, IProduct
 	{
 		private ItemStack itemstack;
@@ -233,29 +203,6 @@ public class ShopProductManager implements IShopProductManager, IShop
 		public boolean canBuy(IShop shop, World world, EntityPlayer player)
 		{
 			return true;
-		}
-
-		@Override
-		public NBTTagCompound saveNBTData()
-		{
-			NBTTagCompound data = new NBTTagCompound();
-
-			data.setTag("Item", getItem().writeToNBT(new NBTTagCompound()));
-			data.setInteger("Cost", getCost());
-
-			return data;
-		}
-
-		@Override
-		public void loadNBTData(NBTTagCompound data)
-		{
-			if (data == null || data.hasNoTags())
-			{
-				return;
-			}
-
-			setItem(ItemStack.loadItemStackFromNBT(data.getCompoundTag("Item")));
-			setCost(data.getInteger("Cost"));
 		}
 	}
 }

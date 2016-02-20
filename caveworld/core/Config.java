@@ -58,6 +58,7 @@ import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.monster.EntityCaveSpider;
@@ -68,6 +69,7 @@ import net.minecraft.entity.monster.EntitySkeleton;
 import net.minecraft.entity.monster.EntitySnowman;
 import net.minecraft.entity.monster.EntitySpider;
 import net.minecraft.entity.monster.EntityZombie;
+import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.EntityBat;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
@@ -80,6 +82,7 @@ import net.minecraftforge.common.BiomeDictionary.Type;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
+import net.minecraftforge.common.util.EnumHelper;
 
 public class Config
 {
@@ -528,7 +531,7 @@ public class Config
 		}
 
 		category = "Caveman";
-		prop = mobsCfg.get(category, "spawnWeight", 70);
+		prop = mobsCfg.get(category, "spawnWeight", 100);
 		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
@@ -865,6 +868,15 @@ public class Config
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		propOrder.add(prop.getName());
 		ChunkProviderCaveworld.spawnerMobs = prop.getStringList();
+		prop = dimensionCfg.get(category, "caveMonsterSpawn", 500);
+		prop.setMinValue(0).setMaxValue(5000).setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName()).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		prop.comment += Configuration.NEW_LINE;
+		prop.comment += "Note: If multiplayer, server-side only.";
+		propOrder.add(prop.getName());
+		ChunkProviderCaveworld.caveMonsterSpawn = MathHelper.clamp_int(prop.getInt(ChunkProviderCaveworld.caveMonsterSpawn), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		ChunkProviderCaveworld.caveMonster = EnumHelper.addCreatureType("CaveworldMonster", IMob.class, ChunkProviderCaveworld.caveMonsterSpawn, Material.air, false, false);
 
 		dimensionCfg.setCategoryPropertyOrder(category, propOrder);
 
@@ -927,6 +939,15 @@ public class Config
 
 		propOrder.add(prop.getName());
 		ChunkProviderCavern.caveType = MathHelper.clamp_int(prop.getInt(ChunkProviderCavern.caveType), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		prop = dimensionCfg.get(category, "caveMonsterSpawn", 100);
+		prop.setMinValue(0).setMaxValue(5000).setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName()).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		prop.comment += Configuration.NEW_LINE;
+		prop.comment += "Note: If multiplayer, server-side only.";
+		propOrder.add(prop.getName());
+		ChunkProviderCavern.caveMonsterSpawn = MathHelper.clamp_int(prop.getInt(ChunkProviderCavern.caveMonsterSpawn), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		ChunkProviderCavern.caveMonster = EnumHelper.addCreatureType("CavernMonster", IMob.class, ChunkProviderCavern.caveMonsterSpawn, Material.air, false, false);
 
 		dimensionCfg.setCategoryPropertyOrder(category, propOrder);
 
@@ -962,6 +983,15 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		ChunkProviderAquaCavern.generateRavine = prop.getBoolean(ChunkProviderAquaCavern.generateRavine);
+		prop = dimensionCfg.get(category, "caveMonsterSpawn", 300);
+		prop.setMinValue(0).setMaxValue(5000).setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName()).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		prop.comment += Configuration.NEW_LINE;
+		prop.comment += "Note: If multiplayer, server-side only.";
+		propOrder.add(prop.getName());
+		ChunkProviderAquaCavern.caveMonsterSpawn = MathHelper.clamp_int(prop.getInt(ChunkProviderAquaCavern.caveMonsterSpawn), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		ChunkProviderAquaCavern.caveMonster = EnumHelper.addCreatureType("AquaCavernMonster", IMob.class, ChunkProviderAquaCavern.caveMonsterSpawn, Material.air, false, false);
 
 		dimensionCfg.setCategoryPropertyOrder(category, propOrder);
 
@@ -1003,6 +1033,15 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		ChunkProviderCaveland.generateAnimalDungeons = prop.getBoolean(ChunkProviderCaveland.generateAnimalDungeons);
+		prop = dimensionCfg.get(category, "caveMonsterSpawn", 300);
+		prop.setMinValue(0).setMaxValue(5000).setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName()).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		prop.comment += Configuration.NEW_LINE;
+		prop.comment += "Note: If multiplayer, server-side only.";
+		propOrder.add(prop.getName());
+		ChunkProviderCaveland.caveMonsterSpawn = MathHelper.clamp_int(prop.getInt(ChunkProviderCaveland.caveMonsterSpawn), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		ChunkProviderCaveland.caveMonster = EnumHelper.addCreatureType("CavelandMonster", IMob.class, ChunkProviderCaveland.caveMonsterSpawn, Material.air, false, false);
 
 		dimensionCfg.setCategoryPropertyOrder(category, propOrder);
 
@@ -1024,6 +1063,16 @@ public class Config
 
 			ChunkProviderCavenia.dimensionId = prop.getInt();
 		}
+
+		prop = dimensionCfg.get(category, "caveMonsterSpawn", 100);
+		prop.setMinValue(0).setMaxValue(5000).setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName()).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
+		prop.comment += Configuration.NEW_LINE;
+		prop.comment += "Note: If multiplayer, server-side only.";
+		propOrder.add(prop.getName());
+		ChunkProviderCavenia.caveMonsterSpawn = MathHelper.clamp_int(prop.getInt(ChunkProviderCavenia.caveMonsterSpawn), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		ChunkProviderCavenia.caveMonster = EnumHelper.addCreatureType("CaveniaMonster", IMob.class, ChunkProviderCavenia.caveMonsterSpawn, Material.air, false, false);
 
 		dimensionCfg.setCategoryPropertyOrder(category, propOrder);
 

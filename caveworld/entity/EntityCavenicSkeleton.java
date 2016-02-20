@@ -17,12 +17,10 @@ import caveworld.core.CaveAchievementList;
 import caveworld.item.CaveItems;
 import caveworld.util.CaveUtils;
 import cpw.mods.fml.common.ObfuscationReflectionHelper;
-import cpw.mods.fml.common.registry.EntityRegistry;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIArrowAttack;
@@ -69,11 +67,11 @@ public class EntityCavenicSkeleton extends EntitySkeleton implements ICavenicMob
 			biomes = def;
 		}
 
-		EntityRegistry.removeSpawn(EntityCavenicSkeleton.class, EnumCreatureType.monster, def);
+		CaveEntityRegistry.removeSpawn(EntityCavenicSkeleton.class, def);
 
 		if (spawnWeight > 0)
 		{
-			EntityRegistry.addSpawn(EntityCavenicSkeleton.class, spawnWeight, 4, 4, EnumCreatureType.monster, biomes);
+			CaveEntityRegistry.addSpawn(EntityCavenicSkeleton.class, spawnWeight, 4, 4, biomes);
 		}
 	}
 

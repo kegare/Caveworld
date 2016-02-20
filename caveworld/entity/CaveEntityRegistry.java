@@ -9,18 +9,32 @@
 
 package caveworld.entity;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import caveworld.core.Caveworld;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.monster.EntityCreeper;
+import net.minecraft.entity.monster.EntityEnderman;
+import net.minecraft.entity.monster.EntitySkeleton;
+import net.minecraft.entity.monster.EntitySlime;
+import net.minecraft.entity.monster.EntitySpider;
+import net.minecraft.entity.monster.EntityWitch;
+import net.minecraft.entity.monster.EntityZombie;
+import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraft.world.biome.BiomeGenBase.SpawnListEntry;
 
 public class CaveEntityRegistry
 {
 	public static final Map<Integer, Class<? extends Entity>> entities = Maps.newHashMap();
 	public static final Map<Integer, EggInfo> mobs = Maps.newHashMap();
+	public static final List<SpawnListEntry> spawns = Lists.newArrayList();
 
 	private static int entityId;
 
@@ -56,6 +70,48 @@ public class CaveEntityRegistry
 		registerMob(EntityMasterCavenicCreeper.class, "MasterCavenicCreeper", 0xAAAAAA, 0x2E8B57);
 		registerMob(EntityCavenicZombie.class, "CavenicZombie", 0xAAAAAA, 0x00A0A0);
 		registerMob(EntityCavenicSpider.class, "CavenicSpider", 0xAAAAAA, 0x811F1F);
+	}
+
+	public static void addVallilaSpawns()
+	{
+		spawns.add(new BiomeGenBase.SpawnListEntry(EntitySpider.class, 100, 4, 4));
+		spawns.add(new BiomeGenBase.SpawnListEntry(EntityZombie.class, 100, 4, 4));
+		spawns.add(new BiomeGenBase.SpawnListEntry(EntitySkeleton.class, 100, 4, 4));
+		spawns.add(new BiomeGenBase.SpawnListEntry(EntityCreeper.class, 100, 4, 4));
+		spawns.add(new BiomeGenBase.SpawnListEntry(EntitySlime.class, 100, 4, 4));
+		spawns.add(new BiomeGenBase.SpawnListEntry(EntityEnderman.class, 10, 1, 4));
+		spawns.add(new BiomeGenBase.SpawnListEntry(EntityWitch.class, 5, 1, 1));
+	}
+
+	public static void addSpawn(Class <? extends EntityLiving> entityClass, int weightedProb, int min, int max, BiomeGenBase... biomes)
+	{
+		for (SpawnListEntry entry : spawns)
+		{
+			if (entry.entityClass == entityClass)
+			{
+				entry.itemWeight = weightedProb;
+				entry.minGroupCount = min;
+				entry.maxGroupCount = max;
+				break;
+			}
+		}
+
+		spawns.add(new SpawnListEntry(entityClass, weightedProb, min, max));
+	}
+
+	public static void removeSpawn(Class <? extends EntityLiving> entityClass, BiomeGenBase... biomes)
+	{
+		Iterator<SpawnListEntry> iterator = spawns.iterator();
+
+		while (iterator.hasNext())
+		{
+			SpawnListEntry entry = iterator.next();
+
+			if (entry.entityClass == entityClass)
+			{
+				iterator.remove();
+			}
+		}
 	}
 
 	public static class EggInfo

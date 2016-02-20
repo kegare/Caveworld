@@ -17,9 +17,7 @@ import caveworld.core.CaveAchievementList;
 import caveworld.item.CaveItems;
 import caveworld.util.CaveUtils;
 import cpw.mods.fml.common.ObfuscationReflectionHelper;
-import cpw.mods.fml.common.registry.EntityRegistry;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.monster.EntityCreeper;
@@ -62,11 +60,11 @@ public class EntityCavenicCreeper extends EntityCreeper implements ICavenicMob
 			biomes = def;
 		}
 
-		EntityRegistry.removeSpawn(EntityCavenicCreeper.class, EnumCreatureType.monster, def);
+		CaveEntityRegistry.removeSpawn(EntityCavenicCreeper.class, def);
 
 		if (spawnWeight > 0)
 		{
-			EntityRegistry.addSpawn(EntityCavenicCreeper.class, spawnWeight, 4, 4, EnumCreatureType.monster, biomes);
+			CaveEntityRegistry.addSpawn(EntityCavenicCreeper.class, spawnWeight, 4, 4, biomes);
 		}
 	}
 

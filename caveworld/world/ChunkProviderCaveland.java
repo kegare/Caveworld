@@ -12,6 +12,7 @@ package caveworld.world;
 import java.util.List;
 import java.util.Random;
 
+import caveworld.entity.CaveEntityRegistry;
 import caveworld.world.gen.MapGenCavelandCaves;
 import caveworld.world.gen.WorldGenAnimalDungeons;
 import caveworld.world.gen.WorldGenPervertedForest;
@@ -53,6 +54,9 @@ public class ChunkProviderCaveland implements IChunkProvider
 	public static int subsurfaceHeight;
 	public static boolean generateLakes;
 	public static boolean generateAnimalDungeons;
+	public static int caveMonsterSpawn;
+
+	public static EnumCreatureType caveMonster;
 
 	private final World worldObj;
 	private final Random random;
@@ -464,6 +468,11 @@ public class ChunkProviderCaveland implements IChunkProvider
 		if (y <= 0 || y >= worldObj.getActualHeight())
 		{
 			return null;
+		}
+
+		if (creature == caveMonster)
+		{
+			return CaveEntityRegistry.spawns;
 		}
 
 		BiomeGenBase biome = worldObj.getBiomeGenForCoords(x, z);

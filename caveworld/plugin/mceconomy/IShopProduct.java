@@ -10,7 +10,6 @@
 package caveworld.plugin.mceconomy;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 
 public interface IShopProduct
 {
@@ -21,8 +20,4 @@ public interface IShopProduct
 	public int setCost(int cost);
 
 	public int getCost();
-
-	public NBTTagCompound saveNBTData();
-
-	public void loadNBTData(NBTTagCompound data);
 }
