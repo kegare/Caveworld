@@ -41,7 +41,7 @@ import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.oredict.OreDictionary;
 import shift.mceconomy2.api.MCEconomyAPI;
 
-public final class MCEconomyPlugin implements ICavePlugin
+public class MCEconomyPlugin implements ICavePlugin
 {
 	public static final String MODID = "mceconomy2";
 
@@ -128,6 +128,7 @@ public final class MCEconomyPlugin implements ICavePlugin
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.mining_pickaxe), -1);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.lumbering_axe), -1);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.digging_shovel), -1);
+		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.farming_hoe), -1);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.cavenic_bow), -1);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.ore_compass), 2200);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.gem, 1, 0), 35);
@@ -137,15 +138,15 @@ public final class MCEconomyPlugin implements ICavePlugin
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.caver_backpack), 850);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.spawn_egg, 1, OreDictionary.WILDCARD_VALUE), -1);
 
-		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCaveman.class, 20);
+		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCaveman.class, 10);
 		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityArcherZombie.class, 4);
-		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCavenicSkeleton.class, 100);
-		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityMasterCavenicSkeleton.class, 500);
-		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCrazyCavenicSkeleton.class, 10000);
-		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCavenicCreeper.class, 100);
-		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityMasterCavenicCreeper.class, 500);
-		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCavenicZombie.class, 100);
-		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCavenicSpider.class, 100);
+		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCavenicSkeleton.class, 50);
+		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityMasterCavenicSkeleton.class, 300);
+		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCrazyCavenicSkeleton.class, 5000);
+		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCavenicCreeper.class, 50);
+		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityMasterCavenicCreeper.class, 300);
+		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCavenicZombie.class, 50);
+		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCavenicSpider.class, 50);
 
 		SHOP = MCEconomyAPI.registerShop(productManager);
 	}

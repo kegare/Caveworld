@@ -17,6 +17,7 @@ import caveworld.network.client.CaveworldMenuMessage;
 import caveworld.network.client.ConfigAdjustMessage;
 import caveworld.network.client.MultiBreakCountMessage;
 import caveworld.network.client.OpenUrlMessage;
+import caveworld.network.client.PortalMenuMessage;
 import caveworld.network.common.RegenerateMessage;
 import caveworld.network.server.CaveAchievementMessage;
 import caveworld.network.server.PortalInventoryMessage;
@@ -76,6 +77,7 @@ public class CaveNetworkRegistry
 		registerMessage(RegenerateMessage.class, RegenerateMessage.class, Side.SERVER);
 		registerMessage(RegenerateMessage.ProgressNotify.class, RegenerateMessage.ProgressNotify.class, Side.CLIENT);
 		registerMessage(CaveworldMenuMessage.class, CaveworldMenuMessage.class, Side.CLIENT);
+		registerMessage(PortalMenuMessage.class, PortalMenuMessage.class, Side.CLIENT);
 		registerMessage(CaveAchievementMessage.class, CaveAchievementMessage.class, Side.SERVER);
 		registerMessage(SelectBreakableMessage.class, SelectBreakableMessage.class, Side.SERVER);
 		registerMessage(MultiBreakCountMessage.class, MultiBreakCountMessage.class, Side.CLIENT);

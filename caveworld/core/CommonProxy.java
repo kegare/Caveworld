@@ -44,4 +44,6 @@ public class CommonProxy
 
 		return tool.getMode(current).getExecutor(player).getBreakPositions().size();
 	}
+
+	public void setDebugBoundingBox(boolean flag) {}
 }

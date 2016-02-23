@@ -629,7 +629,7 @@ public class ItemLumberingAxe extends ItemAxe implements ICaveniumTool
 
 		if (item != this)
 		{
-			list.add(I18n.format(CaveItems.mining_pickaxe.getUnlocalizedName() + ".base") + ": " + item.getItemStackDisplayName(itemstack));
+			list.add(I18n.format(getUnlocalizedName() + ".base") + ": " + item.getItemStackDisplayName(itemstack));
 
 			item.addInformation(itemstack, player, list, advanced);
 		}

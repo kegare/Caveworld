@@ -3,16 +3,16 @@ package caveworld.api;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.biome.BiomeGenBase;
 
-public class EmptyCaveBiome implements ICaveBiome
+public class DummyCaveBiome implements ICaveBiome
 {
 	private final BiomeGenBase biome;
 
-	public EmptyCaveBiome()
+	public DummyCaveBiome()
 	{
 		this.biome = BiomeGenBase.plains;
 	}
 
-	public EmptyCaveBiome(BiomeGenBase biome)
+	public DummyCaveBiome(BiomeGenBase biome)
 	{
 		this.biome = biome;
 	}

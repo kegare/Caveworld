@@ -9,7 +9,7 @@
 
 package caveworld.plugin.mapletree;
 
-import caveworld.api.CaveworldAPI;
+import caveworld.api.CaverAPI;
 import caveworld.plugin.ICavePlugin;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -51,9 +51,9 @@ public class MapleTreePlugin implements ICavePlugin
 
 		if (block != null)
 		{
-			CaveworldAPI.setMiningPointAmount(block, 0, 2);
-			CaveworldAPI.setMiningPointAmount(block, 1, 1);
-			CaveworldAPI.setMiningPointAmount(block, 2, 4);
+			CaverAPI.setMiningPointAmount(block, 0, 2);
+			CaverAPI.setMiningPointAmount(block, 1, 1);
+			CaverAPI.setMiningPointAmount(block, 2, 4);
 		}
 	}
 }

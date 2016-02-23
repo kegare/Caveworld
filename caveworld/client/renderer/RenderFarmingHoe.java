@@ -11,10 +11,7 @@ package caveworld.client.renderer;
 
 import org.lwjgl.opengl.GL11;
 
-import com.google.common.base.Strings;
-
-import caveworld.item.ICaveniumTool;
-import caveworld.util.Roman;
+import caveworld.item.ItemFarmingHoe;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -26,7 +23,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.IItemRenderer;
 
 @SideOnly(Side.CLIENT)
-public class RenderCaveniumTool implements IItemRenderer
+public class RenderFarmingHoe implements IItemRenderer
 {
 	private final Minecraft mc = FMLClientHandler.instance().getClient();
 	private final RenderItem itemRender = RenderItem.getInstance();
@@ -55,7 +52,7 @@ public class RenderCaveniumTool implements IItemRenderer
 
 		itemRender.renderItemIntoGUI(renderer, mc.getTextureManager(), item, 0, 0, true);
 
-		Item base = ((ICaveniumTool)item.getItem()).getBase(item);
+		Item base = ((ItemFarmingHoe)item.getItem()).getBase(item);
 
 		if (base != item.getItem() && base.getIconIndex(item) != item.getIconIndex())
 		{
@@ -65,22 +62,6 @@ public class RenderCaveniumTool implements IItemRenderer
 			GL11.glRotatef(-90.0F, 0.0F, 0.0F, 1.0F);
 			itemRender.renderItemIntoGUI(renderer, mc.getTextureManager(), new ItemStack(base), 0, item.isItemDamaged() ? 13 : 16, true);
 			GL11.glPopMatrix();
-		}
-
-		String refined = Roman.toRoman(((ICaveniumTool)item.getItem()).getRefined(item));
-
-		if (!Strings.isNullOrEmpty(refined))
-		{
-			GL11.glDisable(GL11.GL_LIGHTING);
-			GL11.glDisable(GL11.GL_DEPTH_TEST);
-			GL11.glDisable(GL11.GL_BLEND);
-			GL11.glPushMatrix();
-			GL11.glTranslatef(5.0F, 5.0F, 1.0F);
-			GL11.glScalef(0.8F, 0.8F, 1.0F);
-			renderer.drawStringWithShadow(refined, 16 - renderer.getStringWidth(refined) - 2, item.isItemDamaged() ? 3 : 6, 0xEEEEEE);
-			GL11.glPopMatrix();
-			GL11.glEnable(GL11.GL_LIGHTING);
-			GL11.glEnable(GL11.GL_DEPTH_TEST);
 		}
 	}
 }

@@ -21,7 +21,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import caveworld.api.BlockEntry;
-import caveworld.api.EmptyCaveBiome;
+import caveworld.api.DummyCaveBiome;
 import caveworld.api.ICaveBiome;
 import caveworld.api.ICaveBiomeManager;
 import caveworld.util.CaveUtils;
@@ -141,7 +141,7 @@ public class CaveBiomeManager implements ICaveBiomeManager
 	@Override
 	public ICaveBiome getCaveBiome(BiomeGenBase biome)
 	{
-		return getRaw().containsKey(biome) ? getRaw().get(biome) : new EmptyCaveBiome(biome);
+		return getRaw().containsKey(biome) ? getRaw().get(biome) : new DummyCaveBiome(biome);
 	}
 
 	@Override
@@ -153,7 +153,7 @@ public class CaveBiomeManager implements ICaveBiomeManager
 		}
 		catch (Exception e)
 		{
-			return new EmptyCaveBiome();
+			return new DummyCaveBiome();
 		}
 	}
 

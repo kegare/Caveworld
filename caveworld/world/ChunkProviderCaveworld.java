@@ -37,7 +37,6 @@ import net.minecraft.world.biome.BiomeDecorator;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
-import net.minecraft.world.gen.MapGenBase;
 import net.minecraft.world.gen.feature.WorldGenGlowStone1;
 import net.minecraft.world.gen.feature.WorldGenLakes;
 import net.minecraft.world.gen.feature.WorldGenLiquids;
@@ -82,12 +81,12 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 	private BiomeGenBase[] biomesForGeneration;
 
-	private final MapGenBase caveGenerator = new MapGenCavesCaveworld();
-	private final MapGenBase cavernsGenerator = new MapGenCaverns();
-	private final MapGenBase ravineGenerator = new MapGenRavineCaveworld();
-	private final MapGenBase underCaveGenerator = new MapGenUnderCaves();
-	private final MapGenBase extremeCaveGenerator = new MapGenExtremeCaves();
-	private final MapGenBase extremeRavineGenerator = new MapGenExtremeRavine();
+	private final MapGenCavesCaveworld caveGenerator = new MapGenCavesCaveworld();
+	private final MapGenCaverns cavernsGenerator = new MapGenCaverns();
+	private final MapGenRavineCaveworld ravineGenerator = new MapGenRavineCaveworld();
+	private final MapGenUnderCaves underCaveGenerator = new MapGenUnderCaves();
+	private final MapGenExtremeCaves extremeCaveGenerator = new MapGenExtremeCaves();
+	private final MapGenExtremeRavine extremeRavineGenerator = new MapGenExtremeRavine();
 	private MapGenMineshaft mineshaftGenerator = new MapGenMineshaft();
 	private final MapGenStronghold strongholdGenerator = new MapGenStronghold();
 
@@ -129,32 +128,32 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 		if (generateCaves)
 		{
-			caveGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
+			caveGenerator.generate(this, worldObj, chunkX, chunkZ, blocks, generateUnderCaves);
 		}
 
 		if (generateRavine)
 		{
-			ravineGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
+			ravineGenerator.generate(this, worldObj, chunkX, chunkZ, blocks, generateUnderCaves);
 		}
 
 		if (generateUnderCaves)
 		{
-			underCaveGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
+			underCaveGenerator.generate(this, worldObj, chunkX, chunkZ, blocks, true);
 		}
 
 		if (generateExtremeCaves)
 		{
-			cavernsGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
+			cavernsGenerator.generate(this, worldObj, chunkX, chunkZ, blocks, generateUnderCaves);
 
 			if (worldHeight > 150)
 			{
-				extremeCaveGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
+				extremeCaveGenerator.generate(this, worldObj, chunkX, chunkZ, blocks, generateUnderCaves);
 			}
 		}
 
 		if (generateExtremeRavine)
 		{
-			extremeRavineGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
+			extremeRavineGenerator.generate(this, worldObj, chunkX, chunkZ, blocks, generateUnderCaves);
 		}
 
 		if (generateStructures)

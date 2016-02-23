@@ -11,11 +11,11 @@ package caveworld.world.gen;
 
 import java.util.Random;
 
-import caveworld.world.ChunkProviderCaveworld;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.MapGenRavine;
 
 public class MapGenRavineCaveworld extends MapGenRavine
@@ -23,6 +23,15 @@ public class MapGenRavineCaveworld extends MapGenRavine
 	protected final Random random = new Random();
 
 	private final float[] parabolicField = new float[1024];
+
+	protected boolean underCaves;
+
+	public void generate(IChunkProvider chunkProvider, World world, int chunkX, int chunkZ, Block[] blocks, boolean flag)
+	{
+		underCaves = flag;
+
+		super.func_151539_a(chunkProvider, world, chunkX, chunkZ, blocks);
+	}
 
 	@Override
 	protected void func_151540_a(long ravineSeed, int chunkX, int chunkZ, Block[] blocks, double blockX, double blockY, double blockZ, float scale, float leftRightRadian, float upDownRadian, int currentY, int targetY, double scaleHeight)
@@ -161,7 +170,7 @@ public class MapGenRavineCaveworld extends MapGenRavine
 	@Override
 	protected void digBlock(Block[] blocks, int index, int x, int y, int z, int chunkX, int chunkZ, boolean foundTop)
 	{
-		if (ChunkProviderCaveworld.generateUnderCaves)
+		if (underCaves)
 		{
 			if (y < 16)
 			{

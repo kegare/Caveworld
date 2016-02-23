@@ -20,6 +20,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 
 import caveworld.api.BlockEntry;
+import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
 import caveworld.block.CaveBlocks;
 import caveworld.entity.CaveEntityRegistry;
@@ -35,6 +36,7 @@ import caveworld.network.CaveNetworkRegistry;
 import caveworld.plugin.CavePlugins;
 import caveworld.recipe.RecipeCavenicBow;
 import caveworld.recipe.RecipeCaveniumTool;
+import caveworld.recipe.RecipeFarmingHoe;
 import caveworld.util.CaveLog;
 import caveworld.util.CaveUtils;
 import caveworld.util.SubItemHelper;
@@ -121,6 +123,7 @@ public class Caveworld
 	public static final CreativeTabMiningPickaxe tabMiningPickaxe = new CreativeTabMiningPickaxe();
 	public static final CreativeTabLumberingAxe tabLumberingAxe = new CreativeTabLumberingAxe();
 	public static final CreativeTabDiggingShovel tabDiggingShovel = new CreativeTabDiggingShovel();
+	public static final CreativeTabFarmingHoe tabFarmingHoe = new CreativeTabFarmingHoe();
 
 	@EventHandler
 	public void construct(FMLConstructionEvent event)
@@ -134,11 +137,13 @@ public class Caveworld
 		CaveworldAPI.veinCavernManager = new CavernVeinManager();
 		CaveworldAPI.biomeAquaCavernManager = new AquaCavernBiomeManager();
 		CaveworldAPI.veinAquaCavernManager = new AquaCavernVeinManager();
-		CaveworldAPI.caverManager = new CaverManager();
+
+		CaverAPI.caverManager = new CaverManager();
 
 		Version.versionCheck();
 
 		RecipeSorter.register(MODID + ":cavenium_tool", RecipeCaveniumTool.class, Category.SHAPED, "after:minecraft:shaped");
+		RecipeSorter.register(MODID + ":farming_hoe", RecipeFarmingHoe.class, Category.SHAPED, "after:minecraft:shaped");
 		RecipeSorter.register(MODID + ":cavenic_bow", RecipeCavenicBow.class, Category.SHAPED, "after:minecraft:shaped");
 	}
 
@@ -219,6 +224,7 @@ public class Caveworld
 			CaveUtils.isItemPickaxe(item);
 			CaveUtils.isItemAxe(item);
 			CaveUtils.isItemShovel(item);
+			CaveUtils.isItemHoe(item);
 		}
 
 		for (Block block : GameData.getBlockRegistry().typeSafeIterable())
@@ -317,80 +323,80 @@ public class Caveworld
 			catch (Throwable e) {}
 		}
 
-		CaveworldAPI.setMiningPointAmount("oreCoal", 1);
-		CaveworldAPI.setMiningPointAmount("oreIron", 1);
-		CaveworldAPI.setMiningPointAmount("oreGold", 1);
-		CaveworldAPI.setMiningPointAmount("oreRedstone", 2);
-		CaveworldAPI.setMiningPointAmount(Blocks.lit_redstone_ore, 0, 2);
-		CaveworldAPI.setMiningPointAmount("oreLapis", 2);
-		CaveworldAPI.setMiningPointAmount("oreEmerald", 2);
-		CaveworldAPI.setMiningPointAmount("oreDiamond", 3);
-		CaveworldAPI.setMiningPointAmount("oreQuartz", 1);
-		CaveworldAPI.setMiningPointAmount("oreCopper", 1);
-		CaveworldAPI.setMiningPointAmount("copperOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreTin", 1);
-		CaveworldAPI.setMiningPointAmount("tinOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreLead", 1);
-		CaveworldAPI.setMiningPointAmount("leadOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreSilver", 1);
-		CaveworldAPI.setMiningPointAmount("silverOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreAdamantium", 1);
-		CaveworldAPI.setMiningPointAmount("adamantiumOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreAluminum", 1);
-		CaveworldAPI.setMiningPointAmount("aluminumOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreApatite", 1);
-		CaveworldAPI.setMiningPointAmount("apatiteOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreMythril", 1);
-		CaveworldAPI.setMiningPointAmount("mythrilOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreOnyx", 1);
-		CaveworldAPI.setMiningPointAmount("onyxOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreUranium", 2);
-		CaveworldAPI.setMiningPointAmount("uraniumOre", 2);
-		CaveworldAPI.setMiningPointAmount("oreSapphire", 2);
-		CaveworldAPI.setMiningPointAmount("sapphireOre", 2);
-		CaveworldAPI.setMiningPointAmount("oreRuby", 2);
-		CaveworldAPI.setMiningPointAmount("rubyOre", 2);
-		CaveworldAPI.setMiningPointAmount("oreTopaz", 2);
-		CaveworldAPI.setMiningPointAmount("topazOre", 2);
-		CaveworldAPI.setMiningPointAmount("oreChrome", 1);
-		CaveworldAPI.setMiningPointAmount("chromeOre", 1);
-		CaveworldAPI.setMiningPointAmount("orePlatinum", 1);
-		CaveworldAPI.setMiningPointAmount("platinumOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreTitanium", 1);
-		CaveworldAPI.setMiningPointAmount("titaniumOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreTofu", 1);
-		CaveworldAPI.setMiningPointAmount("tofuOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreTofuDiamond", 3);
-		CaveworldAPI.setMiningPointAmount("tofuDiamondOre", 3);
-		CaveworldAPI.setMiningPointAmount("oreSulfur", 1);
-		CaveworldAPI.setMiningPointAmount("sulfurOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreSaltpeter", 1);
-		CaveworldAPI.setMiningPointAmount("saltpeterOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreFirestone", 2);
-		CaveworldAPI.setMiningPointAmount("firestoneOre", 2);
-		CaveworldAPI.setMiningPointAmount("oreSalt", 1);
-		CaveworldAPI.setMiningPointAmount("saltOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreJade", 1);
-		CaveworldAPI.setMiningPointAmount("jadeOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreManganese", 1);
-		CaveworldAPI.setMiningPointAmount("manganeseOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreLanite", 1);
-		CaveworldAPI.setMiningPointAmount("laniteOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreMeurodite", 1);
-		CaveworldAPI.setMiningPointAmount("meuroditeOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreSoul", 1);
-		CaveworldAPI.setMiningPointAmount("soulOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreSunstone", 1);
-		CaveworldAPI.setMiningPointAmount("sunstoneOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreZinc", 1);
-		CaveworldAPI.setMiningPointAmount("zincOre", 1);
-		CaveworldAPI.setMiningPointAmount("oreCrocoite", 3);
-		CaveworldAPI.setMiningPointAmount("crocoiteOre", 3);
-		CaveworldAPI.setMiningPointAmount("oreCavenium", 2);
-		CaveworldAPI.setMiningPointAmount("caveniumOre", 2);
-		CaveworldAPI.setMiningPointAmount("oreAquamarine", 2);
-		CaveworldAPI.setMiningPointAmount("aquamarineOre", 2);
-		CaveworldAPI.setMiningPointAmount("glowstone", 2);
+		CaverAPI.setMiningPointAmount("oreCoal", 1);
+		CaverAPI.setMiningPointAmount("oreIron", 1);
+		CaverAPI.setMiningPointAmount("oreGold", 1);
+		CaverAPI.setMiningPointAmount("oreRedstone", 2);
+		CaverAPI.setMiningPointAmount(Blocks.lit_redstone_ore, 0, 2);
+		CaverAPI.setMiningPointAmount("oreLapis", 2);
+		CaverAPI.setMiningPointAmount("oreEmerald", 2);
+		CaverAPI.setMiningPointAmount("oreDiamond", 3);
+		CaverAPI.setMiningPointAmount("oreQuartz", 1);
+		CaverAPI.setMiningPointAmount("oreCopper", 1);
+		CaverAPI.setMiningPointAmount("copperOre", 1);
+		CaverAPI.setMiningPointAmount("oreTin", 1);
+		CaverAPI.setMiningPointAmount("tinOre", 1);
+		CaverAPI.setMiningPointAmount("oreLead", 1);
+		CaverAPI.setMiningPointAmount("leadOre", 1);
+		CaverAPI.setMiningPointAmount("oreSilver", 1);
+		CaverAPI.setMiningPointAmount("silverOre", 1);
+		CaverAPI.setMiningPointAmount("oreAdamantium", 1);
+		CaverAPI.setMiningPointAmount("adamantiumOre", 1);
+		CaverAPI.setMiningPointAmount("oreAluminum", 1);
+		CaverAPI.setMiningPointAmount("aluminumOre", 1);
+		CaverAPI.setMiningPointAmount("oreApatite", 1);
+		CaverAPI.setMiningPointAmount("apatiteOre", 1);
+		CaverAPI.setMiningPointAmount("oreMythril", 1);
+		CaverAPI.setMiningPointAmount("mythrilOre", 1);
+		CaverAPI.setMiningPointAmount("oreOnyx", 1);
+		CaverAPI.setMiningPointAmount("onyxOre", 1);
+		CaverAPI.setMiningPointAmount("oreUranium", 2);
+		CaverAPI.setMiningPointAmount("uraniumOre", 2);
+		CaverAPI.setMiningPointAmount("oreSapphire", 2);
+		CaverAPI.setMiningPointAmount("sapphireOre", 2);
+		CaverAPI.setMiningPointAmount("oreRuby", 2);
+		CaverAPI.setMiningPointAmount("rubyOre", 2);
+		CaverAPI.setMiningPointAmount("oreTopaz", 2);
+		CaverAPI.setMiningPointAmount("topazOre", 2);
+		CaverAPI.setMiningPointAmount("oreChrome", 1);
+		CaverAPI.setMiningPointAmount("chromeOre", 1);
+		CaverAPI.setMiningPointAmount("orePlatinum", 1);
+		CaverAPI.setMiningPointAmount("platinumOre", 1);
+		CaverAPI.setMiningPointAmount("oreTitanium", 1);
+		CaverAPI.setMiningPointAmount("titaniumOre", 1);
+		CaverAPI.setMiningPointAmount("oreTofu", 1);
+		CaverAPI.setMiningPointAmount("tofuOre", 1);
+		CaverAPI.setMiningPointAmount("oreTofuDiamond", 3);
+		CaverAPI.setMiningPointAmount("tofuDiamondOre", 3);
+		CaverAPI.setMiningPointAmount("oreSulfur", 1);
+		CaverAPI.setMiningPointAmount("sulfurOre", 1);
+		CaverAPI.setMiningPointAmount("oreSaltpeter", 1);
+		CaverAPI.setMiningPointAmount("saltpeterOre", 1);
+		CaverAPI.setMiningPointAmount("oreFirestone", 2);
+		CaverAPI.setMiningPointAmount("firestoneOre", 2);
+		CaverAPI.setMiningPointAmount("oreSalt", 1);
+		CaverAPI.setMiningPointAmount("saltOre", 1);
+		CaverAPI.setMiningPointAmount("oreJade", 1);
+		CaverAPI.setMiningPointAmount("jadeOre", 1);
+		CaverAPI.setMiningPointAmount("oreManganese", 1);
+		CaverAPI.setMiningPointAmount("manganeseOre", 1);
+		CaverAPI.setMiningPointAmount("oreLanite", 1);
+		CaverAPI.setMiningPointAmount("laniteOre", 1);
+		CaverAPI.setMiningPointAmount("oreMeurodite", 1);
+		CaverAPI.setMiningPointAmount("meuroditeOre", 1);
+		CaverAPI.setMiningPointAmount("oreSoul", 1);
+		CaverAPI.setMiningPointAmount("soulOre", 1);
+		CaverAPI.setMiningPointAmount("oreSunstone", 1);
+		CaverAPI.setMiningPointAmount("sunstoneOre", 1);
+		CaverAPI.setMiningPointAmount("oreZinc", 1);
+		CaverAPI.setMiningPointAmount("zincOre", 1);
+		CaverAPI.setMiningPointAmount("oreCrocoite", 3);
+		CaverAPI.setMiningPointAmount("crocoiteOre", 3);
+		CaverAPI.setMiningPointAmount("oreCavenium", 2);
+		CaverAPI.setMiningPointAmount("caveniumOre", 2);
+		CaverAPI.setMiningPointAmount("oreAquamarine", 2);
+		CaverAPI.setMiningPointAmount("aquamarineOre", 2);
+		CaverAPI.setMiningPointAmount("glowstone", 2);
 
 		Config.syncBiomesCfg();
 		Config.syncBiomesCavernCfg();
@@ -419,7 +425,7 @@ public class Caveworld
 		{
 			for (int i = 0; i < 16; ++i)
 			{
-				int point = CaveworldAPI.getMiningPointAmount(block, i);
+				int point = CaverAPI.getMiningPointAmount(block, i);
 
 				if (point > 0)
 				{
@@ -430,7 +436,7 @@ public class Caveworld
 			}
 		}
 
-		CaveworldAPI.caverManager.clearMiningPointAmounts();
+		CaverAPI.caverManager.clearMiningPointAmounts();
 
 		ConfigCategory category = Config.generalCfg.getCategory(Configuration.CATEGORY_GENERAL);
 		Property prop = category.get("miningPoints");

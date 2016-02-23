@@ -5,7 +5,7 @@ import java.util.Random;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 
-public class EmptyCaveVein implements ICaveVein
+public class DummyCaveVein implements ICaveVein
 {
 	@Override
 	public BlockEntry setBlock(BlockEntry entry)

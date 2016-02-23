@@ -10,6 +10,7 @@
 package caveworld.plugin.hexagonaldia;
 
 import caveworld.api.BlockEntry;
+import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
 import caveworld.core.CaveVeinManager.CaveVein;
 import caveworld.core.Config;
@@ -59,7 +60,7 @@ public class HexagonalDiamondPlugin implements ICavePlugin
 				CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 1, 1, 10, 1, 10));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block, 0, 10);
+			CaverAPI.setMiningPointAmount(block, 0, 10);
 		}
 	}
 }

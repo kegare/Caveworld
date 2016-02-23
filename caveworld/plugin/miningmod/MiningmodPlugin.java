@@ -10,6 +10,7 @@
 package caveworld.plugin.miningmod;
 
 import caveworld.api.BlockEntry;
+import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
 import caveworld.core.CaveVeinManager.CaveVein;
 import caveworld.core.Config;
@@ -59,7 +60,7 @@ public class MiningmodPlugin implements ICavePlugin
 				 CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 6, 12, 100, 12, 64));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block, 0, 1);
+			CaverAPI.setMiningPointAmount(block, 0, 1);
 		}
 
 		block = GameRegistry.findBlock(MODID, "copperOre");
@@ -71,7 +72,7 @@ public class MiningmodPlugin implements ICavePlugin
 				 CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 8, 10, 100, 0, 255));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block, 0, 1);
+			CaverAPI.setMiningPointAmount(block, 0, 1);
 		}
 
 		block = GameRegistry.findBlock(MODID, "tinOre");
@@ -83,7 +84,7 @@ public class MiningmodPlugin implements ICavePlugin
 				 CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 6, 12, 100, 0, 255));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block, 0, 1);
+			CaverAPI.setMiningPointAmount(block, 0, 1);
 		}
 
 		block = GameRegistry.findBlock(MODID, "rubyOre");
@@ -95,7 +96,7 @@ public class MiningmodPlugin implements ICavePlugin
 				 CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 6, 5, 100, 10, 64));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block, 0, 2);
+			CaverAPI.setMiningPointAmount(block, 0, 2);
 		}
 
 		block = GameRegistry.findBlock(MODID, "sapphireOre");
@@ -107,7 +108,7 @@ public class MiningmodPlugin implements ICavePlugin
 				 CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 6, 5, 100, 5, 64));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block, 0, 2);
+			CaverAPI.setMiningPointAmount(block, 0, 2);
 		}
 
 		block = GameRegistry.findBlock(MODID, "silverOre");
@@ -119,7 +120,7 @@ public class MiningmodPlugin implements ICavePlugin
 				 CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 8, 6, 100, 0, 255));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block, 0, 1);
+			CaverAPI.setMiningPointAmount(block, 0, 1);
 		}
 
 		block = GameRegistry.findBlock(MODID, "mithrilOre");
@@ -131,7 +132,7 @@ public class MiningmodPlugin implements ICavePlugin
 				 CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 5, 5, 100, 0, 50));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block, 0, 1);
+			CaverAPI.setMiningPointAmount(block, 0, 1);
 		}
 	}
 }

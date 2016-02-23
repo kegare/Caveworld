@@ -253,7 +253,7 @@ public class EntityCaveman extends EntityMob implements IInventory
 
 			for (EntityItem item : list)
 			{
-				if (item != null)
+				if (item != null && item.isEntityAlive())
 				{
 					ItemStack itemstack = item.getEntityItem();
 

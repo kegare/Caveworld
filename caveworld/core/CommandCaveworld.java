@@ -13,6 +13,7 @@ import java.awt.Desktop;
 import java.net.URI;
 import java.util.List;
 
+import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
 import caveworld.network.CaveNetworkRegistry;
 import caveworld.network.client.CaveworldMenuMessage;
@@ -167,7 +168,7 @@ public class CommandCaveworld implements ICommand
 
 				if (value != 0)
 				{
-					CaveworldAPI.addMiningPoint(player, value);
+					CaverAPI.addMiningPoint(player, value);
 				}
 			}
 		}

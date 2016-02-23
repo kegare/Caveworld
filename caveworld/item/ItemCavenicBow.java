@@ -40,6 +40,7 @@ public class ItemCavenicBow extends ItemBow implements IModeItem
 	{
 		NORMAL,
 		RAPID,
+		SNIPE,
 		TORCH
 	}
 
@@ -116,9 +117,14 @@ public class ItemCavenicBow extends ItemBow implements IModeItem
 	@Override
 	public void onPlayerStoppedUsing(ItemStack itemstack, World world, EntityPlayer player, int useRemaining)
 	{
+		if (world.isRemote)
+		{
+			Caveworld.proxy.setDebugBoundingBox(false);
+		}
+
 		BowMode mode = getMode(itemstack);
 		int charge = getMaxItemUseDuration(itemstack) - useRemaining;
-		float power = charge / 20.0F;
+		float power = charge / (mode == BowMode.SNIPE ? 100.0F : 20.0F);
 
 		power = (power * power + power * 2.0F) / 3.0F;
 
@@ -133,7 +139,7 @@ public class ItemCavenicBow extends ItemBow implements IModeItem
 		}
 
 		boolean flag = player.capabilities.isCreativeMode || EnchantmentHelper.getEnchantmentLevel(Enchantment.infinity.effectId, itemstack) > 0;
-		boolean holder = MIMPlugin.arrowHolder != null && player.inventory.hasItem(MIMPlugin.arrowHolder);
+		boolean holder = MIMPlugin.hasArrowHolder(player);
 
 		switch (mode)
 		{
@@ -146,7 +152,7 @@ public class ItemCavenicBow extends ItemBow implements IModeItem
 
 					if (j > 0)
 					{
-						arrow.setDamage(arrow.getDamage() + j * 0.5D + 0.25D);
+						arrow.setDamage(arrow.getDamage() + j * 0.5D + 0.5D);
 					}
 
 					j = EnchantmentHelper.getEnchantmentLevel(Enchantment.punch.effectId, itemstack);
@@ -197,14 +203,79 @@ public class ItemCavenicBow extends ItemBow implements IModeItem
 				}
 
 				break;
+			case SNIPE:
+				if (flag || player.inventory.hasItem(Items.arrow) || holder)
+				{
+					EntityArrow arrow = createEntityArrow(world, player, power > 0.75F ? power * 10.0F : power * 2.0F);
+
+					if (power == 1.0F)
+					{
+						arrow.setIsCritical(true);
+					}
+
+					int j = EnchantmentHelper.getEnchantmentLevel(Enchantment.power.effectId, itemstack);
+
+					if (j > 0)
+					{
+						arrow.setDamage(arrow.getDamage() + j + 0.5D);
+					}
+
+					j = EnchantmentHelper.getEnchantmentLevel(Enchantment.punch.effectId, itemstack);
+
+					if (j > 0)
+					{
+						arrow.setKnockbackStrength(j * 2);
+					}
+
+					if (EnchantmentHelper.getEnchantmentLevel(Enchantment.flame.effectId, itemstack) > 0)
+					{
+						arrow.setFire(100);
+					}
+
+					itemstack.damageItem(2, player);
+					world.playSoundAtEntity(player, "random.bow", 1.0F, 1.0F / (itemRand.nextFloat() * 0.4F + 1.2F) + power * 0.5F);
+
+					if (flag)
+					{
+						arrow.canBePickedUp = 2;
+					}
+					else
+					{
+						if (holder)
+						{
+							for (int k = 0; k < player.inventory.getSizeInventory(); ++k)
+							{
+								ItemStack item = player.inventory.getStackInSlot(k);
+
+								if (item != null && item.getItem() == MIMPlugin.arrowHolder && item.getMaxDamage() - item.getItemDamage() - 2 > 0)
+								{
+									item.damageItem(1, player);
+
+									break;
+								}
+							}
+						}
+						else
+						{
+							player.inventory.consumeInventoryItem(Items.arrow);
+						}
+					}
+
+					if (!world.isRemote)
+					{
+						world.spawnEntityInWorld(arrow);
+					}
+				}
+
+				break;
 			case TORCH:
 				if (flag || player.inventory.hasItem(Items.arrow) || holder)
 				{
-					boolean holder2 = MIMPlugin.torchHolder != null && player.inventory.hasItem(MIMPlugin.torchHolder);
-					boolean flag2 = flag || player.inventory.hasItem(Item.getItemFromBlock(Blocks.torch)) || holder2;
+					boolean holder2 = MIMPlugin.hasTorchHolder(player);
+					boolean torch = player.capabilities.isCreativeMode || player.inventory.hasItem(Item.getItemFromBlock(Blocks.torch)) || holder2;
 					EntityArrow arrow;
 
-					if (flag2)
+					if (torch)
 					{
 						arrow = new EntityTorchArrow(world, player, power * 1.5F);
 					}
@@ -260,7 +331,7 @@ public class ItemCavenicBow extends ItemBow implements IModeItem
 							player.inventory.consumeInventoryItem(Items.arrow);
 						}
 
-						if (flag2)
+						if (torch)
 						{
 							if (holder2)
 							{
@@ -366,15 +437,15 @@ public class ItemCavenicBow extends ItemBow implements IModeItem
 		switch (mode)
 		{
 			case RAPID:
-				if (player.capabilities.isCreativeMode || player.inventory.hasItem(Items.arrow) || MIMPlugin.arrowHolder != null && player.inventory.hasItem(MIMPlugin.arrowHolder))
+				if (player.capabilities.isCreativeMode || player.inventory.hasItem(Items.arrow) || MIMPlugin.hasArrowHolder(player))
 				{
 					player.setItemInUse(itemstack, 2);
-					itemstack.onPlayerStoppedUsing(world, player, getMaxItemUseDuration(itemstack) - getMaxItemUseDuration(itemstack) / 2);
+					itemstack.onPlayerStoppedUsing(world, player, getMaxItemUseDuration(itemstack) / 2);
 				}
 
 				return itemstack;
 			default:
-				if (player.capabilities.isCreativeMode || player.inventory.hasItem(Items.arrow) || MIMPlugin.arrowHolder != null && player.inventory.hasItem(MIMPlugin.arrowHolder))
+				if (player.capabilities.isCreativeMode || player.inventory.hasItem(Items.arrow) || MIMPlugin.hasArrowHolder(player))
 				{
 					player.setItemInUse(itemstack, getMaxItemUseDuration(itemstack));
 				}
@@ -436,14 +507,16 @@ public class ItemCavenicBow extends ItemBow implements IModeItem
 	{
 		if (usingItem != null && usingItem.getItem() == this)
 		{
+			BowMode mode = getMode(itemstack);
 			int i = usingItem.getMaxItemUseDuration() - useRemaining;
+			boolean snipe = mode == BowMode.SNIPE;
 
-			if (i >= 20)
+			if (i >= (snipe ? 100 : 20))
 			{
 				return getItemIconForUseDuration(2);
 			}
 
-			if (i >= 10)
+			if (i >= (snipe ? 50 : 10))
 			{
 				return getItemIconForUseDuration(1);
 			}

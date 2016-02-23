@@ -19,6 +19,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
 import caveworld.api.ICaveBiomeManager;
 import caveworld.api.ICaveVeinManager;
@@ -50,6 +51,8 @@ import caveworld.item.ItemCavenicBow.BowMode;
 import caveworld.item.ItemCavenium;
 import caveworld.item.ItemCaverBackpack;
 import caveworld.item.ItemDiggingShovel;
+import caveworld.item.ItemFarmingHoe;
+import caveworld.item.ItemFarmingHoe.FarmMode;
 import caveworld.item.ItemLumberingAxe;
 import caveworld.item.ItemMiningPickaxe;
 import caveworld.item.ItemOreCompass;
@@ -90,6 +93,7 @@ import cpw.mods.fml.common.network.FMLNetworkEvent.ServerConnectionFromClientEve
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
+import net.minecraft.block.IGrowable;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundCategory;
@@ -289,8 +293,8 @@ public class CaveEventHooks
 					return;
 				}
 
-				MinerRank minerRank = CaverManager.getRank(CaveworldAPI.getMinerRank(mc.thePlayer));
-				String point = Integer.toString(CaveworldAPI.getMiningPoint(mc.thePlayer));
+				MinerRank minerRank = CaverManager.getRank(CaverAPI.getMinerRank(mc.thePlayer));
+				String point = Integer.toString(CaverAPI.getMiningPoint(mc.thePlayer));
 				String rank = I18n.format(minerRank.getUnlocalizedName());
 				int x = event.resolution.getScaledWidth() - 20;
 				int y;
@@ -441,21 +445,25 @@ public class CaveEventHooks
 		if (using != null && using.getItem() instanceof ItemCavenicBow)
 		{
 			ItemCavenicBow bow = (ItemCavenicBow)using.getItem();
+			BowMode mode = bow.getMode(using);
 
-			if (bow.getMode(using) != BowMode.RAPID)
+			if (mode != BowMode.RAPID)
 			{
-				float f = player.getItemInUseDuration() / 20.0F;
+				boolean snipe = mode == BowMode.SNIPE;
+				float f = player.getItemInUseDuration() / (snipe ? 100.0F : 20.0F);
 
 				if (f > 1.0F)
 				{
 					f = 1.0F;
+
+					Caveworld.proxy.setDebugBoundingBox(player.isSneaking());
 				}
 				else
 				{
 					f *= f;
 				}
 
-				event.newfov *= 1.0F - f * 0.15F;
+				event.newfov *= 1.0F - f * (snipe ? 0.8F : 0.15F);
 			}
 		}
 	}
@@ -468,7 +476,7 @@ public class CaveEventHooks
 
 		if (CaveworldAPI.isEntityInCaves(entity))
 		{
-			if (event.block.getMaterial() == Material.water && CaveworldAPI.getMinerRank(entity) >= MinerRank.AQUA_MINER.getRank())
+			if (event.block.getMaterial() == Material.water && CaverAPI.getMinerRank(entity) >= MinerRank.AQUA_MINER.getRank())
 			{
 				GL11.glFogi(GL11.GL_FOG_MODE, GL11.GL_EXP);
 
@@ -500,6 +508,33 @@ public class CaveEventHooks
 				event.density = 0.005F;
 				event.setCanceled(true);
 			}
+			else if (entity instanceof EntityPlayer)
+			{
+				EntityPlayer player = (EntityPlayer)entity;
+				ItemStack using = player.getItemInUse();
+
+				if (using != null && using.getItem() instanceof ItemCavenicBow)
+				{
+					if (((ItemCavenicBow)using.getItem()).getMode(using) == BowMode.SNIPE)
+					{
+						float f = player.getItemInUseDuration() / 100.0F;
+
+						if (f > 1.0F)
+						{
+							f = 1.0F;
+						}
+						else
+						{
+							f *= f;
+						}
+
+						GL11.glFogi(GL11.GL_FOG_MODE, GL11.GL_EXP);
+
+						event.density = f / 250.0F;
+						event.setCanceled(true);
+					}
+				}
+			}
 		}
 	}
 
@@ -517,6 +552,20 @@ public class CaveEventHooks
 		else if (CaveworldAPI.isEntityInCavenia(entity))
 		{
 			var1 = 1.0F;
+		}
+
+		if (entity instanceof EntityPlayer)
+		{
+			EntityPlayer player = (EntityPlayer)entity;
+			ItemStack using = player.getItemInUse();
+
+			if (using != null && using.getItem() instanceof ItemCavenicBow)
+			{
+				if (((ItemCavenicBow)using.getItem()).getMode(using) == BowMode.SNIPE)
+				{
+					var1 = 1.0F;
+				}
+			}
 		}
 
 		if (var1 > 0.0F)
@@ -724,7 +773,7 @@ public class CaveEventHooks
 				{
 					if (CaveworldAPI.isEntityInAquaCavern(player))
 					{
-						CaveUtils.teleportPlayer(player, CaveworldAPI.getAquaCavernLastDimension(player));
+						CaveUtils.teleportPlayer(player, CaverAPI.getAquaCavernLastDimension(player));
 					}
 					else
 					{
@@ -839,6 +888,11 @@ public class CaveEventHooks
 		{
 			mode.clear(player);
 		}
+
+		for (ItemFarmingHoe.FarmMode mode : ItemFarmingHoe.FarmMode.values())
+		{
+			mode.clear(player);
+		}
 	}
 
 	@SubscribeEvent
@@ -934,7 +988,7 @@ public class CaveEventHooks
 
 				if (CaveworldAPI.isEntityInAquaCavern(thePlayer))
 				{
-					CaveUtils.teleportPlayer(thePlayer, CaveworldAPI.getAquaCavernLastDimension(thePlayer));
+					CaveUtils.teleportPlayer(thePlayer, CaverAPI.getAquaCavernLastDimension(thePlayer));
 				}
 				else
 				{
@@ -1038,7 +1092,7 @@ public class CaveEventHooks
 				{
 					Block block = event.block;
 					int meta = event.blockMetadata;
-					int amount = CaveworldAPI.getMiningPointAmount(block, meta);
+					int amount = CaverAPI.getMiningPointAmount(block, meta);
 
 					MiningPointEvent.OnBlockBreak point = new MiningPointEvent.OnBlockBreak(player, amount);
 					MinecraftForge.EVENT_BUS.post(point);
@@ -1047,7 +1101,7 @@ public class CaveEventHooks
 
 					if (amount != 0)
 					{
-						CaveworldAPI.addMiningPoint(player, amount);
+						CaverAPI.addMiningPoint(player, amount);
 					}
 				}
 			}
@@ -1065,11 +1119,11 @@ public class CaveEventHooks
 		int face = event.face;
 		ItemStack current = player.getCurrentEquippedItem();
 
-		if (!world.isRemote)
+		switch (event.action)
 		{
-			switch (event.action)
-			{
-				case LEFT_CLICK_BLOCK:
+			case LEFT_CLICK_BLOCK:
+				if (!world.isRemote)
+				{
 					if (current != null && current.getItem() instanceof ICaveniumTool && current.getItemDamage() < current.getMaxDamage())
 					{
 						ICaveniumTool tool = (ICaveniumTool)current.getItem();
@@ -1099,9 +1153,35 @@ public class CaveEventHooks
 							CaveNetworkRegistry.sendTo(new MultiBreakCountMessage(0), (EntityPlayerMP)player);
 						}
 					}
+					else if (current != null && current.getItem() instanceof ItemFarmingHoe)
+					{
+						if (player.capabilities.isCreativeMode)
+						{
+							Block block = world.getBlock(x, y, z);
 
-					break;
-				case RIGHT_CLICK_BLOCK:
+							if (block instanceof IGrowable)
+							{
+								IGrowable growable = (IGrowable)block;
+
+								if (!growable.func_149851_a(world, x, y, z, world.isRemote))
+								{
+									MultiBreakExecutor executor = ((ItemFarmingHoe)current.getItem()).getMode(current).getExecutor(player);
+
+									if (executor != null)
+									{
+										executor.setOriginPos(x, y, z).setBreakPositions();
+										executor.breakAll();
+									}
+								}
+							}
+						}
+					}
+				}
+
+				break;
+			case RIGHT_CLICK_BLOCK:
+				if (!world.isRemote)
+				{
 					Item portal = null;
 
 					if (!player.isSneaking() && current != null && (current.getItem() == Item.getItemFromBlock(Blocks.ender_chest) ||
@@ -1133,11 +1213,43 @@ public class CaveEventHooks
 					{
 						event.setCanceled(true);
 					}
+				}
 
-					break;
-				default:
-					break;
-			}
+				break;
+			case RIGHT_CLICK_AIR:
+				if (current != null && current.getItem() instanceof ItemFarmingHoe)
+				{
+					if (world.isRemote)
+					{
+						((ItemFarmingHoe)current.getItem()).setHighlightStart(System.currentTimeMillis());
+					}
+					else
+					{
+						NBTTagCompound nbt = current.getTagCompound();
+
+						if (nbt == null)
+						{
+							current.setTagCompound(new NBTTagCompound());
+
+							nbt = current.getTagCompound();
+						}
+
+						int i = nbt.getInteger("Mode");
+
+						if (++i > FarmMode.values().length - 1)
+						{
+							i = 0;
+						}
+
+						nbt.setInteger("Mode", i);
+
+						world.playSoundAtEntity(player, "random.click", 0.6F, 1.7F);
+					}
+				}
+
+				break;
+			default:
+				break;
 		}
 	}
 
@@ -1149,7 +1261,7 @@ public class CaveEventHooks
 		boolean miner = CaveworldAPI.isEntityInCaves(player) && CaveUtils.isItemPickaxe(current);
 
 		if (current != null && (current.getItem() instanceof IAquamarineTool || current.getItem() instanceof ICaveniumTool && ((ICaveniumTool)current.getItem()).getBase(current) instanceof IAquamarineTool ||
-			miner && CaveworldAPI.getMinerRank(player) >= MinerRank.AQUA_MINER.getRank()))
+			miner && CaverAPI.getMinerRank(player) >= MinerRank.AQUA_MINER.getRank()))
 		{
 			if (player.isInsideOfMaterial(Material.water) && !EnchantmentHelper.getAquaAffinityModifier(player))
 			{
@@ -1191,7 +1303,7 @@ public class CaveEventHooks
 
 		if (miner)
 		{
-			int rank = CaveworldAPI.getMinerRank(player);
+			int rank = CaverAPI.getMinerRank(player);
 
 			if (rank >= MinerRank.CRAZY_MINER.getRank())
 			{
@@ -1211,9 +1323,9 @@ public class CaveEventHooks
 		{
 			EntityPlayerMP player = (EntityPlayerMP)event.entityPlayer;
 
-			if (CaveworldAPI.isEntityInCaves(player) && !(player.capabilities.isCreativeMode || CaveworldAPI.getMinerRank(player) >= MinerRank.DIAMOND_MINER.getRank()))
+			if (CaveworldAPI.isEntityInCaves(player) && !(player.capabilities.isCreativeMode || CaverAPI.getMinerRank(player) >= MinerRank.DIAMOND_MINER.getRank()))
 			{
-				long last = CaveworldAPI.getLastSleepTime(player);
+				long last = CaverAPI.getLastSleepTime(player);
 				long time = player.getServerForPlayer().getTotalWorldTime();
 				long require = 6000L;
 				long remaining = require - (time - last);
@@ -1229,7 +1341,7 @@ public class CaveEventHooks
 				}
 				else
 				{
-					CaveworldAPI.setLastSleepTime(player, time);
+					CaverAPI.setLastSleepTime(player, time);
 				}
 			}
 		}
@@ -1277,7 +1389,7 @@ public class CaveEventHooks
 	@SubscribeEvent
 	public void onEntityConstructing(EntityConstructing event)
 	{
-		CaveworldAPI.getMiningPoint(event.entity);
+		CaverAPI.getMiningPoint(event.entity);
 	}
 
 	@SubscribeEvent
@@ -1288,7 +1400,7 @@ public class CaveEventHooks
 
 		if (entity instanceof EntityLivingBase)
 		{
-			CaveworldAPI.loadData(entity, null);
+			CaverAPI.loadData(entity, null);
 		}
 
 		if (entity instanceof EntityLiving && CaveworldAPI.isEntityInCaves(entity))
@@ -1333,7 +1445,7 @@ public class CaveEventHooks
 
 		if (Config.deathLoseMiningPoint)
 		{
-			CaveworldAPI.setMiningPoint(entity, 0);
+			CaverAPI.setMiningPoint(entity, 0);
 		}
 
 		if (CaveworldAPI.isEntityInCavenia(entity) && entity instanceof EntityPlayer)
@@ -1343,7 +1455,7 @@ public class CaveEventHooks
 			player.getEntityData().setTag("Cavenia:Inventory", player.inventory.writeToNBT(new NBTTagList()));
 		}
 
-		CaveworldAPI.saveData(entity, null);
+		CaverAPI.saveData(entity, null);
 	}
 
 	@SubscribeEvent
@@ -1351,7 +1463,7 @@ public class CaveEventHooks
 	{
 		EntityLivingBase entity = event.entityLiving;
 
-		if (CaveworldAPI.isEntityInCaves(entity) && entity.isInWater() && CaveworldAPI.getMinerRank(entity) >= MinerRank.AQUA_MINER.getRank())
+		if (CaveworldAPI.isEntityInCaves(entity) && entity.isInWater() && CaverAPI.getMinerRank(entity) >= MinerRank.AQUA_MINER.getRank())
 		{
 			if (!(entity instanceof EntityPlayer) || !((EntityPlayer)entity).capabilities.isFlying)
 			{
@@ -1388,7 +1500,7 @@ public class CaveEventHooks
 
 				if (player.ticksExisted % i == 0)
 				{
-					if (CaveworldAPI.getMinerRank(entity) >= MinerRank.IRON_MINER.getRank())
+					if (CaverAPI.getMinerRank(entity) >= MinerRank.IRON_MINER.getRank())
 					{
 						SextiarySectorAPI.addMoistureExhaustion(player, 2.0F);
 					}
@@ -1483,7 +1595,7 @@ public class CaveEventHooks
 		{
 			if (message.matches("@buff|@buff ([0-9]*$|max)"))
 			{
-				int point = CaveworldAPI.getMiningPoint(player);
+				int point = CaverAPI.getMiningPoint(player);
 
 				if (message.matches("@buff [0-9]*$"))
 				{
@@ -1505,7 +1617,7 @@ public class CaveEventHooks
 
 					if (potion != null)
 					{
-						CaveworldAPI.addMiningPoint(player, -point);
+						CaverAPI.addMiningPoint(player, -point);
 
 						player.addPotionEffect(new PotionEffect(potion.id, point * 20));
 					}
@@ -1539,7 +1651,7 @@ public class CaveEventHooks
 
 			if (Config.showMinerRank && !event.isCanceled())
 			{
-				MinerRank rank = CaverManager.getRank(CaveworldAPI.getMinerRank(player));
+				MinerRank rank = CaverManager.getRank(CaverAPI.getMinerRank(player));
 
 				event.component = new ChatComponentTranslation("[%s] %s", new ChatComponentTranslation(rank.getUnlocalizedName()), event.component);
 			}

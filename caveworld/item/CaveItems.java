@@ -14,6 +14,7 @@ import com.google.common.base.Predicate;
 import caveworld.block.CaveBlocks;
 import caveworld.recipe.RecipeCavenicBow;
 import caveworld.recipe.RecipeCaveniumTool;
+import caveworld.recipe.RecipeFarmingHoe;
 import caveworld.util.CaveUtils;
 import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.block.BlockDispenser;
@@ -36,6 +37,7 @@ public class CaveItems
 	public static final ItemMiningPickaxe mining_pickaxe = new ItemMiningPickaxe("pickaxeMining");
 	public static final ItemLumberingAxe lumbering_axe = new ItemLumberingAxe("axeLumbering");
 	public static final ItemDiggingShovel digging_shovel = new ItemDiggingShovel("shovelDigging");
+	public static final ItemFarmingHoe farming_hoe = new ItemFarmingHoe("hoeFarming");
 	public static final ItemCavenicBow cavenic_bow = new ItemCavenicBow("bowCavenic");
 	public static final ItemOreCompass ore_compass = new ItemOreCompass("oreCompass");
 	public static final ItemGem gem = new ItemGem("gem");
@@ -51,6 +53,7 @@ public class CaveItems
 		GameRegistry.registerItem(mining_pickaxe, "mining_pickaxe");
 		GameRegistry.registerItem(lumbering_axe, "lumbering_axe");
 		GameRegistry.registerItem(digging_shovel, "digging_shovel");
+		GameRegistry.registerItem(farming_hoe, "farming_hoe");
 		GameRegistry.registerItem(cavenic_bow, "cavenic_bow");
 		GameRegistry.registerItem(ore_compass, "ore_compass");
 		GameRegistry.registerItem(gem, "gem");
@@ -70,6 +73,8 @@ public class CaveItems
 		OreDictionary.registerOre("lumberingAxe", lumbering_axe);
 		OreDictionary.registerOre("shovelDigging", digging_shovel);
 		OreDictionary.registerOre("diggingShovel", digging_shovel);
+		OreDictionary.registerOre("hoeFarming", farming_hoe);
+		OreDictionary.registerOre("farmingHoe", farming_hoe);
 		OreDictionary.registerOre("bowCavenic", cavenic_bow);
 		OreDictionary.registerOre("cavenicBow", cavenic_bow);
 		OreDictionary.registerOre("oreCompass", ore_compass);
@@ -117,6 +122,14 @@ public class CaveItems
 			public boolean apply(ItemStack itemstack)
 			{
 				return CaveUtils.isItemShovel(itemstack);
+			}
+		}));
+		GameRegistry.addRecipe(new RecipeFarmingHoe(new ItemStack(farming_hoe), new Predicate<ItemStack>()
+		{
+			@Override
+			public boolean apply(ItemStack itemstack)
+			{
+				return CaveUtils.isItemHoe(itemstack);
 			}
 		}));
 

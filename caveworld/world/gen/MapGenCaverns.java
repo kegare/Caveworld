@@ -10,7 +10,6 @@
 package caveworld.world.gen;
 
 import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
@@ -173,19 +172,6 @@ public class MapGenCaverns extends MapGenCavesCaveworld
 
 				func_151541_a(rand.nextLong(), chunkX, chunkZ, blocks, blockX, blockY, blockZ, scale, leftRightRadian, upDownRadian, 0, 0, 1.25D);
 			}
-		}
-	}
-
-	@Override
-	protected void digBlock(Block[] blocks, int index, int x, int y, int z, int chunkX, int chunkZ, boolean foundTop)
-	{
-		if (y < 16)
-		{
-			blocks[index] = Blocks.water;
-		}
-		else
-		{
-			blocks[index] = null;
 		}
 	}
 }

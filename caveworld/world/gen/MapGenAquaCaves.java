@@ -172,7 +172,7 @@ public class MapGenAquaCaves extends MapGenCavesCaveworld
 	@Override
 	protected void digBlock(Block[] blocks, int index, int x, int y, int z, int chunkX, int chunkZ, boolean foundTop)
 	{
-		if (y < 2 || y > worldObj.getActualHeight() - 5)
+		if (y < 2 || y > worldObj.getActualHeight() - 3)
 		{
 			blocks[index] = Blocks.stone;
 		}

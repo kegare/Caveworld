@@ -9,7 +9,7 @@
 
 package caveworld.network.client;
 
-import caveworld.api.CaveworldAPI;
+import caveworld.api.CaverAPI;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.network.ByteBufUtils;
@@ -45,7 +45,7 @@ public class CaverAdjustMessage implements IMessage, IMessageHandler<CaverAdjust
 	@Override
 	public void toBytes(ByteBuf buffer)
 	{
-		CaveworldAPI.saveData(entity, data);
+		CaverAPI.saveData(entity, data);
 
 		buffer.writeInt(entity.getEntityId());
 		ByteBufUtils.writeTag(buffer, data);
@@ -59,7 +59,7 @@ public class CaverAdjustMessage implements IMessage, IMessageHandler<CaverAdjust
 
 		if (ent != null)
 		{
-			CaveworldAPI.loadData(ent, message.data);
+			CaverAPI.loadData(ent, message.data);
 		}
 		else
 		{

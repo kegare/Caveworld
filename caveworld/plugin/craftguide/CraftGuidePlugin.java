@@ -51,5 +51,6 @@ public class CraftGuidePlugin implements ICavePlugin
 		new CaveniumToolRecipeProvider(new ItemStack(CaveItems.mining_pickaxe));
 		new CaveniumToolRecipeProvider(new ItemStack(CaveItems.lumbering_axe));
 		new CaveniumToolRecipeProvider(new ItemStack(CaveItems.digging_shovel));
+		new FarmingHoeRecipeProvider(new ItemStack(CaveItems.farming_hoe));
 	}
 }

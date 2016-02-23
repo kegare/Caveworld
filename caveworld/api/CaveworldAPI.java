@@ -3,18 +3,11 @@ package caveworld.api;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import org.apache.commons.lang3.tuple.Pair;
-
-import com.google.common.collect.Maps;
-
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.DimensionManager;
 
@@ -26,7 +19,7 @@ public final class CaveworldAPI
 {
 	public static final String
 	MODID = "caveworld",
-	API_VERSION = "2.1.8";
+	API_VERSION = "2.2.0";
 
 	public static ICaveAPIHandler apiHandler;
 	public static ICaveBiomeManager biomeManager;
@@ -35,12 +28,11 @@ public final class CaveworldAPI
 	public static ICaveVeinManager veinCavernManager;
 	public static ICaveBiomeManager biomeAquaCavernManager;
 	public static ICaveVeinManager veinAquaCavernManager;
-	public static ICaverManager caverManager;
 
 	private CaveworldAPI() {}
 
 	/**
-	 * @see ICaveAPIHandler#getVersion()
+	 * Returns current mod version of Caveworld
 	 */
 	public static String getVersion()
 	{
@@ -48,7 +40,7 @@ public final class CaveworldAPI
 	}
 
 	/**
-	 * @see ICaveAPIHandler#getDimension()
+	 * Returns dimension id of the Caveworld dimension.
 	 */
 	public static int getDimension()
 	{
@@ -56,7 +48,7 @@ public final class CaveworldAPI
 	}
 
 	/**
-	 * @see ICaveAPIHandler#getCavernDimension()
+	 * Returns dimension id of the Cavern dimension.
 	 */
 	public static int getCavernDimension()
 	{
@@ -64,7 +56,7 @@ public final class CaveworldAPI
 	}
 
 	/**
-	 * @see ICaveAPIHandler#getAquaCavernDimension()
+	 * Returns dimension id of the Aqua Cavern dimension.
 	 */
 	public static int getAquaCavernDimension()
 	{
@@ -72,7 +64,7 @@ public final class CaveworldAPI
 	}
 
 	/**
-	 * @see ICaveAPIHandler#getCavelandDimension()
+	 * Returns dimension id of the Caveland dimension.
 	 */
 	public static int getCavelandDimension()
 	{
@@ -80,7 +72,7 @@ public final class CaveworldAPI
 	}
 
 	/**
-	 * @see ICaveAPIHandler#getCaveniaDimension()
+	 * Returns dimension id of the Cavenia dimension.
 	 */
 	public static int getCaveniaDimension()
 	{
@@ -88,7 +80,9 @@ public final class CaveworldAPI
 	}
 
 	/**
-	 * @see ICaveAPIHandler#isEntityInCaveworld(Entity)
+	 * Checks if entity is in Caveworld.
+	 * @param entity The entity
+	 * @return <tt>true</tt> if the entity is in the Caveworld dimension.
 	 */
 	public static boolean isEntityInCaveworld(Entity entity)
 	{
@@ -96,7 +90,9 @@ public final class CaveworldAPI
 	}
 
 	/**
-	 * @see ICaveAPIHandler#isEntityInCavern(Entity)
+	 * Checks if entity is in Cavern.
+	 * @param entity The entity
+	 * @return <tt>true</tt> if the entity is in the Cavern dimension.
 	 */
 	public static boolean isEntityInCavern(Entity entity)
 	{
@@ -104,7 +100,9 @@ public final class CaveworldAPI
 	}
 
 	/**
-	 * @see ICaveAPIHandler#isEntityInAquaCavern(Entity)
+	 * Checks if entity is in Aqua Cavern.
+	 * @param entity The entity
+	 * @return <tt>true</tt> if the entity is in the Aqua Cavern dimension.
 	 */
 	public static boolean isEntityInAquaCavern(Entity entity)
 	{
@@ -112,7 +110,9 @@ public final class CaveworldAPI
 	}
 
 	/**
-	 * @see ICaveAPIHandler#isEntityInCaveland(Entity)
+	 * Checks if entity is in Caveland.
+	 * @param entity The entity
+	 * @return <tt>true</tt> if the entity is in the Caveland dimension.
 	 */
 	public static boolean isEntityInCaveland(Entity entity)
 	{
@@ -120,7 +120,9 @@ public final class CaveworldAPI
 	}
 
 	/**
-	 * @see ICaveAPIHandler#isEntityInCavenia(Entity)
+	 * Checks if entity is in Cavenia.
+	 * @param entity The entity
+	 * @return <tt>true</tt> if the entity is in the Cavenia dimension.
 	 */
 	public static boolean isEntityInCavenia(Entity entity)
 	{
@@ -128,7 +130,8 @@ public final class CaveworldAPI
 	}
 
 	/**
-	 * @see ICaveAPIHandler#isEntityInCaves(Entity)
+	 * Checks if entity is in dimensions for Caveworld mod.
+	 * @param entity The entity
 	 */
 	public static boolean isEntityInCaves(Entity entity)
 	{
@@ -136,7 +139,8 @@ public final class CaveworldAPI
 	}
 
 	/**
-	 * @see ICaveAPIHandler#isCaveDimensions(int)
+	 * Checks if the dimension is dimensions for Caveworld mod.
+	 * @param dim The dimension
 	 */
 	public static boolean isCaveDimensions(int dim)
 	{
@@ -144,20 +148,24 @@ public final class CaveworldAPI
 	}
 
 	/**
-	 * @see ICaveAPIHandler#isHardcore()
+	 * Returns true if hardcore option is enabled.
 	 */
 	public static boolean isHardcore()
 	{
 		return apiHandler != null && apiHandler.isHardcore();
 	}
 
+	/**
+	 * Returns true if caveborn option is enabled.
+	 */
 	public static boolean isCaveborn()
 	{
 		return getCaveborn() > 0;
 	}
 
 	/**
-	 * @see ICaveAPIHandler#getCaveborn()
+	 * Returns caveborn type.
+	 * @return 0: Disabled, 1: Caveworld, 2: Cavern, 3:Aqua Cavern, 4:Caveland
 	 */
 	public static int getCaveborn()
 	{
@@ -193,7 +201,7 @@ public final class CaveworldAPI
 	 */
 	public static ICaveBiome getCaveBiome(BiomeGenBase biome)
 	{
-		return biomeManager == null ? new EmptyCaveBiome(biome) : biomeManager.getCaveBiome(biome);
+		return biomeManager == null ? new DummyCaveBiome(biome) : biomeManager.getCaveBiome(biome);
 	}
 
 	/**
@@ -308,7 +316,7 @@ public final class CaveworldAPI
 	 */
 	public static ICaveBiome getCavernBiome(BiomeGenBase biome)
 	{
-		return biomeCavernManager == null ? new EmptyCaveBiome(biome) : biomeCavernManager.getCaveBiome(biome);
+		return biomeCavernManager == null ? new DummyCaveBiome(biome) : biomeCavernManager.getCaveBiome(biome);
 	}
 
 	/**
@@ -423,7 +431,7 @@ public final class CaveworldAPI
 	 */
 	public static ICaveBiome getAquaCavernBiome(BiomeGenBase biome)
 	{
-		return biomeAquaCavernManager == null ? new EmptyCaveBiome(biome) : biomeAquaCavernManager.getCaveBiome(biome);
+		return biomeAquaCavernManager == null ? new DummyCaveBiome(biome) : biomeAquaCavernManager.getCaveBiome(biome);
 	}
 
 	/**
@@ -514,298 +522,5 @@ public final class CaveworldAPI
 		addCaveVein(vein);
 		addCavernVein(vein);
 		addAquaCavernVein(vein);
-	}
-
-	/**
-	 * @see ICaverManager#getMiningPoint(Entity)
-	 */
-	public static int getMiningPoint(Entity entity)
-	{
-		return caverManager == null ? 0 : caverManager.getMiningPoint(entity);
-	}
-
-	/**
-	 * @see ICaverManager#setMiningPoint(Entity, int)
-	 */
-	public static void setMiningPoint(Entity entity, int value)
-	{
-		if (caverManager != null)
-		{
-			caverManager.setMiningPoint(entity, value);
-		}
-	}
-
-	/**
-	 * @see ICaverManager#addMiningPoint(Entity, int)
-	 */
-	public static void addMiningPoint(Entity entity, int value)
-	{
-		if (caverManager != null)
-		{
-			caverManager.addMiningPoint(entity, value);
-		}
-	}
-
-	/**
-	 * @see ICaverManager#getMiningPointAmount(Block, int)
-	 */
-	public static int getMiningPointAmount(Block block, int metadata)
-	{
-		return caverManager == null ? 0 : caverManager.getMiningPointAmount(block, metadata);
-	}
-
-	/**
-	 * @see ICaverManager#setMiningPointAmount(Block, int, int)
-	 */
-	public static void setMiningPointAmount(Block block, int metadata, int amount)
-	{
-		if (caverManager != null)
-		{
-			caverManager.setMiningPointAmount(block, metadata, amount);
-		}
-	}
-
-	/**
-	 * @see ICaverManager#setMiningPointAmount(String, int)
-	 */
-	public static void setMiningPointAmount(String oredict, int amount)
-	{
-		if (caverManager != null)
-		{
-			caverManager.setMiningPointAmount(oredict, amount);
-		}
-	}
-
-	/**
-	 * @see ICaverManager#getMinerRank(Entity)
-	 */
-	public static int getMinerRank(Entity entity)
-	{
-		return caverManager == null ? 0 : caverManager.getMinerRank(entity);
-	}
-
-	/**
-	 * @see ICaverManager#getMinerRankName(Entity)
-	 */
-	public static String getMinerRankName(Entity entity)
-	{
-		return caverManager == null ? "null" : caverManager.getMinerRankName(entity);
-	}
-
-	/**
-	 * @see ICaverManager#setMinerRank(Entity, int)
-	 */
-	public static void setMinerRank(Entity entity, int rank)
-	{
-		if (caverManager != null)
-		{
-			caverManager.setMinerRank(entity, rank);
-		}
-	}
-
-	/**
-	 * @see ICaverManager#getMinerRanks()
-	 */
-	public static Map<Integer, Pair<String, Integer>> getMinerRanks()
-	{
-		if (caverManager == null)
-		{
-			return Maps.newHashMap();
-		}
-
-		return caverManager.getMinerRanks();
-	}
-
-	/**
-	 * @see ICaverManager#getLastDimension(Entity)
-	 */
-	public static int getLastDimension(Entity entity)
-	{
-		return caverManager == null ? 0 : caverManager.getLastDimension(entity);
-	}
-
-	/**
-	 * @see ICaverManager#setLastDimension(Entity, int)
-	 */
-	public static void setLastDimension(Entity entity, int dimension)
-	{
-		if (caverManager != null)
-		{
-			caverManager.setLastDimension(entity, dimension);
-		}
-	}
-
-	/**
-	 * @see ICaverManager#getCavernLastDimension(Entity)
-	 */
-	public static int getCavernLastDimension(Entity entity)
-	{
-		return caverManager == null ? 0 : caverManager.getCavernLastDimension(entity);
-	}
-
-	/**
-	 * @see ICaverManager#setCavernLastDimension(Entity, int)
-	 */
-	public static void setCavernLastDimension(Entity entity, int dimension)
-	{
-		if (caverManager != null)
-		{
-			caverManager.setCavernLastDimension(entity, dimension);
-		}
-	}
-
-	/**
-	 * @see ICaverManager#getAquaCavernLastDimension(Entity)
-	 */
-	public static int getAquaCavernLastDimension(Entity entity)
-	{
-		return caverManager == null ? 0 : caverManager.getAquaCavernLastDimension(entity);
-	}
-
-	/**
-	 * @see ICaverManager#setAquaCavernLastDimension(Entity, int)
-	 */
-	public static void setAquaCavernLastDimension(Entity entity, int dimension)
-	{
-		if (caverManager != null)
-		{
-			caverManager.setAquaCavernLastDimension(entity, dimension);
-		}
-	}
-
-	/**
-	 * @see ICaverManager#getCavelandLastDimension(Entity)
-	 */
-	public static int getCavelandLastDimension(Entity entity)
-	{
-		return caverManager == null ? 0 : caverManager.getCavelandLastDimension(entity);
-	}
-
-	/**
-	 * @see ICaverManager#setCavelandLastDimension(Entity, int)
-	 */
-	public static void setCavelandLastDimension(Entity entity, int dimension)
-	{
-		if (caverManager != null)
-		{
-			caverManager.setCavelandLastDimension(entity, dimension);
-		}
-	}
-
-	/**
-	 * @see ICaverManager#getCaveniaLastDimension(Entity)
-	 */
-	public static int getCaveniaLastDimension(Entity entity)
-	{
-		return caverManager == null ? 0 : caverManager.getCaveniaLastDimension(entity);
-	}
-
-	/**
-	 * @see ICaverManager#setCaveniaLastDimension(Entity, int)
-	 */
-	public static void setCaveniaLastDimension(Entity entity, int dimension)
-	{
-		if (caverManager != null)
-		{
-			caverManager.setCaveniaLastDimension(entity, dimension);
-		}
-	}
-
-	/**
-	 * @see ICaverManager#getLastSleepTime(Entity)
-	 */
-	public static long getLastSleepTime(Entity entity)
-	{
-		return caverManager == null ? 0L : caverManager.getLastSleepTime(entity);
-	}
-
-	/**
-	 * @see ICaverManager#getLastSleepTime(Entity, int)
-	 */
-	public static long getLastSleepTime(Entity entity, int dimension)
-	{
-		return caverManager == null ? 0L : caverManager.getLastSleepTime(entity, dimension);
-	}
-
-	/**
-	 * @see ICaverManager#setLastSleepTime(Entity, long)
-	 */
-	public static void setLastSleepTime(Entity entity, long time)
-	{
-		if (caverManager != null)
-		{
-			caverManager.setLastSleepTime(entity, time);
-		}
-	}
-
-	/**
-	 * @see ICaverManager#setLastSleepTime(Entity, int, long)
-	 */
-	public static void setLastSleepTime(Entity entity, int dimension, long time)
-	{
-		if (caverManager != null)
-		{
-			caverManager.setLastSleepTime(entity, dimension, time);
-		}
-	}
-
-	/**
-	 * @see ICaverManager#getLastPos(Entity, int)
-	 */
-	public static ChunkCoordinates getLastPos(Entity entity, int type)
-	{
-		return caverManager == null ? null : caverManager.getLastPos(entity, type);
-	}
-
-	/**
-	 * @see ICaverManager#getLastPos(Entity, int, int)
-	 */
-	public static ChunkCoordinates getLastPos(Entity entity, int dimension, int type)
-	{
-		return caverManager == null ? null : caverManager.getLastPos(entity, dimension, type);
-	}
-
-	/**
-	 * @see ICaverManager#setLastPos(Entity, int, ChunkCoordinates)
-	 */
-	public static void setLastPos(Entity entity, int type, ChunkCoordinates coord)
-	{
-		if (caverManager != null)
-		{
-			caverManager.setLastPos(entity, type, coord);
-		}
-	}
-
-	/**
-	 * @see ICaverManager#setLastPos(Entity, int, int, ChunkCoordinates)
-	 */
-	public static void setLastPos(Entity entity, int dimension, int type, ChunkCoordinates coord)
-	{
-		if (caverManager != null)
-		{
-			caverManager.setLastPos(entity, dimension, type, coord);
-		}
-	}
-
-	/**
-	 * @see ICaverManager#saveData(Entity, NBTTagCompound)
-	 */
-	public static void saveData(Entity entity, NBTTagCompound compound)
-	{
-		if (caverManager != null)
-		{
-			caverManager.saveData(entity, compound);
-		}
-	}
-
-	/**
-	 * @see ICaverManager#loadData(Entity, NBTTagCompound)
-	 */
-	public static void loadData(Entity entity, NBTTagCompound compound)
-	{
-		if (caverManager != null)
-		{
-			caverManager.loadData(entity, compound);
-		}
 	}
 }

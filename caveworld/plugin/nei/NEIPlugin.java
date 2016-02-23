@@ -11,6 +11,7 @@ package caveworld.plugin.nei;
 
 import caveworld.plugin.ICavePlugin;
 import codechicken.nei.api.API;
+import codechicken.nei.recipe.TemplateRecipeHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Optional.Method;
 
@@ -47,7 +48,7 @@ public class NEIPlugin implements ICavePlugin
 	@Override
 	public void invoke()
 	{
-		CaveniumToolRecipeHandler handler = new MiningPickaxeRecipeHandler();
+		TemplateRecipeHandler handler = new MiningPickaxeRecipeHandler();
 
 		API.registerRecipeHandler(handler);
 		API.registerUsageHandler(handler);
@@ -58,6 +59,11 @@ public class NEIPlugin implements ICavePlugin
 		API.registerUsageHandler(handler);
 
 		handler = new DiggingShovelRecipeHandler();
+
+		API.registerRecipeHandler(handler);
+		API.registerUsageHandler(handler);
+
+		handler = new FarmingHoeRecipeHandler();
 
 		API.registerRecipeHandler(handler);
 		API.registerUsageHandler(handler);

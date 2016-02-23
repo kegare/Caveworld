@@ -11,6 +11,7 @@ package caveworld.block;
 
 import java.util.Random;
 
+import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
 import caveworld.client.gui.MenuType;
 import caveworld.world.TeleporterCavenia;
@@ -55,13 +56,13 @@ public class BlockPortalCavenia extends BlockCavePortal
 	@Override
 	public int getLastDimension(Entity entity)
 	{
-		return CaveworldAPI.getCaveniaLastDimension(entity);
+		return CaverAPI.getCaveniaLastDimension(entity);
 	}
 
 	@Override
 	public void setLastDimension(Entity entity, int dim)
 	{
-		CaveworldAPI.setCaveniaLastDimension(entity, dim);
+		CaverAPI.setCaveniaLastDimension(entity, dim);
 	}
 
 	@Override

@@ -15,6 +15,7 @@ import java.util.Random;
 
 import com.google.common.collect.Lists;
 
+import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
 import caveworld.block.BlockCavePortal;
 import caveworld.block.CaveBlocks;
@@ -63,9 +64,36 @@ public class TeleporterCaveworld extends Teleporter
 
 	public void init(Entity entity)
 	{
-		if (Config.portalCache)
+		if (CaveworldAPI.isEntityInCavenia(entity))
 		{
-			ChunkCoordinates coord = CaveworldAPI.getLastPos(entity, portalBlock.getType());
+			int x = 0;
+			int y = 50;
+			int z = 0;
+
+			if (Config.portalCache)
+			{
+				ChunkCoordinates coord = CaverAPI.getLastPos(entity, portalBlock.getType());
+
+				if (coord != null)
+				{
+					x = coord.posX;
+					y = coord.posY;
+					z = coord.posZ;
+				}
+			}
+
+			if (entity instanceof EntityPlayerMP)
+			{
+				CaveUtils.setPlayerLocation((EntityPlayerMP)entity, x, y, z);
+			}
+			else
+			{
+				entity.setLocationAndAngles(x, y, z, entity.rotationYaw, entity.rotationPitch);
+			}
+		}
+		else if (Config.portalCache)
+		{
+			ChunkCoordinates coord = CaverAPI.getLastPos(entity, portalBlock.getType());
 
 			if (coord != null)
 			{

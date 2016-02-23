@@ -9,7 +9,7 @@
 
 package caveworld.world.gen;
 
-import static net.minecraftforge.common.ChestGenHooks.*;
+import static net.minecraftforge.common.ChestGenHooks.DUNGEON_CHEST;
 
 import java.util.Random;
 

@@ -9,6 +9,7 @@
 
 package caveworld.world;
 
+import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
 import caveworld.block.CaveBlocks;
 import caveworld.util.CaveUtils;
@@ -37,7 +38,7 @@ public class TeleporterCavenia extends TeleporterCaveworld
 		int x = 0;
 		int y = 0;
 		int z = 0;
-		ChunkCoordinates coord = CaveworldAPI.getLastPos(entity, portalBlock.getType());
+		ChunkCoordinates coord = CaverAPI.getLastPos(entity, portalBlock.getType());
 
 		if (coord != null)
 		{

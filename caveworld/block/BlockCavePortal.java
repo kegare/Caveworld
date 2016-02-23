@@ -12,11 +12,14 @@ package caveworld.block;
 import java.util.Random;
 
 import caveworld.api.BlockEntry;
+import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
 import caveworld.api.ICavenicMob;
 import caveworld.client.gui.MenuType;
 import caveworld.core.Caveworld;
 import caveworld.core.Config;
+import caveworld.network.CaveNetworkRegistry;
+import caveworld.network.client.PortalMenuMessage;
 import caveworld.plugin.mceconomy.MCEconomyPlugin;
 import caveworld.util.CaveUtils;
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -265,9 +268,7 @@ public abstract class BlockCavePortal extends BlockPortal implements IBlockPorta
 				world.playSoundAtEntity(player, "random.click", 0.8F, 1.5F);
 			}
 
-			boolean shop = MCEconomyPlugin.enabled() && MCEconomyPlugin.SHOP >= 0;
-
-			if (shop && CaveUtils.isItemPickaxe(player.getCurrentEquippedItem()))
+			if (MCEconomyPlugin.enabled() && CaveUtils.isItemPickaxe(player.getCurrentEquippedItem()))
 			{
 				if (!world.isRemote)
 				{
@@ -277,14 +278,26 @@ public abstract class BlockCavePortal extends BlockPortal implements IBlockPorta
 				return true;
 			}
 
-			if (world.isRemote)
+			if (player instanceof EntityPlayerMP)
 			{
-				Caveworld.proxy.displayPortalMenu(getMenuType(), x, y, z);
+				EntityPlayerMP thePlayer = (EntityPlayerMP)player;
+				MinecraftServer server = thePlayer.mcServer;
+
+				if (server.isSinglePlayer() || server.getConfigurationManager().func_152596_g(thePlayer.getGameProfile()))
+				{
+					CaveNetworkRegistry.sendTo(new PortalMenuMessage(getType(), x, y, z), thePlayer);
+				}
+				else
+				{
+					onMenuUnusable(world, x, y, z, thePlayer);
+				}
 			}
 		}
 
 		return true;
 	}
+
+	public void onMenuUnusable(World world, int x, int y, int z, EntityPlayerMP player) {}
 
 	public abstract int getType();
 
@@ -300,7 +313,7 @@ public abstract class BlockCavePortal extends BlockPortal implements IBlockPorta
 
 	public void setLastPos(Entity entity, int dim, ChunkCoordinates coord)
 	{
-		CaveworldAPI.setLastPos(entity, dim, getType(), coord);
+		CaverAPI.setLastPos(entity, dim, getType(), coord);
 	}
 
 	public boolean canPortalTeleport(WorldServer worldOld, WorldServer worldNew, int x, int y, int z, Entity entity)

@@ -24,6 +24,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import caveworld.api.BlockEntry;
+import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
 import caveworld.api.ICaveBiome;
 import caveworld.api.ICaveVein;
@@ -113,6 +114,7 @@ public class Config
 	public static boolean fakeMiningPickaxe;
 	public static boolean fakeLumberingAxe;
 	public static boolean fakeDiggingShovel;
+	public static boolean fakeFarmingHoe;
 	public static int modeDisplayTime;
 	public static int quickBreakLimit;
 	public static boolean portalCache;
@@ -371,6 +373,12 @@ public class Config
 			prop.comment += " [default: " + prop.getDefault() + "]";
 			propOrder.add(prop.getName());
 			fakeDiggingShovel = prop.getBoolean(fakeDiggingShovel);
+			prop = generalCfg.get(category, "fakeFarmingHoe", false);
+			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+			prop.comment += " [default: " + prop.getDefault() + "]";
+			propOrder.add(prop.getName());
+			fakeFarmingHoe = prop.getBoolean(fakeFarmingHoe);
 			prop = generalCfg.get(category, "modeDisplayTime", 2200);
 			prop.setMinValue(0).setMaxValue(Integer.MAX_VALUE).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -449,7 +457,7 @@ public class Config
 
 	public static void refreshMiningPoints()
 	{
-		CaveworldAPI.caverManager.clearMiningPointAmounts();
+		CaverAPI.caverManager.clearMiningPointAmounts();
 
 		for (String str : miningPoints)
 		{
@@ -470,12 +478,12 @@ public class Config
 					{
 						int meta = Integer.parseInt(str2.substring(i + 1));
 
-						CaveworldAPI.setMiningPointAmount(block, meta, point);
+						CaverAPI.setMiningPointAmount(block, meta, point);
 					}
 				}
 				else
 				{
-					CaveworldAPI.setMiningPointAmount(str2, point);
+					CaverAPI.setMiningPointAmount(str2, point);
 				}
 			}
 		}
@@ -761,7 +769,7 @@ public class Config
 
 		dimensionCfg.addCustomCategoryComment(category, "If multiplayer, server-side only.");
 
-		prop = dimensionCfg.get(category, "dimension", -5);
+		prop = dimensionCfg.get(category, "dimension", -30);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName()).setRequiresMcRestart(true);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
@@ -885,7 +893,7 @@ public class Config
 
 		dimensionCfg.addCustomCategoryComment(category, "If multiplayer, server-side only.");
 
-		prop = dimensionCfg.get(category, "dimension", -6);
+		prop = dimensionCfg.get(category, "dimension", -31);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName()).setRequiresMcRestart(true);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
@@ -956,7 +964,7 @@ public class Config
 
 		dimensionCfg.addCustomCategoryComment(category, "If multiplayer, server-side only.");
 
-		prop = dimensionCfg.get(category, "dimension", -10);
+		prop = dimensionCfg.get(category, "dimension", -32);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName()).setRequiresMcRestart(true);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
@@ -1000,7 +1008,7 @@ public class Config
 
 		dimensionCfg.addCustomCategoryComment(category, "If multiplayer, server-side only.");
 
-		prop = dimensionCfg.get(category, "dimension", -11);
+		prop = dimensionCfg.get(category, "dimension", -33);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName()).setRequiresMcRestart(true);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";
@@ -1050,7 +1058,7 @@ public class Config
 
 		dimensionCfg.addCustomCategoryComment(category, "If multiplayer, server-side only.");
 
-		prop = dimensionCfg.get(category, "dimension", -12);
+		prop = dimensionCfg.get(category, "dimension", -34);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName()).setRequiresMcRestart(true);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [default: " + prop.getDefault() + "]";

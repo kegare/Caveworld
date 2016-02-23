@@ -10,6 +10,7 @@
 package caveworld.plugin.more;
 
 import caveworld.api.BlockEntry;
+import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
 import caveworld.core.CaveVeinManager.CaveVein;
 import caveworld.core.Config;
@@ -60,7 +61,7 @@ public class MOrePlugin implements ICavePlugin
 				CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 16, 20, 100, 0, 255));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block, 0, 1);
+			CaverAPI.setMiningPointAmount(block, 0, 1);
 		}
 
 		block = GameRegistry.findBlock(MODID, "TinOre");
@@ -72,7 +73,7 @@ public class MOrePlugin implements ICavePlugin
 				CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 14, 24, 100, 0, 255));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block, 0, 1);
+			CaverAPI.setMiningPointAmount(block, 0, 1);
 		}
 
 		block = GameRegistry.findBlock(MODID, "UranOre");
@@ -84,7 +85,7 @@ public class MOrePlugin implements ICavePlugin
 				CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 10, 7, 100, 0, 50));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block, 0, 1);
+			CaverAPI.setMiningPointAmount(block, 0, 1);
 		}
 
 		block = GameRegistry.findBlock(MODID, "RubyOre");
@@ -96,7 +97,7 @@ public class MOrePlugin implements ICavePlugin
 				CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 6, 4, 100, 0, 50));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block, 0, 1);
+			CaverAPI.setMiningPointAmount(block, 0, 1);
 		}
 
 		block = GameRegistry.findBlock(MODID, "SapphireOre");
@@ -108,7 +109,7 @@ public class MOrePlugin implements ICavePlugin
 				CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 6, 4, 100, 0, 64));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block, 0, 1);
+			CaverAPI.setMiningPointAmount(block, 0, 1);
 		}
 
 		block = GameRegistry.findBlock(MODID, "SilverOre");
@@ -120,7 +121,7 @@ public class MOrePlugin implements ICavePlugin
 				CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 6, 15, 100, 0, 255));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block, 0, 1);
+			CaverAPI.setMiningPointAmount(block, 0, 1);
 		}
 
 		block = GameRegistry.findBlock(MODID, "PlatinumOre");
@@ -132,7 +133,7 @@ public class MOrePlugin implements ICavePlugin
 				CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 5, 5, 100, 0, 30));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block, 0, 1);
+			CaverAPI.setMiningPointAmount(block, 0, 1);
 		}
 
 		block = GameRegistry.findBlock(MODID, "TitaniumOre");
@@ -144,7 +145,7 @@ public class MOrePlugin implements ICavePlugin
 				 CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 6, 3, 100, 0, 24));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block, 0, 1);
+			CaverAPI.setMiningPointAmount(block, 0, 1);
 		}
 
 		block = GameRegistry.findBlock(MODID, "BlockGranite");
@@ -161,14 +162,14 @@ public class MOrePlugin implements ICavePlugin
 
 		if (block != null)
 		{
-			CaveworldAPI.setMiningPointAmount(block, 0, 1);
+			CaverAPI.setMiningPointAmount(block, 0, 1);
 		}
 
 		block = GameRegistry.findBlock(MODID, "ChromeEndOre");
 
 		if (block != null)
 		{
-			CaveworldAPI.setMiningPointAmount(block, 0, 1);
+			CaverAPI.setMiningPointAmount(block, 0, 1);
 		}
 	}
 }

@@ -9,7 +9,6 @@
 
 package caveworld.item;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
@@ -17,36 +16,32 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
 
-import caveworld.api.BlockEntry;
 import caveworld.core.Caveworld;
 import caveworld.core.Config;
-import caveworld.util.ArrayListExtended;
 import caveworld.util.CaveUtils;
-import caveworld.util.Roman;
-import caveworld.util.breaker.BreakPos;
 import caveworld.util.breaker.MultiBreakExecutor;
 import caveworld.util.breaker.QuickBreakExecutor;
 import caveworld.util.breaker.RangedBreakExecutor;
+import caveworld.util.farmer.MultiFarmExecutor;
+import caveworld.util.farmer.QuickFarmExecutor;
+import caveworld.util.farmer.RangedFarmExecutor;
 import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
+import net.minecraft.block.IGrowable;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemSpade;
+import net.minecraft.item.ItemHoe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.IIcon;
@@ -54,21 +49,24 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 
-public class ItemDiggingShovel extends ItemSpade implements ICaveniumTool
+public class ItemFarmingHoe extends ItemHoe implements IModeItem
 {
-	public enum BreakMode implements IBreakMode
+	public enum FarmMode implements IFarmMode
 	{
-		NORMAL(MultiBreakExecutor.class),
-		QUICK(QuickBreakExecutor.class),
-		RANGED(RangedBreakExecutor.class);
+		NORMAL(MultiBreakExecutor.class, MultiFarmExecutor.class),
+		QUICK(QuickBreakExecutor.class, QuickFarmExecutor.class),
+		RANGED(RangedBreakExecutor.class, RangedFarmExecutor.class);
 
-		public static final EnumMap<BreakMode, Map<EntityPlayer, MultiBreakExecutor>> executors = Maps.newEnumMap(BreakMode.class);
+		public static final EnumMap<FarmMode, Map<EntityPlayer, MultiBreakExecutor>> executors = Maps.newEnumMap(FarmMode.class);
+		public static final EnumMap<FarmMode, Map<EntityPlayer, MultiFarmExecutor>> farmExecutors = Maps.newEnumMap(FarmMode.class);
 
 		private final Class<? extends MultiBreakExecutor> executor;
+		private final Class<? extends MultiFarmExecutor> farmExecutor;
 
-		private BreakMode(Class<? extends MultiBreakExecutor> executor)
+		private FarmMode(Class<? extends MultiBreakExecutor> executor, Class<? extends MultiFarmExecutor> farmExecutor)
 		{
 			this.executor = executor;
+			this.farmExecutor = farmExecutor;
 		}
 
 		@Override
@@ -103,105 +101,73 @@ public class ItemDiggingShovel extends ItemSpade implements ICaveniumTool
 		}
 
 		@Override
-		public boolean clear(EntityPlayer player)
+		public MultiFarmExecutor getFarmExecutor(EntityPlayer player)
+		{
+			Map<EntityPlayer, MultiFarmExecutor> map = farmExecutors.get(this);
+
+			if (map == null)
+			{
+				map = Maps.newHashMap();
+
+				farmExecutors.put(this, map);
+			}
+
+			MultiFarmExecutor result = map.get(player);
+
+			if (result == null)
+			{
+				try
+				{
+					result = farmExecutor.getConstructor(EntityPlayer.class).newInstance(player);
+				}
+				catch (Exception ignored) {}
+
+				if (result != null)
+				{
+					map.put(player, result);
+				}
+			}
+
+			return result;
+		}
+
+		@Override
+		public void clear(EntityPlayer player)
 		{
 			Map<EntityPlayer, MultiBreakExecutor> map = executors.get(this);
 
-			if (map == null || map.isEmpty())
+			if (map != null && !map.isEmpty())
 			{
-				return false;
-			}
+				MultiBreakExecutor result = map.get(player);
 
-			MultiBreakExecutor result = map.get(player);
-
-			if (result != null)
-			{
-				result.clear();
-
-				return true;
-			}
-
-			return false;
-		}
-	}
-
-	public static final ArrayListExtended<BlockEntry> breakableBlocks = new ArrayListExtended();
-
-	public long highlightStart;
-
-	public ItemDiggingShovel(String name)
-	{
-		super(CaveItems.CAVENIUM);
-		this.setUnlocalizedName(name);
-		this.setTextureName("caveworld:digging_shovel");
-		this.setCreativeTab(Caveworld.tabDiggingShovel);
-	}
-
-	@Override
-	public String getToolClass()
-	{
-		return "shovel";
-	}
-
-	protected void initItemStackNBT(ItemStack itemstack)
-	{
-		if (itemstack == null || itemstack.getItem() == null)
-		{
-			return;
-		}
-
-		if (itemstack.getTagCompound() == null)
-		{
-			itemstack.setTagCompound(new NBTTagCompound());
-		}
-
-		NBTTagCompound data = itemstack.getTagCompound();
-		String full = null;
-
-		for (BreakMode mode : BreakMode.values())
-		{
-			if (mode != BreakMode.NORMAL)
-			{
-				String key = mode.name() + ":Blocks";
-
-				if (!data.hasKey(key))
+				if (result != null)
 				{
-					if (Strings.isNullOrEmpty(full))
-					{
-						Collection<String> blocks = Collections2.transform(breakableBlocks, new Function<BlockEntry, String>()
-						{
-							@Override
-							public String apply(BlockEntry entry)
-							{
-								return CaveUtils.toStringHelper(entry.getBlock(), entry.getMetadata());
-							}
-						});
+					result.clear();
+				}
+			}
 
-						full = Joiner.on("|").join(blocks);
-					}
+			Map<EntityPlayer, MultiFarmExecutor> farmMap = farmExecutors.get(this);
 
-					data.setString(key, full);
+			if (farmMap != null && !farmMap.isEmpty())
+			{
+				MultiFarmExecutor result = farmMap.get(player);
+
+				if (result != null)
+				{
+					result.clear();
 				}
 			}
 		}
 	}
 
-	@Override
-	public void onCreated(ItemStack itemstack, World world, EntityPlayer player)
-	{
-		initItemStackNBT(itemstack);
-	}
+	public long highlightStart;
 
-	@Override
-	public void onUpdate(ItemStack itemstack, World world, Entity entity, int slot, boolean selected)
+	public ItemFarmingHoe(String name)
 	{
-		initItemStackNBT(itemstack);
-	}
-
-	@Override
-	public List<BlockEntry> getBreakableBlocks()
-	{
-		return breakableBlocks;
+		super(CaveItems.CAVENIUM);
+		this.setUnlocalizedName(name);
+		this.setTextureName("caveworld:farming_hoe");
+		this.setCreativeTab(Caveworld.tabFarmingHoe);
 	}
 
 	@Override
@@ -216,29 +182,6 @@ public class ItemDiggingShovel extends ItemSpade implements ICaveniumTool
 		highlightStart = time;
 	}
 
-	@Override
-	public int getRefined(ItemStack itemstack)
-	{
-		if (itemstack.getItem() != this || itemstack.getTagCompound() == null)
-		{
-			return 0;
-		}
-
-		return itemstack.getTagCompound().getInteger("Refined");
-	}
-
-	@Override
-	public boolean canBreak(ItemStack itemstack, Block block, int metadata)
-	{
-		if (itemstack.getItem() != this || itemstack.getTagCompound() == null)
-		{
-			return false;
-		}
-
-		return itemstack.getTagCompound().getString(getModeName(itemstack) + ":Blocks").contains(CaveUtils.toStringHelper(block, metadata));
-	}
-
-	@Override
 	public Item getBase(ItemStack itemstack)
 	{
 		NBTTagCompound data = itemstack.getTagCompound();
@@ -260,58 +203,17 @@ public class ItemDiggingShovel extends ItemSpade implements ICaveniumTool
 		return item == null ? this : item;
 	}
 
-	@Override
-	public BreakMode getMode(ItemStack itemstack)
+	public FarmMode getMode(ItemStack itemstack)
 	{
 		if (itemstack.getTagCompound() == null)
 		{
-			return BreakMode.NORMAL;
+			return FarmMode.NORMAL;
 		}
 
-		BreakMode[] modes = BreakMode.values();
+		FarmMode[] modes = FarmMode.values();
 		int mode = MathHelper.clamp_int(itemstack.getTagCompound().getInteger("Mode"), 0, modes.length - 1);
 
 		return modes[mode];
-	}
-
-	@Override
-	public String getItemStackDisplayName(ItemStack itemstack)
-	{
-		String name = super.getItemStackDisplayName(itemstack);
-		int refined = getRefined(itemstack);
-
-		if (refined > 0)
-		{
-			return name + " " + Roman.toRoman(getRefined(itemstack));
-		}
-
-		return name;
-	}
-
-	@Override
-	public Set<String> getToolClasses(ItemStack itemstack)
-	{
-		Item item = getBase(itemstack);
-
-		if (item != this)
-		{
-			return item.getToolClasses(itemstack);
-		}
-
-		return super.getToolClasses(itemstack);
-	}
-
-	@Override
-	public int getHarvestLevel(ItemStack itemstack, String toolClass)
-	{
-		Item item = getBase(itemstack);
-
-		if (item != this)
-		{
-			return item.getHarvestLevel(itemstack, toolClass);
-		}
-
-		return super.getHarvestLevel(itemstack, toolClass);
 	}
 
 	@Override
@@ -434,41 +336,22 @@ public class ItemDiggingShovel extends ItemSpade implements ICaveniumTool
 	@Override
 	public ItemStack onItemRightClick(ItemStack itemstack, World world, EntityPlayer player)
 	{
-		if (player.isSneaking() && getMode(itemstack) == BreakMode.NORMAL)
-		{
-			Item base = getBase(itemstack);
+		Item base = getBase(itemstack);
 
-			if (base != this)
-			{
-				return base.onItemRightClick(itemstack, world, player);
-			}
+		if (base != this)
+		{
+			return base.onItemRightClick(itemstack, world, player);
 		}
 
-		int i = itemstack.getTagCompound().getInteger("Mode");
-
-		if (++i > BreakMode.values().length - 1 || i > getRefined(itemstack) + 2)
-		{
-			i = 0;
-		}
-
-		itemstack.getTagCompound().setInteger("Mode", i);
-
-		if (world.isRemote)
-		{
-			highlightStart = System.currentTimeMillis();
-		}
-
-		world.playSoundAtEntity(player, "random.click", 0.6F, 1.7F);
-
-		return itemstack;
+		return super.onItemRightClick(itemstack, world, player);
 	}
 
 	@Override
 	public boolean onBlockDestroyed(ItemStack itemstack, World world, Block block, int x, int y, int z, EntityLivingBase entity)
 	{
-		BreakMode mode = getMode(itemstack);
+		FarmMode mode = getMode(itemstack);
 
-		if (entity.isSneaking() && mode == BreakMode.NORMAL)
+		if (mode == FarmMode.NORMAL)
 		{
 			Item base = getBase(itemstack);
 
@@ -476,24 +359,79 @@ public class ItemDiggingShovel extends ItemSpade implements ICaveniumTool
 			{
 				return base.onBlockDestroyed(itemstack, world, block, x, y, z, entity);
 			}
+
+			return super.onBlockDestroyed(itemstack, world, block, x, y, z, entity);
 		}
 
-		if (entity instanceof EntityPlayerMP)
+		if (block instanceof IGrowable)
 		{
-			MultiBreakExecutor executor = mode.getExecutor((EntityPlayerMP)entity);
+			IGrowable growable = (IGrowable)block;
 
-			if (executor != null && !executor.getBreakPositions().isEmpty())
+			if (!growable.func_149851_a(world, x, y, z, world.isRemote))
 			{
-				BreakPos origin = executor.getOriginPos();
-
-				if (x == origin.x && y == origin.y && z == origin.z)
+				if (entity instanceof EntityPlayerMP)
 				{
-					executor.breakAll();
+					MultiBreakExecutor executor = mode.getExecutor((EntityPlayerMP)entity);
+
+					if (executor != null)
+					{
+						executor.setOriginPos(x, y, z).setBreakPositions();
+						executor.breakAll();
+					}
 				}
 			}
 		}
 
 		return super.onBlockDestroyed(itemstack, world, block, x, y, z, entity);
+	}
+
+	@Override
+	public boolean onItemUse(ItemStack itemstack, EntityPlayer player, World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ)
+	{
+		FarmMode mode = getMode(itemstack);
+
+		if (mode == FarmMode.NORMAL)
+		{
+			Item base = getBase(itemstack);
+
+			if (base != this)
+			{
+				return base.onItemUse(itemstack, player, world, x, y, z, side, hitX, hitY, hitZ);
+			}
+
+			return super.onItemUse(itemstack, player, world, x, y, z, side, hitX, hitY, hitZ);
+		}
+
+		if (super.onItemUse(itemstack, player, world, x, y, z, side, hitX, hitY, hitZ))
+		{
+			if (player instanceof EntityPlayerMP)
+			{
+				MultiFarmExecutor executor = mode.getFarmExecutor(player);
+
+				if (executor != null)
+				{
+					executor.setOriginPos(x, y, z).setFarmPositions();
+					executor.farmAll();
+				}
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
+	public boolean onEntitySwing(EntityLivingBase entity, ItemStack itemstack)
+	{
+		Item base = getBase(itemstack);
+
+		if (base != this)
+		{
+			return base.onEntitySwing(entity, itemstack);
+		}
+
+		return super.onEntitySwing(entity, itemstack);
 	}
 
 	@Override
@@ -552,19 +490,6 @@ public class ItemDiggingShovel extends ItemSpade implements ICaveniumTool
 		}
 	}
 
-	@Override
-	public boolean onEntitySwing(EntityLivingBase entityLiving, ItemStack itemstack)
-	{
-		Item item = getBase(itemstack);
-
-		if (item != this)
-		{
-			item.onEntitySwing(entityLiving, itemstack);
-		}
-
-		return super.onEntitySwing(entityLiving, itemstack);
-	}
-
 	@SideOnly(Side.CLIENT)
 	@Override
 	public boolean hasEffect(ItemStack itemstack, int pass)
@@ -602,19 +527,18 @@ public class ItemDiggingShovel extends ItemSpade implements ICaveniumTool
 	@Override
 	public String getModeDisplayName(ItemStack itemstack)
 	{
-		return StatCollector.translateToLocal("caveworld.breakmode." + getModeName(itemstack).toLowerCase(Locale.ENGLISH));
+		return StatCollector.translateToLocal("caveworld.farmmode." + getModeName(itemstack).toLowerCase(Locale.ENGLISH));
 	}
 
 	@Override
 	public String getModeInfomation(ItemStack itemstack)
 	{
-		return StatCollector.translateToLocal("caveworld.breakmode") + ": " + getModeDisplayName(itemstack);
+		return StatCollector.translateToLocal("caveworld.farmmode") + ": " + getModeDisplayName(itemstack);
 	}
 
-	@Override
 	public Set<Item> getBaseableItems()
 	{
-		return Collections.unmodifiableSet(CaveUtils.shovelItems);
+		return Collections.unmodifiableSet(CaveUtils.hoeItems);
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -639,7 +563,7 @@ public class ItemDiggingShovel extends ItemSpade implements ICaveniumTool
 	@Override
 	public void getSubItems(Item item, CreativeTabs tab, List list)
 	{
-		for (Item base : CaveUtils.shovelItems)
+		for (Item base : CaveUtils.hoeItems)
 		{
 			String name = GameData.getItemRegistry().getNameForObject(base);
 
@@ -648,18 +572,14 @@ public class ItemDiggingShovel extends ItemSpade implements ICaveniumTool
 				continue;
 			}
 
-			for (int i = 0; i <= 4; ++i)
-			{
-				ItemStack itemstack = new ItemStack(item);
-				NBTTagCompound data = new NBTTagCompound();
+			ItemStack itemstack = new ItemStack(item);
+			NBTTagCompound data = new NBTTagCompound();
 
-				data.setString("BaseName", name);
-				data.setInteger("Refined", i);
+			data.setString("BaseName", name);
 
-				itemstack.setTagCompound(data);
+			itemstack.setTagCompound(data);
 
-				list.add(itemstack);
-			}
+			list.add(itemstack);
 		}
 	}
 
@@ -667,7 +587,7 @@ public class ItemDiggingShovel extends ItemSpade implements ICaveniumTool
 	@Override
 	public IIcon getIcon(ItemStack itemstack, int pass)
 	{
-		if (!Config.fakeDiggingShovel)
+		if (!Config.fakeFarmingHoe)
 		{
 			return super.getIcon(itemstack, pass);
 		}
@@ -686,7 +606,7 @@ public class ItemDiggingShovel extends ItemSpade implements ICaveniumTool
 	@Override
 	public IIcon getIconIndex(ItemStack itemstack)
 	{
-		if (!Config.fakeDiggingShovel)
+		if (!Config.fakeFarmingHoe)
 		{
 			return super.getIconIndex(itemstack);
 		}

@@ -9,6 +9,7 @@
 
 package caveworld.block;
 
+import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
 import caveworld.client.gui.MenuType;
 import caveworld.world.TeleporterAquaCavern;
@@ -52,13 +53,13 @@ public class BlockPortalAquaCavern extends BlockCavePortal
 	@Override
 	public int getLastDimension(Entity entity)
 	{
-		return CaveworldAPI.getAquaCavernLastDimension(entity);
+		return CaverAPI.getAquaCavernLastDimension(entity);
 	}
 
 	@Override
 	public void setLastDimension(Entity entity, int dim)
 	{
-		CaveworldAPI.setAquaCavernLastDimension(entity, dim);
+		CaverAPI.setAquaCavernLastDimension(entity, dim);
 	}
 
 	@Override

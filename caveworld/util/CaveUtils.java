@@ -69,6 +69,7 @@ import net.minecraft.event.ClickEvent;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemAxe;
+import net.minecraft.item.ItemHoe;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemSpade;
 import net.minecraft.item.ItemStack;
@@ -274,6 +275,7 @@ public class CaveUtils
 	pickaxeItems = Sets.newLinkedHashSet(),
 	axeItems = Sets.newLinkedHashSet(),
 	shovelItems = Sets.newLinkedHashSet(),
+	hoeItems = Sets.newLinkedHashSet(),
 	excludeItems = Sets.newHashSet();
 
 	public static ModContainer getModContainer()
@@ -495,6 +497,62 @@ public class CaveUtils
 			if (item.getToolClasses(itemstack).contains("shovel"))
 			{
 				shovelItems.add(item);
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public static boolean isItemHoe(Item item)
+	{
+		if (item != null)
+		{
+			if (hoeItems.contains(item))
+			{
+				return true;
+			}
+
+			if (excludeItems.contains(item))
+			{
+				hoeItems.remove(item);
+
+				return false;
+			}
+
+			if (item instanceof ItemHoe)
+			{
+				hoeItems.add(item);
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public static boolean isItemHoe(ItemStack itemstack)
+	{
+		if (itemstack != null && itemstack.getItem() != null && itemstack.stackSize > 0)
+		{
+			Item item = itemstack.getItem();
+
+			if (hoeItems.contains(item))
+			{
+				return true;
+			}
+
+			if (excludeItems.contains(item))
+			{
+				hoeItems.remove(item);
+
+				return false;
+			}
+
+			if (item instanceof ItemHoe)
+			{
+				hoeItems.add(item);
 
 				return true;
 			}

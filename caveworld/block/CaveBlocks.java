@@ -14,7 +14,7 @@ import java.io.FileInputStream;
 
 import org.apache.logging.log4j.Level;
 
-import caveworld.api.CaveworldAPI;
+import caveworld.api.CaverAPI;
 import caveworld.core.Config;
 import caveworld.entity.TileEntityUniversalChest;
 import caveworld.item.CaveItems;
@@ -101,10 +101,10 @@ public class CaveBlocks
 		OreDictionary.registerOre("portalCaveland", caveland_portal);
 		OreDictionary.registerOre("portalCavenia", cavenia_portal);
 
-		CaveworldAPI.setMiningPointAmount(cavenium_ore, 0, 2);
-		CaveworldAPI.setMiningPointAmount(cavenium_ore, 1, 3);
-		CaveworldAPI.setMiningPointAmount(gem_ore, 0, 2);
-		CaveworldAPI.setMiningPointAmount(gem_ore, 2, 2);
+		CaverAPI.setMiningPointAmount(cavenium_ore, 0, 2);
+		CaverAPI.setMiningPointAmount(cavenium_ore, 1, 3);
+		CaverAPI.setMiningPointAmount(gem_ore, 0, 2);
+		CaverAPI.setMiningPointAmount(gem_ore, 2, 2);
 
 		Blocks.fire.setFireInfo(rope, 15, 100);
 		Blocks.fire.setFireInfo(rope_ladder, 15, 80);

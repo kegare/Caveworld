@@ -14,7 +14,7 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
-import caveworld.api.CaveworldAPI;
+import caveworld.api.CaverAPI;
 import caveworld.core.CaveAchievementList;
 import caveworld.core.Caveworld;
 import caveworld.util.breaker.BreakPos;
@@ -344,7 +344,7 @@ public class ItemOreCompass extends Item
 									Block block = world.getBlock(x, y, z);
 									int meta = world.getBlockMetadata(x, y, z);
 
-									if (block instanceof BlockOre || block instanceof BlockRedstoneOre || CaveworldAPI.getMiningPointAmount(block, meta) > 0)
+									if (block instanceof BlockOre || block instanceof BlockRedstoneOre || CaverAPI.getMiningPointAmount(block, meta) > 0)
 									{
 										result.add(new BreakPos(world, x, y, z));
 									}

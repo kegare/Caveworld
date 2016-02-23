@@ -20,6 +20,7 @@ import caveworld.client.config.SelectMobEntry;
 import caveworld.client.gui.GuiIngameCaveworldMenu;
 import caveworld.client.gui.MenuType;
 import caveworld.client.renderer.RenderBlockOverlay;
+import caveworld.client.renderer.RenderCavePortal;
 import caveworld.client.renderer.RenderCaveman;
 import caveworld.client.renderer.RenderCavenicBow;
 import caveworld.client.renderer.RenderCavenicCreeper;
@@ -28,9 +29,9 @@ import caveworld.client.renderer.RenderCavenicSpider;
 import caveworld.client.renderer.RenderCavenicZombie;
 import caveworld.client.renderer.RenderCaveniumTool;
 import caveworld.client.renderer.RenderCrazyCavenicSkeleton;
+import caveworld.client.renderer.RenderFarmingHoe;
 import caveworld.client.renderer.RenderMasterCavenicCreeper;
 import caveworld.client.renderer.RenderMasterCavenicSkeleton;
-import caveworld.client.renderer.RenderCavePortal;
 import caveworld.client.renderer.TileEntityUniversalChestRenderer;
 import caveworld.core.CommonProxy;
 import caveworld.core.Config;
@@ -51,6 +52,7 @@ import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.RenderZombie;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.EntityPlayer;
@@ -93,6 +95,7 @@ public class ClientProxy extends CommonProxy
 		MinecraftForgeClient.registerItemRenderer(CaveItems.mining_pickaxe, itemRenderer);
 		MinecraftForgeClient.registerItemRenderer(CaveItems.lumbering_axe, itemRenderer);
 		MinecraftForgeClient.registerItemRenderer(CaveItems.digging_shovel, itemRenderer);
+		MinecraftForgeClient.registerItemRenderer(CaveItems.farming_hoe, new RenderFarmingHoe());
 		MinecraftForgeClient.registerItemRenderer(CaveItems.cavenic_bow, new RenderCavenicBow());
 
 		RenderingRegistry.registerEntityRenderingHandler(EntityCaveman.class, new RenderCaveman());
@@ -128,5 +131,11 @@ public class ClientProxy extends CommonProxy
 	public int getMultiBreakCount(EntityPlayer player)
 	{
 		return MultiBreakExecutor.positionsCount.get();
+	}
+
+	@Override
+	public void setDebugBoundingBox(boolean flag)
+	{
+		RenderManager.debugBoundingBox = flag;
 	}
 }

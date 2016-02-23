@@ -10,6 +10,7 @@
 package caveworld.plugin.sextiarysector;
 
 import caveworld.api.BlockEntry;
+import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
 import caveworld.core.CaveVeinManager.CaveVein;
 import caveworld.core.Config;
@@ -60,7 +61,7 @@ public class SextiarySectorPlugin implements ICavePlugin
 				CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 15, 20, 100, 200, 255));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block, 0, 1);
+			CaverAPI.setMiningPointAmount(block, 0, 1);
 		}
 
 		block = GameRegistry.findBlock(MODID, "IronLargeOre");
@@ -73,7 +74,7 @@ public class SextiarySectorPlugin implements ICavePlugin
 				CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 10, 25, 100, 200, 255));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block, 0, 1);
+			CaverAPI.setMiningPointAmount(block, 0, 1);
 		}
 
 		block = GameRegistry.findBlock(MODID, "GoldLargeOre");
@@ -86,7 +87,7 @@ public class SextiarySectorPlugin implements ICavePlugin
 				CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 7, 3, 100, 200, 255));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block, 0, 1);
+			CaverAPI.setMiningPointAmount(block, 0, 1);
 		}
 
 		block = GameRegistry.findBlock(MODID, "BlueStoneOre");
@@ -99,7 +100,7 @@ public class SextiarySectorPlugin implements ICavePlugin
 				CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 7, 8, 100, 200, 255));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block, 0, 2);
+			CaverAPI.setMiningPointAmount(block, 0, 2);
 		}
 
 		block = GameRegistry.findBlock(MODID, "YellowStoneOre");
@@ -112,7 +113,7 @@ public class SextiarySectorPlugin implements ICavePlugin
 				CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 7, 8, 100, 200, 255));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block, 0, 2);
+			CaverAPI.setMiningPointAmount(block, 0, 2);
 		}
 
 		block = GameRegistry.findBlock(MODID, "OrichalcumOre");
@@ -125,7 +126,7 @@ public class SextiarySectorPlugin implements ICavePlugin
 				CaveworldAPI.addCavesVein(new CaveVein(new BlockEntry(block, 0), 6, 3, 100, 200, 255));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block, 0, 2);
+			CaverAPI.setMiningPointAmount(block, 0, 2);
 		}
 	}
 }

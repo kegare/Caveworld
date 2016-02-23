@@ -10,6 +10,7 @@
 package caveworld.plugin.ic2;
 
 import caveworld.api.BlockEntry;
+import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
 import caveworld.core.CaveVeinManager.CaveVein;
 import caveworld.core.Config;
@@ -65,7 +66,7 @@ public class IC2Plugin implements ICavePlugin
 				CaveworldAPI.addCavesVein(new CaveVein(block, 16, 20, 100, 0, 255));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 1);
+			CaverAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 1);
 		}
 
 		itemstack = IC2Items.getItem("tinOre");
@@ -79,7 +80,7 @@ public class IC2Plugin implements ICavePlugin
 				CaveworldAPI.addCavesVein(new CaveVein(block, 14, 24, 100, 0, 255));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 1);
+			CaverAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 1);
 		}
 
 		itemstack = IC2Items.getItem("uraniumOre");
@@ -93,7 +94,7 @@ public class IC2Plugin implements ICavePlugin
 				CaveworldAPI.addCavesVein(new CaveVein(block, 10, 7, 100, 0, 50));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 2);
+			CaverAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 2);
 		}
 
 		itemstack = IC2Items.getItem("leadOre");
@@ -107,7 +108,7 @@ public class IC2Plugin implements ICavePlugin
 				CaveworldAPI.addCavesVein(new CaveVein(block, 15, 20, 100, 0, 255));
 			}
 
-			CaveworldAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 1);
+			CaverAPI.setMiningPointAmount(block.getBlock(), block.getMetadata(), 1);
 		}
 	}
 }

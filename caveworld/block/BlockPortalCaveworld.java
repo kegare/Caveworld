@@ -14,18 +14,21 @@ import java.util.Arrays;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
+import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
 import caveworld.client.gui.MenuType;
 import caveworld.world.TeleporterCaveworld;
 import caveworld.world.WorldProviderCaveworld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.world.Teleporter;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
 public class BlockPortalCaveworld extends BlockCavePortal implements IInventory
@@ -37,6 +40,12 @@ public class BlockPortalCaveworld extends BlockCavePortal implements IInventory
 	{
 		super(name);
 		this.setBlockTextureName("caveworld:caveworld_portal");
+	}
+
+	@Override
+	public void onMenuUnusable(World world, int x, int y, int z, EntityPlayerMP player)
+	{
+		displayInventory(player, x, y, z);
 	}
 
 	@Override
@@ -66,13 +75,13 @@ public class BlockPortalCaveworld extends BlockCavePortal implements IInventory
 	@Override
 	public int getLastDimension(Entity entity)
 	{
-		return CaveworldAPI.getLastDimension(entity);
+		return CaverAPI.getLastDimension(entity);
 	}
 
 	@Override
 	public void setLastDimension(Entity entity, int dim)
 	{
-		CaveworldAPI.setLastDimension(entity, dim);
+		CaverAPI.setLastDimension(entity, dim);
 	}
 
 	@Override
@@ -170,7 +179,7 @@ public class BlockPortalCaveworld extends BlockCavePortal implements IInventory
 	@Override
 	public boolean isUseableByPlayer(EntityPlayer player)
 	{
-		ChunkCoordinates coord = portalCoord.get(player.getGameProfile().getId().toString(), player.dimension);
+		ChunkCoordinates coord = portalCoord.get(player.getUniqueID().toString(), player.dimension);
 
 		if (coord == null)
 		{
@@ -197,7 +206,7 @@ public class BlockPortalCaveworld extends BlockCavePortal implements IInventory
 
 	public void displayInventory(EntityPlayer player, int x, int y, int z)
 	{
-		portalCoord.put(player.getGameProfile().getId().toString(), player.dimension, new ChunkCoordinates(x, y, z));
+		portalCoord.put(player.getUniqueID().toString(), player.dimension, new ChunkCoordinates(x, y, z));
 
 		player.displayGUIChest(this);
 	}
