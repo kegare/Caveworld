@@ -64,7 +64,7 @@ public class EntityCavenicCreeper extends EntityCreeper implements ICavenicMob
 
 		if (spawnWeight > 0)
 		{
-			CaveEntityRegistry.addSpawn(EntityCavenicCreeper.class, spawnWeight, 4, 4, biomes);
+			CaveEntityRegistry.addSpawn(EntityCavenicCreeper.class, spawnWeight, 1, 2, biomes);
 		}
 	}
 

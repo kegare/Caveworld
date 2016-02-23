@@ -89,7 +89,7 @@ public class EntityCaveman extends EntityMob implements IInventory
 
 		if (spawnWeight > 0)
 		{
-			CaveEntityRegistry.addSpawn(EntityCaveman.class, spawnWeight, 4, 4, biomes);
+			CaveEntityRegistry.addSpawn(EntityCaveman.class, spawnWeight, 3, 3, biomes);
 		}
 	}
 
@@ -253,7 +253,15 @@ public class EntityCaveman extends EntityMob implements IInventory
 
 			for (EntityItem item : list)
 			{
-				onItemPickup(item, item.getEntityItem().stackSize);
+				if (item != null)
+				{
+					ItemStack itemstack = item.getEntityItem();
+
+					if (itemstack != null)
+					{
+						onItemPickup(item, itemstack.stackSize);
+					}
+				}
 			}
 		}
 
@@ -339,7 +347,7 @@ public class EntityCaveman extends EntityMob implements IInventory
 			}
 		}
 
-		return source.isFireDamage() && source != DamageSource.fall && super.attackEntityFrom(source, damage);
+		return !source.isFireDamage() && source != DamageSource.fall && super.attackEntityFrom(source, damage);
 	}
 
 	@Override
@@ -386,6 +394,7 @@ public class EntityCaveman extends EntityMob implements IInventory
 		}
 
 		nbt.setTag("Items", list);
+		nbt.setLong("Stopped", stoppedTime);
 	}
 
 	@Override
@@ -413,6 +422,11 @@ public class EntityCaveman extends EntityMob implements IInventory
 				}
 			}
 		}
+
+		if (nbt.hasKey("Stopped"))
+		{
+			stoppedTime = nbt.getLong("Stopped");
+		}
 	}
 
 	public boolean isValidHeight()
@@ -425,8 +439,7 @@ public class EntityCaveman extends EntityMob implements IInventory
 	@Override
 	public boolean getCanSpawnHere()
 	{
-		return CaveworldAPI.isEntityInCaves(this) && isValidHeight() && super.getCanSpawnHere() &&
-			worldObj.getEntitiesWithinAABB(getClass(), boundingBox.expand(32.0D, 32.0D, 32.0D)).isEmpty();
+		return CaveworldAPI.isEntityInCaves(this) && isValidHeight() && super.getCanSpawnHere();
 	}
 
 	@Override
@@ -637,6 +650,11 @@ public class EntityCaveman extends EntityMob implements IInventory
 
 	public boolean addItemStackToInventory(ItemStack itemstack)
 	{
+		if (itemstack == null || itemstack.getItem() == null)
+		{
+			return false;
+		}
+
 		int i;
 
 		if (itemstack.isItemDamaged())

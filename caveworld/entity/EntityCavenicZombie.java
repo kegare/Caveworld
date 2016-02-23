@@ -62,7 +62,7 @@ public class EntityCavenicZombie extends EntityZombie implements ICavenicMob
 
 		if (spawnWeight > 0)
 		{
-			CaveEntityRegistry.addSpawn(EntityCavenicZombie.class, spawnWeight, 4, 4, biomes);
+			CaveEntityRegistry.addSpawn(EntityCavenicZombie.class, spawnWeight, 1, 2, biomes);
 		}
 	}
 

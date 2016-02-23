@@ -67,7 +67,7 @@ public class EntityCavenicSpider extends EntitySpider implements ICavenicMob
 
 		if (spawnWeight > 0)
 		{
-			CaveEntityRegistry.addSpawn(EntityCavenicSpider.class, spawnWeight, 4, 4, biomes);
+			CaveEntityRegistry.addSpawn(EntityCavenicSpider.class, spawnWeight, 1, 2, biomes);
 		}
 	}
 

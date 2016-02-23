@@ -101,7 +101,7 @@ public class RecipeCaveniumTool implements IRecipe
 			}
 		}
 
-		if (center.getTagCompound() != null)
+		if (center.hasTagCompound())
 		{
 			result.setTagCompound((NBTTagCompound)center.getTagCompound().copy());
 		}

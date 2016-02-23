@@ -23,7 +23,7 @@ import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 
 @SideOnly(Side.CLIENT)
-public class RenderPortalCaveworld implements ISimpleBlockRenderingHandler
+public class RenderCavePortal implements ISimpleBlockRenderingHandler
 {
 	@Override
 	public void renderInventoryBlock(Block block, int metadata, int modelId, RenderBlocks renderer)

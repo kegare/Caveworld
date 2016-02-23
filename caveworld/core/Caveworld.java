@@ -33,6 +33,7 @@ import caveworld.item.ItemLumberingAxe;
 import caveworld.item.ItemMiningPickaxe;
 import caveworld.network.CaveNetworkRegistry;
 import caveworld.plugin.CavePlugins;
+import caveworld.recipe.RecipeCavenicBow;
 import caveworld.recipe.RecipeCaveniumTool;
 import caveworld.util.CaveLog;
 import caveworld.util.CaveUtils;
@@ -138,6 +139,7 @@ public class Caveworld
 		Version.versionCheck();
 
 		RecipeSorter.register(MODID + ":cavenium_tool", RecipeCaveniumTool.class, Category.SHAPED, "after:minecraft:shaped");
+		RecipeSorter.register(MODID + ":cavenic_bow", RecipeCavenicBow.class, Category.SHAPED, "after:minecraft:shaped");
 	}
 
 	@EventHandler
@@ -163,6 +165,12 @@ public class Caveworld
 	@EventHandler
 	public void init(FMLInitializationEvent event)
 	{
+		CaveBlocks.registerRecipes();
+		CaveItems.registerRecipes();
+
+		CaveBlocks.addChestContents();
+		CaveItems.addChestContents();
+
 		CaveEntityRegistry.registerEntities();
 		CaveEntityRegistry.addVallilaSpawns();
 

@@ -160,7 +160,7 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 				{
 					ItemStack item = randomiteDrops.get(random.nextInt(randomiteDrops.size()));
 
-					if (item != null)
+					if (item != null && item.getItem() != null && item.stackSize > 0)
 					{
 						drops.add(item.copy());
 					}
