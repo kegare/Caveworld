@@ -31,8 +31,6 @@ import caveworld.plugin.ICavePlugin;
 import caveworld.plugin.mceconomy.ShopProductManager.ShopProduct;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Optional.Method;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -50,8 +48,6 @@ public class MCEconomyPlugin implements ICavePlugin
 	public static int Player_MP_MAX = 1000000;
 
 	public static ShopProductManager productManager;
-	@SideOnly(Side.CLIENT)
-	public static ShopProductManager prevProductManager;
 
 	public static boolean pluginState = true;
 

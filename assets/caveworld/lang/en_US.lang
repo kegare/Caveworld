@@ -212,6 +212,7 @@ caveworld.config.select.biome.info.type=Type
 caveworld.config.select.entry.selected=%d entries selected
 caveworld.config.select.mob=Select the mobs
 caveworld.config.select.mob.selected=%d mobs selected
+caveworld.config.select.minerRank=Select the miner rank
 
 caveworld.terrain.wait=Please wait a moment
 caveworld.terrain.load=Loading terrain
@@ -343,7 +344,7 @@ achievement.caveworld.aquamarine.desc=Mines an Aquamarine Ore, and gets an Aquam
 achievement.caveworld.randomite=Randomite
 achievement.caveworld.randomite.desc=Mines a Randomite Ore
 
-caveworld.shop.title=Caveworld Shop
+caveworld.shop.title=Shop
 caveworld.config.shop=Shop Product Customize
 caveworld.config.shop.tooltip=Change the settings contained in caveworld-shop.cfg
 caveworld.config.shop.item=Product Item
@@ -354,3 +355,5 @@ caveworld.config.shop.stackSize=Product Item Stack Size
 caveworld.config.shop.stackSize.tooltip=Specify the product item stack size of this product.
 caveworld.config.shop.productCost=Product Cost
 caveworld.config.shop.productCost.tooltip=Specify the product cost of this product.
+caveworld.config.shop.minerRank=Miner Rank
+caveworld.config.shop.minerRank.tooltip=Specify the required miner rank of this product.

@@ -261,24 +261,15 @@ public abstract class BlockCavePortal extends BlockPortal implements IBlockPorta
 	@Override
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX, float hitY, float hitZ)
 	{
-		if (side >= 2)
+		if (!world.isRemote && side >= 2)
 		{
-			if (!world.isRemote)
+			world.playSoundAtEntity(player, "random.click", 0.8F, 1.5F);
+
+			if (MCEconomyPlugin.enabled() && MCEconomyPlugin.SHOP >= 0 && CaveUtils.isItemPickaxe(player.getCurrentEquippedItem()))
 			{
-				world.playSoundAtEntity(player, "random.click", 0.8F, 1.5F);
+				MCEconomyAPI.openShopGui(MCEconomyPlugin.SHOP, player, world, x, y, z);
 			}
-
-			if (MCEconomyPlugin.enabled() && CaveUtils.isItemPickaxe(player.getCurrentEquippedItem()))
-			{
-				if (!world.isRemote)
-				{
-					MCEconomyAPI.openShopGui(MCEconomyPlugin.SHOP, player, world, x, y, z);
-				}
-
-				return true;
-			}
-
-			if (player instanceof EntityPlayerMP)
+			else if (player instanceof EntityPlayerMP)
 			{
 				EntityPlayerMP thePlayer = (EntityPlayerMP)player;
 				MinecraftServer server = thePlayer.mcServer;

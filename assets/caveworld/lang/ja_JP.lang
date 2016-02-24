@@ -207,6 +207,7 @@ caveworld.config.select.biome.info.type=タイプ
 caveworld.config.select.entry.selected=%dつのエントリが選択済み
 caveworld.config.select.mob=モブを選択してください
 caveworld.config.select.mob.selected=%dつのモブが選択済み
+caveworld.config.select.minerRank=炭鉱夫ランクを選択してください
 
 caveworld.terrain.wait=しばらくお待ちください
 caveworld.terrain.load=地形情報を読み込んでいます
@@ -340,7 +341,7 @@ achievement.caveworld.aquamarine.desc=アクアマリン鉱石を採掘し、ア
 achievement.caveworld.randomite=ランダマイト
 achievement.caveworld.randomite.desc=ランダマイト鉱石を採掘する
 
-caveworld.shop.title=Caveworld ショップ
+caveworld.shop.title=ショップ
 caveworld.config.shop=ショップの製品のカスタマイズ
 caveworld.config.shop.tooltip=caveworld-shop.cfg に含まれる設定を変更できます。
 caveworld.config.shop.item=製品アイテム
@@ -351,3 +352,5 @@ caveworld.config.shop.stackSize=製品アイテムスタックサイズ
 caveworld.config.shop.stackSize.tooltip=製品アイテムのスタックサイズを指定します。
 caveworld.config.shop.productCost=製品価格
 caveworld.config.shop.productCost.tooltip=この製品の価格を指定します。
+caveworld.config.shop.minerRank=必要な炭鉱夫ランク
+caveworld.config.shop.minerRank.tooltip=この製品を購入できるようになる炭鉱夫ランクを指定します。

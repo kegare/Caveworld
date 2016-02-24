@@ -107,6 +107,7 @@ public class EntityCavenicSkeleton extends EntitySkeleton implements ICavenicMob
 		{
 			EntityMasterCavenicSkeleton master = new EntityMasterCavenicSkeleton(worldObj);
 			master.setLocationAndAngles(posX, posY, posZ, rotationYaw, rotationPitch);
+			master.onSpawnWithEgg(null);
 
 			worldObj.spawnEntityInWorld(master);
 			setDead();

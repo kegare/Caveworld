@@ -11,6 +11,7 @@ package caveworld.plugin.mceconomy;
 
 import java.util.List;
 
+import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.config.Configuration;
 
 public interface IShopProductManager
@@ -28,4 +29,8 @@ public interface IShopProductManager
 	public List<IShopProduct> getProducts();
 
 	public void clearProducts();
+
+	public void loadFromNBT(NBTTagList list);
+
+	public NBTTagList saveToNBT();
 }

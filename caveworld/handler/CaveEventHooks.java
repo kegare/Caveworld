@@ -63,8 +63,6 @@ import caveworld.network.client.ConfigAdjustMessage;
 import caveworld.network.client.MultiBreakCountMessage;
 import caveworld.network.server.CaveAchievementMessage;
 import caveworld.plugin.enderstorage.EnderStoragePlugin;
-import caveworld.plugin.mceconomy.MCEconomyPlugin;
-import caveworld.plugin.mceconomy.ShopProductManager;
 import caveworld.plugin.sextiarysector.SextiarySectorPlugin;
 import caveworld.util.CaveUtils;
 import caveworld.util.Version;
@@ -677,12 +675,6 @@ public class CaveEventHooks
 			CaveworldAPI.veinCavernManager = new CavernVeinManager().setReadOnly(true);
 			prevVeinAquaCavernManager = CaveworldAPI.veinAquaCavernManager;
 			CaveworldAPI.veinAquaCavernManager = new AquaCavernVeinManager().setReadOnly(true);
-
-			if (MCEconomyPlugin.enabled())
-			{
-				MCEconomyPlugin.prevProductManager = MCEconomyPlugin.productManager;
-				MCEconomyPlugin.productManager = (ShopProductManager)new ShopProductManager().setReadOnly(true);
-			}
 		}
 	}
 
@@ -726,12 +718,6 @@ public class CaveEventHooks
 		{
 			CaveworldAPI.veinAquaCavernManager = prevVeinAquaCavernManager;
 			prevVeinAquaCavernManager = null;
-		}
-
-		if (MCEconomyPlugin.prevProductManager != null)
-		{
-			MCEconomyPlugin.productManager = MCEconomyPlugin.prevProductManager;
-			MCEconomyPlugin.prevProductManager = null;
 		}
 
 		ItemOreCompass.resetFinder();
@@ -790,7 +776,7 @@ public class CaveEventHooks
 					bonus.add(new ItemStack(Items.stone_pickaxe));
 					bonus.add(new ItemStack(Items.stone_sword));
 					bonus.add(new ItemStack(Blocks.torch, MathHelper.getRandomIntegerInRange(world.rand, 10, 20)));
-					bonus.add(new ItemStack(Items.apple, MathHelper.getRandomIntegerInRange(world.rand, 5, 10)));
+					bonus.add(new ItemStack(Items.bread, MathHelper.getRandomIntegerInRange(world.rand, 5, 10)));
 
 					for (int i = 0; i < 3; ++i)
 					{
@@ -798,7 +784,7 @@ public class CaveEventHooks
 					}
 
 					bonus.add(new ItemStack(Blocks.crafting_table));
-					bonus.add(new ItemStack(Items.dye, MathHelper.getRandomIntegerInRange(world.rand, 3, 5), 15));
+					bonus.add(new ItemStack(Blocks.dirt, MathHelper.getRandomIntegerInRange(world.rand, 10, 15)));
 
 					for (ItemStack itemstack : bonus)
 					{

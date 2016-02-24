@@ -43,6 +43,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import caveworld.api.BlockEntry;
+import caveworld.api.CaveworldAPI;
 import caveworld.core.Caveworld;
 import caveworld.core.Config;
 import caveworld.network.CaveNetworkRegistry;
@@ -657,6 +658,11 @@ public class CaveUtils
 			player.mcServer.getConfigurationManager().transferPlayerToDimension(player, dim, new TeleporterDummy(player.mcServer.worldServerForDimension(dim)));
 			player.addExperienceLevel(0);
 
+			if (player.dimension == 1 || CaveworldAPI.isEntityInCavenia(player))
+			{
+				setPlayerLocation(player, 0, 0, 0);
+			}
+
 			return true;
 		}
 
@@ -984,9 +990,9 @@ public class CaveUtils
 		if (itemstack != null && itemstack.getItem() != null)
 		{
 			Block block = Block.getBlockFromItem(itemstack.getItem());
-			UniqueIdentifier unique = GameRegistry.findUniqueIdentifierFor(block);
+			String name = GameData.getBlockRegistry().getNameForObject(block);
 
-			if (unique != null && unique.modId.equals("EnderIO") && !block.renderAsNormalBlock())
+			if (!Strings.isNullOrEmpty(name) && name.startsWith("EnderIO") && !block.renderAsNormalBlock())
 			{
 				return false;
 			}

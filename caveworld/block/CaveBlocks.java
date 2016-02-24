@@ -159,7 +159,7 @@ public class CaveBlocks
 
 		GameRegistry.addRecipe(new ItemStack(cavenium_ore, 1, 2),
 			"CCC", "CCC", "CCC",
-			'C', new ItemStack(CaveItems.gem, 1, 0)
+			'C', new ItemStack(CaveItems.cavenium, 1, 0)
 		);
 		GameRegistry.addRecipe(new ItemStack(cavenium_ore, 1, 3),
 			"CCC", "CCC", "CCC",

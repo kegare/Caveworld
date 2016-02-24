@@ -26,8 +26,7 @@ import io.netty.buffer.ByteBuf;
 
 public class PortalMenuMessage implements IMessage, IMessageHandler<PortalMenuMessage, IMessage>
 {
-	private int type;
-	private int x, y, z;
+	private int type, x, y, z;
 
 	public PortalMenuMessage() {}
 

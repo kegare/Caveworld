@@ -34,8 +34,10 @@ import com.google.common.collect.Maps;
 import caveworld.client.config.CaveConfigGui;
 import caveworld.client.config.GuiSelectItem;
 import caveworld.client.config.GuiSelectItem.SelectListener;
+import caveworld.client.config.GuiSelectMinerRank;
 import caveworld.client.gui.GuiListSlot;
 import caveworld.core.Caveworld;
+import caveworld.core.Config;
 import caveworld.plugin.mceconomy.ShopProductManager.ShopProduct;
 import caveworld.util.ArrayListExtended;
 import caveworld.util.CaveUtils;
@@ -80,10 +82,12 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 	protected GuiTextField damageField;
 	protected GuiTextField stackField;
 	protected GuiTextField costField;
+	protected GuiTextField minerRankField;
 
 	protected HoverChecker itemHoverChecker;
 	protected HoverChecker stackHoverChecker;
 	protected HoverChecker costHoverChecker;
+	protected HoverChecker minerRankHoverChecker;
 
 	private int maxLabelWidth;
 
@@ -113,7 +117,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 			productList = new ProductList();
 		}
 
-		productList.func_148122_a(width, height, 32, height - (editMode ? 90 : 28));
+		productList.func_148122_a(width, height, 32, height - (editMode ? 110 : 28));
 
 		if (doneButton == null)
 		{
@@ -221,6 +225,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 		editLabelList.add("");
 		editLabelList.add(I18n.format(Caveworld.CONFIG_LANG + "shop.stackSize"));
 		editLabelList.add(I18n.format(Caveworld.CONFIG_LANG + "shop.productCost"));
+		editLabelList.add(I18n.format(Caveworld.CONFIG_LANG + "shop.minerRank"));
 
 		for (String key : editLabelList)
 		{
@@ -268,6 +273,15 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 		costField.yPosition = stackField.yPosition + stackField.height + 5;
 		costField.width = fieldWidth;
 
+		if (minerRankField == null)
+		{
+			minerRankField = new GuiTextField(fontRendererObj, 0, 0, 0, itemField.height);
+		}
+
+		minerRankField.xPosition = costField.xPosition;
+		minerRankField.yPosition = costField.yPosition + costField.height + 5;
+		minerRankField.width = fieldWidth;
+
 		editFieldList.clear();
 
 		if (editMode)
@@ -276,11 +290,13 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 			editFieldList.add(damageField);
 			editFieldList.add(stackField);
 			editFieldList.add(costField);
+			editFieldList.add(minerRankField);
 		}
 
 		itemHoverChecker = new HoverChecker(itemField.yPosition - 1, itemField.yPosition + itemField.height, itemField.xPosition - maxLabelWidth - 12, itemField.xPosition - 10, 800);
 		stackHoverChecker = new HoverChecker(stackField.yPosition - 1, stackField.yPosition + stackField.height, stackField.xPosition - maxLabelWidth - 12, stackField.xPosition - 10, 800);
 		costHoverChecker = new HoverChecker(costField.yPosition - 1, costField.yPosition + costField.height, costField.xPosition - maxLabelWidth - 12, costField.xPosition - 10, 800);
+		minerRankHoverChecker = new HoverChecker(minerRankField.yPosition - 1, minerRankField.yPosition + minerRankField.height, minerRankField.xPosition - maxLabelWidth - 12, minerRankField.xPosition - 10, 800);
 	}
 
 	@Override
@@ -304,13 +320,17 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 									{
 										if (!Strings.isNullOrEmpty(itemField.getText()))
 										{
-											entry.setItem(new ItemStack(GameData.getItemRegistry().getObject(itemField.getText()),
-												NumberUtils.toInt(stackField.getText(), 1), NumberUtils.toInt(damageField.getText())));
+											entry.setItem(new ItemStack(GameData.getItemRegistry().getObject(itemField.getText()), NumberUtils.toInt(stackField.getText(), 1), NumberUtils.toInt(damageField.getText())));
 										}
 
 										if (!Strings.isNullOrEmpty(costField.getText()))
 										{
 											entry.setCost(NumberUtils.toInt(costField.getText()));
+										}
+
+										if (!Strings.isNullOrEmpty(minerRankField.getText()))
+										{
+											entry.setMinerRank(NumberUtils.toInt(minerRankField.getText()));
 										}
 
 										hoverCache.remove(entry);
@@ -356,10 +376,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 										productManager.addShopProduct(product);
 									}
 
-									if (MCEconomyPlugin.shopCfg.hasChanged())
-									{
-										MCEconomyPlugin.shopCfg.save();
-									}
+									Config.saveConfig(MCEconomyPlugin.shopCfg);
 								}
 							});
 						}
@@ -392,6 +409,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 							damageField.setText(Integer.toString(entry.getItem().getItemDamage()));
 							stackField.setText(Integer.toString(entry.getItem().stackSize));
 							costField.setText(Integer.toString(entry.getCost()));
+							minerRankField.setText(Integer.toString(entry.getMinerRank()));
 						}
 						else
 						{
@@ -399,6 +417,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 							damageField.setText("");
 							stackField.setText("");
 							costField.setText("");
+							minerRankField.setText("");
 						}
 					}
 
@@ -578,6 +597,20 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 
 				func_146283_a(hoverCache.get(costHoverChecker), mouseX, mouseY);
 			}
+			else if (minerRankHoverChecker.checkHover(mouseX, mouseY))
+			{
+				if (!hoverCache.containsKey(minerRankHoverChecker))
+				{
+					List<String> hover = Lists.newArrayList();
+					String key = Caveworld.CONFIG_LANG + "shop.minerRank";
+					hover.add(EnumChatFormatting.GRAY + I18n.format(key));
+					hover.addAll(fontRendererObj.listFormattedStringToWidth(I18n.format(key + ".tooltip"), 300));
+
+					hoverCache.put(minerRankHoverChecker, hover);
+				}
+
+				func_146283_a(hoverCache.get(minerRankHoverChecker), mouseX, mouseY);
+			}
 		}
 		else
 		{
@@ -616,6 +649,7 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 						GameData.getItemRegistry().getNameForObject(entry.getItem().getItem()) + ", " + entry.getItem().getItemDamage());
 					info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "shop.stackSize") + ": " + entry.getItem().stackSize);
 					info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "shop.productCost") + ": " + entry.getCost());
+					info.add(EnumChatFormatting.GRAY + I18n.format(Caveworld.CONFIG_LANG + "shop.minerRank") + ": " + entry.getMinerRank());
 
 					hoverCache.put(entry, info);
 				}
@@ -705,6 +739,12 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 					itemField.setFocused(false);
 
 					mc.displayGuiScreen(new GuiSelectItem(this, itemField, damageField));
+				}
+				else if (minerRankField.isFocused())
+				{
+					minerRankField.setFocused(false);
+
+					mc.displayGuiScreen(new GuiSelectMinerRank(this, minerRankField));
 				}
 			}
 		}

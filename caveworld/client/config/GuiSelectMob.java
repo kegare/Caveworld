@@ -413,7 +413,7 @@ public class GuiSelectMob extends GuiScreen
 		{
 			String entry = contents.get(index, null);
 
-			if (entry == null || entry.isEmpty())
+			if (Strings.isNullOrEmpty(entry))
 			{
 				return;
 			}
@@ -438,7 +438,7 @@ public class GuiSelectMob extends GuiScreen
 		{
 			String entry = contents.get(index, null);
 
-			if (entry != null && !entry.isEmpty() && !selected.remove(entry))
+			if (!Strings.isNullOrEmpty(entry) && !selected.remove(entry))
 			{
 				selected.add(entry);
 			}
@@ -449,7 +449,7 @@ public class GuiSelectMob extends GuiScreen
 		{
 			String entry = contents.get(index, null);
 
-			return entry != null && !entry.isEmpty() && selected.contains(entry);
+			return !Strings.isNullOrEmpty(entry) && selected.contains(entry);
 		}
 
 		protected void setFilter(final String filter)

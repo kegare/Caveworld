@@ -15,10 +15,14 @@ import java.util.List;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
+import caveworld.api.CaverAPI;
+import caveworld.core.CaverManager.MinerRank;
 import caveworld.core.Caveworld;
 import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
@@ -73,6 +77,7 @@ public class ShopProductManager implements IShopProductManager, IShop
 		int stack = flag ? -1 : product.getItem().stackSize;
 		int damage = flag ? -1 : product.getItem().getItemDamage();
 		int cost = flag ? -1 : product.getCost();
+		int minerRank = flag ? -1 : product.getMinerRank();
 
 		String name = Integer.toString(PRODUCTS.size());
 
@@ -110,12 +115,18 @@ public class ShopProductManager implements IShopProductManager, IShop
 		if (cost >= 0) prop.set(MathHelper.clamp_int(cost, Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue())));
 		propOrder.add(prop.getName());
 		cost = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		prop = getConfig().get(name, "minerRank", 0);
+		prop.setMinValue(0).setMaxValue(MinerRank.values().length - 1).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		if (minerRank >= 0) prop.set(MathHelper.clamp_int(minerRank, Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue())));
+		propOrder.add(prop.getName());
+		minerRank = MathHelper.clamp_int(prop.getInt(), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 
 		getConfig().setCategoryPropertyOrder(name, propOrder);
 
 		if (flag)
 		{
-			product = new ShopProduct(new ItemStack(GameData.getItemRegistry().getObject(item), stack, damage), cost);
+			product = new ShopProduct(new ItemStack(GameData.getItemRegistry().getObject(item), stack, damage), cost, minerRank);
 		}
 
 		return getProducts().add(product);
@@ -145,10 +156,36 @@ public class ShopProductManager implements IShopProductManager, IShop
 		getProducts().clear();
 	}
 
+	@Override
+	public void loadFromNBT(NBTTagList list)
+	{
+		for (int i = 0; i < list.tagCount(); ++i)
+		{
+			IShopProduct product = new ShopProduct();
+			product.loadFromNBT(list.getCompoundTagAt(i));
+
+			getProducts().add(product);
+		}
+	}
+
+	@Override
+	public NBTTagList saveToNBT()
+	{
+		NBTTagList list = new NBTTagList();
+
+		for (IShopProduct product : getProducts())
+		{
+			list.appendTag(product.saveToNBT());
+		}
+
+		return list;
+	}
+
 	public static class ShopProduct implements IShopProduct, IProduct
 	{
 		private ItemStack itemstack;
 		private int productCost;
+		private int minerRank;
 
 		public ShopProduct() {}
 
@@ -156,6 +193,12 @@ public class ShopProductManager implements IShopProductManager, IShop
 		{
 			this.itemstack = itemstack;
 			this.productCost = cost;
+		}
+
+		public ShopProduct(ItemStack itemstack, int cost, int rank)
+		{
+			this(itemstack, cost);
+			this.minerRank = rank;
 		}
 
 		public ShopProduct(IShopProduct product)
@@ -200,9 +243,41 @@ public class ShopProductManager implements IShopProductManager, IShop
 		}
 
 		@Override
+		public int setMinerRank(int rank)
+		{
+			return minerRank = rank;
+		}
+
+		@Override
+		public int getMinerRank()
+		{
+			return minerRank;
+		}
+
+		@Override
 		public boolean canBuy(IShop shop, World world, EntityPlayer player)
 		{
-			return true;
+			return getMinerRank() <= 0 || CaverAPI.getMinerRank(player) >= getMinerRank();
+		}
+
+		@Override
+		public void loadFromNBT(NBTTagCompound nbt)
+		{
+			itemstack = ItemStack.loadItemStackFromNBT(nbt);
+			productCost = nbt.getInteger("Cost");
+			minerRank = nbt.getInteger("MinerRank");
+		}
+
+		@Override
+		public NBTTagCompound saveToNBT()
+		{
+			NBTTagCompound nbt = new NBTTagCompound();
+
+			getItem().writeToNBT(nbt);
+			nbt.setInteger("Cost", getCost());
+			nbt.setInteger("MinerRank", getMinerRank());
+
+			return nbt;
 		}
 	}
 }

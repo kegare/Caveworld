@@ -10,9 +10,9 @@
 package caveworld.network.client;
 
 import caveworld.api.CaverAPI;
+import caveworld.core.CaverManager.Caver;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.FMLLog;
-import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
@@ -20,46 +20,46 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NBTTagCompound;
 
 public class CaverAdjustMessage implements IMessage, IMessageHandler<CaverAdjustMessage, IMessage>
 {
-	private Entity entity;
-	private int entityId;
-	private NBTTagCompound data = new NBTTagCompound();
+	private int entityId, point, rank;
 
 	public CaverAdjustMessage() {}
 
-	public CaverAdjustMessage(Entity entity)
+	public CaverAdjustMessage(Caver caver)
 	{
-		this.entity = entity;
+		this.entityId = caver.getEntity().getEntityId();
+		this.point = caver.getMiningPoint();
+		this.rank = caver.getRank();
 	}
 
 	@Override
 	public void fromBytes(ByteBuf buffer)
 	{
 		entityId = buffer.readInt();
-		data = ByteBufUtils.readTag(buffer);
+		point = buffer.readInt();
+		rank = buffer.readInt();
 	}
 
 	@Override
 	public void toBytes(ByteBuf buffer)
 	{
-		CaverAPI.saveData(entity, data);
-
-		buffer.writeInt(entity.getEntityId());
-		ByteBufUtils.writeTag(buffer, data);
+		buffer.writeInt(entityId);
+		buffer.writeInt(point);
+		buffer.writeInt(rank);
 	}
 
 	@SideOnly(Side.CLIENT)
 	@Override
 	public IMessage onMessage(CaverAdjustMessage message, MessageContext ctx)
 	{
-		Entity ent = FMLClientHandler.instance().getWorldClient().getEntityByID(message.entityId);
+		Entity entity = FMLClientHandler.instance().getWorldClient().getEntityByID(message.entityId);
 
-		if (ent != null)
+		if (entity != null)
 		{
-			CaverAPI.loadData(ent, message.data);
+			CaverAPI.setMiningPoint(entity, message.point);
+			CaverAPI.setMinerRank(entity, message.rank);
 		}
 		else
 		{

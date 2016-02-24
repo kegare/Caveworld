@@ -21,6 +21,7 @@ import com.google.common.collect.Table;
 import com.google.common.collect.Table.Cell;
 
 import caveworld.api.ICaverManager;
+import caveworld.api.event.MiningPointEvent.RankPromote;
 import caveworld.item.CaveItems;
 import caveworld.network.CaveNetworkRegistry;
 import caveworld.network.client.CaverAdjustMessage;
@@ -43,6 +44,7 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.IExtendedEntityProperties;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.Constants.NBT;
 import net.minecraftforge.oredict.OreDictionary;
 import shift.mceconomy2.api.MCEconomyAPI;
@@ -401,6 +403,11 @@ public class CaverManager implements ICaverManager
 			this.entity = entity;
 		}
 
+		public Entity getEntity()
+		{
+			return entity;
+		}
+
 		@Override
 		public void saveNBTData(NBTTagCompound compound)
 		{
@@ -553,16 +560,29 @@ public class CaverManager implements ICaverManager
 					}
 				}
 
-				if (promoted && player instanceof EntityPlayerMP)
+				if (promoted)
 				{
-					EntityPlayerMP thePlayer = (EntityPlayerMP)player;
-					IChatComponent name = new ChatComponentTranslation(current.getUnlocalizedName());
-					name.getChatStyle().setBold(true);
-					IChatComponent component = new ChatComponentTranslation("caveworld.minerrank.promoted", thePlayer.getDisplayName(), name);
-					component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
+					RankPromote event = new RankPromote(player, rank);
+					MinecraftForge.EVENT_BUS.post(event);
 
-					thePlayer.mcServer.getConfigurationManager().sendChatMsg(component);
-					thePlayer.getServerForPlayer().playSoundAtEntity(thePlayer, "caveworld:minerrank.promoted", 1.0F, 1.0F);
+					if (rank != event.newAmount)
+					{
+						rank = event.newAmount;
+
+						current = CaverManager.getRank(rank);
+					}
+
+					if (player instanceof EntityPlayerMP)
+					{
+						EntityPlayerMP thePlayer = (EntityPlayerMP)player;
+						IChatComponent name = new ChatComponentTranslation(current.getUnlocalizedName());
+						name.getChatStyle().setBold(true);
+						IChatComponent component = new ChatComponentTranslation("caveworld.minerrank.promoted", thePlayer.getDisplayName(), name);
+						component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
+
+						thePlayer.mcServer.getConfigurationManager().sendChatMsg(component);
+						thePlayer.getServerForPlayer().playSoundAtEntity(thePlayer, "caveworld:minerrank.promoted", 1.0F, 1.0F);
+					}
 				}
 
 				if (point >= 1000)
@@ -600,16 +620,7 @@ public class CaverManager implements ICaverManager
 		{
 			if (entity instanceof EntityPlayerMP)
 			{
-				EntityPlayerMP player = (EntityPlayerMP)entity;
-
-				CaveNetworkRegistry.sendTo(new CaverAdjustMessage(player), player);
-
-				return;
-			}
-
-			if (!entity.worldObj.isRemote)
-			{
-				CaveNetworkRegistry.sendToDimension(new CaverAdjustMessage(entity), entity.dimension);
+				CaveNetworkRegistry.sendTo(new CaverAdjustMessage(this), (EntityPlayerMP)entity);
 			}
 		}
 

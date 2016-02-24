@@ -24,8 +24,6 @@ import caveworld.plugin.ic2.IC2Plugin;
 import caveworld.plugin.mapletree.MapleTreePlugin;
 import caveworld.plugin.materialarms.MaterialArmsPlugin;
 import caveworld.plugin.mceconomy.MCEconomyPlugin;
-import caveworld.plugin.miningmod.MiningmodPlugin;
-import caveworld.plugin.more.MOrePlugin;
 import caveworld.plugin.moreinventory.MIMPlugin;
 import caveworld.plugin.nei.NEIPlugin;
 import caveworld.plugin.sextiarysector.SextiarySectorPlugin;
@@ -48,8 +46,6 @@ public class CavePlugins
 		PLUGINS.add(new MapleTreePlugin());
 		PLUGINS.add(new MaterialArmsPlugin());
 		PLUGINS.add(new MCEconomyPlugin());
-		PLUGINS.add(new MiningmodPlugin());
-		PLUGINS.add(new MOrePlugin());
 		PLUGINS.add(new MIMPlugin());
 		PLUGINS.add(new SextiarySectorPlugin());
 		PLUGINS.add(new TinkersConstructPlugin());
