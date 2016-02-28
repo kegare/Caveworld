@@ -59,10 +59,16 @@ import caveworld.item.ItemOreCompass;
 import caveworld.network.CaveNetworkRegistry;
 import caveworld.network.client.CaveAdjustMessage;
 import caveworld.network.client.CaveMusicMessage;
+import caveworld.network.client.CaveworldMenuMessage;
 import caveworld.network.client.ConfigAdjustMessage;
+import caveworld.network.client.LastMineMessage;
 import caveworld.network.client.MultiBreakCountMessage;
+import caveworld.network.common.VeinAdjustMessage;
 import caveworld.network.server.CaveAchievementMessage;
 import caveworld.plugin.enderstorage.EnderStoragePlugin;
+import caveworld.plugin.mceconomy.MCEconomyPlugin;
+import caveworld.plugin.mceconomy.ProductAdjustMessage;
+import caveworld.plugin.mceconomy.ShopProductManager;
 import caveworld.plugin.sextiarysector.SextiarySectorPlugin;
 import caveworld.util.CaveUtils;
 import caveworld.util.Version;
@@ -74,6 +80,7 @@ import caveworld.world.WorldProviderCavenia;
 import caveworld.world.WorldProviderCavern;
 import caveworld.world.WorldProviderCaveworld;
 import cpw.mods.fml.client.FMLClientHandler;
+import cpw.mods.fml.client.GuiModList;
 import cpw.mods.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
 import cpw.mods.fml.common.ObfuscationReflectionHelper;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -116,6 +123,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemTool;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
@@ -245,7 +253,7 @@ public class CaveEventHooks
 		{
 			ItemStack current = mc.thePlayer.getCurrentEquippedItem();
 
-			if (current != null && current.getItem() != null && current.getItem() instanceof IModeItem)
+			if (current != null && current.getItem() instanceof IModeItem)
 			{
 				IModeItem item = (IModeItem)current.getItem();
 
@@ -305,13 +313,34 @@ public class CaveEventHooks
 					left = true;
 				}
 
-				if (type == 1 || type == 3)
+				if (top)
 				{
-					y = event.resolution.getScaledHeight() - 21;
+					y = 5;
 				}
 				else
 				{
-					y = 5;
+					y = event.resolution.getScaledHeight() - 21;
+				}
+
+				int originX = x;
+				int originY = y;
+				boolean flag = false;
+
+				if (CaverManager.mineHighlightStart > 0 && Minecraft.getSystemTime() - CaverManager.mineHighlightStart < 2000 && CaverManager.lastMine != null && CaverManager.lastMinePoint != 0)
+				{
+					ItemStack item = CaverManager.lastMine.getItemStack();
+
+					if (item != null && item.getItem() != null)
+					{
+						CaveUtils.renderItemStack(mc, item, x, y, true, true, Integer.toString(CaverManager.lastMinePoint));
+
+						flag = true;
+					}
+				}
+
+				if (flag)
+				{
+					x += left ? 20 : -20;
 				}
 
 				CaveUtils.renderItemStack(mc, minerRank.getRenderItemStack(), x, y, true, false, null);
@@ -328,6 +357,9 @@ public class CaveEventHooks
 
 					if (Config.showMinerRank)
 					{
+						x = originX;
+						y = originY;
+
 						if (top)
 						{
 							mc.fontRenderer.drawStringWithShadow(rank, x + 5, y + 19, 0xCECECE);
@@ -344,6 +376,9 @@ public class CaveEventHooks
 
 					if (Config.showMinerRank)
 					{
+						x = originX;
+						y = originY;
+
 						if (top)
 						{
 							mc.fontRenderer.drawStringWithShadow(rank, x + 17 - mc.fontRenderer.getStringWidth(rank), y + 19, 0xCECECE);
@@ -592,7 +627,11 @@ public class CaveEventHooks
 	{
 		Minecraft mc = FMLClientHandler.instance().getClient();
 
-		if (CaveworldAPI.isEntityInCaves(mc.thePlayer) && (mc.currentScreen == null || !(mc.currentScreen instanceof GuiSelectWorld)))
+		if (event.gui != null && GuiModList.class == event.gui.getClass())
+		{
+			Caveworld.metadata.description = I18n.format("caveworld.description");
+		}
+		else if (CaveworldAPI.isEntityInCaves(mc.thePlayer) && (mc.currentScreen == null || !(mc.currentScreen instanceof GuiSelectWorld)))
 		{
 			if (event.gui == null)
 			{
@@ -675,6 +714,13 @@ public class CaveEventHooks
 			CaveworldAPI.veinCavernManager = new CavernVeinManager().setReadOnly(true);
 			prevVeinAquaCavernManager = CaveworldAPI.veinAquaCavernManager;
 			CaveworldAPI.veinAquaCavernManager = new AquaCavernVeinManager().setReadOnly(true);
+
+			if (MCEconomyPlugin.enabled())
+			{
+				MCEconomyPlugin.prevProductManager = MCEconomyPlugin.productManager;
+				MCEconomyPlugin.productManager = new ShopProductManager();
+				MCEconomyPlugin.swapShop(MCEconomyPlugin.prevProductManager, MCEconomyPlugin.productManager);
+			}
 		}
 	}
 
@@ -720,6 +766,13 @@ public class CaveEventHooks
 			prevVeinAquaCavernManager = null;
 		}
 
+		if (MCEconomyPlugin.enabled() && MCEconomyPlugin.prevProductManager != null)
+		{
+			MCEconomyPlugin.swapShop(MCEconomyPlugin.productManager, MCEconomyPlugin.prevProductManager);
+			MCEconomyPlugin.productManager = MCEconomyPlugin.prevProductManager;
+			MCEconomyPlugin.prevProductManager = null;
+		}
+
 		ItemOreCompass.resetFinder();
 	}
 
@@ -742,6 +795,18 @@ public class CaveEventHooks
 			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderAquaCavern.TYPE, WorldProviderAquaCavern.saveHandler)));
 			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderCaveland.TYPE, WorldProviderCaveland.saveHandler)));
 			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderCavenia.TYPE, WorldProviderCavenia.saveHandler)));
+
+			if (Config.remoteConfig)
+			{
+				manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new VeinAdjustMessage(CaveworldAPI.veinManager)));
+				manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new VeinAdjustMessage(CaveworldAPI.veinCavernManager)));
+				manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new VeinAdjustMessage(CaveworldAPI.veinAquaCavernManager)));
+			}
+
+			if (MCEconomyPlugin.enabled())
+			{
+				manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new ProductAdjustMessage(MCEconomyPlugin.productManager)));
+			}
 		}
 	}
 
@@ -1088,6 +1153,8 @@ public class CaveEventHooks
 					if (amount != 0)
 					{
 						CaverAPI.addMiningPoint(player, amount);
+
+						CaveNetworkRegistry.sendTo(new LastMineMessage(block, meta, amount), player);
 					}
 				}
 			}
@@ -1245,29 +1312,47 @@ public class CaveEventHooks
 		EntityPlayer player = event.entityPlayer;
 		ItemStack current = player.getCurrentEquippedItem();
 		boolean miner = CaveworldAPI.isEntityInCaves(player) && CaveUtils.isItemPickaxe(current);
+		boolean flag = false;
 
-		if (current != null && (current.getItem() instanceof IAquamarineTool || current.getItem() instanceof ICaveniumTool && ((ICaveniumTool)current.getItem()).getBase(current) instanceof IAquamarineTool ||
-			miner && CaverAPI.getMinerRank(player) >= MinerRank.AQUA_MINER.getRank()))
+		if (current != null)
 		{
-			if (player.isInsideOfMaterial(Material.water) && !EnchantmentHelper.getAquaAffinityModifier(player))
+			if (miner && CaverAPI.getMinerRank(player) >= MinerRank.AQUA_MINER.getRank())
 			{
-				if (!player.onGround)
-				{
-					event.newSpeed = event.originalSpeed * 10.0F;
-				}
-				else
-				{
-					event.newSpeed = event.originalSpeed * 5.0F;
-				}
+				flag = true;
 			}
 			else
 			{
-				event.newSpeed = event.originalSpeed;
+				Item item = current.getItem();
+
+				if (item instanceof ICaveniumTool)
+				{
+					item = ((ICaveniumTool)item).getBase(current);
+				}
+
+				if (item instanceof IAquamarineTool)
+				{
+					flag = true;
+				}
+				else if (item instanceof ItemTool)
+				{
+					if (((ItemTool)current.getItem()).func_150913_i() == CaveItems.AQUAMARINE)
+					{
+						flag = true;
+					}
+				}
 			}
 		}
-		else
+
+		if (flag && player.isInWater() && !EnchantmentHelper.getAquaAffinityModifier(player))
 		{
-			event.newSpeed = event.originalSpeed;
+			if (!player.onGround)
+			{
+				event.newSpeed = event.originalSpeed * 10.0F;
+			}
+			else
+			{
+				event.newSpeed = event.originalSpeed * 5.0F;
+			}
 		}
 
 		if (current != null && current.getItem() instanceof ICaveniumTool)
@@ -1449,6 +1534,21 @@ public class CaveEventHooks
 	{
 		EntityLivingBase entity = event.entityLiving;
 
+		if (entity instanceof EntityPlayerMP)
+		{
+			EntityPlayerMP player = (EntityPlayerMP)event.entityLiving;
+
+			if (CaveworldAPI.isEntityInCaves(player) && player.isPlayerSleeping())
+			{
+				int time = ObfuscationReflectionHelper.getPrivateValue(EntityPlayer.class, player, "sleepTimer", "field_71076_b");
+
+				if (time >= 75)
+				{
+					player.wakeUpPlayer(false, false, true);
+				}
+			}
+		}
+
 		if (CaveworldAPI.isEntityInCaves(entity) && entity.isInWater() && CaverAPI.getMinerRank(entity) >= MinerRank.AQUA_MINER.getRank())
 		{
 			if (!(entity instanceof EntityPlayer) || !((EntityPlayer)entity).capabilities.isFlying)
@@ -1577,7 +1677,13 @@ public class CaveEventHooks
 		String message = event.message;
 		EntityPlayerMP player = event.player;
 
-		if (CaveworldAPI.isEntityInCaves(player))
+		if (message.equalsIgnoreCase("@caveworld") || message.equalsIgnoreCase("@cavemenu"))
+		{
+			CaveNetworkRegistry.sendTo(new CaveworldMenuMessage(), player);
+
+			event.setCanceled(true);
+		}
+		else if (CaveworldAPI.isEntityInCaves(player))
 		{
 			if (message.matches("@buff|@buff ([0-9]*$|max)"))
 			{

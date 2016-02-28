@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Random;
 
 import net.minecraft.block.Block;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.config.Configuration;
 
 public interface ICaveVeinManager
@@ -49,4 +50,8 @@ public interface ICaveVeinManager
 	 * Removes all cave veins.
 	 */
 	public void clearCaveVeins();
+
+	public void loadFromNBT(NBTTagList list);
+
+	public NBTTagList saveToNBT();
 }

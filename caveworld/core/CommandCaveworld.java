@@ -177,7 +177,7 @@ public class CommandCaveworld implements ICommand
 	@Override
 	public boolean canCommandSenderUseCommand(ICommandSender sender)
 	{
-		return sender instanceof MinecraftServer || sender instanceof EntityPlayerMP;
+		return true;
 	}
 
 	@Override

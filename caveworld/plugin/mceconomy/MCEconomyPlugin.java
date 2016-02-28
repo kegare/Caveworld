@@ -10,6 +10,7 @@
 package caveworld.plugin.mceconomy;
 
 import java.io.File;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -27,10 +28,13 @@ import caveworld.entity.EntityCrazyCavenicSkeleton;
 import caveworld.entity.EntityMasterCavenicCreeper;
 import caveworld.entity.EntityMasterCavenicSkeleton;
 import caveworld.item.CaveItems;
+import caveworld.network.CaveNetworkRegistry;
 import caveworld.plugin.ICavePlugin;
 import caveworld.plugin.mceconomy.ShopProductManager.ShopProduct;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Optional.Method;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -38,6 +42,7 @@ import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.oredict.OreDictionary;
 import shift.mceconomy2.api.MCEconomyAPI;
+import shift.mceconomy2.api.shop.IShop;
 
 public class MCEconomyPlugin implements ICavePlugin
 {
@@ -48,6 +53,8 @@ public class MCEconomyPlugin implements ICavePlugin
 	public static int Player_MP_MAX = 1000000;
 
 	public static ShopProductManager productManager;
+	@SideOnly(Side.CLIENT)
+	public static ShopProductManager prevProductManager;
 
 	public static boolean pluginState = true;
 
@@ -145,6 +152,8 @@ public class MCEconomyPlugin implements ICavePlugin
 		MCEconomyAPI.ShopManager.addPurchaseEntity(EntityCavenicSpider.class, 50);
 
 		SHOP = MCEconomyAPI.registerShop(productManager);
+
+		CaveNetworkRegistry.registerMessage(ProductAdjustMessage.class, ProductAdjustMessage.class);
 	}
 
 	@Method(modid = MODID)
@@ -215,5 +224,22 @@ public class MCEconomyPlugin implements ICavePlugin
 		}
 
 		Config.saveConfig(shopCfg);
+	}
+
+	@Method(modid = MODID)
+	public static boolean swapShop(IShop prev, IShop shop)
+	{
+		List<IShop> shops = MCEconomyAPI.ShopManager.getShops();
+		int i = shops.indexOf(prev);
+
+		if (i >= 0)
+		{
+			shops.remove(i);
+			shops.add(i, shop);
+
+			return true;
+		}
+
+		return false;
 	}
 }

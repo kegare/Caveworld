@@ -27,6 +27,8 @@ import caveworld.api.ICaveBiomeManager;
 import caveworld.util.CaveUtils;
 import caveworld.world.WorldProviderCaveworld;
 import net.minecraft.init.Blocks;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.WeightedRandom;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.config.Configuration;
@@ -60,11 +62,6 @@ public class CaveBiomeManager implements ICaveBiomeManager
 		presets.put(BiomeGenBase.mesa, new CaveBiome(BiomeGenBase.mesa, 50));
 		presets.put(BiomeGenBase.hell, new CaveBiome(BiomeGenBase.hell, 0, new BlockEntry(Blocks.netherrack, 0), null));
 		presets.put(BiomeGenBase.sky, new CaveBiome(BiomeGenBase.sky, 0, new BlockEntry(Blocks.end_stone, 0), null));
-	}
-
-	public Map<BiomeGenBase, ICaveBiome> getRaw()
-	{
-		return CAVE_BIOMES;
 	}
 
 	@Override
@@ -101,7 +98,7 @@ public class CaveBiomeManager implements ICaveBiomeManager
 			return false;
 		}
 
-		for (ICaveBiome entry : getRaw().values())
+		for (ICaveBiome entry : getCaveBiomeMap().values())
 		{
 			if (entry.getBiome().biomeID == biome.getBiome().biomeID)
 			{
@@ -111,7 +108,7 @@ public class CaveBiomeManager implements ICaveBiomeManager
 			}
 		}
 
-		getRaw().put(biome.getBiome(), biome);
+		getCaveBiomeMap().put(biome.getBiome(), biome);
 
 		return true;
 	}
@@ -119,7 +116,7 @@ public class CaveBiomeManager implements ICaveBiomeManager
 	@Override
 	public boolean removeCaveBiome(BiomeGenBase biome)
 	{
-		return !isReadOnly() && getRaw().remove(biome) != null;
+		return !isReadOnly() && getCaveBiomeMap().remove(biome) != null;
 	}
 
 	@Override
@@ -127,7 +124,7 @@ public class CaveBiomeManager implements ICaveBiomeManager
 	{
 		int count = 0;
 
-		for (ICaveBiome entry : getRaw().values())
+		for (ICaveBiome entry : getCaveBiomeMap().values())
 		{
 			if (entry.getGenWeight() > 0)
 			{
@@ -141,7 +138,7 @@ public class CaveBiomeManager implements ICaveBiomeManager
 	@Override
 	public ICaveBiome getCaveBiome(BiomeGenBase biome)
 	{
-		return getRaw().containsKey(biome) ? getRaw().get(biome) : new DummyCaveBiome(biome);
+		return getCaveBiomeMap().containsKey(biome) ? getCaveBiomeMap().get(biome) : new DummyCaveBiome(biome);
 	}
 
 	@Override
@@ -149,7 +146,7 @@ public class CaveBiomeManager implements ICaveBiomeManager
 	{
 		try
 		{
-			return (ICaveBiome)WeightedRandom.getRandomItem(random, getRaw().values());
+			return (ICaveBiome)WeightedRandom.getRandomItem(random, getCaveBiomeMap().values());
 		}
 		catch (Exception e)
 		{
@@ -158,10 +155,16 @@ public class CaveBiomeManager implements ICaveBiomeManager
 	}
 
 	@Override
+	public Map<BiomeGenBase, ICaveBiome> getCaveBiomeMap()
+	{
+		return CAVE_BIOMES;
+	}
+
+	@Override
 	public Set<ICaveBiome> getCaveBiomes()
 	{
 		Set<ICaveBiome> result = Sets.newTreeSet(CaveBiome.caveBiomeComparator);
-		result.addAll(getRaw().values());
+		result.addAll(getCaveBiomeMap().values());
 
 		return result;
 	}
@@ -169,7 +172,7 @@ public class CaveBiomeManager implements ICaveBiomeManager
 	@Override
 	public List<BiomeGenBase> getBiomeList()
 	{
-		return Lists.newArrayList(getRaw().keySet());
+		return Lists.newArrayList(getCaveBiomeMap().keySet());
 	}
 
 	@Override
@@ -177,8 +180,33 @@ public class CaveBiomeManager implements ICaveBiomeManager
 	{
 		if (!isReadOnly())
 		{
-			getRaw().clear();
+			getCaveBiomeMap().clear();
 		}
+	}
+
+	@Override
+	public void loadFromNBT(NBTTagList list)
+	{
+		for (int i = 0; i < list.tagCount(); ++i)
+		{
+			ICaveBiome biome = new CaveBiome();
+			biome.loadFromNBT(list.getCompoundTagAt(i));
+
+			getCaveBiomeMap().put(biome.getBiome(), biome);
+		}
+	}
+
+	@Override
+	public NBTTagList saveToNBT()
+	{
+		NBTTagList list = new NBTTagList();
+
+		for (ICaveBiome biome : getCaveBiomes())
+		{
+			list.appendTag(biome.saveToNBT());
+		}
+
+		return list;
 	}
 
 	public static class CaveBiome extends WeightedRandom.Item implements ICaveBiome, Comparable
@@ -326,6 +354,28 @@ public class CaveBiomeManager implements ICaveBiomeManager
 		public BlockEntry getTopBlock()
 		{
 			return topBlock == null ? getTerrainBlock() : topBlock;
+		}
+
+		@Override
+		public void loadFromNBT(NBTTagCompound nbt)
+		{
+			biome = BiomeGenBase.getBiome(nbt.getInteger("Biome"));
+			setGenWeight(nbt.getInteger("Weight"));
+			setTerrainBlock(new BlockEntry(nbt.getCompoundTag("Terrain")));
+			setTopBlock(new BlockEntry(nbt.getCompoundTag("Top")));
+		}
+
+		@Override
+		public NBTTagCompound saveToNBT()
+		{
+			NBTTagCompound nbt = new NBTTagCompound();
+
+			nbt.setInteger("Biome", getBiome().biomeID);
+			nbt.setInteger("Weight", getGenWeight());
+			nbt.setTag("Terrain", getTerrainBlock().writeToNBT(new NBTTagCompound()));
+			nbt.setTag("Top", getTopBlock().writeToNBT(new NBTTagCompound()));
+
+			return nbt;
 		}
 	}
 }

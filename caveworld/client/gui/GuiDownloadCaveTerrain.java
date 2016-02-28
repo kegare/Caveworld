@@ -9,8 +9,6 @@
 
 package caveworld.client.gui;
 
-import java.util.Random;
-
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.Project;
 
@@ -31,8 +29,6 @@ import net.minecraft.util.ResourceLocation;
 @SideOnly(Side.CLIENT)
 public class GuiDownloadCaveTerrain extends GuiDownloadTerrain
 {
-	private static final Random random = new Random();
-
 	private final DynamicTexture viewportTexture;
 	private final ResourceLocation panoramaBackground;
 
@@ -59,7 +55,7 @@ public class GuiDownloadCaveTerrain extends GuiDownloadTerrain
 		}
 		else if (currentPanoramaPaths == null)
 		{
-			currentPanoramaPaths = GuiListSlot.panoramaPaths.get(random.nextInt(GuiListSlot.panoramaPaths.size()), null);
+			currentPanoramaPaths = GuiListSlot.panoramaPaths.get(0, null);
 		}
 
 		return currentPanoramaPaths;

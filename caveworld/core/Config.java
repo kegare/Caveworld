@@ -110,6 +110,7 @@ public class Config
 	public static String[] miningPoints;
 	public static String[] miningPointValidItems;
 	public static String[] randomiteDrops;
+	public static int[] randomitePotions;
 	public static boolean oreRenderOverlay;
 	public static boolean fakeMiningPickaxe;
 	public static boolean fakeLumberingAxe;
@@ -125,11 +126,13 @@ public class Config
 	public static int caveborn;
 
 	public static boolean cauldron;
+	public static boolean remoteConfig;
 
 	public static Class<? extends IConfigEntry> selectItems;
 	public static Class<? extends IConfigEntry> selectItemsWithBlocks;
 	public static Class<? extends IConfigEntry> selectBiomes;
 	public static Class<? extends IConfigEntry> selectMobs;
+	public static Class<? extends IConfigEntry> selectPotions;
 	public static Class<? extends IConfigEntry> cycleInteger;
 	public static Class<? extends IConfigEntry> pointsEntry;
 
@@ -346,10 +349,15 @@ public class Config
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		propOrder.add(prop.getName());
 		randomiteDrops = prop.getStringList();
+		prop = generalCfg.get(category, "randomitePotions", new int[0]);
+		prop.setMaxListLength(100).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(selectPotions);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		propOrder.add(prop.getName());
+		randomitePotions = prop.getIntList();
 
 		if (side.isClient())
 		{
-			prop = generalCfg.get(category, "oreRenderOverlay", true);
+			prop = generalCfg.get(category, "oreRenderOverlay", false);
 			prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 			prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 			prop.comment += " [default: " + prop.getDefault() + "]";
@@ -1723,9 +1731,13 @@ public class Config
 		}
 
 		prop = serverCfg.get(category, "cauldron", Loader.isModLoaded("kimagine"));
-		prop.comment = "Whether the server is Cauldron";
+		prop.comment = "Whether the server is Cauldron.";
 		propOrder.add(prop.getName());
 		cauldron = prop.getBoolean(cauldron);
+		prop = serverCfg.get(category, "remoteConfig", false);
+		prop.comment = "Whether or not to enable remote edit config for operators.";
+		propOrder.add(prop.getName());
+		remoteConfig = prop.getBoolean(remoteConfig);
 
 		saveConfig(serverCfg);
 	}

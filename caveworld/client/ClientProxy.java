@@ -17,7 +17,8 @@ import caveworld.client.config.SelectBiomeEntry;
 import caveworld.client.config.SelectItemEntry;
 import caveworld.client.config.SelectItemWithBlockEntry;
 import caveworld.client.config.SelectMobEntry;
-import caveworld.client.gui.GuiIngameCaveworldMenu;
+import caveworld.client.config.SelectPotionEntry;
+import caveworld.client.gui.GuiIngameCaveMenu;
 import caveworld.client.gui.MenuType;
 import caveworld.client.renderer.RenderBlockOverlay;
 import caveworld.client.renderer.RenderCavePortal;
@@ -69,6 +70,7 @@ public class ClientProxy extends CommonProxy
 		Config.selectItemsWithBlocks = SelectItemWithBlockEntry.class;
 		Config.selectBiomes = SelectBiomeEntry.class;
 		Config.selectMobs = SelectMobEntry.class;
+		Config.selectPotions = SelectPotionEntry.class;
 		Config.cycleInteger = CycleIntegerEntry.class;
 		Config.pointsEntry = MiningPointsEntry.class;
 	}
@@ -118,13 +120,13 @@ public class ClientProxy extends CommonProxy
 	@Override
 	public void displayMenu(MenuType type)
 	{
-		FMLClientHandler.instance().showGuiScreen(new GuiIngameCaveworldMenu().setMenuType(type));
+		FMLClientHandler.instance().showGuiScreen(new GuiIngameCaveMenu().setMenuType(type));
 	}
 
 	@Override
 	public void displayPortalMenu(MenuType type, int x, int y, int z)
 	{
-		FMLClientHandler.instance().showGuiScreen(new GuiIngameCaveworldMenu().setMenuType(type).setPortalCoord(x, y, z));
+		FMLClientHandler.instance().showGuiScreen(new GuiIngameCaveMenu().setMenuType(type).setPortalCoord(x, y, z));
 	}
 
 	@Override

@@ -37,7 +37,8 @@ import caveworld.client.config.GuiSelectItem.SelectListener;
 import caveworld.client.config.GuiSelectMinerRank;
 import caveworld.client.gui.GuiListSlot;
 import caveworld.core.Caveworld;
-import caveworld.core.Config;
+import caveworld.network.CaveNetworkRegistry;
+import caveworld.network.common.OpRemoteCheckMessage;
 import caveworld.plugin.mceconomy.ShopProductManager.ShopProduct;
 import caveworld.util.ArrayListExtended;
 import caveworld.util.CaveUtils;
@@ -104,6 +105,11 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 
 	public boolean isReadOnly()
 	{
+		if (mc.thePlayer != null && !mc.isIntegratedServerRunning())
+		{
+			return !OpRemoteCheckMessage.operator;
+		}
+
 		return productManager.isReadOnly();
 	}
 
@@ -115,6 +121,11 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 		if (productList == null)
 		{
 			productList = new ProductList();
+
+			if (mc.thePlayer != null && !mc.isIntegratedServerRunning())
+			{
+				CaveNetworkRegistry.sendToServer(new OpRemoteCheckMessage());
+			}
 		}
 
 		productList.func_148122_a(width, height, 32, height - (editMode ? 110 : 28));
@@ -348,37 +359,54 @@ public class GuiShopEntry extends GuiScreen implements SelectListener
 					{
 						if (!isReadOnly())
 						{
-							CaveUtils.getPool().execute(new RecursiveAction()
+							if (mc.thePlayer == null || mc.isIntegratedServerRunning())
 							{
-								@Override
-								protected void compute()
+								CaveUtils.getPool().execute(new RecursiveAction()
 								{
-									boolean flag = productManager.getProducts().size() != productList.products.size();
-
-									productManager.getProducts().clear();
-
-									if (flag)
+									@Override
+									protected void compute()
 									{
-										try
-										{
-											FileUtils.forceDelete(new File(MCEconomyPlugin.shopCfg.toString()));
+										boolean flag = productManager.getProducts().size() != productList.products.size();
 
-											MCEconomyPlugin.shopCfg.load();
-										}
-										catch (IOException e)
+										productManager.getProducts().clear();
+
+										if (flag)
 										{
-											e.printStackTrace();
+											try
+											{
+												FileUtils.forceDelete(new File(productManager.getConfig().toString()));
+
+												productManager.getConfig().load();
+											}
+											catch (IOException e)
+											{
+												e.printStackTrace();
+											}
+										}
+
+										for (IShopProduct product : productList.products)
+										{
+											productManager.addShopProduct(product);
+										}
+
+										if (productManager.getConfig().hasChanged())
+										{
+											productManager.getConfig().save();
 										}
 									}
+								});
+							}
+							else
+							{
+								productManager.getProducts().clear();
 
-									for (IShopProduct product : productList.products)
-									{
-										productManager.addShopProduct(product);
-									}
-
-									Config.saveConfig(MCEconomyPlugin.shopCfg);
+								for (IShopProduct product : productList.products)
+								{
+									productManager.getProducts().add(product);
 								}
-							});
+
+								CaveNetworkRegistry.sendToServer(new ProductAdjustMessage(productManager));
+							}
 						}
 
 						actionPerformed(cancelButton);

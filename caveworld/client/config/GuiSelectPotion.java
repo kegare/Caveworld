@@ -9,18 +9,15 @@
 
 package caveworld.client.config;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.RecursiveAction;
 
 import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.input.Keyboard;
 
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
@@ -44,17 +41,15 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.entity.EntityList;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.monster.EntityMob;
+import net.minecraft.potion.Potion;
 
 @SideOnly(Side.CLIENT)
-public class GuiSelectMob extends GuiScreen
+public class GuiSelectPotion extends GuiScreen
 {
-	protected final GuiScreen parent;
-	protected ArrayEntry configElement;
+	private final GuiScreen parent;
+	private ArrayEntry configElement;
 
-	protected MobList mobList;
+	private PotionList potionList;
 
 	protected GuiButton doneButton;
 	protected GuiCheckBox detailInfo;
@@ -65,12 +60,12 @@ public class GuiSelectMob extends GuiScreen
 	protected HoverChecker instantHoverChecker;
 	protected HoverChecker selectedHoverChecker;
 
-	public GuiSelectMob(GuiScreen parent)
+	public GuiSelectPotion(GuiScreen parent)
 	{
 		this.parent = parent;
 	}
 
-	public GuiSelectMob(GuiScreen parent, ArrayEntry entry)
+	public GuiSelectPotion(GuiScreen parent, ArrayEntry entry)
 	{
 		this(parent);
 		this.configElement = entry;
@@ -79,14 +74,12 @@ public class GuiSelectMob extends GuiScreen
 	@Override
 	public void initGui()
 	{
-		Keyboard.enableRepeatEvents(true);
-
-		if (mobList == null)
+		if (potionList == null)
 		{
-			mobList = new MobList();
+			potionList = new PotionList();
 		}
 
-		mobList.func_148122_a(width, height, 32, height - 28);
+		potionList.func_148122_a(width, height, 32, height - 28);
 
 		if (doneButton == null)
 		{
@@ -139,20 +132,25 @@ public class GuiSelectMob extends GuiScreen
 			switch (button.id)
 			{
 				case 0:
-					if (configElement != null)
+					if (!potionList.selected.isEmpty())
 					{
-						configElement.setListFromChildScreen(mobList.selected.toArray(new String[mobList.selected.size()]));
+						if (configElement != null)
+						{
+							Set<Integer> entries = Sets.newTreeSet();
+
+							for (Potion potion : potionList.selected)
+							{
+								entries.add(potion.getId());
+							}
+
+							configElement.setListFromChildScreen(entries.toArray());
+						}
 					}
 
 					mc.displayGuiScreen(parent);
 
-					if (parent == null)
-					{
-						mc.setIngameFocus();
-					}
-
-					mobList.selected.clear();
-					mobList.scrollToTop();
+					potionList.selected.clear();
+					potionList.scrollToTop();
 					break;
 				case 1:
 					CaveConfigGui.detailInfo = detailInfo.isChecked();
@@ -175,9 +173,9 @@ public class GuiSelectMob extends GuiScreen
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float ticks)
 	{
-		mobList.drawScreen(mouseX, mouseY, ticks);
+		potionList.drawScreen(mouseX, mouseY, ticks);
 
-		drawCenteredString(fontRendererObj, I18n.format(Caveworld.CONFIG_LANG + "select.mob"), width / 2, 15, 0xFFFFFF);
+		drawCenteredString(fontRendererObj, I18n.format(Caveworld.CONFIG_LANG + "select.potion"), width / 2, 15, 0xFFFFFF);
 
 		super.drawScreen(mouseX, mouseY, ticks);
 
@@ -192,16 +190,23 @@ public class GuiSelectMob extends GuiScreen
 			func_146283_a(fontRendererObj.listFormattedStringToWidth(I18n.format(Caveworld.CONFIG_LANG + "instant.hover"), 300), mouseX, mouseY);
 		}
 
-		if (!mobList.selected.isEmpty())
+		if (!potionList.selected.isEmpty())
 		{
 			if (mouseX <= 100 && mouseY <= 20)
 			{
-				drawString(fontRendererObj, I18n.format(Caveworld.CONFIG_LANG + "select.mob.selected", mobList.selected.size()), 5, 5, 0xEFEFEF);
+				drawString(fontRendererObj, I18n.format(Caveworld.CONFIG_LANG + "select.potion.selected", potionList.selected.size()), 5, 5, 0xEFEFEF);
 			}
 
 			if (detailInfo.isChecked() && selectedHoverChecker.checkHover(mouseX, mouseY))
 			{
-				func_146283_a(mobList.getSelectedMobs(), mouseX, mouseY);
+				List<String> list = Lists.newArrayList();
+
+				for (Potion potion : potionList.selected)
+				{
+					list.add(I18n.format(potion.getName()));
+				}
+
+				func_146283_a(list, mouseX, mouseY);
 			}
 		}
 	}
@@ -212,14 +217,6 @@ public class GuiSelectMob extends GuiScreen
 		super.mouseClicked(x, y, code);
 
 		filterTextField.mouseClicked(x, y, code);
-	}
-
-	@Override
-	public void onGuiClosed()
-	{
-		super.onGuiClosed();
-
-		Keyboard.enableRepeatEvents(false);
 	}
 
 	@Override
@@ -241,11 +238,11 @@ public class GuiSelectMob extends GuiScreen
 
 			if (Strings.isNullOrEmpty(text) && changed)
 			{
-				mobList.setFilter(null);
+				potionList.setFilter(null);
 			}
 			else if (instantFilter.isChecked() && changed || code == Keyboard.KEY_RETURN)
 			{
-				mobList.setFilter(text);
+				potionList.setFilter(text);
 			}
 		}
 		else
@@ -261,42 +258,42 @@ public class GuiSelectMob extends GuiScreen
 			}
 			else if (code == Keyboard.KEY_BACK)
 			{
-				mobList.selected.clear();
+				potionList.selected.clear();
 			}
 			else if (code == Keyboard.KEY_TAB)
 			{
-				if (++mobList.nameType > 1)
+				if (++potionList.nameType > 1)
 				{
-					mobList.nameType = 0;
+					potionList.nameType = 0;
 				}
 			}
 			else if (code == Keyboard.KEY_UP)
 			{
-				mobList.scrollUp();
+				potionList.scrollUp();
 			}
 			else if (code == Keyboard.KEY_DOWN)
 			{
-				mobList.scrollDown();
+				potionList.scrollDown();
 			}
 			else if (code == Keyboard.KEY_HOME)
 			{
-				mobList.scrollToTop();
+				potionList.scrollToTop();
 			}
 			else if (code == Keyboard.KEY_END)
 			{
-				mobList.scrollToEnd();
+				potionList.scrollToEnd();
 			}
 			else if (code == Keyboard.KEY_SPACE)
 			{
-				mobList.scrollToSelected();
+				potionList.scrollToSelected();
 			}
 			else if (code == Keyboard.KEY_PRIOR)
 			{
-				mobList.scrollToPrev();
+				potionList.scrollToPrev();
 			}
 			else if (code == Keyboard.KEY_NEXT)
 			{
-				mobList.scrollToNext();
+				potionList.scrollToNext();
 			}
 			else if (code == Keyboard.KEY_F || code == mc.gameSettings.keyBindChat.getKeyCode())
 			{
@@ -304,76 +301,51 @@ public class GuiSelectMob extends GuiScreen
 			}
 			else if (isCtrlKeyDown() && code == Keyboard.KEY_A)
 			{
-				mobList.selected.clear();
-				mobList.selected.addAll(mobList.contents);
+				potionList.selected.clear();
+				potionList.selected.addAll(potionList.contents);
 			}
 		}
 	}
 
-	class MobList extends GuiListSlot
+	class PotionList extends GuiListSlot
 	{
-		private final ArrayListExtended<String> mobs = new ArrayListExtended();
-		private final ArrayListExtended<String> contents = new ArrayListExtended();
-		private final Set<String> selected = Sets.newTreeSet();
-		private final Map<String, List<String>> filterCache = Maps.newHashMap();
+		private final ArrayListExtended<Potion> potions = new ArrayListExtended();
+		private final ArrayListExtended<Potion> contents = new ArrayListExtended();
+		private final Set<Potion> selected = Sets.newHashSet();
+		private final Map<String, List<Potion>> filterCache = Maps.newHashMap();
 
 		protected int nameType;
 
-		public MobList()
+		public PotionList()
 		{
-			super(GuiSelectMob.this.mc, 0, 0, 0, 0, 18);
-			this.initEntries();
-		}
+			super(GuiSelectPotion.this.mc, 0, 0, 0, 0, 18);
+			this.potions.addAll(CaveUtils.getPotions());
+			this.contents.addAll(potions);
 
-		protected void initEntries()
-		{
-			CaveUtils.getPool().execute(new RecursiveAction()
+			if (configElement != null)
 			{
-				@Override
-				protected void compute()
+				CaveUtils.getPool().execute(new RecursiveAction()
 				{
-					mobs.clear();
-					contents.clear();
-					selected.clear();
-					filterCache.clear();
-
-					for (Iterator iterator = EntityList.stringToClassMapping.entrySet().iterator(); iterator.hasNext();)
+					@Override
+					protected void compute()
 					{
-						Entry entry = (Entry)iterator.next();
-						String name = (String)entry.getKey();
-						Class clazz = (Class)entry.getValue();
+						Set<Integer> current = Sets.newHashSet();
 
-						if (!Strings.isNullOrEmpty(name) && EntityMob.class != clazz && EntityLiving.class != clazz && EntityLiving.class.isAssignableFrom(clazz))
-						{
-							mobs.addIfAbsent(name);
-						}
-					}
-
-					Collections.sort(mobs);
-
-					contents.addAll(mobs);
-
-					if (configElement != null)
-					{
 						for (Object obj : configElement.getCurrentValues())
 						{
-							selected.add(String.valueOf(obj));
+							current.add((Integer)obj);
+						}
+
+						for (Potion potion : potions)
+						{
+							if (current.contains(potion.getId()))
+							{
+								selected.add(potion);
+							}
 						}
 					}
-				}
-			});
-		}
-
-		protected List<String> getSelectedMobs()
-		{
-			return Lists.transform(Lists.newArrayList(selected), new Function<String, String>()
-			{
-				@Override
-				public String apply(String input)
-				{
-					return CaveUtils.getEntityLocalizedName(input);
-				}
-			});
+				});
+			}
 		}
 
 		@Override
@@ -389,7 +361,7 @@ public class GuiSelectMob extends GuiScreen
 			{
 				int amount = 0;
 
-				for (Iterator<String> iterator = selected.iterator(); iterator.hasNext();)
+				for (Iterator<Potion> iterator = selected.iterator(); iterator.hasNext();)
 				{
 					amount = contents.indexOf(iterator.next()) * getSlotHeight();
 
@@ -419,9 +391,9 @@ public class GuiSelectMob extends GuiScreen
 		@Override
 		protected void drawSlot(int index, int par2, int par3, int par4, Tessellator tessellator, int mouseX, int mouseY)
 		{
-			String entry = contents.get(index, null);
+			Potion entry = contents.get(index, null);
 
-			if (Strings.isNullOrEmpty(entry))
+			if (entry == null)
 			{
 				return;
 			}
@@ -431,10 +403,10 @@ public class GuiSelectMob extends GuiScreen
 			switch (nameType)
 			{
 				case 1:
-					name = entry;
+					name = entry.getName();
 					break;
 				default:
-					name = CaveUtils.getEntityLocalizedName(entry);
+					name = I18n.format(entry.getName());
 					break;
 			}
 
@@ -444,10 +416,20 @@ public class GuiSelectMob extends GuiScreen
 		@Override
 		protected void elementClicked(int index, boolean flag, int mouseX, int mouseY)
 		{
-			String entry = contents.get(index, null);
+			Potion entry = contents.get(index, null);
 
-			if (!Strings.isNullOrEmpty(entry) && !selected.remove(entry))
+			if (entry != null && !selected.remove(entry))
 			{
+				if (configElement != null)
+				{
+					int i = configElement.getConfigElement().getMaxListLength();
+
+					if (i > 0 && selected.size() >= i)
+					{
+						return;
+					}
+				}
+
 				selected.add(entry);
 			}
 		}
@@ -455,9 +437,9 @@ public class GuiSelectMob extends GuiScreen
 		@Override
 		protected boolean isSelected(int index)
 		{
-			String entry = contents.get(index, null);
+			Potion entry = contents.get(index, null);
 
-			return !Strings.isNullOrEmpty(entry) && selected.contains(entry);
+			return entry != null && selected.contains(entry);
 		}
 
 		protected void setFilter(final String filter)
@@ -467,11 +449,11 @@ public class GuiSelectMob extends GuiScreen
 				@Override
 				protected void compute()
 				{
-					List<String> result;
+					List<Potion> result;
 
 					if (Strings.isNullOrEmpty(filter))
 					{
-						result = mobs;
+						result = potions;
 					}
 					else if (filter.equals("selected"))
 					{
@@ -481,12 +463,12 @@ public class GuiSelectMob extends GuiScreen
 					{
 						if (!filterCache.containsKey(filter))
 						{
-							filterCache.put(filter, Lists.newArrayList(Collections2.filter(mobs, new Predicate<String>()
+							filterCache.put(filter, Lists.newArrayList(Collections2.filter(potions, new Predicate<Potion>()
 							{
 								@Override
-								public boolean apply(String input)
+								public boolean apply(Potion input)
 								{
-									return StringUtils.containsIgnoreCase(input, filter) || StringUtils.containsIgnoreCase(CaveUtils.getEntityLocalizedName(input), filter);
+									return StringUtils.containsIgnoreCase(input.getName(), filter) || StringUtils.containsIgnoreCase(I18n.format(input.getName()), filter);
 								}
 							})));
 						}

@@ -2,6 +2,7 @@ package caveworld.api;
 
 import java.util.Random;
 
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
 public interface ICaveVein
@@ -39,4 +40,8 @@ public interface ICaveVein
 	public int[] getGenBiomes();
 
 	public void generateVeins(World world, Random random, int chunkX, int chunkZ);
+
+	public void loadFromNBT(NBTTagCompound nbt);
+
+	public NBTTagCompound saveToNBT();
 }

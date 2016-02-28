@@ -75,6 +75,7 @@ import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemSpade;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.potion.Potion;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
@@ -626,6 +627,21 @@ public class CaveUtils
 			if (biome != null)
 			{
 				result.add(biome);
+			}
+		}
+
+		return result;
+	}
+
+	public static Set<Potion> getPotions()
+	{
+		Set<Potion> result = Sets.newLinkedHashSet();
+
+		for (Potion potion : Potion.potionTypes)
+		{
+			if (potion != null)
+			{
+				result.add(potion);
 			}
 		}
 

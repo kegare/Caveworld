@@ -132,7 +132,12 @@ public class EntityCavenicZombie extends EntityZombie implements ICavenicMob
 	@Override
 	public boolean getCanSpawnHere()
 	{
-		return CaveworldAPI.isEntityInCavenia(this) || CaveworldAPI.isEntityInCaves(this) && !CaveworldAPI.isEntityInCavern(this) && isValidHeight() && super.getCanSpawnHere();
+		if (CaveworldAPI.isEntityInCaves(this) && !CaveworldAPI.isEntityInCavern(this))
+		{
+			return isValidHeight() && super.getCanSpawnHere() || CaveworldAPI.isEntityInCavenia(this) && rand.nextInt(10) == 0;
+		}
+
+		return false;
 	}
 
 	@Override

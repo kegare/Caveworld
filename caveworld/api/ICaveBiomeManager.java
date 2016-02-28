@@ -1,9 +1,11 @@
 package caveworld.api;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.config.Configuration;
 
@@ -36,6 +38,8 @@ public interface ICaveBiomeManager
 
 	public ICaveBiome getRandomCaveBiome(Random random);
 
+	public Map<BiomeGenBase, ICaveBiome> getCaveBiomeMap();
+
 	public Set<ICaveBiome> getCaveBiomes();
 
 	public List<BiomeGenBase> getBiomeList();
@@ -44,4 +48,8 @@ public interface ICaveBiomeManager
 	 * Removes all cave biomes.
 	 */
 	public void clearCaveBiomes();
+
+	public void loadFromNBT(NBTTagList list);
+
+	public NBTTagList saveToNBT();
 }

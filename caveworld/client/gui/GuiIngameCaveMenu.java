@@ -28,31 +28,39 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.common.config.Configuration;
+import shift.mceconomy2.api.MCEconomyAPI;
 
 @SideOnly(Side.CLIENT)
-public class GuiIngameCaveworldMenu extends GuiScreen implements IVolume
+public class GuiIngameCaveMenu extends GuiScreen implements IVolume
 {
 	private MenuType menuType = MenuType.DEFAULT;
 	private int portalX;
 	private int portalY;
 	private int portalZ;
 
+	private GuiButton prevPageButton;
+	private GuiButton nextPageButton;
 	private GuiButton backButton;
+	private GuiButton regenButton;
+
 	private GuiButton caveMusicButton;
-	private GuiButton inventoryButton;
+	private GuiButton openInvButton;
+	private GuiButton openShopButton;
+
 	private GuiButton biomeButton;
 	private GuiButton veinButton;
 	private GuiButton shopButton;
-	private GuiButton regenButton;
 
-	public GuiIngameCaveworldMenu setMenuType(MenuType type)
+	private static int pageIndex;
+
+	public GuiIngameCaveMenu setMenuType(MenuType type)
 	{
 		menuType = type;
 
 		return this;
 	}
 
-	public GuiIngameCaveworldMenu setPortalCoord(int x, int y, int z)
+	public GuiIngameCaveMenu setPortalCoord(int x, int y, int z)
 	{
 		portalX = x;
 		portalY = y;
@@ -66,32 +74,52 @@ public class GuiIngameCaveworldMenu extends GuiScreen implements IVolume
 	{
 		GuiButton prev;
 
-		backButton = prev = new GuiButtonExt(0, width / 2 - 100, height / 4 + 8, I18n.format("menu.returnToGame"));
+		prevPageButton = prev = new GuiButton(101, width / 2 - 100, 35, 20, 20, "<");
+		nextPageButton = new GuiButton(102, prev.xPosition + 180, prev.yPosition, 20, 20, ">");
 
-		if (!menuType.isPortalMenu())
-		{
-			caveMusicButton = prev = new GuiButtonVolume(6, prev.xPosition, prev.yPosition + prev.height + 5, I18n.format(Caveworld.CONFIG_LANG + Configuration.CATEGORY_GENERAL + ".caveMusicVolume"), Config.caveMusicVolume, this);
-		}
+		backButton = prev = new GuiButtonExt(0, prev.xPosition, height / 4 + 8, I18n.format("menu.returnToGame"));
 
-		if (menuType == MenuType.CAVEWORLD_PORTAL)
+		switch (pageIndex)
 		{
-			inventoryButton = prev = new GuiButtonExt(5, prev.xPosition, prev.yPosition + prev.height + 5, I18n.format(CaveBlocks.caveworld_portal.getInventoryName()));
-		}
+			case 1:
+				if (menuType != MenuType.CAVELAND_PORTAL && menuType != MenuType.CAVENIA_PORTAL)
+				{
+					biomeButton = prev = new GuiButtonExt(1, prev.xPosition, prev.yPosition + prev.height + 5, I18n.format(Caveworld.CONFIG_LANG + "biomes"));
+					veinButton = prev = new GuiButtonExt(2, prev.xPosition, prev.yPosition + prev.height + 5, I18n.format(Caveworld.CONFIG_LANG + "veins"));
+				}
 
-		if (menuType != MenuType.CAVELAND_PORTAL && menuType != MenuType.CAVENIA_PORTAL)
-		{
-			biomeButton = prev = new GuiButtonExt(1, prev.xPosition, prev.yPosition + prev.height + 5, I18n.format(Caveworld.CONFIG_LANG + "biomes"));
-			veinButton = prev = new GuiButtonExt(2, prev.xPosition, prev.yPosition + prev.height + 5, I18n.format(Caveworld.CONFIG_LANG + "veins"));
-		}
+				if (MCEconomyPlugin.enabled())
+				{
+					shopButton = prev = new GuiButtonExt(4, prev.xPosition, prev.yPosition + prev.height + 5, I18n.format(Caveworld.CONFIG_LANG + "shop"));
+				}
 
-		if (MCEconomyPlugin.enabled())
-		{
-			shopButton = prev = new GuiButtonExt(4, prev.xPosition, prev.yPosition + prev.height + 5, I18n.format(Caveworld.CONFIG_LANG + "shop"));
+				caveMusicButton = openInvButton = openShopButton = null;
+				break;
+			default:
+				if (!menuType.isPortalMenu())
+				{
+					caveMusicButton = prev = new GuiButtonVolume(6, prev.xPosition, prev.yPosition + prev.height + 5, I18n.format(Caveworld.CONFIG_LANG + Configuration.CATEGORY_GENERAL + ".caveMusicVolume"), Config.caveMusicVolume, this);
+				}
+
+				if (menuType == MenuType.CAVEWORLD_PORTAL)
+				{
+					openInvButton = prev = new GuiButtonExt(5, prev.xPosition, prev.yPosition + prev.height + 5, I18n.format(CaveBlocks.caveworld_portal.getInventoryName()));
+				}
+
+				if (menuType.isPortalMenu() && MCEconomyPlugin.enabled())
+				{
+					openShopButton = prev = new GuiButtonExt(6, prev.xPosition, prev.yPosition + prev.height + 5, I18n.format(MCEconomyPlugin.productManager.getShopName(mc.theWorld, mc.thePlayer)));
+				}
+
+				biomeButton = veinButton = shopButton = null;
+				break;
 		}
 
 		regenButton = prev = new GuiButtonExt(3, prev.xPosition, prev.yPosition + prev.height + 5, I18n.format("caveworld.regenerate.gui.title"));
 
 		buttonList.clear();
+		buttonList.add(prevPageButton);
+		buttonList.add(nextPageButton);
 		buttonList.add(backButton);
 
 		if (caveMusicButton != null)
@@ -116,9 +144,14 @@ public class GuiIngameCaveworldMenu extends GuiScreen implements IVolume
 			buttonList.add(shopButton);
 		}
 
-		if (inventoryButton != null)
+		if (openInvButton != null)
 		{
-			buttonList.add(inventoryButton);
+			buttonList.add(openInvButton);
+		}
+
+		if (openShopButton != null)
+		{
+			buttonList.add(openShopButton);
 		}
 	}
 
@@ -198,6 +231,29 @@ public class GuiIngameCaveworldMenu extends GuiScreen implements IVolume
 					break;
 				case 5:
 					CaveNetworkRegistry.sendToServer(new PortalInventoryMessage(portalX, portalY, portalZ));
+					break;
+				case 6:
+					if (MCEconomyPlugin.enabled())
+					{
+						MCEconomyAPI.openShopGui(MCEconomyPlugin.SHOP, mc.thePlayer, mc.theWorld, 0, 0, 0);
+					}
+
+					break;
+				case 101:
+					if (--pageIndex < 0)
+					{
+						pageIndex = 1;
+					}
+
+					initGui();
+					break;
+				case 102:
+					if (++pageIndex > 1)
+					{
+						pageIndex = 0;
+					}
+
+					initGui();
 					break;
 			}
 		}

@@ -3,6 +3,7 @@ package caveworld.api;
 import java.util.Random;
 
 import net.minecraft.init.Blocks;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
 public class DummyCaveVein implements ICaveVein
@@ -105,4 +106,13 @@ public class DummyCaveVein implements ICaveVein
 
 	@Override
 	public void generateVeins(World world, Random random, int chunkX, int chunkZ) {}
+
+	@Override
+	public void loadFromNBT(NBTTagCompound nbt) {}
+
+	@Override
+	public NBTTagCompound saveToNBT()
+	{
+		return new NBTTagCompound();
+	}
 }

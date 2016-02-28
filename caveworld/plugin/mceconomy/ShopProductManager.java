@@ -38,12 +38,6 @@ public class ShopProductManager implements IShopProductManager, IShop
 	private boolean readOnly;
 
 	@Override
-	public String getShopName(World world, EntityPlayer player)
-	{
-		return "caveworld.shop.title";
-	}
-
-	@Override
 	public Configuration getConfig()
 	{
 		return MCEconomyPlugin.shopCfg;
@@ -53,6 +47,12 @@ public class ShopProductManager implements IShopProductManager, IShop
 	public int getType()
 	{
 		return 0;
+	}
+
+	@Override
+	public String getShopName(World world, EntityPlayer player)
+	{
+		return "caveworld.shop.title";
 	}
 
 	@Override
@@ -263,9 +263,9 @@ public class ShopProductManager implements IShopProductManager, IShop
 		@Override
 		public void loadFromNBT(NBTTagCompound nbt)
 		{
-			itemstack = ItemStack.loadItemStackFromNBT(nbt);
-			productCost = nbt.getInteger("Cost");
-			minerRank = nbt.getInteger("MinerRank");
+			setItem(ItemStack.loadItemStackFromNBT(nbt));
+			setCost(nbt.getInteger("Cost"));
+			setMinerRank(nbt.getInteger("MinerRank"));
 		}
 
 		@Override

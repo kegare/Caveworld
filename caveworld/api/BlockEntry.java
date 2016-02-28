@@ -4,6 +4,7 @@ import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.MathHelper;
 
 public class BlockEntry
@@ -22,6 +23,11 @@ public class BlockEntry
 	public BlockEntry(String name, int metadata)
 	{
 		this(Block.getBlockFromName(name), metadata);
+	}
+
+	public BlockEntry(NBTTagCompound nbt)
+	{
+		this.readFromNBT(nbt);
 	}
 
 	public Block getBlock()
@@ -78,5 +84,19 @@ public class BlockEntry
 	public String toString()
 	{
 		return GameData.getBlockRegistry().getNameForObject(block) + ":" + metadata;
+	}
+
+	public NBTTagCompound writeToNBT(NBTTagCompound nbt)
+	{
+		nbt.setString("Name", GameData.getBlockRegistry().getNameForObject(block));
+		nbt.setInteger("Meta", metadata);
+
+		return nbt;
+	}
+
+	public void readFromNBT(NBTTagCompound nbt)
+	{
+		block = Block.getBlockFromName(nbt.getString("Name"));
+		metadata = nbt.getInteger("Meta");
 	}
 }

@@ -356,16 +356,16 @@ public class GuiBiomesEntry extends GuiScreen implements SelectListener
 
 									ConfigCategory category;
 
-									for (ICaveBiome entry : biomeList.biomes)
+									for (ICaveBiome biome : biomeList.biomes)
 									{
-										category = biomeManager.getConfig().getCategory(Integer.toString(entry.getBiome().biomeID));
-										category.get("genWeight").set(entry.getGenWeight());
-										category.get("terrainBlock").set(GameData.getBlockRegistry().getNameForObject(entry.getTerrainBlock().getBlock()));
-										category.get("terrainBlockMetadata").set(entry.getTerrainBlock().getMetadata());
-										category.get("topBlock").set(GameData.getBlockRegistry().getNameForObject(entry.getTopBlock().getBlock()));
-										category.get("topBlockMetadata").set(entry.getTopBlock().getMetadata());
+										category = biomeManager.getConfig().getCategory(Integer.toString(biome.getBiome().biomeID));
+										category.get("genWeight").set(biome.getGenWeight());
+										category.get("terrainBlock").set(GameData.getBlockRegistry().getNameForObject(biome.getTerrainBlock().getBlock()));
+										category.get("terrainBlockMetadata").set(biome.getTerrainBlock().getMetadata());
+										category.get("topBlock").set(GameData.getBlockRegistry().getNameForObject(biome.getTopBlock().getBlock()));
+										category.get("topBlockMetadata").set(biome.getTopBlock().getMetadata());
 
-										biomeManager.addCaveBiome(entry);
+										biomeManager.addCaveBiome(biome);
 									}
 
 									if (biomeManager.getConfig().hasChanged())

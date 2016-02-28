@@ -32,7 +32,7 @@ public class RenderBlockOverlay implements ISimpleBlockRenderingHandler
 		IIcon icon;
 		IIcon overlay = null;
 
-		if (Config.oreRenderOverlay && block instanceof IBlockRenderOverlay)
+		if (block instanceof IBlockRenderOverlay)
 		{
 			overlay = ((IBlockRenderOverlay)block).getOverlayIcon(metadata);
 		}
@@ -123,7 +123,7 @@ public class RenderBlockOverlay implements ISimpleBlockRenderingHandler
 		IIcon overlay = null;
 		int meta = world.getBlockMetadata(x, y, z);
 
-		if (Config.oreRenderOverlay && block instanceof IBlockRenderOverlay)
+		if (block instanceof IBlockRenderOverlay)
 		{
 			overlay = ((IBlockRenderOverlay)block).getOverlayIcon(meta);
 		}

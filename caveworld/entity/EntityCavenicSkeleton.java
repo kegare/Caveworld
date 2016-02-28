@@ -75,7 +75,7 @@ public class EntityCavenicSkeleton extends EntitySkeleton implements ICavenicMob
 		}
 	}
 
-	protected EntityAIArrowAttack aiArrowAttack = new EntityAIArrowAttack(this, 0.975D, 1, 3, 8.0F);
+	protected EntityAIArrowAttack aiArrowAttack = new EntityAIArrowAttack(this, 0.975D, 1, 3, 6.0F);
 
 	public EntityCavenicSkeleton(World world)
 	{

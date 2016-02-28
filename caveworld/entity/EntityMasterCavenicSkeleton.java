@@ -56,7 +56,7 @@ public class EntityMasterCavenicSkeleton extends EntityCavenicSkeleton implement
 	@Override
 	protected void applyCustomValues()
 	{
-		aiArrowAttack = new EntityAIArrowAttack(this, 1.0D, 1, 2, 10.0F);
+		aiArrowAttack = new EntityAIArrowAttack(this, 1.0D, 1, 2, 8.0F);
 
 		super.applyCustomValues();
 	}

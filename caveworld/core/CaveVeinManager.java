@@ -27,6 +27,8 @@ import caveworld.world.WorldProviderCaveworld;
 import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.util.WeightedRandom;
@@ -261,6 +263,31 @@ public class CaveVeinManager implements ICaveVeinManager
 		{
 			getCaveVeins().clear();
 		}
+	}
+
+	@Override
+	public void loadFromNBT(NBTTagList list)
+	{
+		for (int i = 0; i < list.tagCount(); ++i)
+		{
+			ICaveVein vein = new CaveVein();
+			vein.loadFromNBT(list.getCompoundTagAt(i));
+
+			getCaveVeins().add(vein);
+		}
+	}
+
+	@Override
+	public NBTTagList saveToNBT()
+	{
+		NBTTagList list = new NBTTagList();
+
+		for (ICaveVein vein : getCaveVeins())
+		{
+			list.appendTag(vein.saveToNBT());
+		}
+
+		return list;
 	}
 
 	public static class CaveVein extends WeightedRandom.Item implements ICaveVein
@@ -518,6 +545,36 @@ public class CaveVeinManager implements ICaveVeinManager
 					}
 				}
 			}
+		}
+
+		@Override
+		public void loadFromNBT(NBTTagCompound nbt)
+		{
+			setBlock(new BlockEntry(nbt.getCompoundTag("Block")));
+			setGenBlockCount(nbt.getInteger("Count"));
+			setGenWeight(nbt.getInteger("Weight"));
+			setGenRate(nbt.getInteger("Rate"));
+			setGenMinHeight(nbt.getInteger("Min"));
+			setGenMaxHeight(nbt.getInteger("Max"));
+			setGenTargetBlock(new BlockEntry(nbt.getCompoundTag("Target")));
+			setGenBiomes(nbt.getIntArray("Biomes"));
+		}
+
+		@Override
+		public NBTTagCompound saveToNBT()
+		{
+			NBTTagCompound nbt = new NBTTagCompound();
+
+			nbt.setTag("Block", getBlock().writeToNBT(new NBTTagCompound()));
+			nbt.setInteger("Count", getGenBlockCount());
+			nbt.setInteger("Weight", getGenWeight());
+			nbt.setInteger("Rate", getGenRate());
+			nbt.setInteger("Min", getGenMinHeight());
+			nbt.setInteger("Max", getGenMaxHeight());
+			nbt.setTag("Target", getGenTargetBlock().writeToNBT(new NBTTagCompound()));
+			nbt.setIntArray("Biomes", getGenBiomes());
+
+			return nbt;
 		}
 	}
 }

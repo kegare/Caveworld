@@ -7,6 +7,7 @@ gui.clear=クリア
 
 key.atCommand=@コマンド
 
+caveworld.description=多くの洞窟ディメンションを追加します。いくつかの鉱石、便利なツール、洞窟モブやボスなども追加します。
 caveworld.version.message=%s の新しいバージョンが利用可能です
 caveworld.version.message.beta=あなたは %s のベータバージョンを利用しています。
 caveworld.version.message.alpha=あなたは %s のアルファバージョンを利用しています。
@@ -23,7 +24,7 @@ caveworld.regenerate.backedup=%s ディメンションフォルダをバック�
 caveworld.regenerate.backup.failed=%s ディメンションフォルダのバックアップに失敗しました
 caveworld.regenerate.regenerated=%s ディメンションを再生成しました
 caveworld.regenerate.failed=%s ディメンションの再生成に失敗しました
-caveworld.regenerate.gui.title=Caveworldの再生成
+caveworld.regenerate.gui.title=ディメンションの再生成
 caveworld.regenerate.gui.info=再生成開始後のキャンセルはできません
 caveworld.regenerate.gui.regenerate=再生成
 caveworld.regenerate.gui.backup=バックアップ
@@ -66,6 +67,8 @@ caveworld.config.general.miningPointValidItems=採掘ポイントの有効なア
 caveworld.config.general.miningPointValidItems.tooltip=鉱石採掘時に採掘ポイントを獲得できるアイテムを指定します。
 caveworld.config.general.randomiteDrops=ランダマイトのドロップ
 caveworld.config.general.randomiteDrops.tooltip=ランダマイト鉱石からドロップするアイテムを指定します。最大で100個まで指定することができます。
+caveworld.config.general.randomitePotions=ランダマイトのポーション
+caveworld.config.general.randomitePotions.tooltip=ランダマイト鉱石から得られるポーション効果を指定します。最大で100個まで指定することができます。
 caveworld.config.general.oreRenderOverlay=鉱石の重ね描画
 caveworld.config.general.oreRenderOverlay.tooltip=鉱石を石のテクスチャの上に重ねて描画します。
 caveworld.config.general.fakeMiningPickaxe=採掘ツルハシの偽装
@@ -207,6 +210,8 @@ caveworld.config.select.biome.info.type=タイプ
 caveworld.config.select.entry.selected=%dつのエントリが選択済み
 caveworld.config.select.mob=モブを選択してください
 caveworld.config.select.mob.selected=%dつのモブが選択済み
+caveworld.config.select.potion=ポーションを選択してください
+caveworld.config.select.potion.selected=%dつのポーションが選択済み
 caveworld.config.select.minerRank=炭鉱夫ランクを選択してください
 
 caveworld.terrain.wait=しばらくお待ちください
@@ -341,7 +346,7 @@ achievement.caveworld.aquamarine.desc=アクアマリン鉱石を採掘し、ア
 achievement.caveworld.randomite=ランダマイト
 achievement.caveworld.randomite.desc=ランダマイト鉱石を採掘する
 
-caveworld.shop.title=ショップ
+caveworld.shop.title=ポータルショップ
 caveworld.config.shop=ショップの製品のカスタマイズ
 caveworld.config.shop.tooltip=caveworld-shop.cfg に含まれる設定を変更できます。
 caveworld.config.shop.item=製品アイテム

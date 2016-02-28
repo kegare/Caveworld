@@ -20,6 +20,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import com.google.common.collect.Table.Cell;
 
+import caveworld.api.BlockEntry;
 import caveworld.api.ICaverManager;
 import caveworld.api.event.MiningPointEvent.RankPromote;
 import caveworld.item.CaveItems;
@@ -55,6 +56,10 @@ public class CaverManager implements ICaverManager
 
 	private static final Map<String, NBTTagCompound> caverData = Maps.newHashMap();
 	private static final Table<Block, Integer, Integer> pointAmounts = HashBasedTable.create();
+
+	public static BlockEntry lastMine;
+	public static int lastMinePoint;
+	public static long mineHighlightStart;
 
 	private Caver getCaver(Entity entity)
 	{

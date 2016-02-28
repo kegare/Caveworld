@@ -55,7 +55,7 @@ public class BlockCaveniumOre extends BlockOre implements IBlockRenderOverlay
 	@Override
 	public int getRenderType()
 	{
-		return Config.RENDER_TYPE_OVERLAY;
+		return Config.oreRenderOverlay ? Config.RENDER_TYPE_OVERLAY : super.getRenderType();
 	}
 
 	@SideOnly(Side.CLIENT)

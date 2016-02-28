@@ -63,7 +63,7 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 	@Override
 	public int getRenderType()
 	{
-		return Config.RENDER_TYPE_OVERLAY;
+		return Config.oreRenderOverlay ? Config.RENDER_TYPE_OVERLAY : super.getRenderType();
 	}
 
 	@Override
@@ -129,26 +129,42 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 
 		boolean cavenia = CaveworldAPI.isEntityInCavenia(player);
 
-		if (cavenia || player != null && random.nextInt(3) == 0)
+		if (cavenia || random.nextInt(3) == 0)
 		{
-			if (player.getActivePotionEffects().size() < (cavenia ? 5 : 3))
+			if (player == null)
 			{
-				Potion potion = null;
-
-				while (potion == null || potion.getEffectiveness() <= 0.5D || player.isPotionActive(potion))
+				if (random.nextInt(4) == 0)
 				{
-					potion = Potion.potionTypes[player.getRNG().nextInt(Potion.potionTypes.length)];
-				}
-
-				if (potion != null)
-				{
-					player.addPotionEffect(new PotionEffect(potion.getId(), (cavenia ? MathHelper.getRandomIntegerInRange(random, 30, 60) : MathHelper.getRandomIntegerInRange(random, 10, 20)) * 20));
-					world.playSoundAtEntity(player, "dig.glass", 0.75F, 2.0F);
+					if (!world.isRemote)
+					{
+						world.newExplosion(null, x + 0.5D, y + 0.5D, z + 0.5D, 1.5F, false, true);
+					}
 
 					drops.clear();
-
-					type = EventType.POTION;
+					type = EventType.OTHER;
 				}
+			}
+			else if (player.getActivePotionEffects().size() < (cavenia ? 5 : 3))
+			{
+				if (!world.isRemote)
+				{
+					Potion potion = null;
+					List<Potion> potions = getRandomitePotions();
+
+					while (potion == null || player.isPotionActive(potion))
+					{
+						potion = potions.get(player.getRNG().nextInt(potions.size()));
+					}
+
+					if (potion != null)
+					{
+						player.addPotionEffect(new PotionEffect(potion.getId(), (cavenia ? MathHelper.getRandomIntegerInRange(random, 30, 60) : MathHelper.getRandomIntegerInRange(random, 10, 20)) * 20));
+						world.playSoundAtEntity(player, "dig.glass", 0.75F, 2.0F);
+					}
+				}
+
+				drops.clear();
+				type = EventType.POTION;
 			}
 		}
 
@@ -277,5 +293,22 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 		{
 			list.add(new ItemStack(item, 1, i));
 		}
+	}
+
+	public static List<Potion> getRandomitePotions()
+	{
+		List<Potion> potions = Lists.newArrayList();
+
+		for (int id : Config.randomitePotions)
+		{
+			Potion potion = Potion.potionTypes[id];
+
+			if (potion != null)
+			{
+				potions.add(potion);
+			}
+		}
+
+		return potions;
 	}
 }

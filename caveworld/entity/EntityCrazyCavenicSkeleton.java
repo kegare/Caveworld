@@ -130,7 +130,7 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 	@Override
 	protected void applyCustomValues()
 	{
-		aiArrowAttack = new EntityAIArrowAttack(this, 1.0D, 1, 2, 15.0F);
+		aiArrowAttack = new EntityAIArrowAttack(this, 1.0D, 1, 2, 12.0F);
 
 		super.applyCustomValues();
 	}

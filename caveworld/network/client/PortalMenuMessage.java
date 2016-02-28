@@ -9,7 +9,7 @@
 
 package caveworld.network.client;
 
-import caveworld.client.gui.GuiIngameCaveworldMenu;
+import caveworld.client.gui.GuiIngameCaveMenu;
 import caveworld.client.gui.MenuType;
 import caveworld.world.WorldProviderAquaCavern;
 import caveworld.world.WorldProviderCaveland;
@@ -60,7 +60,7 @@ public class PortalMenuMessage implements IMessage, IMessageHandler<PortalMenuMe
 	@Override
 	public IMessage onMessage(PortalMenuMessage message, MessageContext ctx)
 	{
-		GuiIngameCaveworldMenu menu = new GuiIngameCaveworldMenu();
+		GuiIngameCaveMenu menu = new GuiIngameCaveMenu();
 
 		switch (message.type)
 		{

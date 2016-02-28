@@ -35,7 +35,7 @@ public class AquaCavernBiomeManager extends CaveBiomeManager
 	}
 
 	@Override
-	public Map<BiomeGenBase, ICaveBiome> getRaw()
+	public Map<BiomeGenBase, ICaveBiome> getCaveBiomeMap()
 	{
 		return CAVE_BIOMES;
 	}

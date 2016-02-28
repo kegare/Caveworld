@@ -18,6 +18,7 @@ import org.apache.logging.log4j.Level;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
+import com.google.common.primitives.Ints;
 
 import caveworld.api.BlockEntry;
 import caveworld.api.CaverAPI;
@@ -94,6 +95,7 @@ import net.minecraft.item.ItemSword;
 import net.minecraft.item.ItemTool;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.potion.Potion;
 import net.minecraft.util.StatCollector;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
@@ -468,7 +470,7 @@ public class Caveworld
 
 			for (Item item : GameData.getItemRegistry().typeSafeIterable())
 			{
-				if (entries.size() >= 100)
+				if (entries.size() >= prop.getMaxListLength())
 				{
 					break;
 				}
@@ -527,6 +529,28 @@ public class Caveworld
 			}
 
 			prop.set(entries.toArray(new String[entries.size()]));
+		}
+
+		prop = category.get("randomitePotions");
+
+		if (prop.getIntList() == null || prop.getIntList().length <= 0)
+		{
+			Set<Integer> values = Sets.newTreeSet();
+
+			for (Potion potion : CaveUtils.getPotions())
+			{
+				if (entries.size() >= prop.getMaxListLength())
+				{
+					break;
+				}
+
+				if (potion.getEffectiveness() > 0.5D)
+				{
+					values.add(potion.getId());
+				}
+			}
+
+			prop.set(Ints.toArray(values));
 		}
 
 		Config.saveConfig(Config.generalCfg);

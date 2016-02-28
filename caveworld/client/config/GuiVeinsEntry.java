@@ -40,6 +40,9 @@ import caveworld.client.config.GuiSelectBlock.SelectListener;
 import caveworld.client.gui.GuiListSlot;
 import caveworld.core.CaveVeinManager.CaveVein;
 import caveworld.core.Caveworld;
+import caveworld.network.CaveNetworkRegistry;
+import caveworld.network.common.OpRemoteCheckMessage;
+import caveworld.network.common.VeinAdjustMessage;
 import caveworld.util.ArrayListExtended;
 import caveworld.util.CaveUtils;
 import cpw.mods.fml.client.config.GuiButtonExt;
@@ -114,6 +117,11 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 
 	public boolean isReadOnly()
 	{
+		if (mc.thePlayer != null && !mc.isIntegratedServerRunning())
+		{
+			return !OpRemoteCheckMessage.operator;
+		}
+
 		return veinManager.isReadOnly();
 	}
 
@@ -125,6 +133,11 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 		if (veinList == null)
 		{
 			veinList = new VeinList();
+
+			if (mc.thePlayer != null && !mc.isIntegratedServerRunning())
+			{
+				CaveNetworkRegistry.sendToServer(new OpRemoteCheckMessage());
+			}
 		}
 
 		veinList.func_148122_a(width, height, 32, height - (editMode ? 170 : 28));
@@ -460,40 +473,54 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 					{
 						if (!isReadOnly())
 						{
-							CaveUtils.getPool().execute(new RecursiveAction()
+							if (mc.thePlayer == null || mc.isIntegratedServerRunning())
 							{
-								@Override
-								protected void compute()
+								CaveUtils.getPool().execute(new RecursiveAction()
 								{
-									boolean flag = veinManager.getCaveVeins().size() != veinList.veins.size();
-
-									veinManager.clearCaveVeins();
-
-									if (flag)
+									@Override
+									protected void compute()
 									{
-										try
+										boolean flag = veinManager.getCaveVeins().size() != veinList.veins.size();
+
+										veinManager.clearCaveVeins();
+
+										if (flag)
 										{
-											FileUtils.forceDelete(new File(veinManager.getConfig().toString()));
+											try
+											{
+												FileUtils.forceDelete(new File(veinManager.getConfig().toString()));
 
-											veinManager.getConfig().load();
+												veinManager.getConfig().load();
+											}
+											catch (IOException e)
+											{
+												e.printStackTrace();
+											}
 										}
-										catch (IOException e)
+
+										for (ICaveVein vein : veinList.veins)
 										{
-											e.printStackTrace();
+											veinManager.addCaveVein(vein);
+										}
+
+										if (veinManager.getConfig().hasChanged())
+										{
+											veinManager.getConfig().save();
 										}
 									}
+								});
+							}
+							else
+							{
+								veinManager.clearCaveVeins();
 
-									for (ICaveVein vein : veinList.veins)
-									{
-										veinManager.addCaveVein(vein);
-									}
-
-									if (veinManager.getConfig().hasChanged())
-									{
-										veinManager.getConfig().save();
-									}
+								for (ICaveVein vein : veinList.veins)
+								{
+									veinManager.getCaveVeins().add(vein);
 								}
-							});
+
+								CaveNetworkRegistry.sendToServer(new VeinAdjustMessage(veinManager));
+							}
 						}
 
 						actionPerformed(cancelButton);
