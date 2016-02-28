@@ -31,10 +31,9 @@ import caveworld.item.CaveItems;
 import caveworld.network.CaveNetworkRegistry;
 import caveworld.plugin.ICavePlugin;
 import caveworld.plugin.mceconomy.ShopProductManager.ShopProduct;
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Optional.Method;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -52,9 +51,7 @@ public class MCEconomyPlugin implements ICavePlugin
 	public static int SHOP = -1;
 	public static int Player_MP_MAX = 1000000;
 
-	public static ShopProductManager productManager;
-	@SideOnly(Side.CLIENT)
-	public static ShopProductManager prevProductManager;
+	public static IShopProductManager productManager;
 
 	public static boolean pluginState = true;
 
@@ -154,6 +151,8 @@ public class MCEconomyPlugin implements ICavePlugin
 		SHOP = MCEconomyAPI.registerShop(productManager);
 
 		CaveNetworkRegistry.registerMessage(ProductAdjustMessage.class, ProductAdjustMessage.class);
+
+		FMLCommonHandler.instance().bus().register(new MCEEventHooks());
 	}
 
 	@Method(modid = MODID)

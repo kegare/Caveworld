@@ -9,10 +9,13 @@
 
 package caveworld.plugin.mceconomy;
 
+import cpw.mods.fml.common.Optional.Interface;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import shift.mceconomy2.api.shop.IProduct;
 
-public interface IShopProduct
+@Interface(iface = "shift.mceconomy2.api.shop.IProduct", modid = MCEconomyPlugin.MODID, striprefs = true)
+public interface IShopProduct extends IProduct
 {
 	public ItemStack setItem(ItemStack item);
 

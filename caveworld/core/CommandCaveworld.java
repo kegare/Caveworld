@@ -9,15 +9,12 @@
 
 package caveworld.core;
 
-import java.awt.Desktop;
-import java.net.URI;
 import java.util.List;
 
 import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
 import caveworld.network.CaveNetworkRegistry;
 import caveworld.network.client.CaveworldMenuMessage;
-import caveworld.network.client.OpenUrlMessage;
 import caveworld.network.common.RegenerateMessage;
 import caveworld.util.CaveUtils;
 import caveworld.util.Version;
@@ -105,18 +102,6 @@ public class CommandCaveworld implements ICommand
 			component.getChatStyle().setColor(EnumChatFormatting.DARK_GRAY).setChatClickEvent(click);
 			message.appendSibling(component);
 			sender.addChatMessage(message);
-		}
-		else if (args[0].equalsIgnoreCase("forum") || args[0].equalsIgnoreCase("url"))
-		{
-			if (sender instanceof EntityPlayerMP)
-			{
-				CaveNetworkRegistry.sendTo(new OpenUrlMessage(Caveworld.metadata.url), (EntityPlayerMP)sender);
-			}
-			else try
-			{
-				Desktop.getDesktop().browse(new URI(Caveworld.metadata.url));
-			}
-			catch (Exception e) {}
 		}
 		else if (args[0].equalsIgnoreCase("regenerate"))
 		{

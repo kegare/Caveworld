@@ -66,9 +66,6 @@ import caveworld.network.client.MultiBreakCountMessage;
 import caveworld.network.common.VeinAdjustMessage;
 import caveworld.network.server.CaveAchievementMessage;
 import caveworld.plugin.enderstorage.EnderStoragePlugin;
-import caveworld.plugin.mceconomy.MCEconomyPlugin;
-import caveworld.plugin.mceconomy.ProductAdjustMessage;
-import caveworld.plugin.mceconomy.ShopProductManager;
 import caveworld.plugin.sextiarysector.SextiarySectorPlugin;
 import caveworld.util.CaveUtils;
 import caveworld.util.Version;
@@ -714,13 +711,6 @@ public class CaveEventHooks
 			CaveworldAPI.veinCavernManager = new CavernVeinManager().setReadOnly(true);
 			prevVeinAquaCavernManager = CaveworldAPI.veinAquaCavernManager;
 			CaveworldAPI.veinAquaCavernManager = new AquaCavernVeinManager().setReadOnly(true);
-
-			if (MCEconomyPlugin.enabled())
-			{
-				MCEconomyPlugin.prevProductManager = MCEconomyPlugin.productManager;
-				MCEconomyPlugin.productManager = new ShopProductManager();
-				MCEconomyPlugin.swapShop(MCEconomyPlugin.prevProductManager, MCEconomyPlugin.productManager);
-			}
 		}
 	}
 
@@ -766,13 +756,6 @@ public class CaveEventHooks
 			prevVeinAquaCavernManager = null;
 		}
 
-		if (MCEconomyPlugin.enabled() && MCEconomyPlugin.prevProductManager != null)
-		{
-			MCEconomyPlugin.swapShop(MCEconomyPlugin.productManager, MCEconomyPlugin.prevProductManager);
-			MCEconomyPlugin.productManager = MCEconomyPlugin.prevProductManager;
-			MCEconomyPlugin.prevProductManager = null;
-		}
-
 		ItemOreCompass.resetFinder();
 	}
 
@@ -801,11 +784,6 @@ public class CaveEventHooks
 				manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new VeinAdjustMessage(CaveworldAPI.veinManager)));
 				manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new VeinAdjustMessage(CaveworldAPI.veinCavernManager)));
 				manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new VeinAdjustMessage(CaveworldAPI.veinAquaCavernManager)));
-			}
-
-			if (MCEconomyPlugin.enabled())
-			{
-				manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new ProductAdjustMessage(MCEconomyPlugin.productManager)));
 			}
 		}
 	}

@@ -227,7 +227,11 @@ public class GuiIngameCaveMenu extends GuiScreen implements IVolume
 
 					break;
 				case 4:
-					mc.displayGuiScreen(new GuiShopEntry(this, MCEconomyPlugin.productManager));
+					if (MCEconomyPlugin.enabled())
+					{
+						mc.displayGuiScreen(new GuiShopEntry(this, MCEconomyPlugin.productManager));
+					}
+
 					break;
 				case 5:
 					CaveNetworkRegistry.sendToServer(new PortalInventoryMessage(portalX, portalY, portalZ));
