@@ -23,18 +23,24 @@ public class ItemGemOre extends ItemBlockWithMetadata
 	@Override
 	public String getUnlocalizedName(ItemStack itemstack)
 	{
-		String name = field_150939_a.getUnlocalizedName();
-
 		switch (itemstack.getItemDamage())
 		{
 			case 0:
-				return name + ".aquamarine";
+				return "tile.oreAquamarine";
 			case 1:
-				return name + ".aquamarine.block";
+				return "tile.blockAquamarine";
 			case 2:
-				return name + ".randomite";
-			default:
-				return name;
+				return "tile.oreRandomite";
+			case 3:
+				return "tile.oreMagnite";
+			case 4:
+				return "tile.blockMagnite";
+			case 5:
+				return "tile.oreHexcite";
+			case 6:
+				return "tile.blockHexcite";
 		}
+
+		return super.getUnlocalizedName(itemstack);
 	}
 }

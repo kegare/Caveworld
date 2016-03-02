@@ -16,7 +16,6 @@ import caveworld.network.client.CaveAdjustMessage;
 import caveworld.network.client.CaveMusicMessage;
 import caveworld.network.client.CaverAdjustMessage;
 import caveworld.network.client.CaveworldMenuMessage;
-import caveworld.network.client.ConfigAdjustMessage;
 import caveworld.network.client.LastMineMessage;
 import caveworld.network.client.MultiBreakCountMessage;
 import caveworld.network.client.PortalMenuMessage;
@@ -97,7 +96,6 @@ public class CaveNetworkRegistry
 	public static void registerMessages()
 	{
 		registerMessage(OpRemoteCheckMessage.class, OpRemoteCheckMessage.class);
-		registerMessage(ConfigAdjustMessage.class, ConfigAdjustMessage.class, Side.CLIENT);
 		registerMessage(CaveAdjustMessage.class, CaveAdjustMessage.class, Side.CLIENT);
 		registerMessage(CaverAdjustMessage.class, CaverAdjustMessage.class, Side.CLIENT);
 		registerMessage(VeinAdjustMessage.class, VeinAdjustMessage.class);

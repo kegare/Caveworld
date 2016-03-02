@@ -565,7 +565,7 @@ public class Config
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		EntityCaveman.spawnMaxHeight = MathHelper.clamp_int(prop.getInt(EntityCaveman.spawnMaxHeight), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
-		prop = mobsCfg.get(category, "spawnInChunks", 1);
+		prop = mobsCfg.get(category, "spawnInChunks", 2);
 		prop.setMinValue(1).setMaxValue(500).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
@@ -619,7 +619,7 @@ public class Config
 
 		propOrder = Lists.newArrayList();
 		category = "CavenicSkeleton";
-		prop = mobsCfg.get(category, "spawnWeight", 80);
+		prop = mobsCfg.get(category, "spawnWeight", 70);
 		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
@@ -655,7 +655,7 @@ public class Config
 
 		propOrder = Lists.newArrayList();
 		category = "CavenicCreeper";
-		prop = mobsCfg.get(category, "spawnWeight", 80);
+		prop = mobsCfg.get(category, "spawnWeight", 70);
 		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
@@ -691,7 +691,7 @@ public class Config
 
 		propOrder = Lists.newArrayList();
 		category = "CavenicZombie";
-		prop = mobsCfg.get(category, "spawnWeight", 80);
+		prop = mobsCfg.get(category, "spawnWeight", 70);
 		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
@@ -727,7 +727,7 @@ public class Config
 
 		propOrder = Lists.newArrayList();
 		category = "CavenicSpider";
-		prop = mobsCfg.get(category, "spawnWeight", 80);
+		prop = mobsCfg.get(category, "spawnWeight", 70);
 		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
@@ -791,7 +791,7 @@ public class Config
 			ChunkProviderCaveworld.dimensionId = prop.getInt();
 		}
 
-		prop = dimensionCfg.get(category, "subsurfaceHeight", 255);
+		prop = dimensionCfg.get(category, "subsurfaceHeight", 200);
 		prop.setMinValue(63).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
@@ -884,7 +884,7 @@ public class Config
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		propOrder.add(prop.getName());
 		ChunkProviderCaveworld.spawnerMobs = prop.getStringList();
-		prop = dimensionCfg.get(category, "caveMonsterSpawn", 500);
+		prop = dimensionCfg.get(category, "caveMonsterSpawn", 300);
 		prop.setMinValue(0).setMaxValue(5000).setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName()).setRequiresMcRestart(true);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
@@ -986,7 +986,7 @@ public class Config
 			ChunkProviderAquaCavern.dimensionId = prop.getInt();
 		}
 
-		prop = dimensionCfg.get(category, "subsurfaceHeight", 255);
+		prop = dimensionCfg.get(category, "subsurfaceHeight", 127);
 		prop.setMinValue(63).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
@@ -999,7 +999,7 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		ChunkProviderAquaCavern.generateRavine = prop.getBoolean(ChunkProviderAquaCavern.generateRavine);
-		prop = dimensionCfg.get(category, "caveMonsterSpawn", 300);
+		prop = dimensionCfg.get(category, "caveMonsterSpawn", 100);
 		prop.setMinValue(0).setMaxValue(5000).setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName()).setRequiresMcRestart(true);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
@@ -1030,7 +1030,7 @@ public class Config
 			ChunkProviderCaveland.dimensionId = prop.getInt();
 		}
 
-		prop = dimensionCfg.get(category, "subsurfaceHeight", 255);
+		prop = dimensionCfg.get(category, "subsurfaceHeight", 127);
 		prop.setMinValue(63).setMaxValue(255).setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
@@ -1049,7 +1049,7 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		ChunkProviderCaveland.generateAnimalDungeons = prop.getBoolean(ChunkProviderCaveland.generateAnimalDungeons);
-		prop = dimensionCfg.get(category, "caveMonsterSpawn", 300);
+		prop = dimensionCfg.get(category, "caveMonsterSpawn", 150);
 		prop.setMinValue(0).setMaxValue(5000).setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName()).setRequiresMcRestart(true);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
@@ -1416,62 +1416,59 @@ public class Config
 		{
 			List<ICaveVein> veins = Lists.newArrayList();
 
-			veins.add(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 0), 5, 8, 100, 128, 255));
-			veins.add(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 0), 20, 1, 8, 128, 255));
-			veins.add(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 1), 2, 4, 100, 150, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 17, 20, 100, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 85, 1, 10, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 18, 20, 100, 200, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 10, 28, 100, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 50, 1, 10, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 12, 25, 100, 200, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.gold_ore, 0), 8, 3, 100, 0, 127));
-			veins.add(new CaveVein(new BlockEntry(Blocks.gold_ore, 0), 24, 1, 8, 0, 127));
-			veins.add(new CaveVein(new BlockEntry(Blocks.redstone_ore, 0), 7, 8, 100, 0, 40));
-			veins.add(new CaveVein(new BlockEntry(Blocks.redstone_ore, 0), 30, 1, 8, 0, 40));
-			veins.add(new CaveVein(new BlockEntry(Blocks.lapis_ore, 0), 5, 2, 100, 0, 50));
-			veins.add(new CaveVein(new BlockEntry(Blocks.lapis_ore, 0), 18, 1, 8, 0, 50));
-			veins.add(new CaveVein(new BlockEntry(Blocks.diamond_ore, 0), 8, 1, 100, 0, 20));
-			veins.add(new CaveVein(new BlockEntry(Blocks.diamond_ore, 0), 15, 1, 5, 0, 20));
-			veins.add(new CaveVein(new BlockEntry(Blocks.emerald_ore, 0), 5, 3, 100, 50, 255, null, Type.MOUNTAIN, Type.HILLS));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 0), 5, 12, 100, 1, 15));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 0), 5, 10, 100, 64, 255));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 0), 20, 1, 8, 64, 255));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 1), 3, 8, 100, 1, 15));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 1), 2, 6, 100, 128, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 16, 15, 100, 1, 15));
+			veins.add(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 13, 25, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 85, 1, 10, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 15, 25, 100, 128, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 12, 40, 100, 1, 15));
+			veins.add(new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 10, 32, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 50, 1, 10, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 12, 35, 100, 128, 255));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 3), 6, 30, 100, 1, 15));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 3), 8, 20, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 3), 15, 8, 8, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 3), 8, 15, 100, 128, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.gold_ore, 0), 8, 12, 100, 1, 15));
+			veins.add(new CaveVein(new BlockEntry(Blocks.gold_ore, 0), 8, 6, 100, 1, 127));
+			veins.add(new CaveVein(new BlockEntry(Blocks.gold_ore, 0), 24, 1, 8, 1, 127));
+			veins.add(new CaveVein(new BlockEntry(Blocks.gold_ore, 0), 8, 6, 100, 128, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.redstone_ore, 0), 6, 20, 100, 1, 15));
+			veins.add(new CaveVein(new BlockEntry(Blocks.redstone_ore, 0), 7, 12, 100, 1, 127));
+			veins.add(new CaveVein(new BlockEntry(Blocks.redstone_ore, 0), 30, 1, 8, 1, 127));
+			veins.add(new CaveVein(new BlockEntry(Blocks.lapis_ore, 0), 4, 10, 100, 1, 15));
+			veins.add(new CaveVein(new BlockEntry(Blocks.lapis_ore, 0), 5, 4, 100, 1, 70));
+			veins.add(new CaveVein(new BlockEntry(Blocks.lapis_ore, 0), 18, 1, 8, 1, 70));
+			veins.add(new CaveVein(new BlockEntry(Blocks.diamond_ore, 0), 5, 2, 100, 1, 15));
+			veins.add(new CaveVein(new BlockEntry(Blocks.diamond_ore, 0), 8, 1, 100, 1, 25));
+			veins.add(new CaveVein(new BlockEntry(Blocks.diamond_ore, 0), 18, 1, 5, 1, 25));
+			veins.add(new CaveVein(new BlockEntry(Blocks.diamond_ore, 0), 8, 1, 100, 128, 255));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 5), 3, 3, 100, 1, 15));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 5), 5, 3, 100, 1, 25));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 5), 10, 1, 5, 1, 25));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 5), 5, 2, 100, 128, 255));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 0), 8, 35, 100, 1, 15));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 0), 10, 15, 100, 1, 63));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 2), 7, 18, 100, 1, 15));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 2), 5, 22, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.emerald_ore, 0), 6, 12, 100, 1, 15));
+			veins.add(new CaveVein(new BlockEntry(Blocks.emerald_ore, 0), 5, 6, 100, 50, 255, null, Type.MOUNTAIN, Type.HILLS));
 			veins.add(new CaveVein(new BlockEntry(Blocks.emerald_ore, 0), 16, 1, 6, 50, 255, null, Type.MOUNTAIN, Type.HILLS));
-			veins.add(new CaveVein(new BlockEntry(Blocks.quartz_ore, 0), 10, 16, 100, 0, 255, new BlockEntry(Blocks.netherrack, 0), Type.NETHER));
-			veins.add(new CaveVein(new BlockEntry(Blocks.dirt, 0), 25, 20, 100, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.gravel, 0), 20, 6, 100, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.sand, 0), 20, 8, 100, 0, 255, null, Type.SANDY));
-			veins.add(new CaveVein(new BlockEntry(Blocks.sand, 0), 20, 8, 100, 0, 20, new BlockEntry(Blocks.gravel, 0), Type.SANDY));
-			veins.add(new CaveVein(new BlockEntry(Blocks.soul_sand, 0), 20, 10, 100, 0, 255, new BlockEntry(Blocks.netherrack, 0), Type.NETHER));
-
-			List<ICaveVein> entries = Lists.newArrayList(veins);
-			Set<BlockEntry> temp = Sets.newHashSet();
-
-			for (ICaveVein entry : entries)
-			{
-				if (!temp.contains(entry.getBlock()))
-				{
-					ICaveVein vein = new CaveVein(entry);
-					vein.setGenWeight(vein.getGenWeight() * 2);
-					vein.setGenRate(Math.min(vein.getGenRate() * 2, 100));
-					vein.setGenMinHeight(0);
-					vein.setGenMaxHeight(15);
-					vein.setGenBiomes(null);
-
-					veins.add(vein);
-
-					vein = new CaveVein(entry);
-					vein.setGenBlockCount(vein.getGenBlockCount() * 2);
-					vein.setGenMinHeight(150);
-					vein.setGenMaxHeight(255);
-					vein.setGenBiomes(null);
-
-					veins.add(vein);
-				}
-			}
-
-			veins.add(new CaveVein(new BlockEntry(Blocks.stained_hardened_clay, 1), 24, 20, 100, 0, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
-			veins.add(new CaveVein(new BlockEntry(Blocks.stained_hardened_clay, 12), 24, 14, 100, 0, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
-			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 0), 10, 15, 100, 0, 50));
-			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 2), 5, 20, 100, 50, 150));
+			veins.add(new CaveVein(new BlockEntry(Blocks.emerald_ore, 0), 5, 5, 100, 128, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.quartz_ore, 0), 10, 16, 100, 1, 255, new BlockEntry(Blocks.netherrack, 0), Type.NETHER));
+			veins.add(new CaveVein(new BlockEntry(Blocks.dirt, 0), 28, 35, 100, 1, 15));
+			veins.add(new CaveVein(new BlockEntry(Blocks.dirt, 0), 25, 24, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.gravel, 0), 23, 10, 100, 1, 15));
+			veins.add(new CaveVein(new BlockEntry(Blocks.gravel, 0), 20, 8, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.clay, 0), 12, 20, 100, 1, 15));
+			veins.add(new CaveVein(new BlockEntry(Blocks.sand, 0), 20, 18, 100, 1, 255, null, Type.SANDY));
+			veins.add(new CaveVein(new BlockEntry(Blocks.soul_sand, 0), 20, 10, 100, 1, 255, new BlockEntry(Blocks.netherrack, 0), Type.NETHER));
+			veins.add(new CaveVein(new BlockEntry(Blocks.stained_hardened_clay, 1), 24, 25, 100, 1, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
+			veins.add(new CaveVein(new BlockEntry(Blocks.stained_hardened_clay, 12), 24, 20, 100, 1, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
 
 			for (ICaveVein entry : veins)
 			{
@@ -1530,10 +1527,14 @@ public class Config
 			veins.add(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 0), 5, 8, 100, 1, 127));
 			veins.add(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 17, 20, 100, 1, 127));
 			veins.add(new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 10, 28, 100, 1, 127));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 3), 8, 20, 100, 1, 127));
 			veins.add(new CaveVein(new BlockEntry(Blocks.gold_ore, 0), 8, 3, 100, 1, 127));
 			veins.add(new CaveVein(new BlockEntry(Blocks.redstone_ore, 0), 7, 8, 100, 1, 40));
 			veins.add(new CaveVein(new BlockEntry(Blocks.lapis_ore, 0), 5, 2, 100, 1, 50));
 			veins.add(new CaveVein(new BlockEntry(Blocks.diamond_ore, 0), 8, 1, 100, 1, 20));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 5), 5, 2, 100, 1, 20));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 0), 10, 15, 100, 100, 127));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 2), 5, 20, 100, 1, 127));
 			veins.add(new CaveVein(new BlockEntry(Blocks.emerald_ore, 0), 5, 3, 100, 50, 127, null, Type.MOUNTAIN, Type.HILLS));
 			veins.add(new CaveVein(new BlockEntry(Blocks.quartz_ore, 0), 10, 16, 100, 1, 127, new BlockEntry(Blocks.netherrack, 0), Type.NETHER));
 			veins.add(new CaveVein(new BlockEntry(Blocks.dirt, 0), 25, 20, 100, 1, 127));
@@ -1543,8 +1544,6 @@ public class Config
 			veins.add(new CaveVein(new BlockEntry(Blocks.soul_sand, 0), 20, 10, 100, 1, 127, new BlockEntry(Blocks.netherrack, 0), Type.NETHER));
 			veins.add(new CaveVein(new BlockEntry(Blocks.stained_hardened_clay, 1), 24, 20, 100, 1, 127, new BlockEntry(Blocks.dirt, 0), Type.MESA));
 			veins.add(new CaveVein(new BlockEntry(Blocks.stained_hardened_clay, 12), 24, 14, 100, 1, 127, new BlockEntry(Blocks.dirt, 0), Type.MESA));
-			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 0), 10, 15, 100, 100, 127));
-			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 2), 5, 20, 100, 1, 127));
 
 			for (ICaveVein entry : veins)
 			{
@@ -1600,31 +1599,35 @@ public class Config
 		{
 			List<ICaveVein> veins = Lists.newArrayList();
 
-			veins.add(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 0), 5, 10, 100, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 0), 20, 3, 8, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 1), 2, 4, 100, 128, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 17, 30, 100, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 85, 2, 10, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 10, 45, 100, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 50, 2, 10, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.gold_ore, 0), 8, 7, 100, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.gold_ore, 0), 24, 2, 8, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.redstone_ore, 0), 7, 18, 100, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.redstone_ore, 0), 30, 2, 8, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.lapis_ore, 0), 5, 10, 100, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.lapis_ore, 0), 18, 2, 8, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.diamond_ore, 0), 8, 3, 100, 0, 20));
-			veins.add(new CaveVein(new BlockEntry(Blocks.diamond_ore, 0), 15, 2, 5, 0, 20));
-			veins.add(new CaveVein(new BlockEntry(Blocks.emerald_ore, 0), 5, 7, 100, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.emerald_ore, 0), 16, 2, 6, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.dirt, 0), 25, 20, 100, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.gravel, 0), 20, 30, 100, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.sand, 0), 20, 20, 100, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.clay, 0), 20, 20, 100, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(Blocks.stained_hardened_clay, 1), 24, 20, 100, 0, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
-			veins.add(new CaveVein(new BlockEntry(Blocks.stained_hardened_clay, 12), 24, 14, 100, 0, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
-			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 0), 30, 35, 100, 0, 255));
-			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 2), 10, 32, 100, 0, 255));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 0), 5, 10, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 0), 20, 3, 8, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.cavenium_ore, 1), 2, 4, 100, 127, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 17, 30, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 85, 2, 10, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 10, 45, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 50, 2, 10, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 3), 8, 35, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 3), 24, 10, 1, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.gold_ore, 0), 8, 7, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.gold_ore, 0), 24, 2, 8, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.redstone_ore, 0), 7, 18, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.redstone_ore, 0), 30, 2, 8, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.lapis_ore, 0), 5, 10, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.lapis_ore, 0), 18, 2, 8, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.diamond_ore, 0), 8, 3, 100, 1, 20));
+			veins.add(new CaveVein(new BlockEntry(Blocks.diamond_ore, 0), 15, 2, 5, 1, 20));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 5), 6, 4, 100, 1, 20));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 5), 12, 3, 5, 1, 20));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 0), 30, 35, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 2), 10, 32, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.emerald_ore, 0), 5, 7, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.emerald_ore, 0), 16, 2, 6, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.dirt, 0), 25, 20, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.gravel, 0), 20, 30, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.sand, 0), 20, 20, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.clay, 0), 20, 20, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.stained_hardened_clay, 1), 24, 20, 100, 1, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
+			veins.add(new CaveVein(new BlockEntry(Blocks.stained_hardened_clay, 12), 24, 14, 100, 1, 255, new BlockEntry(Blocks.dirt, 0), Type.MESA));
 
 			for (ICaveVein entry : veins)
 			{

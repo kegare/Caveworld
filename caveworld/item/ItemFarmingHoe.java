@@ -41,7 +41,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemHoe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.IIcon;
@@ -49,7 +48,7 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 
-public class ItemFarmingHoe extends ItemHoe implements IModeItem
+public class ItemFarmingHoe extends ItemCaveHoe implements IModeItem
 {
 	public enum FarmMode implements IFarmMode
 	{
@@ -164,9 +163,7 @@ public class ItemFarmingHoe extends ItemHoe implements IModeItem
 
 	public ItemFarmingHoe(String name)
 	{
-		super(CaveItems.CAVENIUM);
-		this.setUnlocalizedName(name);
-		this.setTextureName("caveworld:farming_hoe");
+		super(name, "farming_hoe", CaveItems.CAVENIUM);
 		this.setCreativeTab(Caveworld.tabFarmingHoe);
 	}
 

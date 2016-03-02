@@ -1,5 +1,5 @@
 # Caveworld 2
-Minecraft mod. Adds the Caveworld dimension.
+Minecraft mod. Adds new more cave dimensions!
 
 ----
 ## Requires
@@ -10,8 +10,8 @@ Minecraft mod. Adds the Caveworld dimension.
 * Source code  
 [Minecraft Mod Public License Japanese Translation](https://dl.dropboxusercontent.com/u/51943112/MMPL_J.txt) (MMPL_J)
 * Image files and Audio files  
-[CC-BY-NC 2.1](http://creativecommons.org/licenses/by-nc/2.1/)
+[CC-BY-NC 4.0](http://creativecommons.org/licenses/by-nc/4.0/)
 
 ----
 ## Links
-* [kegare's Forum](http://forum.minecraftuser.jp/viewtopic.php?t=13399)
+* [Caveworld 2](http://kegare.github.io/caveworld)

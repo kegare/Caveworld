@@ -300,7 +300,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 
 			if (generateDungeons && generateStructures && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.DUNGEON))
 			{
-				for (i = 0; i < 12; ++i)
+				for (i = 0; i < 20; ++i)
 				{
 					x = worldX + random.nextInt(16) + 8;
 					y = random.nextInt(worldHeight - 24);
@@ -310,7 +310,7 @@ public class ChunkProviderCaveworld implements IChunkProvider
 				}
 			}
 
-			if (generateAnimalDungeons && random.nextInt(5) == 0 && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.DUNGEON))
+			if (generateAnimalDungeons && random.nextInt(4) == 0 && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.DUNGEON))
 			{
 				x = worldX + random.nextInt(16) + 8;
 				y = random.nextInt(worldHeight - 24);

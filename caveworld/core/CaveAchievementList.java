@@ -35,16 +35,19 @@ public class CaveAchievementList
 	public static final Achievement oreFinder = CaveAchievement.of("oreFinder", -3, 5, CaveItems.ore_compass, cavenium, true);
 	public static final Achievement theMiner = CaveAchievement.of("theMiner", 3, 2, Items.iron_pickaxe, caveworld, true);
 	public static final Achievement theRoper = CaveAchievement.of("theRoper", -3, 2, CaveBlocks.rope, caveworld, true);
-	public static final Achievement caveman = CaveAchievement.of("caveman", -4, -4, CaveBlocks.cavenium_ore, caveworld, true);
-	public static final Achievement cavenicSkeletonSlayer = CaveAchievement.of("cavenicSkeletonSlayer", 3, -3, new ItemStack(CaveItems.cavenium, 1, 0), caveworld, true);
-	public static final Achievement masterCavenicSkeletonSlayer = CaveAchievement.of("masterCavenicSkeletonSlayer", 5, -3, new ItemStack(CaveItems.cavenium, 1, 1), cavenicSkeletonSlayer, true);
-	public static final Achievement crazyCavenicSkeletonSlayer = CaveAchievement.of("crazyCavenicSkeletonSlayer", 7, -3, new ItemStack(CaveItems.cavenium, 1, 1), masterCavenicSkeletonSlayer, true).setSpecial();
-	public static final Achievement cavenicCreeperSlayer = CaveAchievement.of("cavenicCreeperSlayer", 3, -5, new ItemStack(CaveItems.cavenium, 1, 0), caveworld, true);
-	public static final Achievement masterCavenicCreeperSlayer = CaveAchievement.of("masterCavenicCreeperSlayer", 5, -5, new ItemStack(CaveItems.cavenium, 1, 1), cavenicCreeperSlayer, true);
-	public static final Achievement cavenicZombieSlayer = CaveAchievement.of("cavenicZombieSlayer", 3, -7, new ItemStack(CaveItems.cavenium, 1, 0), caveworld, true);
-	public static final Achievement cavenicSpiderSlayer = CaveAchievement.of("cavenicSpiderSlayer", 5, -7, new ItemStack(CaveItems.cavenium, 1, 0), caveworld, true);
+	public static final Achievement caveman = CaveAchievement.of("caveman", -4, -3, CaveBlocks.cavenium_ore, caveworld, true);
+	public static final Achievement cavenicSkeletonSlayer = CaveAchievement.of("cavenicSkeletonSlayer", 2, -4, new ItemStack(CaveItems.cavenium, 1, 0), caveworld, true);
+	public static final Achievement masterCavenicSkeletonSlayer = CaveAchievement.of("masterCavenicSkeletonSlayer", 4, -4, new ItemStack(CaveItems.cavenium, 1, 1), cavenicSkeletonSlayer, true);
+	public static final Achievement crazyCavenicSkeletonSlayer = CaveAchievement.of("crazyCavenicSkeletonSlayer", 6, -4, new ItemStack(CaveItems.cavenium, 1, 1), masterCavenicSkeletonSlayer, true).setSpecial();
+	public static final Achievement cavenicCreeperSlayer = CaveAchievement.of("cavenicCreeperSlayer", 2, -6, new ItemStack(CaveItems.cavenium, 1, 0), caveworld, true);
+	public static final Achievement masterCavenicCreeperSlayer = CaveAchievement.of("masterCavenicCreeperSlayer", 4, -6, new ItemStack(CaveItems.cavenium, 1, 1), cavenicCreeperSlayer, true);
+	public static final Achievement cavenicZombieSlayer = CaveAchievement.of("cavenicZombieSlayer", -2, -6, new ItemStack(CaveItems.cavenium, 1, 0), caveworld, true);
+	public static final Achievement cavenicSpiderSlayer = CaveAchievement.of("cavenicSpiderSlayer", -2, -4, new ItemStack(CaveItems.cavenium, 1, 0), caveworld, true);
 	public static final Achievement aquamarine = CaveAchievement.of("aquamarine", 2, 6, new ItemStack(CaveItems.gem, 1, 0), caveworld, true);
 	public static final Achievement randomite = CaveAchievement.of("randomite", 2, 4, new ItemStack(CaveBlocks.gem_ore, 1, 2), caveworld, true);
+	public static final Achievement magnite = CaveAchievement.of("magnite", -2, -2, new ItemStack(CaveItems.gem, 1, 1), caveworld, true);
+	public static final Achievement hexcite = CaveAchievement.of("hexcite", -5, 6, new ItemStack(CaveItems.gem, 1, 3), caveworld, true);
+	public static final Achievement acresia = CaveAchievement.of("acresia", 4, -2, new ItemStack(CaveItems.acresia, 1, 0), caveland, true);
 
 	public static void registerAchievements()
 	{

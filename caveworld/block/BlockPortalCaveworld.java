@@ -10,6 +10,7 @@
 package caveworld.block;
 
 import java.util.Arrays;
+import java.util.Random;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
@@ -19,6 +20,8 @@ import caveworld.api.CaveworldAPI;
 import caveworld.client.gui.MenuType;
 import caveworld.world.TeleporterCaveworld;
 import caveworld.world.WorldProviderCaveworld;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -88,6 +91,22 @@ public class BlockPortalCaveworld extends BlockCavePortal implements IInventory
 	public Teleporter getTeleporter(WorldServer worldServer, boolean brick)
 	{
 		return new TeleporterCaveworld(worldServer, brick);
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
+	public void randomDisplayTick(World world, int x, int y, int z, Random random)
+	{
+		super.randomDisplayTick(world, x, y, z, random);
+
+		if (random.nextInt(3) == 0)
+		{
+			double ptX = x + random.nextFloat();
+			double ptY = y + 0.5D;
+			double ptZ = z + random.nextFloat();
+
+			world.spawnParticle("reddust", ptX, ptY, ptZ, 0.5D, 1.0D, 1.0D);
+		}
 	}
 
 	@Override

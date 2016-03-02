@@ -57,5 +57,11 @@ public class AppleMilkTeaPlugin implements ICavePlugin
 		RecipeRegisterManager.processorRecipe.addRecipe(new ItemStack(CaveItems.cavenium, 2, 0), false, 3, false, new ItemStack(strangeSlag, 1, 0), 0.5F, new ItemStack(CaveBlocks.cavenium_ore, 1, 0));
 		RecipeRegisterManager.processorRecipe.addRecipe(new ItemStack(CaveItems.cavenium, 1, 1), false, 3, false, new ItemStack(CaveItems.cavenium, 1, 1), 0.5F, new ItemStack(CaveBlocks.cavenium_ore, 1, 1));
 		RecipeRegisterManager.processorRecipe.addRecipe(new ItemStack(CaveItems.gem, 2, 0), false, 3, false, new ItemStack(strangeSlag, 1, 0), 0.5F, new ItemStack(CaveBlocks.gem_ore, 1, 0));
+		RecipeRegisterManager.processorRecipe.addRecipe(new ItemStack(CaveItems.gem, 2, 2), false, 2, false, new ItemStack(strangeSlag, 1, 0), 0.5F, new ItemStack(CaveBlocks.gem_ore, 1, 3));
+
+		RecipeRegisterManager.slagLoot.addLoot(new ItemStack(CaveItems.cavenium, 1, 0), 3);
+		RecipeRegisterManager.slagLoot.addLoot(new ItemStack(CaveItems.cavenium, 1, 1), 4);
+		RecipeRegisterManager.slagLoot.addLoot(new ItemStack(CaveItems.gem, 1, 2), 2);
+		RecipeRegisterManager.slagLoot.addLoot(new ItemStack(CaveItems.gem, 1, 3), 4);
 	}
 }

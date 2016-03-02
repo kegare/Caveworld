@@ -488,7 +488,7 @@ public class CaveVeinManager implements ICaveVeinManager
 					}
 
 					int x = worldX + random.nextInt(16);
-					int y = random.nextInt(Math.min(max, worldHeight - 1) - min) + min;
+					int y = random.nextInt(max - min) + min;
 					int z = worldZ + random.nextInt(16);
 					float var1 = random.nextFloat() * (float)Math.PI;
 					double var2 = x + 8 + MathHelper.sin(var1) * count / 8.0F;

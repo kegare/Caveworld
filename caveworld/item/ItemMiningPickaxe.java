@@ -48,7 +48,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.IIcon;
@@ -56,7 +55,7 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 
-public class ItemMiningPickaxe extends ItemPickaxe implements ICaveniumTool
+public class ItemMiningPickaxe extends ItemCavePickaxe implements ICaveniumTool
 {
 	public enum BreakMode implements IBreakMode
 	{
@@ -137,9 +136,7 @@ public class ItemMiningPickaxe extends ItemPickaxe implements ICaveniumTool
 
 	public ItemMiningPickaxe(String name)
 	{
-		super(CaveItems.CAVENIUM);
-		this.setUnlocalizedName(name);
-		this.setTextureName("caveworld:mining_pickaxe");
+		super(name, "mining_pickaxe", CaveItems.CAVENIUM);
 		this.setCreativeTab(Caveworld.tabMiningPickaxe);
 	}
 

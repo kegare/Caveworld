@@ -47,7 +47,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemAxe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.IIcon;
@@ -55,7 +54,7 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 
-public class ItemLumberingAxe extends ItemAxe implements ICaveniumTool
+public class ItemLumberingAxe extends ItemCaveAxe implements ICaveniumTool
 {
 	public enum BreakMode implements IBreakMode
 	{
@@ -133,9 +132,7 @@ public class ItemLumberingAxe extends ItemAxe implements ICaveniumTool
 
 	public ItemLumberingAxe(String name)
 	{
-		super(CaveItems.CAVENIUM);
-		this.setUnlocalizedName(name);
-		this.setTextureName("caveworld:lumbering_axe");
+		super(name, "lumbering_axe", CaveItems.CAVENIUM);
 		this.setCreativeTab(Caveworld.tabLumberingAxe);
 	}
 

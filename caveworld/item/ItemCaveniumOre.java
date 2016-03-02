@@ -26,15 +26,17 @@ public class ItemCaveniumOre extends ItemBlockWithMetadata
 	{
 		switch (itemstack.getItemDamage())
 		{
+			case 0:
+				return "tile.oreCavenium";
 			case 1:
-				return getUnlocalizedName() + ".refined";
+				return "tile.oreCavenium.refined";
 			case 2:
 				return "tile.blockCavenium";
 			case 3:
 				return "tile.blockCavenium.refined";
-			default:
-				return getUnlocalizedName();
 		}
+
+		return super.getUnlocalizedName(itemstack);
 	}
 
 	@Override

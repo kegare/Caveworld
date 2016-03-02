@@ -46,6 +46,7 @@ import caveworld.item.CaveItems;
 import caveworld.item.IAquamarineTool;
 import caveworld.item.ICaveniumTool;
 import caveworld.item.IModeItem;
+import caveworld.item.ItemCaveSword;
 import caveworld.item.ItemCavenicBow;
 import caveworld.item.ItemCavenicBow.BowMode;
 import caveworld.item.ItemCavenium;
@@ -60,7 +61,6 @@ import caveworld.network.CaveNetworkRegistry;
 import caveworld.network.client.CaveAdjustMessage;
 import caveworld.network.client.CaveMusicMessage;
 import caveworld.network.client.CaveworldMenuMessage;
-import caveworld.network.client.ConfigAdjustMessage;
 import caveworld.network.client.LastMineMessage;
 import caveworld.network.client.MultiBreakCountMessage;
 import caveworld.network.common.VeinAdjustMessage;
@@ -83,6 +83,7 @@ import cpw.mods.fml.common.ObfuscationReflectionHelper;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.InputEvent.KeyInputEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.ItemPickupEvent;
+import cpw.mods.fml.common.gameevent.PlayerEvent.ItemSmeltedEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent;
@@ -119,6 +120,7 @@ import net.minecraft.event.ClickEvent;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
+import net.minecraft.item.Item.ToolMaterial;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemTool;
 import net.minecraft.nbt.NBTTagCompound;
@@ -766,13 +768,6 @@ public class CaveEventHooks
 
 		if (!manager.isLocalChannel())
 		{
-			int caveworld = CaveworldAPI.getDimension();
-			int cavern = CaveworldAPI.getCavernDimension();
-			int aqua = CaveworldAPI.getAquaCavernDimension();
-			int caveland = CaveworldAPI.getCavelandDimension();
-			int cavenia = CaveworldAPI.getCaveniaDimension();
-
-			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new ConfigAdjustMessage(caveworld, cavern, aqua, caveland, cavenia)));
 			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderCaveworld.TYPE, WorldProviderCaveworld.saveHandler)));
 			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderCavern.TYPE, WorldProviderCavern.saveHandler)));
 			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderAquaCavern.TYPE, WorldProviderAquaCavern.saveHandler)));
@@ -815,19 +810,21 @@ public class CaveEventHooks
 				if (CaveworldAPI.isCaveborn() && firstJoinPlayers.contains(player.getUniqueID().toString()))
 				{
 					List<ItemStack> bonus = Lists.newArrayList();
+					Random random = new Random();
 
 					bonus.add(new ItemStack(Items.stone_pickaxe));
 					bonus.add(new ItemStack(Items.stone_sword));
-					bonus.add(new ItemStack(Blocks.torch, MathHelper.getRandomIntegerInRange(world.rand, 10, 20)));
-					bonus.add(new ItemStack(Items.bread, MathHelper.getRandomIntegerInRange(world.rand, 5, 10)));
+					bonus.add(new ItemStack(Blocks.torch, MathHelper.getRandomIntegerInRange(random, 10, 20)));
+					bonus.add(new ItemStack(Items.bread, MathHelper.getRandomIntegerInRange(random, 5, 10)));
 
 					for (int i = 0; i < 3; ++i)
 					{
-						bonus.add(new ItemStack(CaveBlocks.perverted_sapling, MathHelper.getRandomIntegerInRange(world.rand, 2, 5), i));
+						bonus.add(new ItemStack(CaveBlocks.perverted_sapling, MathHelper.getRandomIntegerInRange(random, 2, 5), i));
 					}
 
 					bonus.add(new ItemStack(Blocks.crafting_table));
-					bonus.add(new ItemStack(Blocks.dirt, MathHelper.getRandomIntegerInRange(world.rand, 10, 15)));
+					bonus.add(new ItemStack(Blocks.dirt, MathHelper.getRandomIntegerInRange(random, 10, 15)));
+					bonus.add(new ItemStack(CaveItems.acresia, MathHelper.getRandomIntegerInRange(random, 3, 6), 0));
 
 					for (ItemStack itemstack : bonus)
 					{
@@ -868,11 +865,6 @@ public class CaveEventHooks
 						world = player.getServerForPlayer();
 						world.resetUpdateEntityTick();
 
-						if (player.getBedLocation(player.dimension) == null)
-						{
-							player.setSpawnChunk(player.getPlayerCoordinates(), true);
-						}
-
 						int x = MathHelper.floor_double(player.posX);
 						int y = MathHelper.floor_double(player.posY);
 						int z = MathHelper.floor_double(player.posZ);
@@ -884,6 +876,7 @@ public class CaveEventHooks
 								if (world.getBlock(j, y, k) == portal)
 								{
 									world.setBlockToAir(j, y, k);
+
 									break outside;
 								}
 							}
@@ -1079,16 +1072,39 @@ public class CaveEventHooks
 				player.triggerAchievement(CaveAchievementList.cavenium);
 			}
 		}
-		else if (itemstack.getItem() == CaveItems.gem && itemstack.getItemDamage() == 0)
+		else if (itemstack.getItem() == CaveItems.gem)
 		{
 			if (thrower == null)
 			{
-				player.triggerAchievement(CaveAchievementList.aquamarine);
+				switch (itemstack.getItemDamage())
+				{
+					case 0:
+						player.triggerAchievement(CaveAchievementList.aquamarine);
+						break;
+					case 3:
+						player.triggerAchievement(CaveAchievementList.hexcite);
+						break;
+				}
 			}
 		}
 		else if (itemstack.getItem() == Item.getItemFromBlock(CaveBlocks.perverted_log))
 		{
 			player.triggerAchievement(AchievementList.mineWood);
+		}
+	}
+
+	@SubscribeEvent
+	public void onItemSmelted(ItemSmeltedEvent event)
+	{
+		EntityPlayer player = event.player;
+		ItemStack itemstack = event.smelting;
+
+		if (itemstack != null)
+		{
+			if (itemstack.getItem() == CaveItems.gem && itemstack.getItemDamage() == 1)
+			{
+				player.triggerAchievement(CaveAchievementList.magnite);
+			}
 		}
 	}
 
@@ -1467,20 +1483,34 @@ public class CaveEventHooks
 		EntityLivingBase target = event.entityLiving;
 		DamageSource source = event.source;
 
-		if (source.getDamageType().equals("arrow"))
+		Entity entity = source.getEntity();
+
+		if (entity != null && entity instanceof EntityLivingBase)
 		{
-			Entity entity = source.getEntity();
+			EntityLivingBase living = (EntityLivingBase)entity;
+			ItemStack itemstack = living.getHeldItem();
 
-			if (entity != null && entity instanceof EntityLivingBase)
+			if (itemstack != null && !target.isPotionActive(Potion.resistance))
 			{
-				EntityLivingBase living = (EntityLivingBase)entity;
-				ItemStack item = living.getHeldItem();
+				String type = Strings.nullToEmpty(source.getDamageType());
 
-				if (item != null && item.getItem() instanceof ItemCavenicBow)
+				if (type.equals("arrow"))
 				{
-					if (!target.isPotionActive(Potion.resistance))
+					if (itemstack.getItem() instanceof ItemCavenicBow)
 					{
 						target.hurtResistantTime = 0;
+					}
+				}
+				else
+				{
+					if (itemstack.getItem() instanceof ItemCaveSword)
+					{
+						ToolMaterial material = ((ItemCaveSword)itemstack.getItem()).getToolMaterial();
+
+						if (material == CaveItems.MAGNITE)
+						{
+							target.hurtResistantTime = 0;
+						}
 					}
 				}
 			}

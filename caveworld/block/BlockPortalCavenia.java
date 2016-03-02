@@ -9,8 +9,6 @@
 
 package caveworld.block;
 
-import java.util.Random;
-
 import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
 import caveworld.client.gui.MenuType;
@@ -18,7 +16,6 @@ import caveworld.world.TeleporterCavenia;
 import caveworld.world.WorldProviderCavenia;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.Teleporter;
-import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
 public class BlockPortalCavenia extends BlockCavePortal
@@ -70,7 +67,4 @@ public class BlockPortalCavenia extends BlockCavePortal
 	{
 		return new TeleporterCavenia(worldServer, brick);
 	}
-
-	@Override
-	public void randomDisplayTick(World world, int x, int y, int z, Random random) {}
 }

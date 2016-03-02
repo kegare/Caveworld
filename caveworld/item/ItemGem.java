@@ -38,18 +38,27 @@ public class ItemGem extends Item
 		switch (itemstack.getItemDamage())
 		{
 			case 0:
-				return getUnlocalizedName() + ".aquamarine";
-			default:
-				return super.getUnlocalizedName(itemstack);
+				return "item.aquamarine";
+			case 1:
+				return "item.ingotMagnite";
+			case 2:
+				return "item.dustMagnite";
+			case 3:
+				return "item.hexcite";
 		}
+
+		return super.getUnlocalizedName(itemstack);
 	}
 
 	@SideOnly(Side.CLIENT)
 	@Override
 	public void registerIcons(IIconRegister iconRegister)
 	{
-		gemIcons = new IIcon[1];
+		gemIcons = new IIcon[4];
 		gemIcons[0] = iconRegister.registerIcon("caveworld:aquamarine");
+		gemIcons[1] = iconRegister.registerIcon("caveworld:magnite_ingot");
+		gemIcons[2] = iconRegister.registerIcon("caveworld:magnite_dust");
+		gemIcons[3] = iconRegister.registerIcon("caveworld:hexcite");
 	}
 
 	@SideOnly(Side.CLIENT)

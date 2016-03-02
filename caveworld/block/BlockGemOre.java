@@ -57,6 +57,8 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 		this.setHarvestLevel("pickaxe", 1);
 		this.setHarvestLevel("pickaxe", 2, 0);
 		this.setHarvestLevel("pickaxe", 2, 1);
+		this.setHarvestLevel("pickaxe", 2, 5);
+		this.setHarvestLevel("pickaxe", 2, 6);
 		this.setCreativeTab(Caveworld.tabCaveworld);
 	}
 
@@ -72,6 +74,7 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 		switch (metadata)
 		{
 			case 0:
+			case 5:
 				return CaveItems.gem;
 			default:
 				return Item.getItemFromBlock(this);
@@ -93,7 +96,19 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 	@Override
 	public int damageDropped(int metadata)
 	{
-		return metadata;
+		switch (metadata)
+		{
+			case 5:
+				return 3;
+			default:
+				return metadata;
+		}
+	}
+
+	@Override
+	public int getDamageValue(World world, int x, int y, int z)
+	{
+		return world.getBlockMetadata(x, y, z);
 	}
 
 	@Override
@@ -211,8 +226,12 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 		switch (meta)
 		{
 			case 0:
+			case 3:
+			case 5:
 				return 3.0F;
 			case 1:
+			case 4:
+			case 6:
 				return 4.5F;
 			case 2:
 				return 6.0F;
@@ -242,13 +261,19 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 	@Override
 	public void registerBlockIcons(IIconRegister iconRegister)
 	{
-		oreIcons = new IIcon[3];
+		oreIcons = new IIcon[7];
 		oreIcons[0] = iconRegister.registerIcon("caveworld:aquamarine_ore");
 		oreIcons[1] = iconRegister.registerIcon("caveworld:aquamarine_block");
 		oreIcons[2] = iconRegister.registerIcon("caveworld:randomite_ore");
-		overlayIcons = new IIcon[2];
+		oreIcons[3] = iconRegister.registerIcon("caveworld:magnite_ore");
+		oreIcons[4] = iconRegister.registerIcon("caveworld:magnite_block");
+		oreIcons[5] = iconRegister.registerIcon("caveworld:hexcite_ore");
+		oreIcons[6] = iconRegister.registerIcon("caveworld:hexcite_block");
+		overlayIcons = new IIcon[4];
 		overlayIcons[0] = iconRegister.registerIcon("caveworld:aquamarine_ore_overlay");
 		overlayIcons[1] = iconRegister.registerIcon("caveworld:randomite_ore_overlay");
+		overlayIcons[2] = iconRegister.registerIcon("caveworld:magnite_ore_overlay");
+		overlayIcons[3] = iconRegister.registerIcon("caveworld:hexcite_ore_overlay");
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -273,6 +298,10 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 				return overlayIcons[0];
 			case 2:
 				return overlayIcons[1];
+			case 3:
+				return overlayIcons[2];
+			case 5:
+				return overlayIcons[3];
 			default:
 				return null;
 		}

@@ -12,6 +12,7 @@ package caveworld.world;
 import java.util.List;
 import java.util.Random;
 
+import caveworld.block.CaveBlocks;
 import caveworld.entity.CaveEntityRegistry;
 import caveworld.world.gen.MapGenCavelandCaves;
 import caveworld.world.gen.WorldGenAnimalDungeons;
@@ -36,6 +37,7 @@ import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.MapGenBase;
 import net.minecraft.world.gen.feature.WorldGenAbstractTree;
 import net.minecraft.world.gen.feature.WorldGenDeadBush;
+import net.minecraft.world.gen.feature.WorldGenFlowers;
 import net.minecraft.world.gen.feature.WorldGenLakes;
 import net.minecraft.world.gen.feature.WorldGenLiquids;
 import net.minecraft.world.gen.feature.WorldGenerator;
@@ -71,6 +73,7 @@ public class ChunkProviderCaveland implements IChunkProvider
 	private final WorldGenerator liquidWaterGen = new WorldGenLiquids(Blocks.flowing_water);
 	private final WorldGenerator liquidLavaGen = new WorldGenLiquids(Blocks.flowing_lava);
 	private final WorldGenerator deadBushGen = new WorldGenDeadBush(Blocks.deadbush);
+	private final WorldGenFlowers acresiaGen = new WorldGenFlowers(CaveBlocks.acresia_crops);
 	private final WorldGenAbstractTree treesGen = new WorldGenPervertedTrees(false);
 	private final WorldGenAbstractTree treesGen2 = new WorldGenPervertedTaiga(false);
 	private final WorldGenAbstractTree treesGen3 = new WorldGenPervertedForest(false);
@@ -207,7 +210,7 @@ public class ChunkProviderCaveland implements IChunkProvider
 			}
 		}
 
-		if (generateAnimalDungeons && random.nextInt(5) == 0 && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.DUNGEON))
+		if (generateAnimalDungeons && random.nextInt(3) == 0 && TerrainGen.populate(chunkProvider, worldObj, random, chunkX, chunkZ, false, EventType.DUNGEON))
 		{
 			x = worldX + random.nextInt(16) + 8;
 			y = random.nextInt(worldHeight - 24);
@@ -237,6 +240,26 @@ public class ChunkProviderCaveland implements IChunkProvider
 
 				decorator.mushroomRedGen.generate(worldObj, random, x, y, z);
 			}
+		}
+
+		for (i = 0; i < 10; ++i)
+		{
+			x = worldX + random.nextInt(16) + 8;
+			y = random.nextInt(worldHeight - 5) + 5;
+			z = worldZ + random.nextInt(16) + 8;
+
+			acresiaGen.func_150550_a(CaveBlocks.acresia_crops, 2 + random.nextInt(3));
+			acresiaGen.generate(worldObj, random, x, y, z);
+		}
+
+		for (i = 0; i < 15; ++i)
+		{
+			x = worldX + random.nextInt(16) + 8;
+			y = random.nextInt(worldHeight / 2) + worldHeight / 2;
+			z = worldZ + random.nextInt(16) + 8;
+
+			acresiaGen.func_150550_a(CaveBlocks.acresia_crops, 3 + random.nextInt(2));
+			acresiaGen.generate(worldObj, random, x, y, z);
 		}
 
 		if (BiomeDictionary.isBiomeOfType(biome, Type.SANDY))

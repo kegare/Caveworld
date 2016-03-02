@@ -419,15 +419,6 @@ public abstract class BlockCavePortal extends BlockPortal implements IBlockPorta
 		{
 			world.playSound(x + 0.5D, y + 0.5D, z + 0.5D, "ambient.cave.cave", 0.25F, random.nextFloat() * 0.4F + 0.8F, false);
 		}
-
-		if (random.nextInt(3) == 0)
-		{
-			double ptX = x + random.nextFloat();
-			double ptY = y + 0.5D;
-			double ptZ = z + random.nextFloat();
-
-			world.spawnParticle("reddust", ptX, ptY, ptZ, 0.5D, 1.0D, 1.0D);
-		}
 	}
 
 	@SideOnly(Side.CLIENT)

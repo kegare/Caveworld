@@ -14,10 +14,14 @@ import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
 import caveworld.core.CaveVeinManager.CaveVein;
 import caveworld.core.Config;
+import caveworld.item.CaveItems;
 import caveworld.plugin.ICavePlugin;
 import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.Optional.Method;
 import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.block.Block;
+import net.minecraft.item.ItemStack;
+import shift.sextiarysector.api.recipe.RecipeAPI;
 
 public class SextiarySectorPlugin implements ICavePlugin
 {
@@ -48,9 +52,12 @@ public class SextiarySectorPlugin implements ICavePlugin
 		return pluginState = state;
 	}
 
+	@Method(modid = MODID)
 	@Override
 	public void invoke()
 	{
+		RecipeAPI.millstone.add("oreMagnite", new ItemStack(CaveItems.gem, 2, 2));
+
 		Block block = GameRegistry.findBlock(MODID, "CoalLargeOre");
 
 		if (block != null)

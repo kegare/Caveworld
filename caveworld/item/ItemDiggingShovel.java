@@ -46,7 +46,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.EnumRarity;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemSpade;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.IIcon;
@@ -54,7 +53,7 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 
-public class ItemDiggingShovel extends ItemSpade implements ICaveniumTool
+public class ItemDiggingShovel extends ItemCaveShovel implements ICaveniumTool
 {
 	public enum BreakMode implements IBreakMode
 	{
@@ -131,9 +130,7 @@ public class ItemDiggingShovel extends ItemSpade implements ICaveniumTool
 
 	public ItemDiggingShovel(String name)
 	{
-		super(CaveItems.CAVENIUM);
-		this.setUnlocalizedName(name);
-		this.setTextureName("caveworld:digging_shovel");
+		super(name, "digging_shovel", CaveItems.CAVENIUM);
 		this.setCreativeTab(Caveworld.tabDiggingShovel);
 	}
 

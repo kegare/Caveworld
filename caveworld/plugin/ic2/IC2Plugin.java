@@ -12,12 +12,16 @@ package caveworld.plugin.ic2;
 import caveworld.api.BlockEntry;
 import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
+import caveworld.block.CaveBlocks;
 import caveworld.core.CaveVeinManager.CaveVein;
 import caveworld.core.Config;
+import caveworld.item.CaveItems;
 import caveworld.plugin.ICavePlugin;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Optional.Method;
 import ic2.api.item.IC2Items;
+import ic2.api.recipe.RecipeInputItemStack;
+import ic2.api.recipe.Recipes;
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 
@@ -54,6 +58,8 @@ public class IC2Plugin implements ICavePlugin
 	@Override
 	public void invoke()
 	{
+		Recipes.macerator.addRecipe(new RecipeInputItemStack(new ItemStack(CaveBlocks.gem_ore, 1, 3)), null, new ItemStack(CaveItems.gem, 2, 2));
+
 		ItemStack itemstack = IC2Items.getItem("copperOre");
 		BlockEntry block;
 

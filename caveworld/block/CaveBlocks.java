@@ -55,6 +55,7 @@ public class CaveBlocks
 	public static final BlockPortalAquaCavern aqua_cavern_portal = new BlockPortalAquaCavern("portalAquaCavern");
 	public static final BlockPortalCaveland caveland_portal = new BlockPortalCaveland("portalCaveland");
 	public static final BlockPortalCavenia cavenia_portal = new BlockPortalCavenia("portalCavenia");
+	public static final BlockAcresia acresia_crops = new BlockAcresia("acresia");
 
 	public static void registerBlocks()
 	{
@@ -71,46 +72,40 @@ public class CaveBlocks
 		GameRegistry.registerBlock(aqua_cavern_portal, ItemCavePortal.class, "aqua_cavern_portal");
 		GameRegistry.registerBlock(caveland_portal, ItemCavePortal.class, "caveland_portal");
 		GameRegistry.registerBlock(cavenia_portal, ItemCavePortal.class, "cavenia_portal");
+		GameRegistry.registerBlock(acresia_crops, "acresia_crops");
 
 		GameRegistry.registerTileEntity(TileEntityUniversalChest.class, "UniversalChest");
 
-		OreDictionary.registerOre("portalCaveworld", caveworld_portal);
 		OreDictionary.registerOre("rope", new ItemStack(rope));
 		OreDictionary.registerOre("ropeLadder", new ItemStack(rope_ladder));
-		OreDictionary.registerOre("ladderRope", new ItemStack(rope_ladder));
 		OreDictionary.registerOre("oreCavenium", new ItemStack(cavenium_ore, 1, 0));
-		OreDictionary.registerOre("caveniumOre", new ItemStack(cavenium_ore, 1, 0));
 		OreDictionary.registerOre("oreRefinedCavenium", new ItemStack(cavenium_ore, 1, 1));
-		OreDictionary.registerOre("refinedCaveniumOre", new ItemStack(cavenium_ore, 1, 1));
 		OreDictionary.registerOre("blockCavenium", new ItemStack(cavenium_ore, 1, 2));
-		OreDictionary.registerOre("caveniumBlock", new ItemStack(cavenium_ore, 1, 2));
 		OreDictionary.registerOre("blockRefinedCavenium", new ItemStack(cavenium_ore, 1, 3));
-		OreDictionary.registerOre("refinedCaveniumBlock", new ItemStack(cavenium_ore, 1, 3));
-
 		OreDictionary.registerOre("oreAquamarine", new ItemStack(gem_ore, 1, 0));
-		OreDictionary.registerOre("aquamarineOre", new ItemStack(gem_ore, 1, 0));
 		OreDictionary.registerOre("blockAquamarine", new ItemStack(gem_ore, 1, 1));
-		OreDictionary.registerOre("aquamarineBlock", new ItemStack(gem_ore, 1, 1));
 		OreDictionary.registerOre("oreRandomite", new ItemStack(gem_ore, 1, 2));
-		OreDictionary.registerOre("randomiteOre", new ItemStack(gem_ore, 1, 2));
-		OreDictionary.registerOre("portalCavern", cavern_portal);
+		OreDictionary.registerOre("oreMagnite", new ItemStack(gem_ore, 1, 3));
+		OreDictionary.registerOre("blockMagnite", new ItemStack(gem_ore, 1, 4));
+		OreDictionary.registerOre("oreHexcite", new ItemStack(gem_ore, 1, 5));
+		OreDictionary.registerOre("blockHexcite", new ItemStack(gem_ore, 1, 6));
 		OreDictionary.registerOre("logWoodPerverted", new ItemStack(perverted_log, 1, OreDictionary.WILDCARD_VALUE));
 		OreDictionary.registerOre("treeLeavesPerverted", new ItemStack(perverted_leaves, 1, OreDictionary.WILDCARD_VALUE));
 		OreDictionary.registerOre("treeSaplingPerverted", new ItemStack(perverted_sapling, 1, OreDictionary.WILDCARD_VALUE));
-		OreDictionary.registerOre("portalAquaCavern", aqua_cavern_portal);
-		OreDictionary.registerOre("portalCaveland", caveland_portal);
-		OreDictionary.registerOre("portalCavenia", cavenia_portal);
 
 		CaverAPI.setMiningPointAmount(cavenium_ore, 0, 2);
 		CaverAPI.setMiningPointAmount(cavenium_ore, 1, 3);
 		CaverAPI.setMiningPointAmount(gem_ore, 0, 2);
 		CaverAPI.setMiningPointAmount(gem_ore, 2, 2);
+		CaverAPI.setMiningPointAmount(gem_ore, 3, 1);
+		CaverAPI.setMiningPointAmount(gem_ore, 5, 4);
 
 		Blocks.fire.setFireInfo(rope, 15, 100);
 		Blocks.fire.setFireInfo(rope_ladder, 15, 80);
 		Blocks.fire.setFireInfo(perverted_log, 15, 15);
 		Blocks.fire.setFireInfo(perverted_leaves, 90, 180);
 		Blocks.fire.setFireInfo(perverted_sapling, 60, 180);
+		Blocks.fire.setFireInfo(acresia_crops, 60, 100);
 
 		BlockDispenser.dispenseBehaviorRegistry.putObject(Item.getItemFromBlock(rope), rope.new DispenceRope());
 		BlockDispenser.dispenseBehaviorRegistry.putObject(Item.getItemFromBlock(caveworld_portal), caveworld_portal.new DispencePortal());
@@ -176,6 +171,14 @@ public class CaveBlocks
 			"AAA", "AAA", "AAA",
 			'A', new ItemStack(CaveItems.gem, 1, 0)
 		);
+		GameRegistry.addRecipe(new ItemStack(gem_ore, 1, 4),
+			"MMM", "MMM", "MMM",
+			'M', new ItemStack(CaveItems.gem, 1, 1)
+		);
+		GameRegistry.addRecipe(new ItemStack(gem_ore, 1, 6),
+			"HHH", "HHH", "HHH",
+			'H', new ItemStack(CaveItems.gem, 1, 3)
+		);
 
 		GameRegistry.addShapelessRecipe(new ItemStack(Items.stick, 8), new ItemStack(perverted_log, 1, OreDictionary.WILDCARD_VALUE));
 
@@ -198,6 +201,11 @@ public class CaveBlocks
 			GameRegistry.addShapelessRecipe(new ItemStack(Blocks.stonebrick, 1, 1), Blocks.vine, new ItemStack(Blocks.stonebrick, 1, 0));
 		}
 
+		FurnaceRecipes.smelting().func_151394_a(new ItemStack(cavenium_ore, 1, 0), new ItemStack(CaveItems.cavenium, 1, 0), 0.5F);
+		FurnaceRecipes.smelting().func_151394_a(new ItemStack(cavenium_ore, 1, 1), new ItemStack(CaveItems.cavenium, 1, 1), 0.75F);
+		FurnaceRecipes.smelting().func_151394_a(new ItemStack(gem_ore, 1, 0), new ItemStack(CaveItems.gem, 1, 0), 0.5F);
+		FurnaceRecipes.smelting().func_151394_a(new ItemStack(gem_ore, 1, 3), new ItemStack(CaveItems.gem, 1, 1), 1.0F);
+		FurnaceRecipes.smelting().func_151394_a(new ItemStack(gem_ore, 1, 5), new ItemStack(CaveItems.gem, 1, 3), 1.0F);
 		FurnaceRecipes.smelting().func_151394_a(new ItemStack(perverted_log, 1, OreDictionary.WILDCARD_VALUE), new ItemStack(Items.coal, 1, 1), 0.0F);
 	}
 
