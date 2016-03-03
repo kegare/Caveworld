@@ -1094,12 +1094,7 @@ public class GuiMiningPointsEntry extends GuiScreen implements SelectListener
 		@Override
 		public boolean apply(PointEntry vein)
 		{
-			if (CaveUtils.blockFilter(vein.getBlock(), filter))
-			{
-				return true;
-			}
-
-			return false;
+			return CaveUtils.blockFilter(vein.getBlock(), filter);
 		}
 	}
 }

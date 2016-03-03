@@ -40,6 +40,7 @@ import caveworld.core.CavernBiomeManager;
 import caveworld.core.CavernVeinManager;
 import caveworld.core.Caveworld;
 import caveworld.core.Config;
+import caveworld.core.ConfigHelper;
 import caveworld.entity.EntityCaveman;
 import caveworld.inventory.InventoryCaverBackpack;
 import caveworld.item.CaveItems;
@@ -96,6 +97,7 @@ import cpw.mods.fml.common.network.FMLNetworkEvent.ServerConnectionFromClientEve
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockWorkbench;
 import net.minecraft.block.IGrowable;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
@@ -171,6 +173,7 @@ public class CaveEventHooks
 	public static final CaveEventHooks instance = new CaveEventHooks();
 
 	public static final Set<String> firstJoinPlayers = Sets.newHashSet();
+	public static final List<ItemStack> cavebornItems = Lists.newArrayList();
 
 	@SideOnly(Side.CLIENT)
 	public static ICaveBiomeManager prevBiomeManager;
@@ -289,7 +292,7 @@ public class CaveEventHooks
 			}
 
 			if (CaveworldAPI.isEntityInCaves(mc.thePlayer) && (mc.currentScreen == null || GuiChat.class.isInstance(mc.currentScreen)) &&
-				(mc.thePlayer.capabilities.isCreativeMode || mc.gameSettings.advancedItemTooltips || CaveUtils.isItemPickaxe(current) || CaveUtils.isMiningPointValidItem(current)))
+				(mc.thePlayer.capabilities.isCreativeMode || mc.gameSettings.advancedItemTooltips || CaveUtils.isItemPickaxe(current) || ConfigHelper.isMiningPointValidItem(current)))
 			{
 				int type = Config.miningPointRenderType;
 
@@ -809,26 +812,36 @@ public class CaveEventHooks
 			{
 				if (CaveworldAPI.isCaveborn() && firstJoinPlayers.contains(player.getUniqueID().toString()))
 				{
-					List<ItemStack> bonus = Lists.newArrayList();
 					Random random = new Random();
 
-					bonus.add(new ItemStack(Items.stone_pickaxe));
-					bonus.add(new ItemStack(Items.stone_sword));
-					bonus.add(new ItemStack(Blocks.torch, MathHelper.getRandomIntegerInRange(random, 10, 20)));
-					bonus.add(new ItemStack(Items.bread, MathHelper.getRandomIntegerInRange(random, 5, 10)));
-
-					for (int i = 0; i < 3; ++i)
+					for (ItemStack itemstack : cavebornItems)
 					{
-						bonus.add(new ItemStack(CaveBlocks.perverted_sapling, MathHelper.getRandomIntegerInRange(random, 2, 5), i));
-					}
+						ItemStack item = itemstack.copy();
+						item.stackSize = 0;
 
-					bonus.add(new ItemStack(Blocks.crafting_table));
-					bonus.add(new ItemStack(Blocks.dirt, MathHelper.getRandomIntegerInRange(random, 10, 15)));
-					bonus.add(new ItemStack(CaveItems.acresia, MathHelper.getRandomIntegerInRange(random, 3, 6), 0));
+						if (item.isStackable())
+						{
+							Block block = Block.getBlockFromItem(item.getItem());
 
-					for (ItemStack itemstack : bonus)
-					{
-						player.inventory.addItemStackToInventory(itemstack);
+							if (block != null && block != Blocks.air)
+							{
+								if (block instanceof BlockWorkbench || block.hasTileEntity(item.getItemDamage()))
+								{
+									item.stackSize = 1;
+								}
+							}
+
+							if (item.stackSize <= 0)
+							{
+								item.stackSize = MathHelper.getRandomIntegerInRange(random, 5, 10);
+							}
+						}
+						else
+						{
+							item.stackSize = 1;
+						}
+
+						player.inventory.addItemStackToInventory(item);
 					}
 
 					int dim = 0;
@@ -1133,7 +1146,7 @@ public class CaveEventHooks
 
 			if (CaveworldAPI.isEntityInCaves(player))
 			{
-				if (CaveUtils.isMiningPointValidItem(player.getCurrentEquippedItem()))
+				if (ConfigHelper.isMiningPointValidItem(player.getCurrentEquippedItem()))
 				{
 					Block block = event.block;
 					int meta = event.blockMetadata;

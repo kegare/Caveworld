@@ -9,7 +9,7 @@
 
 package caveworld.client.config;
 
-import java.util.Collections;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -92,6 +92,8 @@ public class GuiSelectItem extends GuiScreen
 	protected GuiTextField parentDamageField;
 	protected ArrayEntry parentElement;
 
+	protected final Set<ItemEntry> excluded = Sets.newHashSet();
+
 	protected boolean hideBlocks;
 
 	protected ItemList itemList;
@@ -121,6 +123,16 @@ public class GuiSelectItem extends GuiScreen
 	{
 		this(parent);
 		this.parentElement = entry;
+	}
+
+	public GuiSelectItem exclude(Collection<ItemEntry> items)
+	{
+		for (ItemEntry entry : items)
+		{
+			excluded.add(entry);
+		}
+
+		return this;
 	}
 
 	public GuiSelectItem setHideBlocks(boolean hide)
@@ -249,8 +261,6 @@ public class GuiSelectItem extends GuiScreen
 											return str;
 										}
 									}));
-
-									Collections.sort(result);
 
 									return result.toArray();
 								}
@@ -460,7 +470,7 @@ public class GuiSelectItem extends GuiScreen
 	{
 		protected final ArrayListExtended<ItemEntry> entries = new ArrayListExtended(items);
 		protected final ArrayListExtended<ItemEntry> contents = new ArrayListExtended(items);
-		protected final Set<ItemEntry> selected = Sets.newHashSet();
+		protected final Set<ItemEntry> selected = Sets.newLinkedHashSet();
 
 		private final Map<String, List<ItemEntry>> filterCache = Maps.newHashMap();
 
@@ -475,6 +485,9 @@ public class GuiSelectItem extends GuiScreen
 				@Override
 				protected void compute()
 				{
+					entries.removeAll(excluded);
+					contents.removeAll(excluded);
+
 					if (hideBlocks)
 					{
 						Set<ItemEntry> hidden = Sets.newHashSet();

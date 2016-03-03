@@ -19,12 +19,10 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.Level;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import caveworld.api.BlockEntry;
-import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
 import caveworld.api.ICaveBiome;
 import caveworld.api.ICaveVein;
@@ -37,6 +35,7 @@ import caveworld.entity.EntityCavenicCreeper;
 import caveworld.entity.EntityCavenicSkeleton;
 import caveworld.entity.EntityCavenicSpider;
 import caveworld.entity.EntityCavenicZombie;
+import caveworld.item.CaveItems;
 import caveworld.plugin.CavePlugins;
 import caveworld.plugin.ICavePlugin;
 import caveworld.util.CaveConfiguration;
@@ -58,7 +57,6 @@ import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.EntityList;
@@ -73,7 +71,7 @@ import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.EntityBat;
 import net.minecraft.init.Blocks;
-import net.minecraft.item.Item;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
@@ -124,6 +122,7 @@ public class Config
 
 	public static boolean hardcore;
 	public static int caveborn;
+	public static String[] cavebornItems;
 
 	public static boolean cauldron;
 	public static boolean remoteConfig;
@@ -457,82 +456,38 @@ public class Config
 		prop.comment += "Note: If multiplayer, server-side only.";
 		propOrder.add(prop.getName());
 		caveborn = MathHelper.clamp_int(prop.getInt(caveborn), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
+		boolean flag = !generalCfg.getCategory(category).containsKey("cavebornItems");
+		prop = generalCfg.get(category, "cavebornItems", new String[0]);
+		prop.setMaxListLength(36).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(selectItemsWithBlocks);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		propOrder.add(prop.getName());
+		cavebornItems = prop.getStringList();
+
+		if (flag)
+		{
+			List<ItemStack> items = Lists.newArrayList();
+
+			items.add(new ItemStack(Items.stone_pickaxe));
+			items.add(new ItemStack(Items.stone_sword));
+			items.add(new ItemStack(Blocks.torch));
+			items.add(new ItemStack(Items.bread));
+
+			for (int i = 0; i < 3; ++i)
+			{
+				items.add(new ItemStack(CaveBlocks.perverted_sapling, 1, i));
+			}
+
+			items.add(new ItemStack(Blocks.crafting_table));
+			items.add(new ItemStack(Blocks.dirt));
+			items.add(new ItemStack(CaveItems.acresia));
+
+			cavebornItems = ConfigHelper.getStringsFromItems(items);
+			prop.set(cavebornItems);
+		}
 
 		generalCfg.setCategoryPropertyOrder(category, propOrder);
 
 		saveConfig(generalCfg);
-	}
-
-	public static void refreshMiningPoints()
-	{
-		CaverAPI.caverManager.clearMiningPointAmounts();
-
-		for (String str : miningPoints)
-		{
-			if (!Strings.isNullOrEmpty(str) && str.contains(","))
-			{
-				str = str.trim();
-
-				int i = str.indexOf(',');
-				String str2 = str.substring(0, i);
-				int point = Integer.parseInt(str.substring(i + 1));
-
-				if (str2.contains(":"))
-				{
-					i = str2.lastIndexOf(':');
-					Block block = GameData.getBlockRegistry().getObject(str2.substring(0, i));
-
-					if (block != null && block != Blocks.air)
-					{
-						int meta = Integer.parseInt(str2.substring(i + 1));
-
-						CaverAPI.setMiningPointAmount(block, meta, point);
-					}
-				}
-				else
-				{
-					CaverAPI.setMiningPointAmount(str2, point);
-				}
-			}
-		}
-	}
-
-	public static void refreshRandomiteDrops()
-	{
-		CaveBlocks.gem_ore.randomiteDrops.clear();
-
-		for (String str : randomiteDrops)
-		{
-			if (!Strings.isNullOrEmpty(str))
-			{
-				str = str.trim();
-
-				if (!str.contains(":"))
-				{
-					str = "minecraft:" + str;
-				}
-
-				if (str.indexOf(':') != str.lastIndexOf(':'))
-				{
-					int i = str.lastIndexOf(':');
-					Item item = GameData.getItemRegistry().getObject(str.substring(0, i));
-
-					if (item != null)
-					{
-						CaveBlocks.gem_ore.randomiteDrops.add(new ItemStack(item, 1, Integer.parseInt(str.substring(i + 1))));
-					}
-				}
-				else
-				{
-					Item item = GameData.getItemRegistry().getObject(str);
-
-					if (item != null)
-					{
-						CaveBlocks.gem_ore.randomiteDrops.add(new ItemStack(item));
-					}
-				}
-			}
-		}
 	}
 
 	public static void syncMobsCfg()

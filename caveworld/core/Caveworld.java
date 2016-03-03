@@ -152,6 +152,9 @@ public class Caveworld
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event)
 	{
+		CaveBlocks.registerBlocks();
+		CaveItems.registerItems();
+
 		CaveNetworkRegistry.registerMessages();
 
 		Config.syncGeneralCfg();
@@ -160,9 +163,6 @@ public class Caveworld
 		{
 			Config.syncServerCfg();
 		}
-
-		CaveBlocks.registerBlocks();
-		CaveItems.registerItems();
 
 		GameRegistry.registerFuelHandler(new CaveFuelHandler());
 
@@ -559,8 +559,9 @@ public class Caveworld
 	@EventHandler
 	public void serverStarting(FMLServerStartingEvent event)
 	{
-		Config.refreshMiningPoints();
-		Config.refreshRandomiteDrops();
+		ConfigHelper.refreshMiningPoints();
+		ConfigHelper.refreshRandomiteDrops();
+		ConfigHelper.refreshCavebornItems();
 
 		event.registerServerCommand(new CommandCaveworld());
 

@@ -4,7 +4,7 @@
     "modid": "caveworld",
     "name": "Caveworld 2",
     "description": "Adds more new cave dimensions. There's no surface there.",
-    "version": "2.2.4",
+    "version": "2.2.5",
     "url": "http://kegare.github.io/caveworld/",
     "updateUrl": "https://dl.dropboxusercontent.com/u/51943112/kegare/caveworld.json",
     "authorList": ["kegare"],

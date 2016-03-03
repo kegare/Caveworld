@@ -31,7 +31,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.lwjgl.opengl.GL11;
@@ -45,7 +44,6 @@ import com.google.common.collect.Sets;
 import caveworld.api.BlockEntry;
 import caveworld.api.CaveworldAPI;
 import caveworld.core.Caveworld;
-import caveworld.core.Config;
 import caveworld.network.CaveNetworkRegistry;
 import caveworld.network.common.RegenerateMessage;
 import caveworld.world.TeleporterDummy;
@@ -558,24 +556,6 @@ public class CaveUtils
 
 				return true;
 			}
-		}
-
-		return false;
-	}
-
-	public static boolean isMiningPointValidItem(ItemStack itemstack)
-	{
-		if (itemstack != null && itemstack.getItem() != null && itemstack.stackSize > 0)
-		{
-			String name = GameData.getItemRegistry().getNameForObject(itemstack.getItem());
-			int damage = itemstack.isItemStackDamageable() ? 0 : itemstack.getItemDamage();
-
-			if (damage > 0)
-			{
-				name += ":" + damage;
-			}
-
-			return Config.miningPointValidItems != null && ArrayUtils.contains(Config.miningPointValidItems, name);
 		}
 
 		return false;

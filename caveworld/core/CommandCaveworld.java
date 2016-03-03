@@ -11,6 +11,8 @@ package caveworld.core;
 
 import java.util.List;
 
+import com.google.common.base.Joiner;
+
 import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
 import caveworld.network.CaveNetworkRegistry;
@@ -21,8 +23,6 @@ import caveworld.util.Version;
 import cpw.mods.fml.common.Loader;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.CommandNotFoundException;
-import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.event.ClickEvent;
@@ -32,14 +32,8 @@ import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 
-public class CommandCaveworld implements ICommand
+public class CommandCaveworld extends CommandBase
 {
-	@Override
-	public int compareTo(Object obj)
-	{
-		return getCommandName().compareTo(((ICommand)obj).getCommandName());
-	}
-
 	@Override
 	public String getCommandName()
 	{
@@ -47,21 +41,26 @@ public class CommandCaveworld implements ICommand
 	}
 
 	@Override
-	public String getCommandUsage(ICommandSender sender)
+	public int getRequiredPermissionLevel()
 	{
-		throw new CommandNotFoundException();
+		return 0;
 	}
 
 	@Override
-	public List getCommandAliases()
+	public String getCommandUsage(ICommandSender sender)
 	{
-		return null;
+		return String.format("/%s <%s>", getCommandName(), Joiner.on('|').join(getCommands()));
+	}
+
+	public String[] getCommands()
+	{
+		return new String[] {"version", "menu", "regenerate"};
 	}
 
 	@Override
 	public void processCommand(ICommandSender sender, final String[] args)
 	{
-		if (args.length <= 0 && sender instanceof EntityPlayerMP)
+		if ((args.length <= 0 || args[0].equalsIgnoreCase("menu")) && sender instanceof EntityPlayerMP)
 		{
 			CaveNetworkRegistry.sendTo(new CaveworldMenuMessage(), (EntityPlayerMP)sender);
 		}
@@ -111,7 +110,7 @@ public class CommandCaveworld implements ICommand
 			{
 				try
 				{
-					backup = CommandBase.parseBoolean(sender, args[1]);
+					backup = parseBoolean(sender, args[1]);
 				}
 				catch (CommandException e)
 				{
@@ -149,7 +148,7 @@ public class CommandCaveworld implements ICommand
 
 			if (player.getServerForPlayer().getWorldInfo().areCommandsAllowed())
 			{
-				int value = CommandBase.parseInt(sender, args[1]);
+				int value = parseInt(sender, args[1]);
 
 				if (value != 0)
 				{
@@ -162,18 +161,12 @@ public class CommandCaveworld implements ICommand
 	@Override
 	public boolean canCommandSenderUseCommand(ICommandSender sender)
 	{
-		return true;
+		return sender instanceof MinecraftServer || sender instanceof EntityPlayerMP;
 	}
 
 	@Override
 	public List addTabCompletionOptions(ICommandSender sender, String[] args)
 	{
-		return args.length == 1 ? CommandBase.getListOfStringsMatchingLastWord(args, "version", "forum", "regenerate") : null;
-	}
-
-	@Override
-	public boolean isUsernameIndex(String[] args, int index)
-	{
-		return false;
+		return args.length == 1 ? CommandBase.getListOfStringsMatchingLastWord(args, getCommands()) : null;
 	}
 }

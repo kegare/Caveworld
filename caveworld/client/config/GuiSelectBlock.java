@@ -465,7 +465,7 @@ public class GuiSelectBlock extends GuiScreen
 	{
 		protected final ArrayListExtended<BlockEntry> entries = new ArrayListExtended(blocks);
 		protected final ArrayListExtended<BlockEntry> contents = new ArrayListExtended(blocks);
-		protected final Set<BlockEntry> selected = Sets.newHashSet();
+		protected final Set<BlockEntry> selected = Sets.newLinkedHashSet();
 
 		private final Map<String, List<BlockEntry>> filterCache = Maps.newHashMap();
 
