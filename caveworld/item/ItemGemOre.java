@@ -39,6 +39,10 @@ public class ItemGemOre extends ItemBlockWithMetadata
 				return "tile.oreHexcite";
 			case 6:
 				return "tile.blockHexcite";
+			case 7:
+				return "tile.oreInfitite";
+			case 8:
+				return "tile.blockInfitite";
 		}
 
 		return super.getUnlocalizedName(itemstack);

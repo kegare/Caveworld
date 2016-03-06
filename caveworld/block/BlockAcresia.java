@@ -18,6 +18,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockCrops;
+import net.minecraft.block.BlockFarmland;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -46,7 +47,7 @@ public class BlockAcresia extends BlockCrops
 	@Override
 	protected boolean canPlaceBlockOn(Block block)
 	{
-		return block.isNormalCube();
+		return block.isNormalCube() || block instanceof BlockFarmland;
 	}
 
 	@Override

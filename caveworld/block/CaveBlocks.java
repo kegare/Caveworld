@@ -89,6 +89,8 @@ public class CaveBlocks
 		OreDictionary.registerOre("blockMagnite", new ItemStack(gem_ore, 1, 4));
 		OreDictionary.registerOre("oreHexcite", new ItemStack(gem_ore, 1, 5));
 		OreDictionary.registerOre("blockHexcite", new ItemStack(gem_ore, 1, 6));
+		OreDictionary.registerOre("oreInfitite", new ItemStack(gem_ore, 1, 7));
+		OreDictionary.registerOre("blockInfitite", new ItemStack(gem_ore, 1, 8));
 		OreDictionary.registerOre("logWoodPerverted", new ItemStack(perverted_log, 1, OreDictionary.WILDCARD_VALUE));
 		OreDictionary.registerOre("treeLeavesPerverted", new ItemStack(perverted_leaves, 1, OreDictionary.WILDCARD_VALUE));
 		OreDictionary.registerOre("treeSaplingPerverted", new ItemStack(perverted_sapling, 1, OreDictionary.WILDCARD_VALUE));
@@ -98,7 +100,8 @@ public class CaveBlocks
 		CaverAPI.setMiningPointAmount(gem_ore, 0, 2);
 		CaverAPI.setMiningPointAmount(gem_ore, 2, 2);
 		CaverAPI.setMiningPointAmount(gem_ore, 3, 1);
-		CaverAPI.setMiningPointAmount(gem_ore, 5, 4);
+		CaverAPI.setMiningPointAmount(gem_ore, 5, 5);
+		CaverAPI.setMiningPointAmount(gem_ore, 7, 10);
 
 		Blocks.fire.setFireInfo(rope, 15, 100);
 		Blocks.fire.setFireInfo(rope_ladder, 15, 80);
@@ -179,6 +182,10 @@ public class CaveBlocks
 			"HHH", "HHH", "HHH",
 			'H', new ItemStack(CaveItems.gem, 1, 3)
 		);
+		GameRegistry.addRecipe(new ItemStack(gem_ore, 1, 8),
+			"III", "III", "III",
+			'I', new ItemStack(CaveItems.gem, 1, 4)
+		);
 
 		GameRegistry.addShapelessRecipe(new ItemStack(Items.stick, 8), new ItemStack(perverted_log, 1, OreDictionary.WILDCARD_VALUE));
 
@@ -206,6 +213,7 @@ public class CaveBlocks
 		FurnaceRecipes.smelting().func_151394_a(new ItemStack(gem_ore, 1, 0), new ItemStack(CaveItems.gem, 1, 0), 0.5F);
 		FurnaceRecipes.smelting().func_151394_a(new ItemStack(gem_ore, 1, 3), new ItemStack(CaveItems.gem, 1, 1), 1.0F);
 		FurnaceRecipes.smelting().func_151394_a(new ItemStack(gem_ore, 1, 5), new ItemStack(CaveItems.gem, 1, 3), 1.0F);
+		FurnaceRecipes.smelting().func_151394_a(new ItemStack(gem_ore, 1, 7), new ItemStack(CaveItems.gem, 1, 5), 1.0F);
 		FurnaceRecipes.smelting().func_151394_a(new ItemStack(perverted_log, 1, OreDictionary.WILDCARD_VALUE), new ItemStack(Items.coal, 1, 1), 0.0F);
 	}
 

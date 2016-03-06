@@ -242,7 +242,7 @@ public class ItemOreCompass extends Item
 		{
 			Block block = nearestOrePos.getCurrentBlock();
 			int meta = nearestOrePos.getCurrentMetadata();
-			ItemStack nearest = new ItemStack(block, meta);
+			ItemStack nearest = new ItemStack(block, 1, meta);
 
 			if (nearest != null && nearest.getItem() != null)
 			{

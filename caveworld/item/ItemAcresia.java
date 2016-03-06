@@ -102,7 +102,7 @@ public class ItemAcresia extends ItemFood implements IPlantable
 	@Override
 	public EnumPlantType getPlantType(IBlockAccess world, int x, int y, int z)
 	{
-		return EnumPlantType.Cave;
+		return world.getBlock(x, y - 1, z).isSideSolid(world, x, y - 1, z, ForgeDirection.UP) ? EnumPlantType.Cave : EnumPlantType.Plains;
 	}
 
 	@Override

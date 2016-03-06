@@ -27,6 +27,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.BlockOre;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -59,6 +60,8 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 		this.setHarvestLevel("pickaxe", 2, 1);
 		this.setHarvestLevel("pickaxe", 2, 5);
 		this.setHarvestLevel("pickaxe", 2, 6);
+		this.setHarvestLevel("pickaxe", 3, 7);
+		this.setHarvestLevel("pickaxe", 3, 8);
 		this.setCreativeTab(Caveworld.tabCaveworld);
 	}
 
@@ -75,6 +78,7 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 		{
 			case 0:
 			case 5:
+			case 7:
 				return CaveItems.gem;
 			default:
 				return Item.getItemFromBlock(this);
@@ -88,9 +92,11 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 		{
 			case 2:
 				return 0;
-			default:
-				return super.quantityDropped(meta, fortune, random);
+			case 7:
+				return 1;
 		}
+
+		return super.quantityDropped(meta, fortune, random);
 	}
 
 	@Override
@@ -100,6 +106,8 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 		{
 			case 5:
 				return 3;
+			case 7:
+				return 5;
 			default:
 				return metadata;
 		}
@@ -213,9 +221,11 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 				return MathHelper.getRandomIntegerInRange(random, 2, 6);
 			case 2:
 				return MathHelper.getRandomIntegerInRange(random, 1, 3);
-			default:
-				return 0;
+			case 7:
+				return MathHelper.getRandomIntegerInRange(random, 6, 10);
 		}
+
+		return 0;
 	}
 
 	@Override
@@ -235,9 +245,28 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 				return 4.5F;
 			case 2:
 				return 6.0F;
-			default:
-				return super.getBlockHardness(world, x, y, z);
+			case 7:
+				return 100.0F;
+			case 8:
+				return 10.0F;
 		}
+
+		return super.getBlockHardness(world, x, y, z);
+	}
+
+	@Override
+	public float getExplosionResistance(Entity entity, World world, int x, int y, int z, double explosionX, double explosionY, double explosionZ)
+	{
+		int meta = world.getBlockMetadata(x, y, z);
+
+		switch (meta)
+		{
+			case 7:
+			case 8:
+				return 500.0F;
+		}
+
+		return super.getExplosionResistance(entity, world, x, y, z, explosionX, explosionY, explosionZ);
 	}
 
 	@Override
@@ -252,16 +281,16 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 				return 5;
 			case 2:
 				return 8;
-			default:
-				return super.getLightValue(world, x, y, z);
 		}
+
+		return super.getLightValue(world, x, y, z);
 	}
 
 	@SideOnly(Side.CLIENT)
 	@Override
 	public void registerBlockIcons(IIconRegister iconRegister)
 	{
-		oreIcons = new IIcon[7];
+		oreIcons = new IIcon[9];
 		oreIcons[0] = iconRegister.registerIcon("caveworld:aquamarine_ore");
 		oreIcons[1] = iconRegister.registerIcon("caveworld:aquamarine_block");
 		oreIcons[2] = iconRegister.registerIcon("caveworld:randomite_ore");
@@ -269,11 +298,14 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 		oreIcons[4] = iconRegister.registerIcon("caveworld:magnite_block");
 		oreIcons[5] = iconRegister.registerIcon("caveworld:hexcite_ore");
 		oreIcons[6] = iconRegister.registerIcon("caveworld:hexcite_block");
-		overlayIcons = new IIcon[4];
+		oreIcons[7] = iconRegister.registerIcon("caveworld:infitite_ore");
+		oreIcons[8] = iconRegister.registerIcon("caveworld:infitite_block");
+		overlayIcons = new IIcon[5];
 		overlayIcons[0] = iconRegister.registerIcon("caveworld:aquamarine_ore_overlay");
 		overlayIcons[1] = iconRegister.registerIcon("caveworld:randomite_ore_overlay");
 		overlayIcons[2] = iconRegister.registerIcon("caveworld:magnite_ore_overlay");
 		overlayIcons[3] = iconRegister.registerIcon("caveworld:hexcite_ore_overlay");
+		overlayIcons[4] = iconRegister.registerIcon("caveworld:infitite_ore_overlay");
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -302,6 +334,8 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 				return overlayIcons[2];
 			case 5:
 				return overlayIcons[3];
+			case 7:
+				return overlayIcons[4];
 			default:
 				return null;
 		}

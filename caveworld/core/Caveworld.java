@@ -187,23 +187,23 @@ public class Caveworld
 		Config.syncDimensionCfg();
 
 		int id = CaveworldAPI.getDimension();
-		DimensionManager.registerProviderType(id, WorldProviderCaveworld.class, true);
+		DimensionManager.registerProviderType(id, WorldProviderCaveworld.class, false);
 		DimensionManager.registerDimension(id, id);
 
 		id = CaveworldAPI.getCavernDimension();
-		DimensionManager.registerProviderType(id, WorldProviderCavern.class, true);
+		DimensionManager.registerProviderType(id, WorldProviderCavern.class, false);
 		DimensionManager.registerDimension(id, id);
 
 		id = CaveworldAPI.getAquaCavernDimension();
-		DimensionManager.registerProviderType(id, WorldProviderAquaCavern.class, true);
+		DimensionManager.registerProviderType(id, WorldProviderAquaCavern.class, false);
 		DimensionManager.registerDimension(id, id);
 
 		id = CaveworldAPI.getCavelandDimension();
-		DimensionManager.registerProviderType(id, WorldProviderCaveland.class, true);
+		DimensionManager.registerProviderType(id, WorldProviderCaveland.class, false);
 		DimensionManager.registerDimension(id, id);
 
 		id = CaveworldAPI.getCaveniaDimension();
-		DimensionManager.registerProviderType(id, WorldProviderCavenia.class, true);
+		DimensionManager.registerProviderType(id, WorldProviderCavenia.class, false);
 		DimensionManager.registerDimension(id, id);
 
 		NetworkRegistry.INSTANCE.registerGuiHandler(this, new CaveGuiHandler());
@@ -394,8 +394,6 @@ public class Caveworld
 		CaverAPI.setMiningPointAmount("zincOre", 1);
 		CaverAPI.setMiningPointAmount("oreCrocoite", 3);
 		CaverAPI.setMiningPointAmount("crocoiteOre", 3);
-		CaverAPI.setMiningPointAmount("oreCavenium", 2);
-		CaverAPI.setMiningPointAmount("caveniumOre", 2);
 		CaverAPI.setMiningPointAmount("oreAquamarine", 2);
 		CaverAPI.setMiningPointAmount("aquamarineOre", 2);
 		CaverAPI.setMiningPointAmount("glowstone", 2);
@@ -437,8 +435,6 @@ public class Caveworld
 				}
 			}
 		}
-
-		CaverAPI.caverManager.clearMiningPointAmounts();
 
 		ConfigCategory category = Config.generalCfg.getCategory(Configuration.CATEGORY_GENERAL);
 		Property prop = category.get("miningPoints");

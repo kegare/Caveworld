@@ -121,6 +121,8 @@ public class MCEconomyPlugin implements ICavePlugin
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.gem_ore, 1, 4), 900);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.gem_ore, 1, 5), 2200);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.gem_ore, 1, 6), 9900);
+		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.gem_ore, 1, 7), 20000);
+		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.gem_ore, 1, 8), 90000);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.cavern_portal), -1);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.perverted_log, 1, OreDictionary.WILDCARD_VALUE), 1);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.perverted_leaves, 1, OreDictionary.WILDCARD_VALUE), 0);
@@ -140,6 +142,8 @@ public class MCEconomyPlugin implements ICavePlugin
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.gem, 1, 1), 100);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.gem, 1, 2), 25);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.gem, 1, 3), 1100);
+		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.gem, 1, 4), 10000);
+		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.gem, 1, 5), 2500);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.aquamarine_pickaxe), 110);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.aquamarine_axe), 110);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.aquamarine_shovel), 40);
@@ -156,6 +160,15 @@ public class MCEconomyPlugin implements ICavePlugin
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.hexcite_chestplate), 8805);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.hexcite_leggings), 7705);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.hexcite_boots), 4405);
+		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_sword), 20005);
+		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_pickaxe), 30005);
+		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_axe), 30005);
+		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_shovel), 10005);
+		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_hoe), 20005);
+		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_helmet), 50005);
+		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_chestplate), 80005);
+		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_leggings), 70005);
+		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_boots), 40005);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.caver_backpack), 850);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.acresia, 1, 0), 0);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.acresia, 1, 1), 1);

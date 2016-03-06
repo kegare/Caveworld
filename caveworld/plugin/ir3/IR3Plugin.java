@@ -52,5 +52,6 @@ public class IR3Plugin implements ICavePlugin
 	public void invoke()
 	{
 		IR3RecipeAPI.AddCrushing(new ItemStack(CaveBlocks.gem_ore, 1, 3), new CrushPair(1.0F, new ItemStack(CaveItems.gem, 2, 2)));
+		IR3RecipeAPI.AddCrushing(new ItemStack(CaveBlocks.gem_ore, 1, 7), new CrushPair(1.0F, new ItemStack(CaveItems.gem, 1, 5)), new CrushPair(0.35F, new ItemStack(CaveItems.gem, 1, 5)));
 	}
 }

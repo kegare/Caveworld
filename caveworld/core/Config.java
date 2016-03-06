@@ -1410,6 +1410,7 @@ public class Config
 			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 0), 10, 15, 100, 1, 63));
 			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 2), 7, 18, 100, 1, 15));
 			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 2), 5, 22, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 7), 1, 3, 100, 1, 255));
 			veins.add(new CaveVein(new BlockEntry(Blocks.emerald_ore, 0), 6, 12, 100, 1, 15));
 			veins.add(new CaveVein(new BlockEntry(Blocks.emerald_ore, 0), 5, 6, 100, 50, 255, null, Type.MOUNTAIN, Type.HILLS));
 			veins.add(new CaveVein(new BlockEntry(Blocks.emerald_ore, 0), 16, 1, 6, 50, 255, null, Type.MOUNTAIN, Type.HILLS));
@@ -1575,6 +1576,7 @@ public class Config
 			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 5), 12, 3, 5, 1, 20));
 			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 0), 30, 35, 100, 1, 255));
 			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 2), 10, 32, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 7), 1, 3, 100, 1, 255));
 			veins.add(new CaveVein(new BlockEntry(Blocks.emerald_ore, 0), 5, 7, 100, 1, 255));
 			veins.add(new CaveVein(new BlockEntry(Blocks.emerald_ore, 0), 16, 2, 6, 1, 255));
 			veins.add(new CaveVein(new BlockEntry(Blocks.dirt, 0), 25, 20, 100, 1, 255));

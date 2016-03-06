@@ -11,14 +11,17 @@ package caveworld.item;
 
 import java.util.List;
 
+import caveworld.core.CaveAchievementList;
 import caveworld.core.Caveworld;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
+import net.minecraft.world.World;
 
 public class ItemGem extends Item
 {
@@ -45,20 +48,39 @@ public class ItemGem extends Item
 				return "item.dustMagnite";
 			case 3:
 				return "item.hexcite";
+			case 4:
+				return "item.infitite";
+			case 5:
+				return "item.fragmentInfitite";
 		}
 
 		return super.getUnlocalizedName(itemstack);
+	}
+
+	@Override
+	public void onCreated(ItemStack itemstack, World world, EntityPlayer player)
+	{
+		super.onCreated(itemstack, world, player);
+
+		switch (itemstack.getItemDamage())
+		{
+			case 4:
+				player.triggerAchievement(CaveAchievementList.infitite);
+				break;
+		}
 	}
 
 	@SideOnly(Side.CLIENT)
 	@Override
 	public void registerIcons(IIconRegister iconRegister)
 	{
-		gemIcons = new IIcon[4];
+		gemIcons = new IIcon[6];
 		gemIcons[0] = iconRegister.registerIcon("caveworld:aquamarine");
 		gemIcons[1] = iconRegister.registerIcon("caveworld:magnite_ingot");
 		gemIcons[2] = iconRegister.registerIcon("caveworld:magnite_dust");
 		gemIcons[3] = iconRegister.registerIcon("caveworld:hexcite");
+		gemIcons[4] = iconRegister.registerIcon("caveworld:infitite");
+		gemIcons[5] = iconRegister.registerIcon("caveworld:infitite_fragment");
 	}
 
 	@SideOnly(Side.CLIENT)

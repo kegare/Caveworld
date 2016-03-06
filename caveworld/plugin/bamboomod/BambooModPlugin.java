@@ -51,5 +51,6 @@ public class BambooModPlugin implements ICavePlugin
 	public void invoke()
 	{
 		GrindRegistory.addRecipe(new ItemStack(CaveItems.gem, 2, 2), new ItemStack(CaveBlocks.gem_ore, 1, 3));
+		GrindRegistory.addRecipe(new ItemStack(CaveItems.gem, 1, 5), new ItemStack(CaveItems.gem, 1, 5), new ItemStack(CaveBlocks.gem_ore, 1, 7), 0.35F);
 	}
 }

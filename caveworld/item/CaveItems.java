@@ -35,8 +35,10 @@ public class CaveItems
 	public static final ToolMaterial AQUAMARINE = EnumHelper.addToolMaterial("AQUAMARINE", 2, 200, 8.0F, 1.5F, 15);
 	public static final ToolMaterial MAGNITE = EnumHelper.addToolMaterial("MAGNITE", 3, 10, 100.0F, 11.0F, 50);
 	public static final ToolMaterial HEXCITE = EnumHelper.addToolMaterial("HEXCITE", 3, 1041, 10.0F, 5.0F, 15);
+	public static final ToolMaterial INFINITE = EnumHelper.addToolMaterial("INFINITE", 2, Integer.MAX_VALUE, 6.0F, 2.0F, 1);
 
 	public static final ArmorMaterial HEXCITE_ARMOR = EnumHelper.addArmorMaterial("HEXCITE", 22, new int[] {5, 10, 8, 5}, 15);
+	public static final ArmorMaterial INFINITE_ARMOR = EnumHelper.addArmorMaterial("INFINITE", Integer.MAX_VALUE, new int[] {2, 6, 5, 2}, 1);
 
 	public static final ItemCavenium cavenium = new ItemCavenium("cavenium");
 	public static final ItemMiningPickaxe mining_pickaxe = new ItemMiningPickaxe("pickaxeMining");
@@ -62,6 +64,15 @@ public class CaveItems
 	public static final ItemCaveArmor hexcite_chestplate = new ItemCaveArmor("chestplateHexcite", "hexcite_chestplate", "hexcite", HEXCITE_ARMOR, 1);
 	public static final ItemCaveArmor hexcite_leggings = new ItemCaveArmor("leggingsHexcite", "hexcite_leggings", "hexcite", HEXCITE_ARMOR, 2);
 	public static final ItemCaveArmor hexcite_boots = new ItemCaveArmor("bootsHexcite", "hexcite_boots", "hexcite", HEXCITE_ARMOR, 3);
+	public static final ItemInfititeSword infitite_sword = new ItemInfititeSword("swordInfitite");
+	public static final ItemInfititePickaxe infitite_pickaxe = new ItemInfititePickaxe("pickaxeInfitite");
+	public static final ItemInfititeAxe infitite_axe = new ItemInfititeAxe("axeInfitite");
+	public static final ItemInfititeShovel infitite_shovel = new ItemInfititeShovel("shovelInfitite");
+	public static final ItemInfititeHoe infitite_hoe = new ItemInfititeHoe("hoeInfitite");
+	public static final ItemInfititeArmor infitite_helmet = new ItemInfititeArmor("helmetInfitite", "infitite_helmet", 0);
+	public static final ItemInfititeArmor infitite_chestplate = new ItemInfititeArmor("chestplateInfitite", "infitite_chestplate", 1);
+	public static final ItemInfititeArmor infitite_leggings = new ItemInfititeArmor("leggingsInfitite", "infitite_leggings", 2);
+	public static final ItemInfititeArmor infitite_boots = new ItemInfititeArmor("bootsInfitite", "infitite_boots", 3);
 	public static final ItemCaverBackpack caver_backpack = new ItemCaverBackpack("caverBackpack");
 	public static final ItemAcresia acresia = new ItemAcresia("acresia");
 	public static final ItemCaveMobPlacer spawn_egg = new ItemCaveMobPlacer();
@@ -92,6 +103,15 @@ public class CaveItems
 		GameRegistry.registerItem(hexcite_chestplate, "hexcite_chestplate");
 		GameRegistry.registerItem(hexcite_leggings, "hexcite_leggings");
 		GameRegistry.registerItem(hexcite_boots, "hexcite_boots");
+		GameRegistry.registerItem(infitite_sword, "infitite_sword");
+		GameRegistry.registerItem(infitite_pickaxe, "infitite_pickaxe");
+		GameRegistry.registerItem(infitite_axe, "infitite_axe");
+		GameRegistry.registerItem(infitite_shovel, "infitite_shovel");
+		GameRegistry.registerItem(infitite_hoe, "infitite_hoe");
+		GameRegistry.registerItem(infitite_helmet, "infitite_helmet");
+		GameRegistry.registerItem(infitite_chestplate, "infitite_chestplate");
+		GameRegistry.registerItem(infitite_leggings, "infitite_leggings");
+		GameRegistry.registerItem(infitite_boots, "infitite_boots");
 		GameRegistry.registerItem(caver_backpack, "caver_backpack");
 		GameRegistry.registerItem(acresia, "acresia");
 		GameRegistry.registerItem(spawn_egg, "spawn_egg");
@@ -118,6 +138,9 @@ public class CaveItems
 		OreDictionary.registerOre("dustMagnite", new ItemStack(gem, 1, 2));
 		OreDictionary.registerOre("hexcite", new ItemStack(gem, 1, 3));
 		OreDictionary.registerOre("gemHexcite", new ItemStack(gem, 1, 3));
+		OreDictionary.registerOre("infitite", new ItemStack(gem, 1, 4));
+		OreDictionary.registerOre("gemInfitite", new ItemStack(gem, 1, 4));
+		OreDictionary.registerOre("fragmentInfitite", new ItemStack(gem, 1, 5));
 		OreDictionary.registerOre("swordMagnite", magnite_sword);
 		OreDictionary.registerOre("pickaxeAquamarine", aquamarine_pickaxe);
 		OreDictionary.registerOre("axeAquamarine", aquamarine_axe);
@@ -134,6 +157,15 @@ public class CaveItems
 		OreDictionary.registerOre("chestplateHexcite", hexcite_chestplate);
 		OreDictionary.registerOre("leggingsHexcite", hexcite_leggings);
 		OreDictionary.registerOre("bootsHexcite", hexcite_boots);
+		OreDictionary.registerOre("swordInfitite", infitite_sword);
+		OreDictionary.registerOre("pickaxeInfitite", infitite_pickaxe);
+		OreDictionary.registerOre("axeInfitite", infitite_axe);
+		OreDictionary.registerOre("shovelInfitite", infitite_shovel);
+		OreDictionary.registerOre("hoeInfitite", infitite_hoe);
+		OreDictionary.registerOre("helmetInfitite", infitite_helmet);
+		OreDictionary.registerOre("chestplateInfitite", infitite_chestplate);
+		OreDictionary.registerOre("leggingsInfitite", infitite_leggings);
+		OreDictionary.registerOre("bootsInfitite", infitite_boots);
 		OreDictionary.registerOre("caverBackpack", caver_backpack);
 		OreDictionary.registerOre("acresia", new ItemStack(acresia, 1, 1));
 		OreDictionary.registerOre("seedsAcresia", new ItemStack(acresia, 1, 0));
@@ -196,6 +228,12 @@ public class CaveItems
 		GameRegistry.addShapelessRecipe(new ItemStack(gem, 9, 0), new ItemStack(CaveBlocks.gem_ore, 1, 1));
 		GameRegistry.addShapelessRecipe(new ItemStack(gem, 9, 1), new ItemStack(CaveBlocks.gem_ore, 1, 4));
 		GameRegistry.addShapelessRecipe(new ItemStack(gem, 9, 3), new ItemStack(CaveBlocks.gem_ore, 1, 6));
+		GameRegistry.addShapelessRecipe(new ItemStack(gem, 9, 4), new ItemStack(CaveBlocks.gem_ore, 1, 8));
+
+		GameRegistry.addRecipe(new ItemStack(gem, 1, 4),
+			"II", "II",
+			'I', new ItemStack(gem, 1, 5)
+		);
 
 		GameRegistry.addRecipe(new ShapedOreRecipe(aquamarine_pickaxe,
 			"AAA", " S ", " S ",
@@ -274,6 +312,48 @@ public class CaveItems
 		GameRegistry.addRecipe(new ItemStack(hexcite_boots),
 			"H H", "H H",
 			'H', new ItemStack(gem, 1, 3)
+		);
+
+		GameRegistry.addRecipe(new ShapedOreRecipe(infitite_sword,
+			"I", "I", "S",
+			'I', new ItemStack(gem, 1, 4),
+			'S', "stickWood"
+		));
+		GameRegistry.addRecipe(new ShapedOreRecipe(infitite_pickaxe,
+			"III", " S ", " S ",
+			'I', new ItemStack(gem, 1, 4),
+			'S', "stickWood"
+		));
+		GameRegistry.addRecipe(new ShapedOreRecipe(infitite_axe,
+			"II", "IS", " S",
+			'I', new ItemStack(gem, 1, 4),
+			'S', "stickWood"
+		));
+		GameRegistry.addRecipe(new ShapedOreRecipe(infitite_shovel,
+			"I", "S", "S",
+			'I', new ItemStack(gem, 1, 4),
+			'S', "stickWood"
+		));
+		GameRegistry.addRecipe(new ShapedOreRecipe(infitite_hoe,
+			"II", " S", " S",
+			'I', new ItemStack(gem, 1, 4),
+			'S', "stickWood"
+		));
+		GameRegistry.addRecipe(new ItemStack(infitite_helmet),
+			"III", "I I",
+			'I', new ItemStack(gem, 1, 4)
+		);
+		GameRegistry.addRecipe(new ItemStack(infitite_chestplate),
+			"I I", "III", "III",
+			'I', new ItemStack(gem, 1, 4)
+		);
+		GameRegistry.addRecipe(new ItemStack(infitite_leggings),
+			"III", "I I", "I I",
+			'I', new ItemStack(gem, 1, 4)
+		);
+		GameRegistry.addRecipe(new ItemStack(infitite_boots),
+			"I I", "I I",
+			'I', new ItemStack(gem, 1, 4)
 		);
 
 		GameRegistry.addRecipe(new ItemStack(caver_backpack),
