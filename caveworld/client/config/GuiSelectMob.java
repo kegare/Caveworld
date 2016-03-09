@@ -10,6 +10,7 @@
 package caveworld.client.config;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +21,6 @@ import java.util.concurrent.RecursiveAction;
 import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.input.Keyboard;
 
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
@@ -52,6 +52,7 @@ import net.minecraft.entity.monster.EntityMob;
 public class GuiSelectMob extends GuiScreen
 {
 	protected final GuiScreen parent;
+
 	protected ArrayEntry configElement;
 
 	protected MobList mobList;
@@ -141,7 +142,7 @@ public class GuiSelectMob extends GuiScreen
 				case 0:
 					if (configElement != null)
 					{
-						configElement.setListFromChildScreen(mobList.selected.toArray(new String[mobList.selected.size()]));
+						configElement.setListFromChildScreen(mobList.selected.toArray());
 					}
 
 					mc.displayGuiScreen(parent);
@@ -201,7 +202,14 @@ public class GuiSelectMob extends GuiScreen
 
 			if (detailInfo.isChecked() && selectedHoverChecker.checkHover(mouseX, mouseY))
 			{
-				func_146283_a(mobList.getSelectedMobs(), mouseX, mouseY);
+				List<String> values = Lists.newArrayList();
+
+				for (String mob : mobList.selected)
+				{
+					values.add(CaveUtils.getEntityLocalizedName(mob));
+				}
+
+				func_146283_a(values, mouseX, mouseY);
 			}
 		}
 	}
@@ -310,70 +318,47 @@ public class GuiSelectMob extends GuiScreen
 		}
 	}
 
-	class MobList extends GuiListSlot
+	class MobList extends GuiListSlot implements Comparator<String>
 	{
-		private final ArrayListExtended<String> mobs = new ArrayListExtended();
-		private final ArrayListExtended<String> contents = new ArrayListExtended();
-		private final Set<String> selected = Sets.newTreeSet();
-		private final Map<String, List<String>> filterCache = Maps.newHashMap();
+		protected final ArrayListExtended<String> mobs = new ArrayListExtended();
+		protected final ArrayListExtended<String> contents = new ArrayListExtended();
+		protected final Set<String> selected = Sets.newTreeSet(this);
+		protected final Map<String, List<String>> filterCache = Maps.newHashMap();
 
 		protected int nameType;
 
-		public MobList()
+		protected MobList()
 		{
 			super(GuiSelectMob.this.mc, 0, 0, 0, 0, 18);
-			this.initEntries();
-		}
 
-		protected void initEntries()
-		{
-			CaveUtils.getPool().execute(new RecursiveAction()
+			for (Iterator iterator = EntityList.stringToClassMapping.entrySet().iterator(); iterator.hasNext();)
 			{
-				@Override
-				protected void compute()
+				Entry entry = (Entry)iterator.next();
+				String name = (String)entry.getKey();
+				Class clazz = (Class)entry.getValue();
+
+				if (!Strings.isNullOrEmpty(name) && EntityMob.class != clazz && EntityLiving.class != clazz && EntityLiving.class.isAssignableFrom(clazz))
 				{
-					mobs.clear();
-					contents.clear();
-					selected.clear();
-					filterCache.clear();
+					mobs.addIfAbsent(name);
+				}
+			}
 
-					for (Iterator iterator = EntityList.stringToClassMapping.entrySet().iterator(); iterator.hasNext();)
+			Collections.sort(mobs);
+
+			contents.addAll(mobs);
+
+			if (configElement != null)
+			{
+				for (Object obj : configElement.getCurrentValues())
+				{
+					String value = String.valueOf(obj);
+
+					if (!Strings.isNullOrEmpty(value))
 					{
-						Entry entry = (Entry)iterator.next();
-						String name = (String)entry.getKey();
-						Class clazz = (Class)entry.getValue();
-
-						if (!Strings.isNullOrEmpty(name) && EntityMob.class != clazz && EntityLiving.class != clazz && EntityLiving.class.isAssignableFrom(clazz))
-						{
-							mobs.addIfAbsent(name);
-						}
-					}
-
-					Collections.sort(mobs);
-
-					contents.addAll(mobs);
-
-					if (configElement != null)
-					{
-						for (Object obj : configElement.getCurrentValues())
-						{
-							selected.add(String.valueOf(obj));
-						}
+						selected.add(value);
 					}
 				}
-			});
-		}
-
-		protected List<String> getSelectedMobs()
-		{
-			return Lists.transform(Lists.newArrayList(selected), new Function<String, String>()
-			{
-				@Override
-				public String apply(String input)
-				{
-					return CaveUtils.getEntityLocalizedName(input);
-				}
-			});
+			}
 		}
 
 		@Override
@@ -389,9 +374,9 @@ public class GuiSelectMob extends GuiScreen
 			{
 				int amount = 0;
 
-				for (Iterator<String> iterator = selected.iterator(); iterator.hasNext();)
+				for (String entry : selected)
 				{
-					amount = contents.indexOf(iterator.next()) * getSlotHeight();
+					amount = contents.indexOf(entry) * getSlotHeight();
 
 					if (getAmountScrolled() != amount)
 					{
@@ -460,6 +445,19 @@ public class GuiSelectMob extends GuiScreen
 			return !Strings.isNullOrEmpty(entry) && selected.contains(entry);
 		}
 
+		@Override
+		public int compare(String o1, String o2)
+		{
+			int i = CaveUtils.compareWithNull(o1, o2);
+
+			if (i == 0 && o1 != null && o2 != null)
+			{
+				i = Integer.compare(mobs.indexOf(o1), mobs.indexOf(o2));
+			}
+
+			return i;
+		}
+
 		protected void setFilter(final String filter)
 		{
 			CaveUtils.getPool().execute(new RecursiveAction()
@@ -481,14 +479,7 @@ public class GuiSelectMob extends GuiScreen
 					{
 						if (!filterCache.containsKey(filter))
 						{
-							filterCache.put(filter, Lists.newArrayList(Collections2.filter(mobs, new Predicate<String>()
-							{
-								@Override
-								public boolean apply(String input)
-								{
-									return StringUtils.containsIgnoreCase(input, filter) || StringUtils.containsIgnoreCase(CaveUtils.getEntityLocalizedName(input), filter);
-								}
-							})));
+							filterCache.put(filter, Lists.newArrayList(Collections2.filter(mobs, new MobFilter(filter))));
 						}
 
 						result = filterCache.get(filter);
@@ -501,6 +492,22 @@ public class GuiSelectMob extends GuiScreen
 					}
 				}
 			});
+		}
+	}
+
+	public static class MobFilter implements Predicate<String>
+	{
+		private final String filter;
+
+		public MobFilter(String filter)
+		{
+			this.filter = filter;
+		}
+
+		@Override
+		public boolean apply(String input)
+		{
+			return StringUtils.containsIgnoreCase(input, filter) || StringUtils.containsIgnoreCase(CaveUtils.getEntityLocalizedName(input), filter);
 		}
 	}
 }

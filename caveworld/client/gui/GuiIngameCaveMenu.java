@@ -98,7 +98,7 @@ public class GuiIngameCaveMenu extends GuiScreen implements IVolume
 			default:
 				if (!menuType.isPortalMenu())
 				{
-					caveMusicButton = prev = new GuiButtonVolume(6, prev.xPosition, prev.yPosition + prev.height + 5, I18n.format(Caveworld.CONFIG_LANG + Configuration.CATEGORY_GENERAL + ".caveMusicVolume"), Config.caveMusicVolume, this);
+					caveMusicButton = prev = new GuiButtonVolume(7, prev.xPosition, prev.yPosition + prev.height + 5, I18n.format(Caveworld.CONFIG_LANG + Configuration.CATEGORY_GENERAL + ".caveMusicVolume"), Config.caveMusicVolume, this);
 				}
 
 				if (menuType == MenuType.CAVEWORLD_PORTAL)
@@ -266,7 +266,7 @@ public class GuiIngameCaveMenu extends GuiScreen implements IVolume
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float ticks)
 	{
-		drawDefaultBackground();
+		drawGradientRect(0, 0, width, height, Integer.MIN_VALUE, Integer.MAX_VALUE);
 
 		switch (menuType)
 		{
@@ -289,7 +289,7 @@ public class GuiIngameCaveMenu extends GuiScreen implements IVolume
 
 		if (!menuType.isPortalMenu())
 		{
-			fontRendererObj.drawString(String.format("Caveworld %s (Latest: %s)", Version.getCurrent(), Version.getLatest()), 6, height - 12, 0xBABABA);
+			fontRendererObj.drawStringWithShadow(I18n.format("caveworld.menu.version", Version.getCurrent(), Version.getLatest()), 6, height - 12, 0xCCCCCC);
 		}
 
 		super.drawScreen(mouseX, mouseY, ticks);

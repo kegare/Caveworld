@@ -15,7 +15,7 @@ public class ItemInfititeAxe extends ItemCaveAxe
 {
 	public ItemInfititeAxe(String name)
 	{
-		super(name, "infitite_axe", CaveItems.INFINITE);
+		super(name, "infitite_axe", CaveItems.INFITITE);
 	}
 
 	@Override

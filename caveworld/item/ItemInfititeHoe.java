@@ -15,7 +15,7 @@ public class ItemInfititeHoe extends ItemCaveHoe
 {
 	public ItemInfititeHoe(String name)
 	{
-		super(name, "infitite_hoe", CaveItems.INFINITE);
+		super(name, "infitite_hoe", CaveItems.INFITITE);
 	}
 
 	@Override

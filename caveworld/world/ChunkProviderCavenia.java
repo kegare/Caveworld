@@ -19,8 +19,10 @@ import caveworld.core.CaveVeinManager.CaveVein;
 import caveworld.entity.CaveEntityRegistry;
 import caveworld.entity.EntityCrazyCavenicSkeleton;
 import caveworld.world.gen.MapGenCaveniaCaves;
+import caveworld.world.gen.WorldGenCaveLava;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.IProgressUpdate;
@@ -38,20 +40,31 @@ public class ChunkProviderCavenia implements IChunkProvider
 {
 	public static int dimensionId;
 	public static int caveMonsterSpawn;
+	public static float caveBrightness;
+
+	public static int actualSize = 3;
 
 	public static EnumCreatureType caveMonster;
 
 	private final World worldObj;
 	private final Random random;
+	private int bossType;
 
 	private final MapGenBase caveGenerator = new MapGenCaveniaCaves();
 
-	public final CaveVein veinRandomite = new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 2), 30, 100, 100, 3, 95);
+	public CaveVein veinRandomite = new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 2), 30, 100, 100, 3, 95);
+	public WorldGenCaveLava lavaGen = new WorldGenCaveLava(Blocks.flowing_lava, false);
 
 	public ChunkProviderCavenia(World world)
 	{
 		this.worldObj = world;
 		this.random = new Random(world.getSeed());
+	}
+
+	public ChunkProviderCavenia(World world, int bossType)
+	{
+		this(world);
+		this.bossType = bossType;
 	}
 
 	@Override
@@ -68,7 +81,7 @@ public class ChunkProviderCavenia implements IChunkProvider
 			metadata[i] = (byte)0;
 		}
 
-		int size = 3;
+		int size = actualSize;
 
 		if (chunkX <= size && chunkX >= -size && chunkZ <= size && chunkZ >= -size)
 		{
@@ -124,17 +137,43 @@ public class ChunkProviderCavenia implements IChunkProvider
 
 		int worldX = chunkX * 16;
 		int worldZ = chunkZ * 16;
+		int size = actualSize;
+		int x, y, z, i;
 
 		MinecraftForge.EVENT_BUS.post(new PopulateChunkEvent.Pre(chunkProvider, worldObj, random, chunkX, chunkZ, false));
+
+		if (chunkX <= size && chunkX >= -size && chunkZ <= size && chunkZ >= -size)
+		{
+			if (lavaGen != null)
+			{
+				for (i = 0; i < 5; ++i)
+				{
+					x = worldX + random.nextInt(16) + 8;
+					y = random.nextInt(90) + 10;
+					z = worldZ + random.nextInt(16) + 8;
+
+					lavaGen.generate(worldObj, random, x, y, z);
+				}
+			}
+		}
+
 		MinecraftForge.ORE_GEN_BUS.post(new OreGenEvent.Pre(worldObj, random, worldX, worldZ));
 
-		veinRandomite.generateVeins(worldObj, random, worldX, worldZ);
+		++size;
+
+		if (chunkX <= size && chunkX >= -size && chunkZ <= size && chunkZ >= -size)
+		{
+			if (veinRandomite != null)
+			{
+				veinRandomite.generateVeins(worldObj, random, worldX, worldZ);
+			}
+		}
 
 		MinecraftForge.ORE_GEN_BUS.post(new OreGenEvent.Post(worldObj, random, worldX, worldZ));
 
 		if (chunkX == 0 && chunkZ == 0)
 		{
-			int y = 0;
+			y = 0;
 
 			do
 			{
@@ -142,10 +181,22 @@ public class ChunkProviderCavenia implements IChunkProvider
 			}
 			while (!worldObj.isAirBlock(0, y, 0));
 
-			EntityCrazyCavenicSkeleton boss = new EntityCrazyCavenicSkeleton(worldObj);
-			boss.setLocationAndAngles(0.5D, y + 0.5D, 0.5D, random.nextFloat() * 360.0F, 0.0F);
-			boss.onSpawnWithEgg(null);
-			worldObj.spawnEntityInWorld(boss);
+			EntityLiving entity;
+
+			switch (bossType)
+			{
+				default:
+					entity = new EntityCrazyCavenicSkeleton(worldObj);
+					break;
+			}
+
+			if (entity != null)
+			{
+				entity.setLocationAndAngles(0.5D, y + 0.5D, 0.5D, random.nextFloat() * 360.0F, 0.0F);
+				entity.onSpawnWithEgg(null);
+
+				worldObj.spawnEntityInWorld(entity);
+			}
 		}
 
 		MinecraftForge.EVENT_BUS.post(new PopulateChunkEvent.Post(chunkProvider, worldObj, random, chunkX, chunkZ, false));
@@ -189,7 +240,7 @@ public class ChunkProviderCavenia implements IChunkProvider
 	@Override
 	public List getPossibleCreatures(EnumCreatureType creature, int x, int y, int z)
 	{
-		if (y <= 0 || y >= worldObj.getActualHeight())
+		if (y <= 0 || y >= worldObj.getActualHeight() || !WorldProviderCavenia.saveHandler.getBossAlive())
 		{
 			return null;
 		}

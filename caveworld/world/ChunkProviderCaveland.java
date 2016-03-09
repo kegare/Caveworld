@@ -57,6 +57,7 @@ public class ChunkProviderCaveland implements IChunkProvider
 	public static boolean generateLakes;
 	public static boolean generateAnimalDungeons;
 	public static int caveMonsterSpawn;
+	public static float caveBrightness;
 
 	public static EnumCreatureType caveMonster;
 

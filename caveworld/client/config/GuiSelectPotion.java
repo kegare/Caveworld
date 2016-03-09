@@ -9,7 +9,7 @@
 
 package caveworld.client.config;
 
-import java.util.Iterator;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,10 +46,11 @@ import net.minecraft.potion.Potion;
 @SideOnly(Side.CLIENT)
 public class GuiSelectPotion extends GuiScreen
 {
-	private final GuiScreen parent;
-	private ArrayEntry configElement;
+	protected final GuiScreen parent;
 
-	private PotionList potionList;
+	protected ArrayEntry configElement;
+
+	protected PotionList potionList;
 
 	protected GuiButton doneButton;
 	protected GuiCheckBox detailInfo;
@@ -307,44 +308,41 @@ public class GuiSelectPotion extends GuiScreen
 		}
 	}
 
-	class PotionList extends GuiListSlot
+	class PotionList extends GuiListSlot implements Comparator<Potion>
 	{
-		private final ArrayListExtended<Potion> potions = new ArrayListExtended();
-		private final ArrayListExtended<Potion> contents = new ArrayListExtended();
-		private final Set<Potion> selected = Sets.newHashSet();
-		private final Map<String, List<Potion>> filterCache = Maps.newHashMap();
+		protected final ArrayListExtended<Potion> potions = new ArrayListExtended();
+		protected final ArrayListExtended<Potion> contents = new ArrayListExtended();
+		protected final Set<Potion> selected = Sets.newTreeSet(this);
+		protected final Map<String, List<Potion>> filterCache = Maps.newHashMap();
 
 		protected int nameType;
 
-		public PotionList()
+		protected PotionList()
 		{
 			super(GuiSelectPotion.this.mc, 0, 0, 0, 0, 18);
-			this.potions.addAll(CaveUtils.getPotions());
-			this.contents.addAll(potions);
+
+			for (Potion potion : CaveUtils.getPotions())
+			{
+				potions.add(potion);
+				contents.add(potion);
+			}
 
 			if (configElement != null)
 			{
-				CaveUtils.getPool().execute(new RecursiveAction()
+				Set<Integer> values = Sets.newHashSet();
+
+				for (Object obj : configElement.getCurrentValues())
 				{
-					@Override
-					protected void compute()
+					values.add(((Integer)obj).intValue());
+				}
+
+				for (Potion potion : potions)
+				{
+					if (values.contains(potion.getId()))
 					{
-						Set<Integer> current = Sets.newHashSet();
-
-						for (Object obj : configElement.getCurrentValues())
-						{
-							current.add((Integer)obj);
-						}
-
-						for (Potion potion : potions)
-						{
-							if (current.contains(potion.getId()))
-							{
-								selected.add(potion);
-							}
-						}
+						selected.add(potion);
 					}
-				});
+				}
 			}
 		}
 
@@ -361,9 +359,9 @@ public class GuiSelectPotion extends GuiScreen
 			{
 				int amount = 0;
 
-				for (Iterator<Potion> iterator = selected.iterator(); iterator.hasNext();)
+				for (Potion entry : selected)
 				{
-					amount = contents.indexOf(iterator.next()) * getSlotHeight();
+					amount = contents.indexOf(entry) * getSlotHeight();
 
 					if (getAmountScrolled() != amount)
 					{
@@ -442,6 +440,19 @@ public class GuiSelectPotion extends GuiScreen
 			return entry != null && selected.contains(entry);
 		}
 
+		@Override
+		public int compare(Potion o1, Potion o2)
+		{
+			int i = CaveUtils.compareWithNull(o1, o2);
+
+			if (i == 0 && o1 != null && o2 != null)
+			{
+				i = Integer.compare(potions.indexOf(o1), potions.indexOf(o2));
+			}
+
+			return i;
+		}
+
 		protected void setFilter(final String filter)
 		{
 			CaveUtils.getPool().execute(new RecursiveAction()
@@ -463,14 +474,7 @@ public class GuiSelectPotion extends GuiScreen
 					{
 						if (!filterCache.containsKey(filter))
 						{
-							filterCache.put(filter, Lists.newArrayList(Collections2.filter(potions, new Predicate<Potion>()
-							{
-								@Override
-								public boolean apply(Potion input)
-								{
-									return StringUtils.containsIgnoreCase(input.getName(), filter) || StringUtils.containsIgnoreCase(I18n.format(input.getName()), filter);
-								}
-							})));
+							filterCache.put(filter, Lists.newArrayList(Collections2.filter(potions, new PotionFilter(filter))));
 						}
 
 						result = filterCache.get(filter);
@@ -483,6 +487,22 @@ public class GuiSelectPotion extends GuiScreen
 					}
 				}
 			});
+		}
+	}
+
+	public static class PotionFilter implements Predicate<Potion>
+	{
+		private final String filter;
+
+		public PotionFilter(String filter)
+		{
+			this.filter = filter;
+		}
+
+		@Override
+		public boolean apply(Potion input)
+		{
+			return StringUtils.containsIgnoreCase(input.getName(), filter) || StringUtils.containsIgnoreCase(I18n.format(input.getName()), filter);
 		}
 	}
 }

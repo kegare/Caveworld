@@ -31,6 +31,12 @@ public class WorldProviderAquaCavern extends WorldProviderCaveworld
 	}
 
 	@Override
+	public float getBrightness()
+	{
+		return ChunkProviderAquaCavern.caveBrightness;
+	}
+
+	@Override
 	public ICaveBiomeManager getBiomeManager()
 	{
 		return CaveworldAPI.biomeAquaCavernManager;

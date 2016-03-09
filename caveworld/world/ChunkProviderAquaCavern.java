@@ -39,6 +39,7 @@ public class ChunkProviderAquaCavern implements IChunkProvider
 	public static int subsurfaceHeight;
 	public static boolean generateRavine;
 	public static int caveMonsterSpawn;
+	public static float caveBrightness;
 
 	public static EnumCreatureType caveMonster;
 
@@ -98,6 +99,15 @@ public class ChunkProviderAquaCavern implements IChunkProvider
 				blocks[i + worldHeight - 1] = Blocks.bedrock;
 				blocks[i + worldHeight - 2] = filler;
 				metadata[i + worldHeight - 2] = (byte)fillerMeta;
+
+				for (int y = 0; y < worldHeight; ++y)
+				{
+					if (blocks[i + y] != null && blocks[i + y] == Blocks.stone)
+					{
+						blocks[i + y] = filler;
+						metadata[i + y] = (byte)fillerMeta;
+					}
+				}
 
 				if (top != filler || topMeta != fillerMeta)
 				{

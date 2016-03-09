@@ -14,6 +14,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.security.SecureRandom;
 import java.util.Locale;
+import java.util.Random;
 
 import org.apache.logging.log4j.Level;
 
@@ -28,12 +29,14 @@ import net.minecraftforge.common.DimensionManager;
 
 public class CaveSaveHandler
 {
-	private String name;
-	private int dimension;
+	protected Random random = new SecureRandom();
 
-	private NBTTagCompound data;
-	private long worldSeed;
-	private int subsurfaceHeight;
+	protected String name;
+	protected int dimension;
+
+	protected NBTTagCompound data;
+	protected long worldSeed;
+	protected int subsurfaceHeight;
 
 	public CaveSaveHandler(String name)
 	{
@@ -197,7 +200,7 @@ public class CaveSaveHandler
 
 		if (!nbt.hasKey("Seed"))
 		{
-			nbt.setLong("Seed", new SecureRandom().nextLong());
+			nbt.setLong("Seed", random.nextLong());
 		}
 
 		if (!nbt.hasKey("SubsurfaceHeight"))

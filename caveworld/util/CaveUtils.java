@@ -72,7 +72,6 @@ import net.minecraft.item.ItemHoe;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemSpade;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentTranslation;
@@ -133,79 +132,6 @@ public class CaveUtils
 						if (i == 0)
 						{
 							i = unique1.name.compareTo(unique1.name);
-						}
-					}
-				}
-			}
-
-			return i;
-		}
-	};
-
-	public static final Comparator<Item> itemComparator = new Comparator<Item>()
-	{
-		@Override
-		public int compare(Item o1, Item o2)
-		{
-			int i = compareWithNull(o1, o2);
-
-			if (i == 0 && o1 != null && o2 != null)
-			{
-				UniqueIdentifier unique1 = GameRegistry.findUniqueIdentifierFor(o1);
-				UniqueIdentifier unique2 = GameRegistry.findUniqueIdentifierFor(o2);
-
-				i = compareWithNull(unique1, unique2);
-
-				if (i == 0 && unique1 != null && unique2 != null)
-				{
-					i = (unique1.modId.equals("minecraft") ? 0 : 1) - (unique2.modId.equals("minecraft") ? 0 : 1);
-
-					if (i == 0)
-					{
-						i = unique1.modId.compareTo(unique2.modId);
-
-						if (i == 0)
-						{
-							i = unique1.name.compareTo(unique1.name);
-						}
-					}
-				}
-			}
-
-			return i;
-		}
-	};
-
-	public static final Comparator<ItemStack> itemStackComparator = new Comparator<ItemStack>()
-	{
-		@Override
-		public int compare(ItemStack o1, ItemStack o2)
-		{
-			int i = compareWithNull(o1, o2);
-
-			if (i == 0 && o1 != null && o2 != null)
-			{
-				i = itemComparator.compare(o1.getItem(), o2.getItem());
-
-				if (i == 0)
-				{
-					i = Integer.compare(o1.getItemDamage(), o2.getItemDamage());
-
-					if (i == 0)
-					{
-						i = Integer.compare(o1.stackSize, o2.stackSize);
-
-						if (i == 0)
-						{
-							NBTTagCompound nbt1 = o1.getTagCompound();
-							NBTTagCompound nbt2 = o2.getTagCompound();
-
-							i = compareWithNull(nbt1, nbt2);
-
-							if (i == 0 && nbt1 != null && nbt2 != null)
-							{
-								i = Byte.compare(nbt1.getId(), nbt2.getId());
-							}
 						}
 					}
 				}

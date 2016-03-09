@@ -21,7 +21,7 @@ public class WorldProviderCavenia extends WorldProviderCaveworld
 {
 	public static final String NAME = "Cavenia";
 	public static final int TYPE = 4;
-	public static final CaveSaveHandler saveHandler = new CaveSaveHandler(NAME);
+	public static final CaveniaSaveHandler saveHandler = new CaveniaSaveHandler(NAME);
 
 	public WorldProviderCavenia()
 	{
@@ -29,6 +29,12 @@ public class WorldProviderCavenia extends WorldProviderCaveworld
 		this.hasNoSky = true;
 
 		saveHandler.setDimension(dimensionId);
+	}
+
+	@Override
+	public float getBrightness()
+	{
+		return ChunkProviderCavenia.caveBrightness;
 	}
 
 	@Override
@@ -40,7 +46,7 @@ public class WorldProviderCavenia extends WorldProviderCaveworld
 	@Override
 	public IChunkProvider createChunkGenerator()
 	{
-		return new ChunkProviderCavenia(worldObj);
+		return new ChunkProviderCavenia(worldObj, saveHandler.getBossType());
 	}
 
 	@Override
@@ -79,7 +85,10 @@ public class WorldProviderCavenia extends WorldProviderCaveworld
 	{
 		if (!worldObj.isRemote)
 		{
-			musicTime = 300;
+			if (saveHandler.getBossAlive())
+			{
+				musicTime = 300;
+			}
 		}
 
 		worldObj.prevRainingStrength = 0.0F;
@@ -93,7 +102,7 @@ public class WorldProviderCavenia extends WorldProviderCaveworld
 	{
 		if (!worldObj.isRemote)
 		{
-			if (--musicTime <= 0)
+			if (saveHandler.getBossAlive() && --musicTime <= 0)
 			{
 				musicTime = 300;
 

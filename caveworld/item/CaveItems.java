@@ -35,10 +35,10 @@ public class CaveItems
 	public static final ToolMaterial AQUAMARINE = EnumHelper.addToolMaterial("AQUAMARINE", 2, 200, 8.0F, 1.5F, 15);
 	public static final ToolMaterial MAGNITE = EnumHelper.addToolMaterial("MAGNITE", 3, 10, 100.0F, 11.0F, 50);
 	public static final ToolMaterial HEXCITE = EnumHelper.addToolMaterial("HEXCITE", 3, 1041, 10.0F, 5.0F, 15);
-	public static final ToolMaterial INFINITE = EnumHelper.addToolMaterial("INFINITE", 2, Integer.MAX_VALUE, 6.0F, 2.0F, 1);
+	public static final ToolMaterial INFITITE = EnumHelper.addToolMaterial("INFITITE", 2, Integer.MAX_VALUE, 6.0F, 2.0F, 1);
 
 	public static final ArmorMaterial HEXCITE_ARMOR = EnumHelper.addArmorMaterial("HEXCITE", 22, new int[] {5, 10, 8, 5}, 15);
-	public static final ArmorMaterial INFINITE_ARMOR = EnumHelper.addArmorMaterial("INFINITE", Integer.MAX_VALUE, new int[] {2, 6, 5, 2}, 1);
+	public static final ArmorMaterial INFITITE_ARMOR = EnumHelper.addArmorMaterial("INFITITE", Integer.MAX_VALUE, new int[] {2, 6, 5, 2}, 1);
 
 	public static final ItemCavenium cavenium = new ItemCavenium("cavenium");
 	public static final ItemMiningPickaxe mining_pickaxe = new ItemMiningPickaxe("pickaxeMining");

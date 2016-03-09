@@ -15,7 +15,7 @@ public class ItemInfititeShovel extends ItemCaveShovel
 {
 	public ItemInfititeShovel(String name)
 	{
-		super(name, "infitite_shovel", CaveItems.INFINITE);
+		super(name, "infitite_shovel", CaveItems.INFITITE);
 	}
 
 	@Override

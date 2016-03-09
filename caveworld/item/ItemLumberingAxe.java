@@ -9,7 +9,6 @@
 
 package caveworld.item;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
@@ -17,11 +16,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import caveworld.api.BlockEntry;
 import caveworld.core.Caveworld;
@@ -142,20 +140,24 @@ public class ItemLumberingAxe extends ItemCaveAxe implements ICaveniumTool
 		return "axe";
 	}
 
-	protected void initItemStackNBT(ItemStack itemstack)
+	@Override
+	public boolean setBreakableToNBT(ItemStack itemstack)
 	{
 		if (itemstack == null || itemstack.getItem() == null)
 		{
-			return;
+			return false;
 		}
 
-		if (itemstack.getTagCompound() == null)
+		NBTTagCompound nbt = itemstack.getTagCompound();
+
+		if (nbt == null)
 		{
-			itemstack.setTagCompound(new NBTTagCompound());
+			nbt = new NBTTagCompound();
 		}
 
-		NBTTagCompound data = itemstack.getTagCompound();
-		String full = null;
+		String value = null;
+		boolean flag = false;
+		boolean ret = false;
 
 		for (BreakMode mode : BreakMode.values())
 		{
@@ -163,38 +165,43 @@ public class ItemLumberingAxe extends ItemCaveAxe implements ICaveniumTool
 			{
 				String key = mode.name() + ":Blocks";
 
-				if (!data.hasKey(key))
+				if (!nbt.hasKey(key))
 				{
-					if (Strings.isNullOrEmpty(full))
+					if (!flag)
 					{
-						Collection<String> blocks = Collections2.transform(breakableBlocks, new Function<BlockEntry, String>()
-						{
-							@Override
-							public String apply(BlockEntry entry)
-							{
-								return CaveUtils.toStringHelper(entry.getBlock(), entry.getMetadata());
-							}
-						});
+						Set<String> values = Sets.newTreeSet();
 
-						full = Joiner.on("|").join(blocks);
+						for (BlockEntry block : breakableBlocks)
+						{
+							values.add(CaveUtils.toStringHelper(block.getBlock(), block.getMetadata()));
+						}
+
+						value = Joiner.on("|").join(values);
+						flag = true;
 					}
 
-					data.setString(key, full);
+					nbt.setString(key, value);
+
+					ret = true;
 				}
 			}
 		}
+
+		itemstack.setTagCompound(nbt);
+
+		return ret;
 	}
 
 	@Override
 	public void onCreated(ItemStack itemstack, World world, EntityPlayer player)
 	{
-		initItemStackNBT(itemstack);
+		setBreakableToNBT(itemstack);
 	}
 
 	@Override
 	public void onUpdate(ItemStack itemstack, World world, Entity entity, int slot, boolean selected)
 	{
-		initItemStackNBT(itemstack);
+		setBreakableToNBT(itemstack);
 	}
 
 	@Override
@@ -269,6 +276,43 @@ public class ItemLumberingAxe extends ItemCaveAxe implements ICaveniumTool
 
 		BreakMode[] modes = BreakMode.values();
 		int mode = MathHelper.clamp_int(itemstack.getTagCompound().getInteger("Mode"), 0, modes.length - 1);
+
+		return modes[mode];
+	}
+
+	@Override
+	public boolean setMode(ItemStack itemstack, int id)
+	{
+		if (id < 0 || id >= BreakMode.values().length)
+		{
+			return false;
+		}
+
+		NBTTagCompound nbt = itemstack.getTagCompound();
+
+		if (nbt == null)
+		{
+			nbt = new NBTTagCompound();
+		}
+
+		nbt.setInteger("Mode", id);
+		itemstack.setTagCompound(nbt);
+
+		return true;
+	}
+
+	@Override
+	public IBreakMode toggleMode(ItemStack itemstack)
+	{
+		int mode = itemstack.getTagCompound().getInteger("Mode");
+		BreakMode[] modes = BreakMode.values();
+
+		if (++mode > modes.length - 1 || mode > getRefined(itemstack) + 2)
+		{
+			mode = 0;
+		}
+
+		itemstack.getTagCompound().setInteger("Mode", mode);
 
 		return modes[mode];
 	}
@@ -443,14 +487,7 @@ public class ItemLumberingAxe extends ItemCaveAxe implements ICaveniumTool
 			}
 		}
 
-		int i = itemstack.getTagCompound().getInteger("Mode");
-
-		if (++i > BreakMode.values().length - 1 || i > getRefined(itemstack) + 2)
-		{
-			i = 0;
-		}
-
-		itemstack.getTagCompound().setInteger("Mode", i);
+		toggleMode(itemstack);
 
 		if (world.isRemote)
 		{

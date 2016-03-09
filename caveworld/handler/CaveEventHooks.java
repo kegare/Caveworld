@@ -59,6 +59,7 @@ import caveworld.item.ItemLumberingAxe;
 import caveworld.item.ItemMiningPickaxe;
 import caveworld.item.ItemOreCompass;
 import caveworld.network.CaveNetworkRegistry;
+import caveworld.network.client.BrightnessAdjustMessage;
 import caveworld.network.client.CaveAdjustMessage;
 import caveworld.network.client.CaveMusicMessage;
 import caveworld.network.client.CaveworldMenuMessage;
@@ -72,6 +73,11 @@ import caveworld.util.CaveUtils;
 import caveworld.util.Version;
 import caveworld.util.Version.Status;
 import caveworld.util.breaker.MultiBreakExecutor;
+import caveworld.world.ChunkProviderAquaCavern;
+import caveworld.world.ChunkProviderCaveland;
+import caveworld.world.ChunkProviderCavenia;
+import caveworld.world.ChunkProviderCavern;
+import caveworld.world.ChunkProviderCaveworld;
 import caveworld.world.WorldProviderAquaCavern;
 import caveworld.world.WorldProviderCaveland;
 import caveworld.world.WorldProviderCavenia;
@@ -237,6 +243,23 @@ public class CaveEventHooks
 					CaveNetworkRegistry.sendToServer(new CaveAchievementMessage(CaveAchievementList.caveman));
 				}
 			}
+		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	@SubscribeEvent
+	public void onPreRenderGameOverlay(RenderGameOverlayEvent.Pre event)
+	{
+		if (event.type != ElementType.AIR)
+		{
+			return;
+		}
+
+		Minecraft mc = FMLClientHandler.instance().getClient();
+
+		if (CaveworldAPI.isEntityInAquaCavern(mc.thePlayer) && CaverAPI.getMinerRank(mc.thePlayer) >= MinerRank.AQUA_MINER.getRank())
+		{
+			event.setCanceled(true);
 		}
 	}
 
@@ -443,7 +466,7 @@ public class CaveEventHooks
 		{
 			ItemStack current = player.getCurrentEquippedItem();
 
-			if (current != null && current.getItem() != null && current.getItem() instanceof ICaveniumTool)
+			if (current != null && current.getItem() instanceof ICaveniumTool)
 			{
 				if (!((ICaveniumTool)current.getItem()).getModeName(current).equalsIgnoreCase("NORMAL"))
 				{
@@ -771,6 +794,14 @@ public class CaveEventHooks
 
 		if (!manager.isLocalChannel())
 		{
+			float[] brightness = new float[5];
+			brightness[0] = ChunkProviderCaveworld.caveBrightness;
+			brightness[1] = ChunkProviderCavern.caveBrightness;
+			brightness[2] = ChunkProviderAquaCavern.caveBrightness;
+			brightness[3] = ChunkProviderCaveland.caveBrightness;
+			brightness[4] = ChunkProviderCavenia.caveBrightness;
+
+			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new BrightnessAdjustMessage(brightness)));
 			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderCaveworld.TYPE, WorldProviderCaveworld.saveHandler)));
 			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderCavern.TYPE, WorldProviderCavern.saveHandler)));
 			manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new CaveAdjustMessage(WorldProviderAquaCavern.TYPE, WorldProviderAquaCavern.saveHandler)));
@@ -1001,8 +1032,6 @@ public class CaveEventHooks
 			}
 			else if (CaveworldAPI.isEntityInCavenia(player))
 			{
-				CaveNetworkRegistry.sendTo(new CaveMusicMessage("cavemusic.battle" + (world.rand.nextInt(2) + 1)), player);
-
 				player.triggerAchievement(CaveAchievementList.cavenia);
 			}
 		}
@@ -1572,6 +1601,11 @@ public class CaveEventHooks
 
 		if (CaveworldAPI.isEntityInCaves(entity) && entity.isInWater() && CaverAPI.getMinerRank(entity) >= MinerRank.AQUA_MINER.getRank())
 		{
+			if (!entity.canBreatheUnderwater() && entity.ticksExisted % 20 == 0)
+			{
+				entity.setAir(300);
+			}
+
 			if (!(entity instanceof EntityPlayer) || !((EntityPlayer)entity).capabilities.isFlying)
 			{
 				double posY = entity.posY;
@@ -1623,12 +1657,12 @@ public class CaveEventHooks
 
 		if (event.source.getDamageType().equals("player"))
 		{
-			Random random = living.getRNG();
-			int looting = MathHelper.clamp_int(event.lootingLevel, 0, 3);
-
-			if (living instanceof EntityBat && CaveworldAPI.isEntityInCaves(living))
+			if (CaveworldAPI.isEntityInCaves(living) && living instanceof EntityBat)
 			{
+				Random random = living.getRNG();
+				int looting = MathHelper.clamp_int(event.lootingLevel, 0, 3);
 				EntityItem item = new EntityItem(living.worldObj, living.posX, living.posY + 0.5D, living.posZ);
+
 				item.delayBeforeCanPickup = 10;
 
 				if (random.nextInt(4) <= looting)
@@ -1649,10 +1683,14 @@ public class CaveEventHooks
 	public void onWorldLoad(WorldEvent.Load event)
 	{
 		World world = event.world;
+		int dim = world.provider.dimensionId;
 
-		if (!world.isRemote && world.provider.dimensionId == 0)
+		if (!world.isRemote)
 		{
-			CaveBlocks.caveworld_portal.loadInventoryFromDimData();
+			if (dim == CaveworldAPI.getDimension())
+			{
+				CaveBlocks.caveworld_portal.loadInventoryFromDimData();
+			}
 		}
 	}
 

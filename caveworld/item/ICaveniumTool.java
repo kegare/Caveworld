@@ -23,6 +23,8 @@ public interface ICaveniumTool extends IModeItem
 
 	public List<BlockEntry> getBreakableBlocks();
 
+	public boolean setBreakableToNBT(ItemStack itemstack);
+
 	public int getRefined(ItemStack itemstack);
 
 	public boolean canBreak(ItemStack itemstack, Block block, int metadata);
@@ -30,6 +32,10 @@ public interface ICaveniumTool extends IModeItem
 	public Item getBase(ItemStack itemstack);
 
 	public IBreakMode getMode(ItemStack itemstack);
+
+	public boolean setMode(ItemStack itemstack, int id);
+
+	public IBreakMode toggleMode(ItemStack itemstack);
 
 	public Set<Item> getBaseableItems();
 }

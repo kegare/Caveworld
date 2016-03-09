@@ -27,6 +27,11 @@ public class CommonProxy
 		return -1;
 	}
 
+	public EntityPlayer getClientPlayer()
+	{
+		return null;
+	}
+
 	public void displayMenu(MenuType type) {}
 
 	public void displayPortalMenu(MenuType type, int x, int y, int z) {}

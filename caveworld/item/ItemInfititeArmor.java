@@ -15,7 +15,7 @@ public class ItemInfititeArmor extends ItemCaveArmor
 {
 	public ItemInfititeArmor(String name, String texture, int armorType)
 	{
-		super(name, texture, "infitite", CaveItems.INFINITE_ARMOR, armorType);
+		super(name, texture, "infitite", CaveItems.INFITITE_ARMOR, armorType);
 	}
 
 	@Override

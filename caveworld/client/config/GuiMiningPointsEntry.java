@@ -9,9 +9,7 @@
 
 package caveworld.client.config;
 
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,7 +20,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
-import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -275,24 +272,22 @@ public class GuiMiningPointsEntry extends GuiScreen implements SelectListener
 				case 0:
 					if (editMode)
 					{
-						for (final PointEntry entry : pointList.selected)
+						for (PointEntry entry : pointList.selected)
 						{
-							CaveUtils.getPool().execute(new RecursiveAction()
+							if (!Strings.isNullOrEmpty(blockField.getText()))
 							{
-								@Override
-								protected void compute()
-								{
-									if (!Strings.isNullOrEmpty(blockField.getText()))
-									{
-										entry.setBlock(new BlockEntry(blockField.getText(), NumberUtils.toInt(blockMetaField.getText())));
-									}
+								BlockEntry block = new BlockEntry(blockField.getText(), NumberUtils.toInt(blockMetaField.getText()));
 
-									if (!Strings.isNullOrEmpty(pointField.getText()))
-									{
-										entry.setPoint(NumberUtils.toInt(pointField.getText(), entry.getPoint()));
-									}
+								if (block.getBlock() != null)
+								{
+									entry.setBlock(block);
 								}
-							});
+							}
+
+							if (!Strings.isNullOrEmpty(pointField.getText()))
+							{
+								entry.setPoint(NumberUtils.toInt(pointField.getText(), entry.getPoint()));
+							}
 						}
 
 						actionPerformed(cancelButton);
@@ -302,18 +297,14 @@ public class GuiMiningPointsEntry extends GuiScreen implements SelectListener
 					}
 					else
 					{
-						List<String> result = Lists.newArrayList(Collections2.transform(pointList.points, new Function<PointEntry, String>()
+						Set<String> values = Sets.newTreeSet();
+
+						for (PointEntry entry : pointList.points)
 						{
-							@Override
-							public String apply(PointEntry entry)
-							{
-								return entry.toString();
-							}
-						}));
+							values.add(entry.toString());
+						}
 
-						Collections.sort(result);
-
-						parentElement.setListFromChildScreen(result.toArray());
+						parentElement.setListFromChildScreen(values.toArray());
 
 						actionPerformed(cancelButton);
 
@@ -327,7 +318,7 @@ public class GuiMiningPointsEntry extends GuiScreen implements SelectListener
 					{
 						actionPerformed(cancelButton);
 					}
-					else
+					else if (!pointList.selected.isEmpty())
 					{
 						editMode = true;
 						initGui();
@@ -335,19 +326,17 @@ public class GuiMiningPointsEntry extends GuiScreen implements SelectListener
 						pointList.scrollToTop();
 						pointList.scrollToSelected();
 
-						if (pointList.selected.size() == 1)
-						{
-							PointEntry entry = pointList.selected.get(0);
-
-							blockField.setText(GameData.getBlockRegistry().getNameForObject(entry.getBlock().getBlock()));
-							blockMetaField.setText(Integer.toString(entry.getBlock().getMetadata()));
-							pointField.setText(Integer.toString(entry.getPoint()));
-						}
-						else
+						if (pointList.selected.size() > 1)
 						{
 							blockField.setText("");
 							blockMetaField.setText("");
 							pointField.setText("");
+						}
+						else for (PointEntry entry : pointList.selected)
+						{
+							blockField.setText(GameData.getBlockRegistry().getNameForObject(entry.getBlock().getBlock()));
+							blockMetaField.setText(Integer.toString(entry.getBlock().getMetadata()));
+							pointField.setText(Integer.toString(entry.getPoint()));
 						}
 					}
 
@@ -375,23 +364,15 @@ public class GuiMiningPointsEntry extends GuiScreen implements SelectListener
 					mc.displayGuiScreen(new GuiSelectBlock(this).exclude(blocks));
 					break;
 				case 4:
-					CaveUtils.getPool().execute(new RecursiveAction()
+					for (PointEntry entry : pointList.selected)
 					{
-						@Override
-						protected void compute()
+						if (pointList.points.remove(entry))
 						{
-							for (PointEntry entry : pointList.selected)
-							{
-								if (pointList.points.remove(entry))
-								{
-									pointList.contents.remove(entry);
-								}
-							}
-
-							pointList.selected.clear();
+							pointList.contents.remove(entry);
 						}
-					});
+					}
 
+					pointList.selected.clear();
 					break;
 				case 5:
 					pointList.selected.addAll(pointList.points);
@@ -409,34 +390,27 @@ public class GuiMiningPointsEntry extends GuiScreen implements SelectListener
 	}
 
 	@Override
-	public void onSelected(final Set<BlockEntry> result)
+	public void onBlockSelected(final Set<BlockEntry> result)
 	{
 		if (editMode)
 		{
 			return;
 		}
 
-		CaveUtils.getPool().execute(new RecursiveAction()
+		pointList.selected.clear();
+
+		for (BlockEntry block : result)
 		{
-			@Override
-			protected void compute()
+			PointEntry entry = new PointEntry(block, 1);
+
+			if (pointList.points.addIfAbsent(entry) && pointList.contents.addIfAbsent(entry))
 			{
-				pointList.selected.clear();
-
-				for (BlockEntry block : result)
-				{
-					PointEntry entry = new PointEntry(block, 1);
-
-					if (pointList.points.addIfAbsent(entry) && pointList.contents.addIfAbsent(entry))
-					{
-						pointList.selected.add(entry);
-					}
-				}
-
-				pointList.scrollToTop();
-				pointList.scrollToSelected();
+				pointList.selected.add(entry);
 			}
-		});
+		}
+
+		pointList.scrollToTop();
+		pointList.scrollToSelected();
 	}
 
 	@Override
@@ -595,7 +569,11 @@ public class GuiMiningPointsEntry extends GuiScreen implements SelectListener
 	{
 		super.mouseClicked(x, y, code);
 
-		if (editMode)
+		if (code == 1)
+		{
+			actionPerformed(editButton);
+		}
+		else if (editMode)
 		{
 			for (GuiTextField textField : editFieldList)
 			{
@@ -706,47 +684,6 @@ public class GuiMiningPointsEntry extends GuiScreen implements SelectListener
 						pointList.nameType = 0;
 					}
 				}
-				else if (code == Keyboard.KEY_UP)
-				{
-					if (isCtrlKeyDown())
-					{
-						Collections.sort(pointList.selected, pointList);
-
-						for (PointEntry vein : pointList.selected)
-						{
-							pointList.contents.swapTo(pointList.contents.indexOf(vein), -1);
-							pointList.points.swapTo(pointList.points.indexOf(vein), -1);
-						}
-
-						pointList.scrollToTop();
-						pointList.scrollToSelected();
-					}
-					else
-					{
-						pointList.scrollUp();
-					}
-				}
-				else if (code == Keyboard.KEY_DOWN)
-				{
-					if (isCtrlKeyDown())
-					{
-						Collections.sort(pointList.selected, pointList);
-						Collections.reverse(pointList.selected);
-
-						for (PointEntry vein : pointList.selected)
-						{
-							pointList.contents.swapTo(pointList.contents.indexOf(vein), 1);
-							pointList.points.swapTo(pointList.points.indexOf(vein), 1);
-						}
-
-						pointList.scrollToTop();
-						pointList.scrollToSelected();
-					}
-					else
-					{
-						pointList.scrollDown();
-					}
-				}
 				else if (code == Keyboard.KEY_HOME)
 				{
 					pointList.scrollToTop();
@@ -805,40 +742,43 @@ public class GuiMiningPointsEntry extends GuiScreen implements SelectListener
 	{
 		protected final ArrayListExtended<PointEntry> points = new ArrayListExtended();
 		protected final ArrayListExtended<PointEntry> contents = new ArrayListExtended();
-		protected final List<PointEntry> selected = Lists.newArrayList();
-
-		private final Map<String, List<PointEntry>> filterCache = Maps.newHashMap();
+		protected final Set<PointEntry> selected = Sets.newTreeSet(this);
+		protected final Map<String, List<PointEntry>> filterCache = Maps.newHashMap();
 
 		protected int nameType;
 
-		private PointList()
+		protected PointList()
 		{
 			super(GuiMiningPointsEntry.this.mc, 0, 0, 0, 0, 22);
 
 			for (Object obj : parentElement.getCurrentValues())
 			{
-				String str = String.valueOf(obj);
+				String value = String.valueOf(obj);
 
-				if (!Strings.isNullOrEmpty(str) && str.contains(",") && str.contains(":"))
+				if (!Strings.isNullOrEmpty(value) && value.contains(","))
 				{
-					str = str.trim();
+					value = value.trim();
 
-					int i = str.indexOf(',');
-					String str2 = str.substring(0, i);
-					int point = Integer.parseInt(str.substring(i + 1));
+					int i = value.indexOf(',');
+					String str = value.substring(0, i);
+					int point = NumberUtils.toInt(value.substring(i + 1));
 
-					i = str2.lastIndexOf(':');
-					Block block = GameData.getBlockRegistry().getObject(str2.substring(0, i));
-					int meta = Integer.parseInt(str2.substring(i + 1));
-
-					if (block != null && block != Blocks.air)
+					if (str.contains(":"))
 					{
-						points.add(new PointEntry(new BlockEntry(block, meta), point));
+						i = str.lastIndexOf(':');
+						Block block = GameData.getBlockRegistry().getObject(str.substring(0, i));
+
+						if (block != null && block != Blocks.air)
+						{
+							int meta = NumberUtils.toInt(str.substring(i + 1));
+							PointEntry entry = new PointEntry(new BlockEntry(block, meta), point);
+
+							points.add(entry);
+							contents.add(entry);
+						}
 					}
 				}
 			}
-
-			this.contents.addAll(points);
 		}
 
 		@Override
@@ -848,9 +788,9 @@ public class GuiMiningPointsEntry extends GuiScreen implements SelectListener
 			{
 				int amount = 0;
 
-				for (Iterator<PointEntry> iterator = selected.iterator(); iterator.hasNext();)
+				for (PointEntry entry : selected)
 				{
-					amount = contents.indexOf(iterator.next()) * getSlotHeight();
+					amount = contents.indexOf(entry) * getSlotHeight();
 
 					if (getAmountScrolled() != amount)
 					{
@@ -986,7 +926,7 @@ public class GuiMiningPointsEntry extends GuiScreen implements SelectListener
 					}
 					else if (filter.equals("selected"))
 					{
-						result = selected;
+						result = Lists.newArrayList(selected);
 					}
 					else
 					{

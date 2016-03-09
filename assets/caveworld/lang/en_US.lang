@@ -14,6 +14,7 @@ caveworld.version.message.beta=You are using a Beta version of %s
 caveworld.version.message.alpha=You are using an Alpha version of %s
 
 caveworld.menu.title=Caveworld menu
+caveworld.menu.version=Caveworld %s (Latest: %s)
 cavern.menu.title=Cavern menu
 aquacavern.menu.title=Aqua Cavern menu
 caveland.menu.title=Caveland menu
@@ -155,7 +156,9 @@ caveworld.config.dimension.entry.caveType.tooltip=Specify the cave type.
 caveworld.config.dimension.entry.caveType.0=Normal Caves
 caveworld.config.dimension.entry.caveType.1=Large Caves
 caveworld.config.dimension.entry.caveMonsterSpawn=Cave Monster Spawn
-caveworld.config.dimension.entry.caveMonsterSpawn.tooltip=Specify the monster spawn weight for cave dimensions.
+caveworld.config.dimension.entry.caveMonsterSpawn.tooltip=Specify the monster spawn weight of this dimension.
+caveworld.config.dimension.entry.caveBrightness=Cave Brightness
+caveworld.config.dimension.entry.caveBrightness.tooltip=Specify the brightness of this dimension.
 caveworld.config.biomes=Biome Customize
 caveworld.config.biomes.tooltip=Change the settings contained in caveworld-biomes.cfg
 caveworld.config.biomesCavern=Biome Customize
@@ -228,7 +231,7 @@ caveworld.message.sleep.still=You are not tired. You cannot sleep until %d minut
 caveworld.message.crazy.kill=%s has been killed by the brave hero!
 caveworld.message.crazy.member=Member : %s
 caveworld.message.crazy.result=Battle Results of %s
-caveworld.message.crazy.report=[%s] Damage occupancy: %s, Death count: %d
+caveworld.message.crazy.report=[%s] Damage occupancy: %s, Killed count: %d
 
 caveworld.minerrank.beginner=Beginner
 caveworld.minerrank.stoneMiner=Stone Miner

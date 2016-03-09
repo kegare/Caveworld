@@ -13,7 +13,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +30,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
 
 import caveworld.api.BlockEntry;
@@ -40,6 +40,7 @@ import caveworld.client.config.GuiSelectBlock.SelectListener;
 import caveworld.client.gui.GuiListSlot;
 import caveworld.core.CaveVeinManager.CaveVein;
 import caveworld.core.Caveworld;
+import caveworld.core.Config;
 import caveworld.network.CaveNetworkRegistry;
 import caveworld.network.common.OpRemoteCheckMessage;
 import caveworld.network.common.VeinAdjustMessage;
@@ -399,68 +400,69 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 					{
 						if (!isReadOnly())
 						{
-							for (final ICaveVein entry : veinList.selected)
+							for (ICaveVein entry : veinList.selected)
 							{
-								CaveUtils.getPool().execute(new RecursiveAction()
+								if (!Strings.isNullOrEmpty(blockField.getText()))
 								{
-									@Override
-									protected void compute()
+									BlockEntry block = new BlockEntry(blockField.getText(), NumberUtils.toInt(blockMetaField.getText()));
+
+									if (block.getBlock() != null)
 									{
-										if (!Strings.isNullOrEmpty(blockField.getText()))
-										{
-											entry.setBlock(new BlockEntry(blockField.getText(), NumberUtils.toInt(blockMetaField.getText())));
-										}
-
-										if (!Strings.isNullOrEmpty(countField.getText()))
-										{
-											entry.setGenBlockCount(NumberUtils.toInt(countField.getText(), entry.getGenBlockCount()));
-										}
-
-										if (!Strings.isNullOrEmpty(weightField.getText()))
-										{
-											entry.setGenWeight(NumberUtils.toInt(weightField.getText(), entry.getGenWeight()));
-										}
-
-										if (!Strings.isNullOrEmpty(rateField.getText()))
-										{
-											entry.setGenRate(NumberUtils.toInt(rateField.getText(), entry.getGenRate()));
-										}
-
-										if (!Strings.isNullOrEmpty(minHeightField.getText()))
-										{
-											entry.setGenMinHeight(NumberUtils.toInt(minHeightField.getText(), entry.getGenMinHeight()));
-										}
-
-										if (!Strings.isNullOrEmpty(maxHeightField.getText()))
-										{
-											entry.setGenMaxHeight(NumberUtils.toInt(maxHeightField.getText(), entry.getGenMaxHeight()));
-										}
-
-										if (!Strings.isNullOrEmpty(targetField.getText()))
-										{
-											entry.setGenTargetBlock(new BlockEntry(targetField.getText(), NumberUtils.toInt(targetMetaField.getText())));
-										}
-
-										if (!Strings.isNullOrEmpty(biomesField.getText()))
-										{
-											List<Integer> ids = Lists.newArrayList();
-
-											for (String str : Splitter.on(',').trimResults().omitEmptyStrings().split(biomesField.getText()))
-											{
-												if (NumberUtils.isNumber(str))
-												{
-													ids.add(Integer.parseInt(str));
-												}
-											}
-
-											Collections.sort(ids);
-
-											entry.setGenBiomes(Ints.toArray(ids));
-										}
-
-										hoverCache.remove(entry);
+										entry.setBlock(block);
 									}
-								});
+								}
+
+								if (!Strings.isNullOrEmpty(countField.getText()))
+								{
+									entry.setGenBlockCount(NumberUtils.toInt(countField.getText(), entry.getGenBlockCount()));
+								}
+
+								if (!Strings.isNullOrEmpty(weightField.getText()))
+								{
+									entry.setGenWeight(NumberUtils.toInt(weightField.getText(), entry.getGenWeight()));
+								}
+
+								if (!Strings.isNullOrEmpty(rateField.getText()))
+								{
+									entry.setGenRate(NumberUtils.toInt(rateField.getText(), entry.getGenRate()));
+								}
+
+								if (!Strings.isNullOrEmpty(minHeightField.getText()))
+								{
+									entry.setGenMinHeight(NumberUtils.toInt(minHeightField.getText(), entry.getGenMinHeight()));
+								}
+
+								if (!Strings.isNullOrEmpty(maxHeightField.getText()))
+								{
+									entry.setGenMaxHeight(NumberUtils.toInt(maxHeightField.getText(), entry.getGenMaxHeight()));
+								}
+
+								if (!Strings.isNullOrEmpty(targetField.getText()))
+								{
+									BlockEntry block = new BlockEntry(targetField.getText(), NumberUtils.toInt(targetMetaField.getText()));
+
+									if (block.getBlock() != null)
+									{
+										entry.setGenTargetBlock(block);
+									}
+								}
+
+								if (!Strings.isNullOrEmpty(biomesField.getText()))
+								{
+									Set<Integer> values = Sets.newTreeSet();
+
+									for (String str : Splitter.on(',').trimResults().omitEmptyStrings().split(biomesField.getText()))
+									{
+										if (NumberUtils.isNumber(str))
+										{
+											values.add(Integer.parseInt(str));
+										}
+									}
+
+									entry.setGenBiomes(Ints.toArray(values));
+								}
+
+								hoverCache.remove(entry);
 							}
 						}
 
@@ -475,40 +477,30 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 						{
 							if (mc.thePlayer == null || mc.isIntegratedServerRunning())
 							{
-								CaveUtils.getPool().execute(new RecursiveAction()
+								boolean flag = veinManager.getCaveVeins().size() != veinList.veins.size();
+
+								veinManager.clearCaveVeins();
+
+								if (flag)
 								{
-									@Override
-									protected void compute()
+									try
 									{
-										boolean flag = veinManager.getCaveVeins().size() != veinList.veins.size();
+										FileUtils.forceDelete(new File(veinManager.getConfig().toString()));
 
-										veinManager.clearCaveVeins();
-
-										if (flag)
-										{
-											try
-											{
-												FileUtils.forceDelete(new File(veinManager.getConfig().toString()));
-
-												veinManager.getConfig().load();
-											}
-											catch (IOException e)
-											{
-												e.printStackTrace();
-											}
-										}
-
-										for (ICaveVein vein : veinList.veins)
-										{
-											veinManager.addCaveVein(vein);
-										}
-
-										if (veinManager.getConfig().hasChanged())
-										{
-											veinManager.getConfig().save();
-										}
+										veinManager.getConfig().load();
 									}
-								});
+									catch (IOException e)
+									{
+										e.printStackTrace();
+									}
+								}
+
+								for (ICaveVein vein : veinList.veins)
+								{
+									veinManager.addCaveVein(vein);
+								}
+
+								Config.saveConfig(veinManager.getConfig());
 							}
 							else
 							{
@@ -535,7 +527,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 					{
 						actionPerformed(cancelButton);
 					}
-					else
+					else if (!veinList.selected.isEmpty())
 					{
 						editMode = true;
 						initGui();
@@ -543,22 +535,7 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 						veinList.scrollToTop();
 						veinList.scrollToSelected();
 
-						if (veinList.selected.size() == 1)
-						{
-							ICaveVein entry = veinList.selected.get(0);
-
-							blockField.setText(GameData.getBlockRegistry().getNameForObject(entry.getBlock().getBlock()));
-							blockMetaField.setText(Integer.toString(entry.getBlock().getMetadata()));
-							countField.setText(Integer.toString(entry.getGenBlockCount()));
-							weightField.setText(Integer.toString(entry.getGenWeight()));
-							rateField.setText(Integer.toString(entry.getGenRate()));
-							minHeightField.setText(Integer.toString(entry.getGenMinHeight()));
-							maxHeightField.setText(Integer.toString(entry.getGenMaxHeight()));
-							targetField.setText(GameData.getBlockRegistry().getNameForObject(entry.getGenTargetBlock().getBlock()));
-							targetMetaField.setText(Integer.toString(entry.getGenTargetBlock().getMetadata()));
-							biomesField.setText(Ints.join(", ", entry.getGenBiomes()));
-						}
-						else
+						if (veinList.selected.size() > 1)
 						{
 							blockField.setText("");
 							blockMetaField.setText("");
@@ -570,6 +547,19 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 							targetField.setText("");
 							targetMetaField.setText("");
 							biomesField.setText("");
+						}
+						else for (ICaveVein entry : veinList.selected)
+						{
+							blockField.setText(GameData.getBlockRegistry().getNameForObject(entry.getBlock().getBlock()));
+							blockMetaField.setText(Integer.toString(entry.getBlock().getMetadata()));
+							countField.setText(Integer.toString(entry.getGenBlockCount()));
+							weightField.setText(Integer.toString(entry.getGenWeight()));
+							rateField.setText(Integer.toString(entry.getGenRate()));
+							minHeightField.setText(Integer.toString(entry.getGenMinHeight()));
+							maxHeightField.setText(Integer.toString(entry.getGenMaxHeight()));
+							targetField.setText(GameData.getBlockRegistry().getNameForObject(entry.getGenTargetBlock().getBlock()));
+							targetMetaField.setText(Integer.toString(entry.getGenTargetBlock().getMetadata()));
+							biomesField.setText(Ints.join(", ", entry.getGenBiomes()));
 						}
 					}
 
@@ -596,22 +586,15 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 				case 4:
 					if (!isReadOnly())
 					{
-						CaveUtils.getPool().execute(new RecursiveAction()
+						for (ICaveVein entry : veinList.selected)
 						{
-							@Override
-							protected void compute()
+							if (veinList.veins.remove(entry))
 							{
-								for (ICaveVein entry : veinList.selected)
-								{
-									if (veinList.veins.remove(entry))
-									{
-										veinList.contents.remove(entry);
-									}
-								}
-
-								veinList.selected.clear();
+								veinList.contents.remove(entry);
 							}
-						});
+						}
+
+						veinList.selected.clear();
 					}
 
 					break;
@@ -635,34 +618,27 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 	}
 
 	@Override
-	public void onSelected(final Set<BlockEntry> result)
+	public void onBlockSelected(final Set<BlockEntry> result)
 	{
 		if (editMode || isReadOnly())
 		{
 			return;
 		}
 
-		CaveUtils.getPool().execute(new RecursiveAction()
+		veinList.selected.clear();
+
+		for (BlockEntry block : result)
 		{
-			@Override
-			protected void compute()
+			ICaveVein entry = new CaveVein(block, 1, 1, 100, 0, 255);
+
+			if (veinList.veins.add(entry) && veinList.contents.add(entry))
 			{
-				veinList.selected.clear();
-
-				for (BlockEntry block : result)
-				{
-					ICaveVein entry = new CaveVein(block, 1, 1, 100, 0, 255);
-
-					if (veinList.veins.add(entry) && veinList.contents.add(entry))
-					{
-						veinList.selected.add(entry);
-					}
-				}
-
-				veinList.scrollToTop();
-				veinList.scrollToSelected();
+				veinList.selected.add(entry);
 			}
-		});
+		}
+
+		veinList.scrollToTop();
+		veinList.scrollToSelected();
 	}
 
 	@Override
@@ -978,7 +954,11 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 	{
 		super.mouseClicked(x, y, code);
 
-		if (editMode)
+		if (code == 1)
+		{
+			actionPerformed(editButton);
+		}
+		else if (editMode)
 		{
 			if (isReadOnly())
 			{
@@ -1193,43 +1173,36 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 				}
 				else if (code == Keyboard.KEY_V && isCtrlKeyDown() && !veinList.copied.isEmpty())
 				{
-					CaveUtils.getPool().execute(new RecursiveAction()
+					int index1 = -1;
+					int index2 = -1;
+					int i = 0;
+
+					for (ICaveVein vein : veinList.copied)
 					{
-						@Override
-						protected void compute()
+						ICaveVein entry = new CaveVein(vein);
+
+						if (veinList.veins.add(entry) && veinList.contents.add(entry) && !veinList.selected.isEmpty())
 						{
-							int index1 = -1;
-							int index2 = -1;
-							int i = 0;
-
-							for (ICaveVein vein : veinList.copied)
+							if (index1 < 0)
 							{
-								ICaveVein entry = new CaveVein(vein);
-
-								if (veinList.veins.add(entry) && veinList.contents.add(entry) && !veinList.selected.isEmpty())
-								{
-									if (index1 < 0)
-									{
-										index1 = veinList.contents.indexOf(veinList.selected.get(veinList.selected.size() - 1)) + 1;
-									}
-
-									Collections.swap(veinList.contents, index1 + i, veinList.contents.indexOf(entry));
-
-									if (index2 < 0)
-									{
-										index2 = veinList.veins.indexOf(veinList.selected.get(veinList.selected.size() - 1)) + 1;
-									}
-
-									Collections.swap(veinList.veins, index2 + i, veinList.veins.indexOf(entry));
-
-									++i;
-								}
+								index1 = veinList.contents.indexOf(veinList.selected.get(veinList.selected.size() - 1)) + 1;
 							}
 
-							veinList.scrollToTop();
-							veinList.scrollToSelected();
+							Collections.swap(veinList.contents, index1 + i, veinList.contents.indexOf(entry));
+
+							if (index2 < 0)
+							{
+								index2 = veinList.veins.indexOf(veinList.selected.get(veinList.selected.size() - 1)) + 1;
+							}
+
+							Collections.swap(veinList.veins, index2 + i, veinList.veins.indexOf(entry));
+
+							++i;
 						}
-					});
+					}
+
+					veinList.scrollToTop();
+					veinList.scrollToSelected();
 				}
 			}
 		}
@@ -1254,15 +1227,19 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 		protected final List<ICaveVein> selected = Lists.newArrayList();
 		protected final List<ICaveVein> copied = Lists.newArrayList();
 
-		private final Map<String, List<ICaveVein>> filterCache = Maps.newHashMap();
+		protected final Map<String, List<ICaveVein>> filterCache = Maps.newHashMap();
 
 		protected int nameType;
 
-		private VeinList()
+		protected VeinList()
 		{
 			super(GuiVeinsEntry.this.mc, 0, 0, 0, 0, 22);
-			this.veins.addAll(veinManager.getCaveVeins());
-			this.contents.addAll(veins);
+
+			for (ICaveVein vein : veinManager.getCaveVeins())
+			{
+				veins.addIfAbsent(vein);
+				contents.addIfAbsent(vein);
+			}
 		}
 
 		@Override
@@ -1272,9 +1249,9 @@ public class GuiVeinsEntry extends GuiScreen implements SelectListener
 			{
 				int amount = 0;
 
-				for (Iterator<ICaveVein> iterator = selected.iterator(); iterator.hasNext();)
+				for (ICaveVein entry : selected)
 				{
-					amount = contents.indexOf(iterator.next()) * getSlotHeight();
+					amount = contents.indexOf(entry) * getSlotHeight();
 
 					if (getAmountScrolled() != amount)
 					{

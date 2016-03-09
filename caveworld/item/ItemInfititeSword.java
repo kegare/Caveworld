@@ -15,7 +15,7 @@ public class ItemInfititeSword extends ItemCaveSword
 {
 	public ItemInfititeSword(String name)
 	{
-		super(name, "infitite_sword", CaveItems.INFINITE);
+		super(name, "infitite_sword", CaveItems.INFITITE);
 	}
 
 	@Override

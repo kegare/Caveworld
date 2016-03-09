@@ -56,7 +56,7 @@ public class SextiarySectorPlugin implements ICavePlugin
 	@Override
 	public void invoke()
 	{
-		RecipeAPI.millstone.add("oreMagnite", new ItemStack(CaveItems.gem, 2, 2));
+		RecipeAPI.pulverizer.add("oreMagnite", new ItemStack(CaveItems.gem, 2, 2));
 
 		Block block = GameRegistry.findBlock(MODID, "CoalLargeOre");
 

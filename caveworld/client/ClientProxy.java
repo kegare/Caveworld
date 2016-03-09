@@ -118,6 +118,12 @@ public class ClientProxy extends CommonProxy
 	}
 
 	@Override
+	public EntityPlayer getClientPlayer()
+	{
+		return FMLClientHandler.instance().getClientPlayerEntity();
+	}
+
+	@Override
 	public void displayMenu(MenuType type)
 	{
 		FMLClientHandler.instance().showGuiScreen(new GuiIngameCaveMenu().setMenuType(type));

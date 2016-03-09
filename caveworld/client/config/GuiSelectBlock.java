@@ -10,7 +10,7 @@
 package caveworld.client.config;
 
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -117,12 +117,13 @@ public class GuiSelectBlock extends GuiScreen
 
 	public interface SelectListener
 	{
-		public void onSelected(Set<BlockEntry> result);
+		public void onBlockSelected(Set<BlockEntry> result);
 	}
 
 	protected final GuiScreen parentScreen;
-	protected GuiTextField parentNameField;
-	protected GuiTextField parentMetaField;
+
+	protected GuiTextField nameField;
+	protected GuiTextField metaField;
 
 	protected final Set<BlockEntry> excluded = Sets.newHashSet();
 
@@ -145,15 +146,18 @@ public class GuiSelectBlock extends GuiScreen
 	public GuiSelectBlock(GuiScreen parent, GuiTextField nameField, GuiTextField metaField)
 	{
 		this(parent);
-		this.parentNameField = nameField;
-		this.parentMetaField = metaField;
+		this.nameField = nameField;
+		this.metaField = metaField;
 	}
 
 	public GuiSelectBlock exclude(Collection<BlockEntry> blocks)
 	{
 		for (BlockEntry entry : blocks)
 		{
-			excluded.add(entry);
+			if (entry != null)
+			{
+				excluded.add(entry);
+			}
 		}
 
 		return this;
@@ -222,40 +226,40 @@ public class GuiSelectBlock extends GuiScreen
 				case 0:
 					if (blockList.selected.isEmpty())
 					{
-						if (parentNameField != null)
+						if (nameField != null)
 						{
-							parentNameField.setText("");
+							nameField.setText("");
 						}
 
-						if (parentMetaField != null)
+						if (metaField != null)
 						{
-							parentMetaField.setText("");
+							metaField.setText("");
 						}
 					}
 					else
 					{
 						if (parentScreen != null && parentScreen instanceof SelectListener)
 						{
-							((SelectListener)parentScreen).onSelected(Sets.newHashSet(blockList.selected));
+							((SelectListener)parentScreen).onBlockSelected(blockList.selected);
 						}
 
 						BlockEntry block = blockList.selected.iterator().next();
 
-						if (parentNameField != null)
+						if (nameField != null)
 						{
-							parentNameField.setText(GameData.getBlockRegistry().getNameForObject(block.getBlock()));
+							nameField.setText(GameData.getBlockRegistry().getNameForObject(block.getBlock()));
 						}
 
-						if (parentMetaField != null)
+						if (metaField != null)
 						{
-							parentMetaField.setText(Integer.toString(block.getMetadata()));
+							metaField.setText(Integer.toString(block.getMetadata()));
 						}
 					}
 
-					if (parentNameField != null)
+					if (nameField != null)
 					{
-						parentNameField.setFocused(true);
-						parentNameField.setCursorPositionEnd();
+						nameField.setFocused(true);
+						nameField.setCursorPositionEnd();
 					}
 
 					mc.displayGuiScreen(parentScreen);
@@ -286,7 +290,7 @@ public class GuiSelectBlock extends GuiScreen
 	{
 		blockList.drawScreen(mouseX, mouseY, ticks);
 
-		boolean single = parentNameField != null || parentMetaField != null;
+		boolean single = nameField != null || metaField != null;
 		String name = null;
 
 		if (single)
@@ -461,50 +465,51 @@ public class GuiSelectBlock extends GuiScreen
 		}
 	}
 
-	class BlockList extends GuiListSlot
+	class BlockList extends GuiListSlot implements Comparator<BlockEntry>
 	{
 		protected final ArrayListExtended<BlockEntry> entries = new ArrayListExtended(blocks);
 		protected final ArrayListExtended<BlockEntry> contents = new ArrayListExtended(blocks);
 		protected final Set<BlockEntry> selected = Sets.newLinkedHashSet();
-
-		private final Map<String, List<BlockEntry>> filterCache = Maps.newHashMap();
+		protected final Map<String, List<BlockEntry>> filterCache = Maps.newHashMap();
 
 		protected int nameType;
 
-		private BlockList()
+		protected BlockList()
 		{
 			super(GuiSelectBlock.this.mc, 0, 0, 0, 0, 18);
 
-			CaveUtils.getPool().execute(new RecursiveAction()
+			for (BlockEntry block : excluded)
 			{
-				@Override
-				protected void compute()
+				entries.remove(block);
+				contents.remove(block);
+			}
+
+			if (nameField != null)
+			{
+				int meta = -1;
+
+				if (metaField != null)
 				{
-					entries.removeAll(excluded);
-					contents.removeAll(excluded);
+					meta = NumberUtils.toInt(metaField.getText());
+				}
 
-					if (parentNameField != null)
+				for (BlockEntry block : entries)
+				{
+					String text = nameField.getText();
+
+					if (!Strings.isNullOrEmpty(text) && text.equals(GameData.getBlockRegistry().getNameForObject(block.getBlock())))
 					{
-						int meta = 0;
-
-						if (parentMetaField != null)
+						if (meta < 0 || meta == block.getMetadata())
 						{
-							meta = NumberUtils.toInt(parentMetaField.getText());
-						}
-
-						for (BlockEntry entry : entries)
-						{
-							if (GameData.getBlockRegistry().getNameForObject(entry.getBlock()).equals(parentNameField.getText()) && entry.getMetadata() == meta)
-							{
-								selected.add(entry);
-								break;
-							}
+							selected.add(block);
+							break;
 						}
 					}
-
-					scrollToSelected();
 				}
-			});
+			}
+
+			scrollToTop();
+			scrollToSelected();
 		}
 
 		@Override
@@ -520,9 +525,9 @@ public class GuiSelectBlock extends GuiScreen
 			{
 				int amount = 0;
 
-				for (Iterator<BlockEntry> iterator = selected.iterator(); iterator.hasNext();)
+				for (BlockEntry entry : selected)
 				{
-					amount = contents.indexOf(iterator.next()) * getSlotHeight();
+					amount = contents.indexOf(entry) * getSlotHeight();
 
 					if (getAmountScrolled() != amount)
 					{
@@ -629,7 +634,7 @@ public class GuiSelectBlock extends GuiScreen
 
 			if (entry != null && !selected.remove(entry))
 			{
-				if (parentNameField != null || parentMetaField != null)
+				if (nameField != null || metaField != null)
 				{
 					selected.clear();
 				}
@@ -644,6 +649,19 @@ public class GuiSelectBlock extends GuiScreen
 			BlockEntry entry = contents.get(index, null);
 
 			return entry != null && selected.contains(entry);
+		}
+
+		@Override
+		public int compare(BlockEntry o1, BlockEntry o2)
+		{
+			int i = CaveUtils.compareWithNull(o1, o2);
+
+			if (i == 0 && o1 != null && o2 != null)
+			{
+				i = Integer.compare(entries.indexOf(o1), entries.indexOf(o2));
+			}
+
+			return i;
 		}
 
 		protected void setFilter(final String filter)

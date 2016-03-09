@@ -330,10 +330,10 @@ public class Caveworld
 		CaverAPI.setMiningPointAmount("oreGold", 1);
 		CaverAPI.setMiningPointAmount("oreRedstone", 2);
 		CaverAPI.setMiningPointAmount(Blocks.lit_redstone_ore, 0, 2);
-		CaverAPI.setMiningPointAmount("oreLapis", 2);
-		CaverAPI.setMiningPointAmount("oreEmerald", 2);
-		CaverAPI.setMiningPointAmount("oreDiamond", 3);
-		CaverAPI.setMiningPointAmount("oreQuartz", 1);
+		CaverAPI.setMiningPointAmount("oreLapis", 3);
+		CaverAPI.setMiningPointAmount("oreEmerald", 3);
+		CaverAPI.setMiningPointAmount("oreDiamond", 5);
+		CaverAPI.setMiningPointAmount("oreQuartz", 2);
 		CaverAPI.setMiningPointAmount("oreCopper", 1);
 		CaverAPI.setMiningPointAmount("copperOre", 1);
 		CaverAPI.setMiningPointAmount("oreTin", 1);
@@ -354,10 +354,10 @@ public class Caveworld
 		CaverAPI.setMiningPointAmount("onyxOre", 1);
 		CaverAPI.setMiningPointAmount("oreUranium", 2);
 		CaverAPI.setMiningPointAmount("uraniumOre", 2);
-		CaverAPI.setMiningPointAmount("oreSapphire", 2);
-		CaverAPI.setMiningPointAmount("sapphireOre", 2);
-		CaverAPI.setMiningPointAmount("oreRuby", 2);
-		CaverAPI.setMiningPointAmount("rubyOre", 2);
+		CaverAPI.setMiningPointAmount("oreSapphire", 3);
+		CaverAPI.setMiningPointAmount("sapphireOre", 3);
+		CaverAPI.setMiningPointAmount("oreRuby", 3);
+		CaverAPI.setMiningPointAmount("rubyOre", 3);
 		CaverAPI.setMiningPointAmount("oreTopaz", 2);
 		CaverAPI.setMiningPointAmount("topazOre", 2);
 		CaverAPI.setMiningPointAmount("oreChrome", 1);
@@ -368,8 +368,8 @@ public class Caveworld
 		CaverAPI.setMiningPointAmount("titaniumOre", 1);
 		CaverAPI.setMiningPointAmount("oreTofu", 1);
 		CaverAPI.setMiningPointAmount("tofuOre", 1);
-		CaverAPI.setMiningPointAmount("oreTofuDiamond", 3);
-		CaverAPI.setMiningPointAmount("tofuDiamondOre", 3);
+		CaverAPI.setMiningPointAmount("oreTofuDiamond", 4);
+		CaverAPI.setMiningPointAmount("tofuDiamondOre", 4);
 		CaverAPI.setMiningPointAmount("oreSulfur", 1);
 		CaverAPI.setMiningPointAmount("sulfurOre", 1);
 		CaverAPI.setMiningPointAmount("oreSaltpeter", 1);
@@ -466,7 +466,7 @@ public class Caveworld
 
 			for (Item item : GameData.getItemRegistry().typeSafeIterable())
 			{
-				if (entries.size() >= prop.getMaxListLength())
+				if (prop.getMaxListLength() > 0 && entries.size() >= prop.getMaxListLength())
 				{
 					break;
 				}
@@ -535,7 +535,7 @@ public class Caveworld
 
 			for (Potion potion : CaveUtils.getPotions())
 			{
-				if (entries.size() >= prop.getMaxListLength())
+				if (prop.getMaxListLength() > 0 && entries.size() >= prop.getMaxListLength())
 				{
 					break;
 				}
@@ -563,7 +563,7 @@ public class Caveworld
 
 		if (event.getSide().isServer() && (Version.DEV_DEBUG || Config.versionNotify && Version.isOutdated()))
 		{
-			event.getServer().logInfo(String.format(StatCollector.translateToLocal("caveworld.version.message"), metadata.name) + ": " + Version.getLatest());
+			event.getServer().logInfo(StatCollector.translateToLocalFormatted("caveworld.version.message", metadata.name) + ": " + Version.getLatest());
 		}
 	}
 
@@ -571,6 +571,7 @@ public class Caveworld
 	public void serverStopping(FMLServerStoppedEvent event)
 	{
 		CaveEventHooks.firstJoinPlayers.clear();
+
 		ItemMiningPickaxe.BreakMode.executors.clear();
 		ItemLumberingAxe.BreakMode.executors.clear();
 		ItemDiggingShovel.BreakMode.executors.clear();

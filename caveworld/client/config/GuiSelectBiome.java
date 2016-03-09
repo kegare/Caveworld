@@ -9,8 +9,8 @@
 
 package caveworld.client.config;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,18 +61,18 @@ import net.minecraftforge.common.BiomeDictionary.Type;
 @SideOnly(Side.CLIENT)
 public class GuiSelectBiome extends GuiScreen
 {
-	protected static final ArrayListExtended<BiomeGenBase> biomes = new ArrayListExtended<BiomeGenBase>().addAllObject(BiomeGenBase.getBiomeGenArray());
-
-	private static final Map<String, List<BiomeGenBase>> filterCache = Maps.newHashMap();
-
 	public interface SelectListener
 	{
-		public void setResult(Set<BiomeGenBase> result);
+		public void onBiomeSelected(Set<BiomeGenBase> result);
 	}
 
-	protected final GuiScreen parentScreen;
-	protected GuiTextField parentTextField;
-	protected ArrayEntry parentElement;
+	protected final GuiScreen parent;
+
+	protected GuiTextField biomeField;
+
+	protected ArrayEntry configElement;
+
+	protected final Set<BiomeGenBase> excluded = Sets.newHashSet();
 
 	protected BiomeList biomeList;
 
@@ -85,39 +85,34 @@ public class GuiSelectBiome extends GuiScreen
 	protected HoverChecker detailHoverChecker;
 	protected HoverChecker instantHoverChecker;
 
-	private final Set<BiomeGenBase> hiddenBiomes = Sets.newHashSet();
-	private final Map<BiomeGenBase, List<String>> hoverCache = Maps.newHashMap();
+	protected final Map<BiomeGenBase, List<String>> hoverCache = Maps.newHashMap();
 
 	public GuiSelectBiome(GuiScreen parent)
 	{
-		this.parentScreen = parent;
+		this.parent = parent;
 	}
 
 	public GuiSelectBiome(GuiScreen parent, GuiTextField textField)
 	{
 		this(parent);
-		this.parentTextField = textField;
+		this.biomeField = textField;
 	}
 
 	public GuiSelectBiome(GuiScreen parent, ArrayEntry entry)
 	{
 		this(parent);
-		this.parentElement = entry;
+		this.configElement = entry;
 	}
 
-	public GuiSelectBiome setHiddenBiomes(BiomeGenBase... hidden)
+	public GuiSelectBiome exclude(Collection<BiomeGenBase> hidden)
 	{
-		hiddenBiomes.clear();
-
 		for (BiomeGenBase biome : hidden)
 		{
 			if (biome != null)
 			{
-				hiddenBiomes.add(biome);
+				excluded.add(biome);
 			}
 		}
-
-		biomes.removeAll(hiddenBiomes);
 
 		return this;
 	}
@@ -185,21 +180,21 @@ public class GuiSelectBiome extends GuiScreen
 				case 0:
 					if (biomeList.selected.isEmpty())
 					{
-						if (parentTextField != null)
+						if (biomeField != null)
 						{
-							parentTextField.setText("");
+							biomeField.setText("");
 						}
 
-						if (parentElement != null)
+						if (configElement != null)
 						{
-							parentElement.setListFromChildScreen(new Object[0]);
+							configElement.setListFromChildScreen(new Object[0]);
 						}
 					}
 					else
 					{
-						if (parentScreen != null && parentScreen instanceof SelectListener)
+						if (parent != null && parent instanceof SelectListener)
 						{
-							((SelectListener)parentScreen).setResult(Sets.newHashSet(biomeList.selected));
+							((SelectListener)parent).onBiomeSelected(biomeList.selected);
 						}
 
 						List<Integer> result = Lists.newArrayList(Collections2.transform(biomeList.selected, new Function<BiomeGenBase, Integer>()
@@ -213,24 +208,24 @@ public class GuiSelectBiome extends GuiScreen
 
 						Collections.sort(result);
 
-						if (parentTextField != null)
+						if (biomeField != null)
 						{
-							parentTextField.setText(Ints.join(", ", Ints.toArray(result)));
+							biomeField.setText(Ints.join(", ", Ints.toArray(result)));
 						}
 
-						if (parentElement != null)
+						if (configElement != null)
 						{
-							parentElement.setListFromChildScreen(result.toArray());
+							configElement.setListFromChildScreen(result.toArray());
 						}
 					}
 
-					if (parentTextField != null)
+					if (biomeField != null)
 					{
-						parentTextField.setFocused(true);
-						parentTextField.setCursorPositionEnd();
+						biomeField.setFocused(true);
+						biomeField.setCursorPositionEnd();
 					}
 
-					mc.displayGuiScreen(parentScreen);
+					mc.displayGuiScreen(parent);
 
 					biomeList.selected.clear();
 					biomeList.scrollToTop();
@@ -390,7 +385,7 @@ public class GuiSelectBiome extends GuiScreen
 		{
 			if (code == Keyboard.KEY_ESCAPE)
 			{
-				mc.displayGuiScreen(parentScreen);
+				mc.displayGuiScreen(parent);
 			}
 			else if (code == Keyboard.KEY_BACK)
 			{
@@ -439,45 +434,64 @@ public class GuiSelectBiome extends GuiScreen
 	public void onGuiClosed()
 	{
 		super.onGuiClosed();
-
-		if (biomes.addAll(hiddenBiomes))
-		{
-			Collections.sort(biomes, CaveUtils.biomeComparator);
-		}
 	}
 
 	class BiomeList extends GuiListSlot
 	{
-		protected final ArrayListExtended<BiomeGenBase> contents = new ArrayListExtended(biomes);
+		protected final ArrayListExtended<BiomeGenBase> biomes = new ArrayListExtended();
+		protected final ArrayListExtended<BiomeGenBase> contents = new ArrayListExtended();
 		protected final Set<BiomeGenBase> selected = Sets.newTreeSet(CaveUtils.biomeComparator);
+		protected final Map<String, List<BiomeGenBase>> filterCache = Maps.newHashMap();
 
-		private BiomeList()
+		protected BiomeList()
 		{
 			super(GuiSelectBiome.this.mc, 0, 0, 0, 0, 18);
 
-			if (parentTextField != null)
+			for (BiomeGenBase biome : CaveUtils.getBiomes())
 			{
-				Set<Integer> ids = Sets.newHashSet();
-
-				for (String str : Splitter.on(',').trimResults().omitEmptyStrings().split(parentTextField.getText()))
+				if (excluded.isEmpty() || !excluded.contains(biome))
 				{
-					if (NumberUtils.isNumber(str))
-					{
-						ids.add(Integer.parseInt(str));
-					}
-				}
-
-				for (Integer id : ids)
-				{
-					selected.add(BiomeGenBase.getBiome(id));
+					biomes.addIfAbsent(biome);
+					contents.addIfAbsent(biome);
 				}
 			}
 
-			if (parentElement != null)
+			if (biomeField != null)
 			{
-				for (Object obj : parentElement.getCurrentValues())
+				String text = biomeField.getText();
+
+				if (!Strings.isNullOrEmpty(text))
 				{
-					selected.add(BiomeGenBase.getBiome(Integer.parseInt(String.valueOf(obj))));
+					for (String str : Splitter.on(',').trimResults().omitEmptyStrings().split(text))
+					{
+						if (NumberUtils.isNumber(str))
+						{
+							int id = Integer.parseInt(str);
+
+							if (id >= 0 && id < BiomeGenBase.getBiomeGenArray().length)
+							{
+								selected.add(BiomeGenBase.getBiome(id));
+							}
+						}
+					}
+				}
+			}
+
+			if (configElement != null)
+			{
+				for (Object obj : configElement.getCurrentValues())
+				{
+					String value = String.valueOf(obj);
+
+					if (!Strings.isNullOrEmpty(value) && NumberUtils.isNumber(value))
+					{
+						int id = Integer.parseInt(value);
+
+						if (id >= 0 && id < BiomeGenBase.getBiomeGenArray().length)
+						{
+							selected.add(BiomeGenBase.getBiome(id));
+						}
+					}
 				}
 			}
 		}
@@ -495,9 +509,9 @@ public class GuiSelectBiome extends GuiScreen
 			{
 				int amount = 0;
 
-				for (Iterator<BiomeGenBase> iterator = selected.iterator(); iterator.hasNext();)
+				for (BiomeGenBase biome : selected)
 				{
-					amount = contents.indexOf(iterator.next()) * getSlotHeight();
+					amount = contents.indexOf(biome) * getSlotHeight();
 
 					if (getAmountScrolled() != amount)
 					{
@@ -590,6 +604,10 @@ public class GuiSelectBiome extends GuiScreen
 					if (Strings.isNullOrEmpty(filter))
 					{
 						result = biomes;
+					}
+					else if (filter.equals("selected"))
+					{
+						result = Lists.newArrayList(selected);
 					}
 					else
 					{

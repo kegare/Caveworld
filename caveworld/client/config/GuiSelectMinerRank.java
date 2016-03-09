@@ -9,6 +9,7 @@
 
 package caveworld.client.config;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.RecursiveAction;
@@ -40,7 +41,8 @@ import net.minecraft.client.resources.I18n;
 public class GuiSelectMinerRank extends GuiScreen
 {
 	protected final GuiScreen parent;
-	protected GuiTextField parentTextField;
+
+	protected GuiTextField rankField;
 
 	protected RankList rankList;
 
@@ -60,7 +62,7 @@ public class GuiSelectMinerRank extends GuiScreen
 	public GuiSelectMinerRank(GuiScreen parent, GuiTextField textField)
 	{
 		this(parent);
-		this.parentTextField = textField;
+		this.rankField = textField;
 	}
 
 	@Override
@@ -127,9 +129,9 @@ public class GuiSelectMinerRank extends GuiScreen
 					{
 						MinerRank rank = rankList.selected;
 
-						if (parentTextField != null)
+						if (rankField != null)
 						{
-							parentTextField.setText(Integer.toString(rank.getRank()));
+							rankField.setText(Integer.toString(rank.getRank()));
 						}
 					}
 
@@ -256,61 +258,49 @@ public class GuiSelectMinerRank extends GuiScreen
 		}
 	}
 
-	class RankList extends GuiListSlot
+	class RankList extends GuiListSlot implements Comparator<MinerRank>
 	{
-		private final ArrayListExtended<MinerRank> ranks = new ArrayListExtended();
-		private final ArrayListExtended<MinerRank> contents = new ArrayListExtended();
-		private final Map<String, List<MinerRank>> filterCache = Maps.newHashMap();
+		protected final ArrayListExtended<MinerRank> ranks = new ArrayListExtended();
+		protected final ArrayListExtended<MinerRank> contents = new ArrayListExtended();
+		protected final Map<String, List<MinerRank>> filterCache = Maps.newHashMap();
 
-		private MinerRank selected;
+		protected MinerRank selected;
 
-		public RankList()
+		protected RankList()
 		{
 			super(GuiSelectMinerRank.this.mc, 0, 0, 0, 0, 18);
-			this.initEntries();
-		}
 
-		protected void initEntries()
-		{
-			CaveUtils.getPool().execute(new RecursiveAction()
+			for (MinerRank rank : MinerRank.values())
 			{
-				@Override
-				protected void compute()
+				ranks.addIfAbsent(rank);
+				contents.addIfAbsent(rank);
+			}
+
+			if (rankField != null)
+			{
+				String text = rankField.getText();
+
+				if (!Strings.isNullOrEmpty(text))
 				{
-					ranks.clear();
-					contents.clear();
-					filterCache.clear();
-					selected = null;
-
-					for (MinerRank rank : MinerRank.values())
+					try
 					{
-						ranks.addIfAbsent(rank);
-						contents.addIfAbsent(rank);
-					}
+						int i = Integer.parseInt(text);
 
-					if (parentTextField != null)
-					{
-						String str = parentTextField.getText();
-
-						if (!Strings.isNullOrEmpty(str))
+						for (MinerRank rank : ranks)
 						{
-							try
+							if (i == rank.getRank())
 							{
-								int i = Integer.parseInt(str);
-
-								if (i >= 0 && i < ranks.size())
-								{
-									selected = ranks.get(i);
-								}
-							}
-							catch (NumberFormatException e)
-							{
-								selected = null;
+								selected = rank;
+								break;
 							}
 						}
 					}
+					catch (NumberFormatException e)
+					{
+						selected = null;
+					}
 				}
-			});
+			}
 		}
 
 		@Override
@@ -378,6 +368,19 @@ public class GuiSelectMinerRank extends GuiScreen
 			return entry != null && selected != null && entry == selected;
 		}
 
+		@Override
+		public int compare(MinerRank o1, MinerRank o2)
+		{
+			int i = CaveUtils.compareWithNull(o1, o2);
+
+			if (i == 0 && o1 != null && o2 != null)
+			{
+				i = Integer.compare(ranks.indexOf(o1), ranks.indexOf(o2));
+			}
+
+			return i;
+		}
+
 		protected void setFilter(final String filter)
 		{
 			CaveUtils.getPool().execute(new RecursiveAction()
@@ -395,16 +398,7 @@ public class GuiSelectMinerRank extends GuiScreen
 					{
 						if (!filterCache.containsKey(filter))
 						{
-							filterCache.put(filter, Lists.newArrayList(Collections2.filter(ranks, new Predicate<MinerRank>()
-							{
-								@Override
-								public boolean apply(MinerRank input)
-								{
-									String name = input.getUnlocalizedName();
-
-									return StringUtils.containsIgnoreCase(name, filter) || StringUtils.containsIgnoreCase(I18n.format(name), filter);
-								}
-							})));
+							filterCache.put(filter, Lists.newArrayList(Collections2.filter(ranks, new MinerRankFilter(filter))));
 						}
 
 						result = filterCache.get(filter);
@@ -417,6 +411,22 @@ public class GuiSelectMinerRank extends GuiScreen
 					}
 				}
 			});
+		}
+	}
+
+	public static class MinerRankFilter implements Predicate<MinerRank>
+	{
+		private final String filter;
+
+		public MinerRankFilter(String filter)
+		{
+			this.filter = filter;
+		}
+
+		@Override
+		public boolean apply(MinerRank input)
+		{
+			return StringUtils.containsIgnoreCase(I18n.format(input.getUnlocalizedName()), filter) || StringUtils.containsIgnoreCase(input.getName(), filter);
 		}
 	}
 }

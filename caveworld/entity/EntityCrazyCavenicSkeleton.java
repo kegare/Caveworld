@@ -21,12 +21,21 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import caveworld.client.particle.EntityUniversalChestFX;
 import caveworld.core.CaveAchievementList;
 import caveworld.entity.EntityCrazyCavenicSkeleton.Attacker;
 import caveworld.item.CaveItems;
+import caveworld.network.CaveNetworkRegistry;
+import caveworld.network.client.CaveAdjustMessage;
 import caveworld.plugin.mceconomy.MCEconomyPlugin;
 import caveworld.util.CaveUtils;
+import caveworld.world.WorldProviderCavenia;
+import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.block.Block;
+import net.minecraft.client.particle.EntityFX;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
@@ -49,6 +58,7 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants.NBT;
 import shift.mceconomy2.api.MCEconomyAPI;
@@ -143,6 +153,125 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 		getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(20000.0D);
 		getEntityAttribute(SharedMonsterAttributes.knockbackResistance).setBaseValue(8.0D);
 		getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.29778D);
+	}
+
+	protected boolean teleportRandomly()
+	{
+		double x = posX + (rand.nextDouble() - 0.5D) * 64.0D;
+		double y = posY + (rand.nextInt(64) - 32);
+		double z = posZ + (rand.nextDouble() - 0.5D) * 64.0D;
+
+		return teleportTo(x, y, z);
+	}
+
+	protected boolean teleportToEntity(Entity entity)
+	{
+		Vec3 vec3 = Vec3.createVectorHelper(posX - entity.posX, boundingBox.minY + height / 2.0F - entity.posY + entity.getEyeHeight(), posZ - entity.posZ);
+		vec3 = vec3.normalize();
+		double d0 = 16.0D;
+		double d1 = posX + (rand.nextDouble() - 0.5D) * 8.0D - vec3.xCoord * d0;
+		double d2 = posY + (rand.nextInt(16) - 8) - vec3.yCoord * d0;
+		double d3 = posZ + (rand.nextDouble() - 0.5D) * 8.0D - vec3.zCoord * d0;
+
+		return teleportTo(d1, d2, d3);
+	}
+
+	protected boolean teleportTo(double targetX, double targetY, double targetZ)
+	{
+		double d3 = posX;
+		double d4 = posY;
+		double d5 = posZ;
+		posX = targetX;
+		posY = targetY;
+		posZ = targetZ;
+		boolean flag = false;
+		int x = MathHelper.floor_double(posX);
+		int y = MathHelper.floor_double(posY);
+		int z = MathHelper.floor_double(posZ);
+
+		if (worldObj.blockExists(x, y, z))
+		{
+			boolean flag1 = false;
+
+			while (!flag1 && y > 0)
+			{
+				Block block = worldObj.getBlock(x, y - 1, z);
+
+				if (block.getMaterial().blocksMovement())
+				{
+					flag1 = true;
+				}
+				else
+				{
+					--posY;
+					--y;
+				}
+			}
+
+			if (flag1)
+			{
+				setPosition(posX, posY, posZ);
+
+				if (worldObj.getCollidingBoundingBoxes(this, boundingBox).isEmpty() && !worldObj.isAnyLiquid(boundingBox))
+				{
+					flag = true;
+				}
+			}
+		}
+
+		if (!flag)
+		{
+			setPosition(d3, d4, d5);
+
+			return false;
+		}
+		else
+		{
+			short effect = 128;
+
+			for (int i = 0; i < effect; ++i)
+			{
+				double d6 = i / (effect - 1.0D);
+				float motionX = (rand.nextFloat() - 0.5F) * 0.2F;
+				float motionY = (rand.nextFloat() - 0.5F) * 0.2F;
+				float motionZ = (rand.nextFloat() - 0.5F) * 0.2F;
+				double ptX = d3 + (posX - d3) * d6 + (rand.nextDouble() - 0.5D) * width * 2.0D;
+				double ptY = d4 + (posY - d4) * d6 + rand.nextDouble() * height;
+				double ptZ = d5 + (posZ - d5) * d6 + (rand.nextDouble() - 0.5D) * width * 2.0D;
+
+				worldObj.spawnParticle("portal", ptX, ptY, ptZ, motionX, motionY, motionZ);
+			}
+
+			worldObj.playSoundEffect(d3, d4, d5, "mob.endermen.portal", 1.0F, 0.5F);
+			playSound("mob.endermen.portal", 1.0F, 0.5F);
+
+			return true;
+		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
+	public void onUpdate()
+	{
+		super.onUpdate();
+
+		if (worldObj.isRemote)
+		{
+			for (int i = 0; i < 3; ++i)
+			{
+				int var1 = rand.nextInt(2) * 2 - 1;
+				int var2 = rand.nextInt(2) * 2 - 1;
+				double ptX = posX + 0.25D * var1;
+				double ptY = posY + 0.65D + rand.nextFloat();
+				double ptZ = posZ + 0.25D * var2;
+				double motionX = rand.nextFloat() * 1.0F * var1;
+				double motionY = (rand.nextFloat() - 0.25D) * 0.125D;
+				double motionZ = rand.nextFloat() * 1.0F * var2;
+				EntityFX particle = new EntityUniversalChestFX(worldObj, ptX, ptY, ptZ, motionX, motionY, motionZ);
+
+				FMLClientHandler.instance().getClient().effectRenderer.addEffect(particle);
+			}
+		}
 	}
 
 	@Override
@@ -276,6 +405,22 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 	@Override
 	public boolean attackEntityFrom(DamageSource source, float damage)
 	{
+		if (isEntityInvulnerable())
+		{
+			return false;
+		}
+
+		if (source == DamageSource.inWall || source == DamageSource.fallingBlock)
+		{
+			for (int i = 0; i < 64; ++i)
+			{
+				if (teleportRandomly())
+				{
+					return true;
+				}
+			}
+		}
+
 		if (damage > 50.0F)
 		{
 			damage = 50.0F;
@@ -358,7 +503,7 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 
 		if (entity != null && entity instanceof EntityPlayer)
 		{
-			getAttacker((EntityPlayer)entity).addDeath(1);
+			getAttacker((EntityPlayer)entity).addKilled(1);
 		}
 	}
 
@@ -389,7 +534,7 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 
 			for (Attacker entry : getSortedAttacker())
 			{
-				IChatComponent component = new ChatComponentTranslation("caveworld.message.crazy.report", entry.getName(), getAttackerOccupancy(entry) + "%", entry.getDeath());
+				IChatComponent component = new ChatComponentTranslation("caveworld.message.crazy.report", entry.getName(), getAttackerOccupancy(entry) + "%", entry.getKilled());
 				component.getChatStyle().setColor(EnumChatFormatting.GRAY);
 
 				names.add(entry.getName());
@@ -443,6 +588,10 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 			}
 
 			entityDropItem(new ItemStack(Blocks.stonebrick, 14, 1), rand.nextFloat() + 0.1F);
+
+			WorldProviderCavenia.saveHandler.setBossAlive(false);
+
+			CaveNetworkRegistry.sendToAll(new CaveAdjustMessage(WorldProviderCavenia.TYPE, WorldProviderCavenia.saveHandler));
 		}
 	}
 
@@ -516,7 +665,7 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 
 		private String name;
 		private float damage;
-		private int death;
+		private int killed;
 
 		public Attacker(String uuid)
 		{
@@ -533,7 +682,7 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 			this(nbt.getString("UUID"));
 			this.name = nbt.getString("Name");
 			this.damage = nbt.getFloat("Damage");
-			this.death = nbt.getInteger("Death");
+			this.killed = nbt.getInteger("Killed");
 		}
 
 		public String getUniqueID()
@@ -566,19 +715,19 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 			damage += value;
 		}
 
-		public int getDeath()
+		public int getKilled()
 		{
-			return death;
+			return killed;
 		}
 
-		public void setDeath(int value)
+		public void setKilled(int value)
 		{
-			death = value;
+			killed = value;
 		}
 
-		public void addDeath(int value)
+		public void addKilled(int value)
 		{
-			death += value;
+			killed += value;
 		}
 
 		public NBTTagCompound getNBTData()
@@ -588,7 +737,7 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 			nbt.setString("UUID", uuid);
 			nbt.setString("Name", name);
 			nbt.setFloat("Damage", damage);
-			nbt.setInteger("Death", death);
+			nbt.setInteger("Killed", killed);
 
 			return nbt;
 		}

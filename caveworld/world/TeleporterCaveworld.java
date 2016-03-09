@@ -133,7 +133,7 @@ public class TeleporterCaveworld extends Teleporter
 			EntityPlayerMP player = (EntityPlayerMP)entity;
 
 			player.addExperienceLevel(0);
-			player.addPotionEffect(new PotionEffect(Potion.blindness.getId(), 25));
+			player.addPotionEffect(new PotionEffect(Potion.blindness.getId(), 25, -1));
 
 			if (CaveworldAPI.isEntityInCaves(player) && player.getBedLocation(player.dimension) == null)
 			{

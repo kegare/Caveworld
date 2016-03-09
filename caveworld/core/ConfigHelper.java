@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
@@ -128,31 +129,31 @@ public class ConfigHelper
 
 		CaverAPI.caverManager.clearMiningPointAmounts();
 
-		for (String str : Config.miningPoints)
+		for (String value : Config.miningPoints)
 		{
-			if (!Strings.isNullOrEmpty(str) && str.contains(","))
+			if (!Strings.isNullOrEmpty(value) && value.contains(","))
 			{
-				str = str.trim();
+				value = value.trim();
 
-				int i = str.indexOf(',');
-				String str2 = str.substring(0, i);
-				int point = Integer.parseInt(str.substring(i + 1));
+				int i = value.indexOf(',');
+				String str = value.substring(0, i);
+				int point = NumberUtils.toInt(value.substring(i + 1));
 
-				if (str2.contains(":"))
+				if (str.contains(":"))
 				{
-					i = str2.lastIndexOf(':');
-					Block block = GameData.getBlockRegistry().getObject(str2.substring(0, i));
+					i = str.lastIndexOf(':');
+					Block block = GameData.getBlockRegistry().getObject(str.substring(0, i));
 
 					if (block != null && block != Blocks.air)
 					{
-						int meta = Integer.parseInt(str2.substring(i + 1));
+						int meta = NumberUtils.toInt(str.substring(i + 1));
 
 						CaverAPI.setMiningPointAmount(block, meta, point);
 					}
 				}
 				else
 				{
-					CaverAPI.setMiningPointAmount(str2, point);
+					CaverAPI.setMiningPointAmount(str, point);
 				}
 			}
 		}

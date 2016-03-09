@@ -31,6 +31,12 @@ public class WorldProviderCaveland extends WorldProviderCaveworld
 	}
 
 	@Override
+	public float getBrightness()
+	{
+		return ChunkProviderCaveland.caveBrightness;
+	}
+
+	@Override
 	protected void registerWorldChunkManager()
 	{
 		worldChunkMgr = new WorldChunkManager(worldObj);

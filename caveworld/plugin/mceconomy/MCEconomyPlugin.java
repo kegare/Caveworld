@@ -17,6 +17,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 
 import caveworld.block.BlockPervertedLog;
 import caveworld.block.CaveBlocks;
+import caveworld.core.CaverManager.MinerRank;
 import caveworld.core.Config;
 import caveworld.entity.EntityArcherZombie;
 import caveworld.entity.EntityCaveman;
@@ -205,6 +206,7 @@ public class MCEconomyPlugin implements ICavePlugin
 
 		if (shopCfg.getCategoryNames().isEmpty())
 		{
+			productManager.addShopProduct(new ShopProduct(new ItemStack(Blocks.torch, 64), 50));
 			productManager.addShopProduct(new ShopProduct(new ItemStack(Items.bread, 6), 30));
 			productManager.addShopProduct(new ShopProduct(new ItemStack(Blocks.sapling, 1, 0), 15));
 			productManager.addShopProduct(new ShopProduct(new ItemStack(Blocks.sapling, 1, 1), 15));
@@ -213,13 +215,17 @@ public class MCEconomyPlugin implements ICavePlugin
 			productManager.addShopProduct(new ShopProduct(new ItemStack(Blocks.sapling, 1, 4), 18));
 			productManager.addShopProduct(new ShopProduct(new ItemStack(Blocks.sapling, 1, 5), 18));
 			productManager.addShopProduct(new ShopProduct(new ItemStack(Items.wheat_seeds, 10), 10));
-			productManager.addShopProduct(new ShopProduct(new ItemStack(Items.bed), 100));
-			productManager.addShopProduct(new ShopProduct(new ItemStack(Blocks.torch, 64), 50));
-			productManager.addShopProduct(new ShopProduct(new ItemStack(Items.iron_sword), 100));
-			productManager.addShopProduct(new ShopProduct(new ItemStack(Items.iron_pickaxe), 150));
-			productManager.addShopProduct(new ShopProduct(new ItemStack(Items.iron_axe), 150));
-			productManager.addShopProduct(new ShopProduct(new ItemStack(Items.iron_shovel), 50));
-			productManager.addShopProduct(new ShopProduct(new ItemStack(Items.iron_hoe), 100));
+
+			int rank = MinerRank.STONE_MINER.getRank();
+			productManager.addShopProduct(new ShopProduct(new ItemStack(Items.bed), 100, rank));
+
+			rank = MinerRank.IRON_MINER.getRank();
+			productManager.addShopProduct(new ShopProduct(new ItemStack(Items.iron_sword), 100, rank));
+			productManager.addShopProduct(new ShopProduct(new ItemStack(Items.iron_pickaxe), 150, rank));
+			productManager.addShopProduct(new ShopProduct(new ItemStack(Items.iron_axe), 150, rank));
+			productManager.addShopProduct(new ShopProduct(new ItemStack(Items.iron_shovel), 50, rank));
+			productManager.addShopProduct(new ShopProduct(new ItemStack(Items.iron_hoe), 100, rank));
+
 			productManager.addShopProduct(new ShopProduct(new ItemStack(CaveBlocks.rope, 5), 10));
 
 			for (int i = 0; i < BlockPervertedLog.types.length; ++i)

@@ -15,7 +15,7 @@ public class ItemInfititePickaxe extends ItemCavePickaxe
 {
 	public ItemInfititePickaxe(String name)
 	{
-		super(name, "infitite_pickaxe", CaveItems.INFINITE);
+		super(name, "infitite_pickaxe", CaveItems.INFITITE);
 	}
 
 	@Override
