@@ -33,6 +33,7 @@ public class EntityCavenicZombie extends EntityZombie implements ICavenicMob
 	public static int spawnMaxHeight;
 	public static int spawnInChunks;
 	public static int[] spawnBiomes;
+	public static boolean despawn;
 
 	public static void refreshSpawn()
 	{
@@ -120,6 +121,12 @@ public class EntityCavenicZombie extends EntityZombie implements ICavenicMob
 		{
 			((EntityPlayer)entity).triggerAchievement(CaveAchievementList.cavenicZombieSlayer);
 		}
+	}
+
+	@Override
+	protected boolean canDespawn()
+	{
+		return despawn;
 	}
 
 	public boolean isValidHeight()

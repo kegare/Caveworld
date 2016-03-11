@@ -59,6 +59,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockLog;
 import net.minecraft.block.BlockWood;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.RenderHelper;
@@ -66,12 +67,14 @@ import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.init.Blocks;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemAxe;
 import net.minecraft.item.ItemHoe;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemSpade;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentTranslation;
@@ -875,18 +878,136 @@ public class CaveUtils
 		return (o1 == null ? 1 : 0) - (o2 == null ? 1 : 0);
 	}
 
-	public static boolean canMerge(ItemStack itemstack1, ItemStack itemstack2)
+	public static int getFirstEmptySlot(IInventory inventory)
 	{
-		if (itemstack1 == null || itemstack2 == null)
+		for (int i = 0; i < inventory.getSizeInventory(); ++i)
 		{
-			return false;
+			if (inventory.getStackInSlot(i) == null)
+			{
+				return i;
+			}
 		}
-		else if (!itemstack1.isItemEqual(itemstack2) || !itemstack1.isStackable() || !ItemStack.areItemStackTagsEqual(itemstack1, itemstack2))
+
+		return -1;
+	}
+
+	public static int storeItemStack(IInventory inventory, ItemStack itemstack)
+	{
+		for (int i = 0; i < inventory.getSizeInventory(); ++i)
+		{
+			ItemStack item = inventory.getStackInSlot(i);
+
+			if (item != null && item.getItem() == itemstack.getItem() && item.isStackable() && item.stackSize < item.getMaxStackSize() && item.stackSize < inventory.getInventoryStackLimit() &&
+				(!item.getHasSubtypes() || item.getItemDamage() == itemstack.getItemDamage()) && ItemStack.areItemStackTagsEqual(item, itemstack))
+			{
+				return i;
+			}
+		}
+
+		return -1;
+	}
+
+	public static int storePartialItemStack(IInventory inventory, ItemStack itemstack)
+	{
+		Item item = itemstack.getItem();
+		int i = itemstack.stackSize;
+		int j;
+
+		if (itemstack.getMaxStackSize() == 1)
+		{
+			j = getFirstEmptySlot(inventory);
+
+			if (j < 0)
+			{
+				return i;
+			}
+
+			if (inventory.getStackInSlot(j) == null)
+			{
+				inventory.setInventorySlotContents(j, ItemStack.copyItemStack(itemstack));
+			}
+
+			return 0;
+		}
+
+		j = storeItemStack(inventory, itemstack);
+
+		if (j < 0)
+		{
+			j = getFirstEmptySlot(inventory);
+		}
+
+		if (j < 0)
+		{
+			return i;
+		}
+
+		if (inventory.getStackInSlot(j) == null)
+		{
+			inventory.setInventorySlotContents(j, new ItemStack(item, 0, itemstack.getItemDamage()));
+
+			if (itemstack.hasTagCompound())
+			{
+				inventory.getStackInSlot(j).setTagCompound((NBTTagCompound)itemstack.getTagCompound().copy());
+			}
+		}
+
+		int k = i;
+
+		if (i > inventory.getStackInSlot(j).getMaxStackSize() - inventory.getStackInSlot(j).stackSize)
+		{
+			k = inventory.getStackInSlot(j).getMaxStackSize() - inventory.getStackInSlot(j).stackSize;
+		}
+
+		if (k > inventory.getInventoryStackLimit() - inventory.getStackInSlot(j).stackSize)
+		{
+			k = inventory.getInventoryStackLimit() - inventory.getStackInSlot(j).stackSize;
+		}
+
+		if (k == 0)
+		{
+			return i;
+		}
+
+		i -= k;
+
+		inventory.getStackInSlot(j).stackSize += k;
+		inventory.getStackInSlot(j).animationsToGo = 5;
+
+		return i;
+	}
+
+	public static boolean addItemStackToInventory(IInventory inventory, ItemStack itemstack)
+	{
+		if (itemstack == null || itemstack.getItem() == null)
 		{
 			return false;
 		}
 
-		return true;
+		int i;
+
+		if (itemstack.isItemDamaged())
+		{
+			i = getFirstEmptySlot(inventory);
+
+			if (i >= 0)
+			{
+				inventory.setInventorySlotContents(i, itemstack);
+
+				return true;
+			}
+
+			return false;
+		}
+
+		do
+		{
+			i = itemstack.stackSize;
+			itemstack.stackSize = storePartialItemStack(inventory, itemstack);
+		}
+		while (itemstack.stackSize > 0 && itemstack.stackSize < i);
+
+		return itemstack.stackSize < i;
 	}
 
 	public static String toStringHelper(Block block, int metadata)
@@ -947,11 +1068,18 @@ public class CaveUtils
 				rendered = false;
 			}
 
+			FontRenderer renderer = itemstack.getItem().getFontRenderer(itemstack);
+
+			if (renderer == null)
+			{
+				renderer = mc.fontRenderer;
+			}
+
 			if (!rendered)
 			{
 				try
 				{
-					itemRender.renderItemIntoGUI(mc.fontRenderer, mc.getTextureManager(), itemstack, x, y, true);
+					itemRender.renderItemIntoGUI(renderer, mc.getTextureManager(), itemstack, x, y, true);
 				}
 				catch (Throwable e) {}
 			}
@@ -960,7 +1088,7 @@ public class CaveUtils
 			{
 				try
 				{
-					itemRender.renderItemOverlayIntoGUI(mc.fontRenderer, mc.getTextureManager(), itemstack, x, y, txt);
+					itemRender.renderItemOverlayIntoGUI(renderer, mc.getTextureManager(), itemstack, x, y, txt);
 				}
 				catch (Throwable e) {}
 			}

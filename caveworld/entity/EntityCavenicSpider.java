@@ -38,6 +38,7 @@ public class EntityCavenicSpider extends EntitySpider implements ICavenicMob
 	public static int spawnMaxHeight;
 	public static int spawnInChunks;
 	public static int[] spawnBiomes;
+	public static boolean despawn;
 
 	public static void refreshSpawn()
 	{
@@ -183,6 +184,12 @@ public class EntityCavenicSpider extends EntitySpider implements ICavenicMob
 		{
 			((EntityPlayer)entity).triggerAchievement(CaveAchievementList.cavenicSpiderSlayer);
 		}
+	}
+
+	@Override
+	protected boolean canDespawn()
+	{
+		return despawn;
 	}
 
 	public boolean isValidHeight()

@@ -71,16 +71,22 @@ public class RenderCaveniumTool implements IItemRenderer
 
 		if (!Strings.isNullOrEmpty(refined))
 		{
+			boolean unicode = renderer.getUnicodeFlag();
+
+			renderer.setUnicodeFlag(false);
+
 			GL11.glDisable(GL11.GL_LIGHTING);
 			GL11.glDisable(GL11.GL_DEPTH_TEST);
 			GL11.glDisable(GL11.GL_BLEND);
 			GL11.glPushMatrix();
-			GL11.glTranslatef(5.0F, 5.0F, 1.0F);
-			GL11.glScalef(0.8F, 0.8F, 1.0F);
+			GL11.glTranslatef(6.0F, 6.0F, 1.0F);
+			GL11.glScalef(0.65F, 0.65F, 0.5F);
 			renderer.drawStringWithShadow(refined, 16 - renderer.getStringWidth(refined) - 2, item.isItemDamaged() ? 3 : 6, 0xEEEEEE);
 			GL11.glPopMatrix();
 			GL11.glEnable(GL11.GL_LIGHTING);
 			GL11.glEnable(GL11.GL_DEPTH_TEST);
+
+			renderer.setUnicodeFlag(unicode);
 		}
 	}
 }

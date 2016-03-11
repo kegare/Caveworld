@@ -35,11 +35,10 @@ public class ConfigHelper
 		if (itemstack != null && itemstack.getItem() != null && itemstack.stackSize > 0)
 		{
 			String name = GameData.getItemRegistry().getNameForObject(itemstack.getItem());
-			int damage = itemstack.isItemStackDamageable() ? 0 : itemstack.getItemDamage();
 
-			if (damage > 0)
+			if (!itemstack.isItemStackDamageable() && (itemstack.getHasSubtypes() || itemstack.getItemDamage() > 0))
 			{
-				name += ":" + damage;
+				name += ":" + itemstack.getItemDamage();
 			}
 
 			return Config.miningPointValidItems != null && ArrayUtils.contains(Config.miningPointValidItems, name);

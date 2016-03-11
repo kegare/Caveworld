@@ -44,6 +44,7 @@ public class EntityArcherZombie extends EntityZombie implements IRangedAttackMob
 	public static int spawnMaxHeight;
 	public static int spawnInChunks;
 	public static int[] spawnBiomes;
+	public static boolean despawn;
 
 	public static void refreshSpawn()
 	{
@@ -184,6 +185,12 @@ public class EntityArcherZombie extends EntityZombie implements IRangedAttackMob
 		{
 			setCombatTask();
 		}
+	}
+
+	@Override
+	protected boolean canDespawn()
+	{
+		return despawn;
 	}
 
 	public boolean isValidHeight()

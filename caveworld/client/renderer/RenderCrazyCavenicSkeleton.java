@@ -25,7 +25,7 @@ public class RenderCrazyCavenicSkeleton extends RenderSkeleton
 	@Override
 	protected void preRenderCallback(EntitySkeleton entity, float ticks)
 	{
-		GL11.glScalef(1.3F, 1.3F, 1.3F);
+		GL11.glScalef(1.5F, 1.5F, 1.5F);
 	}
 
 	@Override

@@ -101,7 +101,7 @@ public class TeleporterCaveworld extends Teleporter
 				int y = coord.posY;
 				int z = coord.posZ;
 
-				if (worldObj.getBlock(x, y, z) == portalBlock)
+				if (worldObj.blockExists(x, y, z) && worldObj.getBlock(x, y, z) == portalBlock)
 				{
 					if (entity instanceof EntityPlayerMP)
 					{

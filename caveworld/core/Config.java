@@ -532,6 +532,11 @@ public class Config
 		propOrder.add(prop.getName());
 		EntityCaveman.spawnBiomes = prop.getIntList();
 		EntityCaveman.refreshSpawn();
+		prop = mobsCfg.get(category, "canDespawn", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		propOrder.add(prop.getName());
+		EntityCaveman.despawn = prop.getBoolean(EntityCaveman.despawn);
 
 		mobsCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
 		mobsCfg.setCategoryPropertyOrder(category, propOrder);
@@ -568,6 +573,11 @@ public class Config
 		propOrder.add(prop.getName());
 		EntityArcherZombie.spawnBiomes = prop.getIntList();
 		EntityArcherZombie.refreshSpawn();
+		prop = mobsCfg.get(category, "canDespawn", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		propOrder.add(prop.getName());
+		EntityArcherZombie.despawn = prop.getBoolean(EntityArcherZombie.despawn);
 
 		mobsCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
 		mobsCfg.setCategoryPropertyOrder(category, propOrder);
@@ -604,6 +614,11 @@ public class Config
 		propOrder.add(prop.getName());
 		EntityCavenicSkeleton.spawnBiomes = prop.getIntList();
 		EntityCavenicSkeleton.refreshSpawn();
+		prop = mobsCfg.get(category, "canDespawn", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		propOrder.add(prop.getName());
+		EntityCavenicSkeleton.despawn = prop.getBoolean(EntityCavenicSkeleton.despawn);
 
 		mobsCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
 		mobsCfg.setCategoryPropertyOrder(category, propOrder);
@@ -640,6 +655,11 @@ public class Config
 		propOrder.add(prop.getName());
 		EntityCavenicCreeper.spawnBiomes = prop.getIntList();
 		EntityCavenicCreeper.refreshSpawn();
+		prop = mobsCfg.get(category, "canDespawn", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		propOrder.add(prop.getName());
+		EntityCavenicCreeper.despawn = prop.getBoolean(EntityCavenicCreeper.despawn);
 
 		mobsCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
 		mobsCfg.setCategoryPropertyOrder(category, propOrder);
@@ -676,6 +696,11 @@ public class Config
 		propOrder.add(prop.getName());
 		EntityCavenicZombie.spawnBiomes = prop.getIntList();
 		EntityCavenicZombie.refreshSpawn();
+		prop = mobsCfg.get(category, "canDespawn", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		propOrder.add(prop.getName());
+		EntityCavenicZombie.despawn = prop.getBoolean(EntityCavenicZombie.despawn);
 
 		mobsCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
 		mobsCfg.setCategoryPropertyOrder(category, propOrder);
@@ -712,6 +737,11 @@ public class Config
 		propOrder.add(prop.getName());
 		EntityCavenicSpider.spawnBiomes = prop.getIntList();
 		EntityCavenicSpider.refreshSpawn();
+		prop = mobsCfg.get(category, "canDespawn", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		propOrder.add(prop.getName());
+		EntityCavenicSpider.despawn = prop.getBoolean(EntityCavenicSpider.despawn);
 
 		mobsCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
 		mobsCfg.setCategoryPropertyOrder(category, propOrder);
@@ -1037,7 +1067,7 @@ public class Config
 		propOrder.add(prop.getName());
 		ChunkProviderCaveland.caveMonsterSpawn = MathHelper.clamp_int(prop.getInt(ChunkProviderCaveland.caveMonsterSpawn), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 		ChunkProviderCaveland.caveMonster = EnumHelper.addCreatureType("CavelandMonster", IMob.class, ChunkProviderCaveland.caveMonsterSpawn, Material.air, false, false);
-		prop = dimensionCfg.get(category, "caveBrightness", 0.05D);
+		prop = dimensionCfg.get(category, "caveBrightness", 0.075D);
 		prop.setMinValue(0.0D).setMaxValue(1.0D).setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";
@@ -1076,7 +1106,7 @@ public class Config
 		propOrder.add(prop.getName());
 		ChunkProviderCavenia.caveMonsterSpawn = MathHelper.clamp_int(prop.getInt(ChunkProviderCavenia.caveMonsterSpawn), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 		ChunkProviderCavenia.caveMonster = EnumHelper.addCreatureType("CaveniaMonster", IMob.class, ChunkProviderCavenia.caveMonsterSpawn, Material.air, false, false);
-		prop = dimensionCfg.get(category, "caveBrightness", 0.35D);
+		prop = dimensionCfg.get(category, "caveBrightness", 0.125D);
 		prop.setMinValue(0.0D).setMaxValue(1.0D).setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		prop.comment += " [range: " + prop.getMinValue() + " ~ " + prop.getMaxValue() + ", default: " + prop.getDefault() + "]";

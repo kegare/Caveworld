@@ -75,6 +75,7 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 	{
 		super(world);
 		this.experienceValue = 10000;
+		this.setSize(0.7F, 3.0F);
 	}
 
 	public Attacker getAttacker(EntityPlayer player)
@@ -155,6 +156,13 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 		getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.29778D);
 	}
 
+	@Override
+	protected void addRandomArmor()
+	{
+		setCurrentItemOrArmor(0, new ItemStack(CaveItems.cavenic_bow));
+		setEquipmentDropChance(0, 2.0F);
+	}
+
 	protected boolean teleportRandomly()
 	{
 		double x = posX + (rand.nextDouble() - 0.5D) * 64.0D;
@@ -178,9 +186,9 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 
 	protected boolean teleportTo(double targetX, double targetY, double targetZ)
 	{
-		double d3 = posX;
-		double d4 = posY;
-		double d5 = posZ;
+		double prevX = posX;
+		double prevY = posY;
+		double prevZ = posZ;
 		posX = targetX;
 		posY = targetY;
 		posZ = targetZ;
@@ -221,7 +229,7 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 
 		if (!flag)
 		{
-			setPosition(d3, d4, d5);
+			setPosition(prevX, prevY, prevZ);
 
 			return false;
 		}
@@ -235,14 +243,14 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 				float motionX = (rand.nextFloat() - 0.5F) * 0.2F;
 				float motionY = (rand.nextFloat() - 0.5F) * 0.2F;
 				float motionZ = (rand.nextFloat() - 0.5F) * 0.2F;
-				double ptX = d3 + (posX - d3) * d6 + (rand.nextDouble() - 0.5D) * width * 2.0D;
-				double ptY = d4 + (posY - d4) * d6 + rand.nextDouble() * height;
-				double ptZ = d5 + (posZ - d5) * d6 + (rand.nextDouble() - 0.5D) * width * 2.0D;
+				double ptX = prevX + (posX - prevX) * d6 + (rand.nextDouble() - 0.5D) * width * 2.0D;
+				double ptY = prevY + (posY - prevY) * d6 + rand.nextDouble() * height;
+				double ptZ = prevZ + (posZ - prevZ) * d6 + (rand.nextDouble() - 0.5D) * width * 2.0D;
 
 				worldObj.spawnParticle("portal", ptX, ptY, ptZ, motionX, motionY, motionZ);
 			}
 
-			worldObj.playSoundEffect(d3, d4, d5, "mob.endermen.portal", 1.0F, 0.5F);
+			worldObj.playSoundEffect(prevX, prevY, prevZ, "mob.endermen.portal", 1.0F, 0.5F);
 			playSound("mob.endermen.portal", 1.0F, 0.5F);
 
 			return true;

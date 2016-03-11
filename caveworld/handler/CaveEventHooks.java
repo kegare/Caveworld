@@ -25,6 +25,7 @@ import caveworld.api.ICaveBiomeManager;
 import caveworld.api.ICaveVeinManager;
 import caveworld.api.event.MiningPointEvent;
 import caveworld.block.BlockCavePortal;
+import caveworld.block.BlockPortalCaveworld;
 import caveworld.block.CaveBlocks;
 import caveworld.client.gui.GuiDownloadCaveTerrain;
 import caveworld.client.gui.GuiLoadCaveTerrain;
@@ -108,6 +109,7 @@ import net.minecraft.block.IGrowable;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundCategory;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiDownloadTerrain;
 import net.minecraft.client.gui.GuiIngame;
@@ -127,6 +129,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.Item.ToolMaterial;
 import net.minecraft.item.ItemStack;
@@ -137,6 +140,7 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.stats.AchievementList;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.DamageSource;
@@ -376,9 +380,11 @@ public class CaveEventHooks
 				GL11.glEnable(GL11.GL_BLEND);
 				OpenGlHelper.glBlendFunc(770, 771, 1, 0);
 
+				FontRenderer renderer = mc.fontRenderer;
+
 				if (left)
 				{
-					mc.fontRenderer.drawStringWithShadow(point, x + 5, y + 9, 0xCECECE);
+					renderer.drawStringWithShadow(point, x + 5, y + 9, 0xCECECE);
 
 					if (Config.showMinerRank)
 					{
@@ -387,17 +393,17 @@ public class CaveEventHooks
 
 						if (top)
 						{
-							mc.fontRenderer.drawStringWithShadow(rank, x + 5, y + 19, 0xCECECE);
+							renderer.drawStringWithShadow(rank, x + 5, y + 19, 0xCECECE);
 						}
 						else
 						{
-							mc.fontRenderer.drawStringWithShadow(rank, x + 5, y - 12, 0xCECECE);
+							renderer.drawStringWithShadow(rank, x + 5, y - 12, 0xCECECE);
 						}
 					}
 				}
 				else
 				{
-					mc.fontRenderer.drawStringWithShadow(point, x + 17 - mc.fontRenderer.getStringWidth(point), y + 9, 0xCECECE);
+					renderer.drawStringWithShadow(point, x + 17 - mc.fontRenderer.getStringWidth(point), y + 9, 0xCECECE);
 
 					if (Config.showMinerRank)
 					{
@@ -406,11 +412,11 @@ public class CaveEventHooks
 
 						if (top)
 						{
-							mc.fontRenderer.drawStringWithShadow(rank, x + 17 - mc.fontRenderer.getStringWidth(rank), y + 19, 0xCECECE);
+							renderer.drawStringWithShadow(rank, x + 17 - mc.fontRenderer.getStringWidth(rank), y + 19, 0xCECECE);
 						}
 						else
 						{
-							mc.fontRenderer.drawStringWithShadow(rank, x + 17 - mc.fontRenderer.getStringWidth(rank), y - 12, 0xCECECE);
+							renderer.drawStringWithShadow(rank, x + 17 - mc.fontRenderer.getStringWidth(rank), y - 12, 0xCECECE);
 						}
 					}
 				}
@@ -1265,12 +1271,88 @@ public class CaveEventHooks
 							}
 						}
 					}
+					else if (current != null && current.getItem() instanceof ItemCaverBackpack && player.isSneaking())
+					{
+						ItemCaverBackpack item = (ItemCaverBackpack)current.getItem();
+						IInventory inventory = null;
+						Block block = world.getBlock(x, y, z);
+
+						if (block == Blocks.ender_chest)
+						{
+							inventory = player.getInventoryEnderChest();
+						}
+						else if (block instanceof IInventory)
+						{
+							inventory = (IInventory)block;
+						}
+						else
+						{
+							TileEntity tile = world.getTileEntity(x, y, z);
+
+							if (tile != null && tile instanceof IInventory)
+							{
+								inventory = (IInventory)tile;
+							}
+						}
+
+						if (inventory != null)
+						{
+							item.carryInventory(item.getInventory(current), inventory);
+
+							world.playSoundAtEntity(player, "random.pop", 1.0F, 0.75F);
+
+							if (block instanceof BlockPortalCaveworld)
+							{
+								((BlockPortalCaveworld)block).displayInventory(player, x, y, z);
+							}
+							else
+							{
+								block.onBlockActivated(world, x, y, z, player, face, 0.0F, 0.0F, 0.0F);
+							}
+
+							event.setCanceled(true);
+						}
+					}
 				}
 
 				break;
 			case RIGHT_CLICK_BLOCK:
 				if (!world.isRemote)
 				{
+					if (current != null && current.getItem() instanceof ItemCaverBackpack && player.isSneaking())
+					{
+						ItemCaverBackpack item = (ItemCaverBackpack)current.getItem();
+						IInventory inventory = null;
+						Block block = world.getBlock(x, y, z);
+
+						if (block == Blocks.ender_chest)
+						{
+							inventory = player.getInventoryEnderChest();
+						}
+						else if (block instanceof IInventory)
+						{
+							inventory = (IInventory)block;
+						}
+						else
+						{
+							TileEntity tile = world.getTileEntity(x, y, z);
+
+							if (tile != null && tile instanceof IInventory)
+							{
+								inventory = (IInventory)tile;
+							}
+						}
+
+						if (inventory != null)
+						{
+							item.carryInventory(inventory, item.getInventory(current));
+
+							world.playSoundAtEntity(player, "random.pop", 1.0F, 0.75F);
+
+							event.setCanceled(true);
+						}
+					}
+
 					Item portal = null;
 
 					if (!player.isSneaking() && current != null && (current.getItem() == Item.getItemFromBlock(Blocks.ender_chest) ||

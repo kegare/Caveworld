@@ -10,6 +10,7 @@
 package caveworld.client.renderer;
 
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.relauncher.Side;
@@ -32,7 +33,7 @@ public class RenderCavenicBow implements IItemRenderer
 	@Override
 	public boolean handleRenderType(ItemStack item, ItemRenderType type)
 	{
-		return type == IItemRenderer.ItemRenderType.EQUIPPED;
+		return type == ItemRenderType.EQUIPPED;
 	}
 
 	@Override
@@ -74,7 +75,7 @@ public class RenderCavenicBow implements IItemRenderer
 		float f3 = icon.getMaxV();
 		float f4 = 0.0F;
 		float f5 = 0.3F;
-		GL11.glEnable(32826);
+		GL11.glEnable(GL12.GL_RESCALE_NORMAL);
 		GL11.glTranslatef(-f4, -f5, 0.0F);
 		float f6 = 1.5F;
 		GL11.glScalef(f6, f6, f6);
@@ -85,14 +86,14 @@ public class RenderCavenicBow implements IItemRenderer
 
 		if (itemstack.hasEffect(pass))
 		{
-			GL11.glDepthFunc(514);
-			GL11.glDisable(2896);
+			GL11.glDepthFunc(GL11.GL_EQUAL);
+			GL11.glDisable(GL11.GL_LIGHTING);
 			manager.bindTexture(ENCHANTED_ITEM_GLINT);
-			GL11.glEnable(3042);
-			GL11.glBlendFunc(768, 1);
+			GL11.glEnable(GL11.GL_BLEND);
+			GL11.glBlendFunc(GL11.GL_SRC_COLOR, 1);
 			float f7 = 0.76F;
 			GL11.glColor4f(0.5F * f7, 0.25F * f7, 0.8F * f7, 1.0F);
-			GL11.glMatrixMode(5890);
+			GL11.glMatrixMode(GL11.GL_TEXTURE);
 			GL11.glPushMatrix();
 			float f8 = 0.125F;
 			GL11.glScalef(f8, f8, f8);
@@ -108,13 +109,13 @@ public class RenderCavenicBow implements IItemRenderer
 			GL11.glRotatef(10.0F, 0.0F, 0.0F, 1.0F);
 			ItemRenderer.renderItemIn2D(tessellator, 0.0F, 0.0F, 1.0F, 1.0F, 256, 256, 0.0625F);
 			GL11.glPopMatrix();
-			GL11.glMatrixMode(5888);
-			GL11.glDisable(3042);
-			GL11.glEnable(2896);
-			GL11.glDepthFunc(515);
+			GL11.glMatrixMode(GL11.GL_MODELVIEW);
+			GL11.glDisable(GL11.GL_BLEND);
+			GL11.glEnable(GL11.GL_LIGHTING);
+			GL11.glDepthFunc(GL11.GL_LEQUAL);
 		}
 
-		GL11.glDisable(32826);
+		GL11.glDisable(GL12.GL_RESCALE_NORMAL);
 		GL11.glPopMatrix();
 	}
 }

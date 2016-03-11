@@ -13,7 +13,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import com.google.common.collect.Lists;
+
 import caveworld.api.BlockEntry;
+import caveworld.api.ICaveVein;
 import caveworld.block.CaveBlocks;
 import caveworld.core.CaveVeinManager.CaveVein;
 import caveworld.entity.CaveEntityRegistry;
@@ -52,13 +55,16 @@ public class ChunkProviderCavenia implements IChunkProvider
 
 	private final MapGenBase caveGenerator = new MapGenCaveniaCaves();
 
-	public CaveVein veinRandomite = new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 2), 30, 100, 100, 3, 95);
+	public final List<ICaveVein> caveVeins = Lists.newArrayList();
+
 	public WorldGenCaveLava lavaGen = new WorldGenCaveLava(Blocks.flowing_lava, false);
 
 	public ChunkProviderCavenia(World world)
 	{
 		this.worldObj = world;
 		this.random = new Random(world.getSeed());
+		this.caveVeins.add(new CaveVein(new BlockEntry(Blocks.gravel, 0), 20, 50, 100, 3, 95));
+		this.caveVeins.add(new CaveVein(new BlockEntry(CaveBlocks.gem_ore, 2), 30, 100, 100, 3, 95));
 	}
 
 	public ChunkProviderCavenia(World world, int bossType)
@@ -163,9 +169,9 @@ public class ChunkProviderCavenia implements IChunkProvider
 
 		if (chunkX <= size && chunkX >= -size && chunkZ <= size && chunkZ >= -size)
 		{
-			if (veinRandomite != null)
+			for (ICaveVein vein : caveVeins)
 			{
-				veinRandomite.generateVeins(worldObj, random, worldX, worldZ);
+				vein.generateVeins(worldObj, random, worldX, worldZ);
 			}
 		}
 

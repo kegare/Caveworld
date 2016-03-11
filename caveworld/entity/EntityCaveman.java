@@ -41,7 +41,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.IInventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.Item.ToolMaterial;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -60,6 +59,7 @@ public class EntityCaveman extends EntityMob implements IInventory
 	public static int spawnMaxHeight;
 	public static int spawnInChunks;
 	public static int[] spawnBiomes;
+	public static boolean despawn;
 
 	public static void refreshSpawn()
 	{
@@ -265,7 +265,7 @@ public class EntityCaveman extends EntityMob implements IInventory
 			}
 		}
 
-		if (!worldObj.isRemote && inventoryFull && ticksExisted % 200 == 0 && getFirstEmptySlot() >= 0)
+		if (!worldObj.isRemote && inventoryFull && ticksExisted % 200 == 0 && CaveUtils.getFirstEmptySlot(this) >= 0)
 		{
 			inventoryFull = false;
 		}
@@ -278,7 +278,7 @@ public class EntityCaveman extends EntityMob implements IInventory
 		{
 			EntityItem item = (EntityItem)entity;
 
-			if (addItemStackToInventory(item.getEntityItem()))
+			if (CaveUtils.addItemStackToInventory(this, item.getEntityItem()))
 			{
 				item.setDead();
 
@@ -429,6 +429,12 @@ public class EntityCaveman extends EntityMob implements IInventory
 		}
 	}
 
+	@Override
+	protected boolean canDespawn()
+	{
+		return despawn;
+	}
+
 	public boolean isValidHeight()
 	{
 		int y = MathHelper.floor_double(boundingBox.minY);
@@ -547,138 +553,6 @@ public class EntityCaveman extends EntityMob implements IInventory
 		}
 
 		return null;
-	}
-
-	private int storeItemStack(ItemStack itemstack)
-	{
-		for (int i = 0; i < inventoryContents.length; ++i)
-		{
-			ItemStack item = inventoryContents[i];
-
-			if (item != null && item.getItem() == itemstack.getItem() && item.isStackable() && item.stackSize < item.getMaxStackSize() && item.stackSize < getInventoryStackLimit() &&
-				(!item.getHasSubtypes() || item.getItemDamage() == itemstack.getItemDamage()) && ItemStack.areItemStackTagsEqual(item, itemstack))
-			{
-				return i;
-			}
-		}
-
-		return -1;
-	}
-
-	public int getFirstEmptySlot()
-	{
-		for (int i = 0; i < inventoryContents.length; ++i)
-		{
-			if (inventoryContents[i] == null)
-			{
-				return i;
-			}
-		}
-
-		return -1;
-	}
-
-	private int storePartialItemStack(ItemStack itemstack)
-	{
-		Item item = itemstack.getItem();
-		int i = itemstack.stackSize;
-		int j;
-
-		if (itemstack.getMaxStackSize() == 1)
-		{
-			j = getFirstEmptySlot();
-
-			if (j < 0)
-			{
-				return i;
-			}
-
-			if (inventoryContents[j] == null)
-			{
-				inventoryContents[j] = ItemStack.copyItemStack(itemstack);
-			}
-
-			return 0;
-		}
-
-		j = storeItemStack(itemstack);
-
-		if (j < 0)
-		{
-			j = getFirstEmptySlot();
-		}
-
-		if (j < 0)
-		{
-			return i;
-		}
-
-		if (inventoryContents[j] == null)
-		{
-			inventoryContents[j] = new ItemStack(item, 0, itemstack.getItemDamage());
-
-			if (itemstack.hasTagCompound())
-			{
-				inventoryContents[j].setTagCompound((NBTTagCompound)itemstack.getTagCompound().copy());
-			}
-		}
-
-		int k = i;
-
-		if (i > inventoryContents[j].getMaxStackSize() - inventoryContents[j].stackSize)
-		{
-			k = inventoryContents[j].getMaxStackSize() - inventoryContents[j].stackSize;
-		}
-
-		if (k > getInventoryStackLimit() - inventoryContents[j].stackSize)
-		{
-			k = getInventoryStackLimit() - inventoryContents[j].stackSize;
-		}
-
-		if (k == 0)
-		{
-			return i;
-		}
-
-		i -= k;
-
-		inventoryContents[j].stackSize += k;
-		inventoryContents[j].animationsToGo = 5;
-
-		return i;
-	}
-
-	public boolean addItemStackToInventory(ItemStack itemstack)
-	{
-		if (itemstack == null || itemstack.getItem() == null)
-		{
-			return false;
-		}
-
-		int i;
-
-		if (itemstack.isItemDamaged())
-		{
-			i = getFirstEmptySlot();
-
-			if (i >= 0)
-			{
-				setInventorySlotContents(i, itemstack);
-
-				return true;
-			}
-
-			return false;
-		}
-
-		do
-		{
-			i = itemstack.stackSize;
-			itemstack.stackSize = storePartialItemStack(itemstack);
-		}
-		while (itemstack.stackSize > 0 && itemstack.stackSize < i);
-
-		return itemstack.stackSize < i;
 	}
 
 	@Override

@@ -36,7 +36,7 @@ public class EntityMasterCavenicSkeleton extends EntityCavenicSkeleton implement
 	{
 		super(world);
 		this.experienceValue = 50;
-		this.setSize(0.95F, 2.65F);
+		this.setSize(0.7F, 2.65F);
 	}
 
 	public float getHealthScale()

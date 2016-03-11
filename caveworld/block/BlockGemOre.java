@@ -174,9 +174,12 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 					Potion potion = null;
 					List<Potion> potions = getRandomitePotions();
 
-					while (potion == null || player.isPotionActive(potion))
+					if (!potions.isEmpty())
 					{
-						potion = potions.get(player.getRNG().nextInt(potions.size()));
+						while (potion == null || player.isPotionActive(potion))
+						{
+							potion = potions.get(player.getRNG().nextInt(potions.size()));
+						}
 					}
 
 					if (potion != null)
