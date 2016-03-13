@@ -19,6 +19,7 @@ import net.minecraft.block.Block;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemFood;
@@ -50,7 +51,9 @@ public class ItemAcresia extends ItemFood implements IPlantable
 		{
 			if (side == 1 && player.canPlayerEdit(x, y, z, side, itemstack) && player.canPlayerEdit(x, y + 1, z, side, itemstack))
 			{
-				if (world.getBlock(x, y, z).canSustainPlant(world, x, y, z, ForgeDirection.UP, this) && world.isAirBlock(x, y + 1, z))
+				Block block = world.getBlock(x, y, z);
+
+				if (block != Blocks.bedrock && block.canSustainPlant(world, x, y, z, ForgeDirection.UP, this) && world.isAirBlock(x, y + 1, z))
 				{
 					world.setBlock(x, y + 1, z, getPlant(world, x, y, z));
 

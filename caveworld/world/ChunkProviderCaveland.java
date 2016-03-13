@@ -15,6 +15,7 @@ import java.util.Random;
 import caveworld.block.CaveBlocks;
 import caveworld.entity.CaveEntityRegistry;
 import caveworld.world.gen.MapGenCavelandCaves;
+import caveworld.world.gen.MapGenCavelandRavine;
 import caveworld.world.gen.WorldGenAnimalDungeons;
 import caveworld.world.gen.WorldGenPervertedForest;
 import caveworld.world.gen.WorldGenPervertedTaiga;
@@ -26,12 +27,14 @@ import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.IProgressUpdate;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.WeightedRandom;
 import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.SpawnerAnimals;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeDecorator;
 import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraft.world.biome.BiomeGenBase.SpawnListEntry;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.MapGenBase;
@@ -40,12 +43,14 @@ import net.minecraft.world.gen.feature.WorldGenDeadBush;
 import net.minecraft.world.gen.feature.WorldGenFlowers;
 import net.minecraft.world.gen.feature.WorldGenLakes;
 import net.minecraft.world.gen.feature.WorldGenLiquids;
+import net.minecraft.world.gen.feature.WorldGenVines;
 import net.minecraft.world.gen.feature.WorldGenerator;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
 import net.minecraftforge.event.terraingen.DecorateBiomeEvent.Decorate;
+import net.minecraftforge.event.terraingen.OreGenEvent;
 import net.minecraftforge.event.terraingen.PopulateChunkEvent;
 import net.minecraftforge.event.terraingen.PopulateChunkEvent.Populate.EventType;
 import net.minecraftforge.event.terraingen.TerrainGen;
@@ -56,6 +61,7 @@ public class ChunkProviderCaveland implements IChunkProvider
 	public static int subsurfaceHeight;
 	public static boolean generateLakes;
 	public static boolean generateAnimalDungeons;
+	public static boolean decorateVines;
 	public static int caveMonsterSpawn;
 	public static float caveBrightness;
 
@@ -67,6 +73,7 @@ public class ChunkProviderCaveland implements IChunkProvider
 	private BiomeGenBase[] biomesForGeneration;
 
 	private final MapGenBase caveGenerator = new MapGenCavelandCaves();
+	private final MapGenBase ravineGenerator = new MapGenCavelandRavine();
 
 	private final WorldGenerator lakeWaterGen = new WorldGenLakes(Blocks.water);
 	private final WorldGenerator lakeLavaGen = new WorldGenLakes(Blocks.lava);
@@ -74,6 +81,7 @@ public class ChunkProviderCaveland implements IChunkProvider
 	private final WorldGenerator liquidWaterGen = new WorldGenLiquids(Blocks.flowing_water);
 	private final WorldGenerator liquidLavaGen = new WorldGenLiquids(Blocks.flowing_lava);
 	private final WorldGenerator deadBushGen = new WorldGenDeadBush(Blocks.deadbush);
+	private final WorldGenerator vinesGen = new WorldGenVines();
 	private final WorldGenFlowers acresiaGen = new WorldGenFlowers(CaveBlocks.acresia_crops);
 	private final WorldGenAbstractTree treesGen = new WorldGenPervertedTrees(false);
 	private final WorldGenAbstractTree treesGen2 = new WorldGenPervertedTaiga(false);
@@ -102,6 +110,7 @@ public class ChunkProviderCaveland implements IChunkProvider
 		}
 
 		caveGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
+		ravineGenerator.func_151539_a(this, worldObj, chunkX, chunkZ, blocks);
 
 		int i;
 
@@ -124,6 +133,7 @@ public class ChunkProviderCaveland implements IChunkProvider
 				}
 
 				blocks[i] = Blocks.bedrock;
+				blocks[i + 1] = blocks[i + 2];
 				blocks[i + worldHeight - 1] = Blocks.bedrock;
 				blocks[i + worldHeight - 2] = filler;
 				metadata[i + worldHeight - 2] = (byte)fillerMeta;
@@ -221,13 +231,70 @@ public class ChunkProviderCaveland implements IChunkProvider
 		}
 
 		MinecraftForge.EVENT_BUS.post(new DecorateBiomeEvent.Pre(worldObj, random, worldX, worldZ));
+		MinecraftForge.ORE_GEN_BUS.post(new OreGenEvent.Pre(worldObj, random, worldX, worldZ));
+
+		if (decorator.gravelGen != null)
+		{
+			for (i = 0; i < 10; ++i)
+			{
+				x = worldX + random.nextInt(16);
+				y = random.nextInt(worldHeight - 2);
+				z = worldZ + random.nextInt(16);
+
+				decorator.gravelGen.generate(worldObj, random, x, y, z);
+			}
+		}
+
+		if (decorator.coalGen != null)
+		{
+			for (i = 0; i < 20; ++i)
+			{
+				x = worldX + random.nextInt(16);
+				y = random.nextInt(worldHeight - 2);
+				z = worldZ + random.nextInt(16);
+
+				decorator.coalGen.generate(worldObj, random, x, y, z);
+			}
+
+			for (i = 0; i < 15; ++i)
+			{
+				x = worldX + random.nextInt(16);
+				y = random.nextInt(10);
+				z = worldZ + random.nextInt(16);
+
+				decorator.coalGen.generate(worldObj, random, x, y, z);
+			}
+		}
+
+		if (decorator.ironGen != null)
+		{
+			for (i = 0; i < 20; ++i)
+			{
+				x = worldX + random.nextInt(16);
+				y = random.nextInt(worldHeight - 2);
+				z = worldZ + random.nextInt(16);
+
+				decorator.ironGen.generate(worldObj, random, x, y, z);
+			}
+
+			for (i = 0; i < 15; ++i)
+			{
+				x = worldX + random.nextInt(16);
+				y = random.nextInt(10);
+				z = worldZ + random.nextInt(16);
+
+				decorator.ironGen.generate(worldObj, random, x, y, z);
+			}
+		}
+
+		MinecraftForge.ORE_GEN_BUS.post(new OreGenEvent.Post(worldObj, random, worldX, worldZ));
 
 		if (TerrainGen.decorate(worldObj, random, worldX, worldZ, Decorate.EventType.SHROOM))
 		{
 			for (i = 0; i < 5; ++i)
 			{
 				x = worldX + random.nextInt(16) + 8;
-				y = random.nextInt(worldHeight);
+				y = random.nextInt(worldHeight - 10);
 				z = worldZ + random.nextInt(16) + 8;
 
 				decorator.mushroomBrownGen.generate(worldObj, random, x, y, z);
@@ -236,7 +303,7 @@ public class ChunkProviderCaveland implements IChunkProvider
 			for (i = 0; i < 5; ++i)
 			{
 				x = worldX + random.nextInt(16) + 8;
-				y = random.nextInt(worldHeight);
+				y = random.nextInt(worldHeight - 10);
 				z = worldZ + random.nextInt(16) + 8;
 
 				decorator.mushroomRedGen.generate(worldObj, random, x, y, z);
@@ -246,7 +313,7 @@ public class ChunkProviderCaveland implements IChunkProvider
 		for (i = 0; i < 10; ++i)
 		{
 			x = worldX + random.nextInt(16) + 8;
-			y = random.nextInt(worldHeight - 5) + 5;
+			y = random.nextInt(worldHeight - 5);
 			z = worldZ + random.nextInt(16) + 8;
 
 			acresiaGen.func_150550_a(CaveBlocks.acresia_crops, 2 + random.nextInt(3));
@@ -256,7 +323,7 @@ public class ChunkProviderCaveland implements IChunkProvider
 		for (i = 0; i < 15; ++i)
 		{
 			x = worldX + random.nextInt(16) + 8;
-			y = random.nextInt(worldHeight / 2) + worldHeight / 2;
+			y = random.nextInt(worldHeight / 2 - 5) + worldHeight / 2;
 			z = worldZ + random.nextInt(16) + 8;
 
 			acresiaGen.func_150550_a(CaveBlocks.acresia_crops, 3 + random.nextInt(2));
@@ -270,7 +337,7 @@ public class ChunkProviderCaveland implements IChunkProvider
 				for (i = 0; i < 80; ++i)
 				{
 					x = worldX + random.nextInt(16) + 8;
-					y = random.nextInt(worldHeight);
+					y = random.nextInt(worldHeight - 5);
 					z = worldZ + random.nextInt(16) + 8;
 
 					decorator.cactusGen.generate(worldObj, random, x, y, z);
@@ -282,7 +349,7 @@ public class ChunkProviderCaveland implements IChunkProvider
 				for (i = 0; i < 10; ++i)
 				{
 					x = worldX + random.nextInt(16) + 8;
-					y = random.nextInt(worldHeight);
+					y = random.nextInt(worldHeight - 5);
 					z = worldZ + random.nextInt(16) + 8;
 
 					deadBushGen.generate(worldObj, random, x, y, z);
@@ -296,7 +363,7 @@ public class ChunkProviderCaveland implements IChunkProvider
 				for (i = 0; i < 8; ++i)
 				{
 					x = worldX + random.nextInt(16) + 8;
-					y = random.nextInt(worldHeight);
+					y = random.nextInt(worldHeight - 5);
 					z = worldZ + random.nextInt(16) + 8;
 
 					decorator.yellowFlowerGen.generate(worldObj, random, x, y, z);
@@ -306,7 +373,7 @@ public class ChunkProviderCaveland implements IChunkProvider
 			for (i = 0; i < 18; ++i)
 			{
 				x = worldX + random.nextInt(16) + 8;
-				y = random.nextInt(worldHeight);
+				y = random.nextInt(worldHeight - 5);
 				z = worldZ + random.nextInt(16) + 8;
 
 				biome.getRandomWorldGenForGrass(random).generate(worldObj, random, x, y, z);
@@ -334,7 +401,7 @@ public class ChunkProviderCaveland implements IChunkProvider
 					for (i = 0; i < 60; ++i)
 					{
 						x = worldX + random.nextInt(16) + 8;
-						y = 5 + random.nextInt(5);
+						y = 8 + random.nextInt(5);
 						z = worldZ + random.nextInt(16) + 8;
 
 						if (worldGen.generate(worldObj, random, x, y, z))
@@ -377,7 +444,7 @@ public class ChunkProviderCaveland implements IChunkProvider
 					for (i = 0; i < 60; ++i)
 					{
 						x = worldX + random.nextInt(16) + 8;
-						y = 5 + random.nextInt(5);
+						y = 8 + random.nextInt(5);
 						z = worldZ + random.nextInt(16) + 8;
 
 						WorldGenAbstractTree worldGen;
@@ -438,6 +505,18 @@ public class ChunkProviderCaveland implements IChunkProvider
 
 					liquidLavaGen.generate(worldObj, random, x, y, z);
 				}
+			}
+		}
+
+		if (decorateVines && (BiomeDictionary.isBiomeOfType(biome, Type.FOREST) || BiomeDictionary.isBiomeOfType(biome, Type.MOUNTAIN)) && random.nextInt(3) == 0)
+		{
+			for (i = 0; i < 50; ++i)
+			{
+				x = worldX + random.nextInt(16) + 8;
+				y = random.nextInt(worldHeight - 30) + 30;
+				z = worldZ + random.nextInt(16) + 8;
+
+				vinesGen.generate(worldObj, random, x, y, z);
 			}
 		}
 
@@ -523,11 +602,13 @@ public class ChunkProviderCaveland implements IChunkProvider
 	{
 		List list = biome.getSpawnableList(EnumCreatureType.creature);
 
-		if (!list.isEmpty())
+		if (list != null && !list.isEmpty())
 		{
-			outside: while (random.nextFloat() < biome.getSpawningChance())
+			float chance = MathHelper.clamp_float(biome.getSpawningChance() * 2.5F, 0.0F, 1.0F);
+
+			outside: while (random.nextFloat() < chance)
 			{
-				BiomeGenBase.SpawnListEntry entry = (BiomeGenBase.SpawnListEntry)WeightedRandom.getRandomItem(world.rand, list);
+				SpawnListEntry entry = (SpawnListEntry)WeightedRandom.getRandomItem(world.rand, list);
 				IEntityLivingData data = null;
 				int i = entry.minGroupCount + random.nextInt(1 + entry.maxGroupCount - entry.minGroupCount);
 				int x = worldX + random.nextInt(xScale);

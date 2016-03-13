@@ -12,6 +12,8 @@ package caveworld.world;
 import java.util.List;
 import java.util.Random;
 
+import com.google.common.collect.Lists;
+
 import caveworld.api.CaveworldAPI;
 import caveworld.api.ICaveBiome;
 import caveworld.api.ICaveVein;
@@ -26,6 +28,7 @@ import net.minecraft.util.IProgressUpdate;
 import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraft.world.biome.BiomeGenBase.SpawnListEntry;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.MapGenBase;
@@ -42,6 +45,9 @@ public class ChunkProviderAquaCavern implements IChunkProvider
 	public static float caveBrightness;
 
 	public static EnumCreatureType caveMonster;
+	public static EnumCreatureType waterMob;
+
+	public static final List<SpawnListEntry> waterSpawns = Lists.newArrayList();
 
 	private final World worldObj;
 	private final Random random;
@@ -213,6 +219,10 @@ public class ChunkProviderAquaCavern implements IChunkProvider
 		if (creature == caveMonster)
 		{
 			return CaveEntityRegistry.spawns;
+		}
+		else if (creature == waterMob)
+		{
+			return waterSpawns;
 		}
 
 		BiomeGenBase biome = worldObj.getBiomeGenForCoords(x, z);

@@ -24,6 +24,7 @@ import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemShears;
 import net.minecraft.item.ItemStack;
@@ -47,7 +48,7 @@ public class BlockAcresia extends BlockCrops
 	@Override
 	protected boolean canPlaceBlockOn(Block block)
 	{
-		return block.isNormalCube() || block instanceof BlockFarmland;
+		return block != Blocks.bedrock && (block.isNormalCube() || block instanceof BlockFarmland);
 	}
 
 	@Override

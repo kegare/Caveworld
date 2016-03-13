@@ -342,6 +342,7 @@ entity.caveworld.CavenicCreeper.name=ケイブニッククリーパー
 entity.caveworld.MasterCavenicCreeper.name=マスターケイブニッククリーパー
 entity.caveworld.CavenicZombie.name=ケイブニックゾンビ
 entity.caveworld.CavenicSpider.name=ケイブニックスパイダー
+entity.caveworld.AquaSquid.name=イカ
 
 inventory.caveworld.portal=ポータルインベントリ
 

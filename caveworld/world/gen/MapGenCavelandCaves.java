@@ -55,11 +55,15 @@ public class MapGenCavelandCaves extends MapGenCavesCaveworld
 	@Override
 	protected void digBlock(Block[] blocks, int index, int x, int y, int z, int chunkX, int chunkZ, boolean foundTop)
 	{
-		if (y < 4)
+		if (y < 5)
+		{
+			blocks[index] = Blocks.stone;
+		}
+		else if (y < 8)
 		{
 			blocks[index] = Blocks.dirt;
 		}
-		else if (y == 4)
+		else if (y == 8)
 		{
 			blocks[index] = Blocks.grass;
 		}

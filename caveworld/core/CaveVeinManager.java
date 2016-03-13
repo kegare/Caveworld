@@ -526,7 +526,7 @@ public class CaveVeinManager implements ICaveVeinManager
 
 											if (xScale * xScale + yScale * yScale + zScale * zScale < 1.0D)
 											{
-												if (world.getBlock(x, y, z).isReplaceableOreGen(world, x, y, z, target.getBlock()) && world.getBlockMetadata(x, y, z) == target.getMetadata())
+												if (world.getBlock(x, y, z) == target.getBlock() && world.getBlockMetadata(x, y, z) == target.getMetadata())
 												{
 													if (biomes.length <= 0 || ArrayUtils.contains(biomes, world.getBiomeGenForCoords(x, z).biomeID))
 													{

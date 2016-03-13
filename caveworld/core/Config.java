@@ -70,6 +70,7 @@ import net.minecraft.entity.monster.EntitySpider;
 import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.EntityBat;
+import net.minecraft.entity.passive.EntityWaterMob;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -1009,6 +1010,7 @@ public class Config
 		propOrder.add(prop.getName());
 		ChunkProviderAquaCavern.caveMonsterSpawn = MathHelper.clamp_int(prop.getInt(ChunkProviderAquaCavern.caveMonsterSpawn), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
 		ChunkProviderAquaCavern.caveMonster = EnumHelper.addCreatureType("AquaCavernMonster", IMob.class, ChunkProviderAquaCavern.caveMonsterSpawn, Material.air, false, false);
+		ChunkProviderAquaCavern.waterMob = EnumHelper.addCreatureType("AquaWaterMob", EntityWaterMob.class, 50, Material.water, true, false);
 		prop = dimensionCfg.get(category, "caveBrightness", 0.05D);
 		prop.setMinValue(0.0D).setMaxValue(1.0D).setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -1058,6 +1060,12 @@ public class Config
 		prop.comment += " [default: " + prop.getDefault() + "]";
 		propOrder.add(prop.getName());
 		ChunkProviderCaveland.generateAnimalDungeons = prop.getBoolean(ChunkProviderCaveland.generateAnimalDungeons);
+		prop = dimensionCfg.get(category, "decorateVines", true);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		propOrder.add(prop.getName());
+		ChunkProviderCaveland.decorateVines = prop.getBoolean(ChunkProviderCaveland.decorateVines);
 		prop = dimensionCfg.get(category, "caveMonsterSpawn", 150);
 		prop.setMinValue(0).setMaxValue(5000).setLanguageKey(Caveworld.CONFIG_LANG + "dimension.entry." + prop.getName()).setRequiresMcRestart(true);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");

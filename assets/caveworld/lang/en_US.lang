@@ -349,6 +349,7 @@ entity.caveworld.CavenicCreeper.name=Cavenic Creeper
 entity.caveworld.MasterCavenicCreeper.name=Master Cavenic Creeper
 entity.caveworld.CavenicZombie.name=Cavenic Zombie
 entity.caveworld.CavenicSpider.name=Cavenic Spider
+entity.caveworld.AquaSquid.name=Squid
 
 inventory.caveworld.portal=Portal Inventory
 

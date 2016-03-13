@@ -17,6 +17,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import caveworld.core.Caveworld;
+import caveworld.world.ChunkProviderAquaCavern;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
@@ -70,21 +71,26 @@ public class CaveEntityRegistry
 		registerMob(EntityMasterCavenicCreeper.class, "MasterCavenicCreeper", 0xAAAAAA, 0x2E8B57);
 		registerMob(EntityCavenicZombie.class, "CavenicZombie", 0xAAAAAA, 0x00A0A0);
 		registerMob(EntityCavenicSpider.class, "CavenicSpider", 0xAAAAAA, 0x811F1F);
+		registerMob(EntityAquaSquid.class, "Squid");
+
+		ChunkProviderAquaCavern.waterSpawns.add(new SpawnListEntry(EntityAquaSquid.class, 100, 4, 4));
 	}
 
 	public static void addVallilaSpawns()
 	{
-		spawns.add(new BiomeGenBase.SpawnListEntry(EntitySpider.class, 100, 4, 4));
-		spawns.add(new BiomeGenBase.SpawnListEntry(EntityZombie.class, 100, 4, 4));
-		spawns.add(new BiomeGenBase.SpawnListEntry(EntitySkeleton.class, 100, 4, 4));
-		spawns.add(new BiomeGenBase.SpawnListEntry(EntityCreeper.class, 100, 4, 4));
-		spawns.add(new BiomeGenBase.SpawnListEntry(EntitySlime.class, 100, 4, 4));
-		spawns.add(new BiomeGenBase.SpawnListEntry(EntityEnderman.class, 10, 1, 4));
-		spawns.add(new BiomeGenBase.SpawnListEntry(EntityWitch.class, 5, 1, 1));
+		spawns.add(new SpawnListEntry(EntitySpider.class, 100, 4, 4));
+		spawns.add(new SpawnListEntry(EntityZombie.class, 100, 4, 4));
+		spawns.add(new SpawnListEntry(EntitySkeleton.class, 100, 4, 4));
+		spawns.add(new SpawnListEntry(EntityCreeper.class, 100, 4, 4));
+		spawns.add(new SpawnListEntry(EntitySlime.class, 100, 4, 4));
+		spawns.add(new SpawnListEntry(EntityEnderman.class, 10, 1, 4));
+		spawns.add(new SpawnListEntry(EntityWitch.class, 5, 1, 1));
 	}
 
 	public static void addSpawn(Class <? extends EntityLiving> entityClass, int weightedProb, int min, int max, BiomeGenBase... biomes)
 	{
+		boolean flag = false;
+
 		for (SpawnListEntry entry : spawns)
 		{
 			if (entry.entityClass == entityClass)
@@ -92,11 +98,14 @@ public class CaveEntityRegistry
 				entry.itemWeight = weightedProb;
 				entry.minGroupCount = min;
 				entry.maxGroupCount = max;
-				break;
+				flag = true;
 			}
 		}
 
-		spawns.add(new SpawnListEntry(entityClass, weightedProb, min, max));
+		if (!flag)
+		{
+			spawns.add(new SpawnListEntry(entityClass, weightedProb, min, max));
+		}
 	}
 
 	public static void removeSpawn(Class <? extends EntityLiving> entityClass, BiomeGenBase... biomes)
