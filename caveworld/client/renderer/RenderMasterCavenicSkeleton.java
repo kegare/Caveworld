@@ -11,6 +11,7 @@ package caveworld.client.renderer;
 
 import org.lwjgl.opengl.GL11;
 
+import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.renderer.entity.RenderSkeleton;
@@ -18,6 +19,7 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.boss.BossStatus;
 import net.minecraft.entity.boss.IBossDisplayData;
 import net.minecraft.entity.monster.EntitySkeleton;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 
 @SideOnly(Side.CLIENT)
@@ -34,7 +36,12 @@ public class RenderMasterCavenicSkeleton extends RenderSkeleton
 	@Override
 	public void doRender(EntityLiving entity, double posX, double posY, double posZ, float f1, float f2)
 	{
-		BossStatus.setBossStatus((IBossDisplayData)entity, false);
+		EntityPlayer player = FMLClientHandler.instance().getClientPlayerEntity();
+
+		if (player.canEntityBeSeen(entity))
+		{
+			BossStatus.setBossStatus((IBossDisplayData)entity, false);
+		}
 
 		super.doRender(entity, posX, posY, posZ, f1, f2);
 	}

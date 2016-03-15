@@ -15,7 +15,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
@@ -23,7 +22,6 @@ import com.google.common.collect.Maps;
 
 import caveworld.client.particle.EntityUniversalChestFX;
 import caveworld.core.CaveAchievementList;
-import caveworld.entity.EntityCrazyCavenicSkeleton.Attacker;
 import caveworld.item.CaveItems;
 import caveworld.network.CaveNetworkRegistry;
 import caveworld.network.client.CaveAdjustMessage;
@@ -63,7 +61,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants.NBT;
 import shift.mceconomy2.api.MCEconomyAPI;
 
-public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton implements Comparator<Attacker>
+public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton implements ICrazyMob, Comparator<Attacker>
 {
 	public final Map<String, Attacker> attacker = Maps.newHashMap();
 
@@ -76,6 +74,51 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 		super(world);
 		this.experienceValue = 10000;
 		this.setSize(0.7F, 3.0F);
+	}
+
+	@Override
+	protected void entityInit()
+	{
+		super.entityInit();
+
+		dataWatcher.addObject(15, Byte.valueOf((byte)1));
+	}
+
+	@Override
+	protected void initCustomValues()
+	{
+		aiArrowAttack = new EntityAIArrowAttack(this, 1.0D, 1, 2, 12.0F);
+	}
+
+	@Override
+	protected void applyEntityAttributes()
+	{
+		super.applyEntityAttributes();
+
+		applyEntityAttributes(1);
+	}
+
+	protected void applyEntityAttributes(int type)
+	{
+		double maxHealth = 5000.0D;
+		double knockbackResistance = 5.0D;
+		double movementSpeed = 0.29778D;
+
+		switch (type)
+		{
+			case 1:
+				maxHealth = 10000.0D;
+				knockbackResistance = 6.5D;
+				break;
+			case 2:
+				maxHealth = 20000.0D;
+				knockbackResistance = 8.0D;
+				break;
+		}
+
+		getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(maxHealth);
+		getEntityAttribute(SharedMonsterAttributes.knockbackResistance).setBaseValue(knockbackResistance);
+		getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(movementSpeed);
 	}
 
 	public Attacker getAttacker(EntityPlayer player)
@@ -139,21 +182,17 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 	}
 
 	@Override
-	protected void applyCustomValues()
+	public int getCrazyType()
 	{
-		aiArrowAttack = new EntityAIArrowAttack(this, 1.0D, 1, 2, 12.0F);
-
-		super.applyCustomValues();
+		return dataWatcher.getWatchableObjectByte(15);
 	}
 
 	@Override
-	protected void applyEntityAttributes()
+	public void setCrazyType(int type)
 	{
-		super.applyEntityAttributes();
+		dataWatcher.updateObject(15, Byte.valueOf((byte)type));
 
-		getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(20000.0D);
-		getEntityAttribute(SharedMonsterAttributes.knockbackResistance).setBaseValue(8.0D);
-		getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.29778D);
+		applyEntityAttributes(type);
 	}
 
 	@Override
@@ -296,7 +335,14 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 
 			if (confusionTime == 0 && confusionStart == -1)
 			{
-				confusionStart = 500;
+				if (getCrazyType() <= 0)
+				{
+					confusionStart = 300;
+				}
+				else
+				{
+					confusionStart = 500;
+				}
 			}
 
 			if (confusionStart > 0)
@@ -342,7 +388,15 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 
 			if (confusionTime == 0 && confusionStart == 0)
 			{
-				confusionTime = 100;
+				if (getCrazyType() <= 0)
+				{
+					confusionTime = 500;
+				}
+				else
+				{
+					confusionTime = 100;
+				}
+
 				confusionStart = -1;
 			}
 
@@ -399,7 +453,7 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 			arrow.setDamage(arrow.getDamage() + i * 0.5D + 3.0D);
 		}
 
-		arrow.setKnockbackStrength(j + 5);
+		arrow.setKnockbackStrength(j + 3 + getCrazyType());
 
 		if (EnchantmentHelper.getEnchantmentLevel(Enchantment.flame.effectId, getHeldItem()) > 0)
 		{
@@ -429,7 +483,7 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 			}
 		}
 
-		if (damage > 50.0F)
+		if (getCrazyType() > 0 && damage > 50.0F)
 		{
 			damage = 50.0F;
 		}
@@ -581,6 +635,16 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 						amount = 8000;
 					}
 
+					switch (getCrazyType())
+					{
+						case 0:
+							amount /= 3;
+							break;
+						case 1:
+							amount /= 2;
+							break;
+					}
+
 					player.addExperience(amount / 5);
 
 					if (MCEconomyPlugin.enabled())
@@ -614,6 +678,11 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 	{
 		super.readEntityFromNBT(nbt);
 
+		if (nbt.hasKey("Type", NBT.TAG_ANY_NUMERIC))
+		{
+			setCrazyType(nbt.getByte("Type"));
+		}
+
 		if (nbt.hasKey("Attacker"))
 		{
 			NBTTagList list = nbt.getTagList("Attacker", NBT.TAG_COMPOUND);
@@ -629,17 +698,17 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 			}
 		}
 
-		if (nbt.hasKey("ConfusionTime"))
+		if (nbt.hasKey("ConfusionTime", NBT.TAG_ANY_NUMERIC))
 		{
 			confusionTime = nbt.getInteger("ConfusionTime");
 		}
 
-		if (nbt.hasKey("ConfusionStart"))
+		if (nbt.hasKey("ConfusionStart", NBT.TAG_ANY_NUMERIC))
 		{
 			confusionStart = nbt.getInteger("ConfusionStart");
 		}
 
-		if (nbt.hasKey("SpecialTime"))
+		if (nbt.hasKey("SpecialTime", NBT.TAG_ANY_NUMERIC))
 		{
 			specialTime = nbt.getInteger("SpecialTime");
 		}
@@ -649,6 +718,8 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 	public void writeEntityToNBT(NBTTagCompound nbt)
 	{
 		super.writeEntityToNBT(nbt);
+
+		nbt.setByte("Type", (byte)getCrazyType());
 
 		if (!attacker.isEmpty())
 		{
@@ -665,112 +736,5 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 		nbt.setInteger("ConfusionTime", confusionTime);
 		nbt.setInteger("ConfusionStart", confusionStart);
 		nbt.setInteger("SpecialTime", specialTime);
-	}
-
-	public static class Attacker
-	{
-		private final String uuid;
-
-		private String name;
-		private float damage;
-		private int killed;
-
-		public Attacker(String uuid)
-		{
-			this.uuid = uuid;
-		}
-
-		public Attacker(UUID uuid)
-		{
-			this(uuid.toString());
-		}
-
-		public Attacker(NBTTagCompound nbt)
-		{
-			this(nbt.getString("UUID"));
-			this.name = nbt.getString("Name");
-			this.damage = nbt.getFloat("Damage");
-			this.killed = nbt.getInteger("Killed");
-		}
-
-		public String getUniqueID()
-		{
-			return uuid;
-		}
-
-		public String getName()
-		{
-			return name;
-		}
-
-		public void setName(String str)
-		{
-			name = str;
-		}
-
-		public float getDamage()
-		{
-			return damage;
-		}
-
-		public void setDamage(float value)
-		{
-			damage = value;
-		}
-
-		public void addDamage(float value)
-		{
-			damage += value;
-		}
-
-		public int getKilled()
-		{
-			return killed;
-		}
-
-		public void setKilled(int value)
-		{
-			killed = value;
-		}
-
-		public void addKilled(int value)
-		{
-			killed += value;
-		}
-
-		public NBTTagCompound getNBTData()
-		{
-			NBTTagCompound nbt = new NBTTagCompound();
-
-			nbt.setString("UUID", uuid);
-			nbt.setString("Name", name);
-			nbt.setFloat("Damage", damage);
-			nbt.setInteger("Killed", killed);
-
-			return nbt;
-		}
-
-		@Override
-		public boolean equals(Object obj)
-		{
-			if (this == obj)
-			{
-				return true;
-			}
-			else if (obj == null || !(obj instanceof Attacker))
-			{
-				return false;
-			}
-
-			Attacker attacker = (Attacker)obj;
-
-			return uuid.equals(attacker.uuid);
-		}
-
-		@Override
-		public int hashCode()
-		{
-			return uuid.hashCode();
-		}
 	}
 }

@@ -150,7 +150,7 @@ public class EntityCavenicZombie extends EntityZombie implements ICavenicMob
 	@Override
 	public int getMaxSpawnedInChunk()
 	{
-		return CaveworldAPI.isEntityInCavenia(this) ? 8 : spawnInChunks;
+		return spawnInChunks;
 	}
 
 	@Override

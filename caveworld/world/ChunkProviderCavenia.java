@@ -21,6 +21,7 @@ import caveworld.block.CaveBlocks;
 import caveworld.core.CaveVeinManager.CaveVein;
 import caveworld.entity.CaveEntityRegistry;
 import caveworld.entity.EntityCrazyCavenicSkeleton;
+import caveworld.entity.ICrazyMob;
 import caveworld.world.gen.MapGenCaveniaCaves;
 import caveworld.world.gen.WorldGenCaveLava;
 import net.minecraft.block.Block;
@@ -44,6 +45,7 @@ public class ChunkProviderCavenia implements IChunkProvider
 	public static int dimensionId;
 	public static int caveMonsterSpawn;
 	public static float caveBrightness;
+	public static int crazyDifficulty;
 
 	public static int actualSize = 3;
 
@@ -200,6 +202,13 @@ public class ChunkProviderCavenia implements IChunkProvider
 			{
 				entity.setLocationAndAngles(0.5D, y + 0.5D, 0.5D, random.nextFloat() * 360.0F, 0.0F);
 				entity.onSpawnWithEgg(null);
+
+				if (entity instanceof ICrazyMob)
+				{
+					((ICrazyMob)entity).setCrazyType(crazyDifficulty);
+				}
+
+				entity.setHealth(entity.getMaxHealth());
 
 				worldObj.spawnEntityInWorld(entity);
 			}

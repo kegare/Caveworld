@@ -12,24 +12,22 @@ package caveworld.network.client;
 import caveworld.api.CaverAPI;
 import caveworld.core.CaverManager.Caver;
 import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 
 public class CaverAdjustMessage implements IMessage, IMessageHandler<CaverAdjustMessage, IMessage>
 {
-	private int entityId, point, rank;
+	private int point, rank;
 
 	public CaverAdjustMessage() {}
 
 	public CaverAdjustMessage(Caver caver)
 	{
-		this.entityId = caver.getEntity().getEntityId();
 		this.point = caver.getMiningPoint();
 		this.rank = caver.getRank();
 	}
@@ -37,7 +35,6 @@ public class CaverAdjustMessage implements IMessage, IMessageHandler<CaverAdjust
 	@Override
 	public void fromBytes(ByteBuf buffer)
 	{
-		entityId = buffer.readInt();
 		point = buffer.readInt();
 		rank = buffer.readInt();
 	}
@@ -45,7 +42,6 @@ public class CaverAdjustMessage implements IMessage, IMessageHandler<CaverAdjust
 	@Override
 	public void toBytes(ByteBuf buffer)
 	{
-		buffer.writeInt(entityId);
 		buffer.writeInt(point);
 		buffer.writeInt(rank);
 	}
@@ -54,16 +50,12 @@ public class CaverAdjustMessage implements IMessage, IMessageHandler<CaverAdjust
 	@Override
 	public IMessage onMessage(CaverAdjustMessage message, MessageContext ctx)
 	{
-		Entity entity = FMLClientHandler.instance().getWorldClient().getEntityByID(message.entityId);
+		EntityPlayer player = FMLClientHandler.instance().getClientPlayerEntity();
 
-		if (entity != null)
+		if (player != null)
 		{
-			CaverAPI.setMiningPoint(entity, message.point);
-			CaverAPI.setMinerRank(entity, message.rank);
-		}
-		else
-		{
-			FMLLog.fine("Attempted to adjust the position of entity %d which is not present on the client", message.entityId);
+			CaverAPI.setMiningPoint(player, message.point);
+			CaverAPI.setMinerRank(player, message.rank);
 		}
 
 		return null;

@@ -213,6 +213,6 @@ public class EntityCavenicSpider extends EntitySpider implements ICavenicMob
 	@Override
 	public int getMaxSpawnedInChunk()
 	{
-		return CaveworldAPI.isEntityInCavenia(this) ? 8 : spawnInChunks;
+		return spawnInChunks;
 	}
 }

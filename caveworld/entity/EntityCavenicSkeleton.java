@@ -76,14 +76,20 @@ public class EntityCavenicSkeleton extends EntitySkeleton implements ICavenicMob
 		}
 	}
 
-	protected EntityAIArrowAttack aiArrowAttack = new EntityAIArrowAttack(this, 0.975D, 1, 3, 6.0F);
+	protected EntityAIArrowAttack aiArrowAttack;
 
 	public EntityCavenicSkeleton(World world)
 	{
 		super(world);
 		this.experienceValue = 10;
 		this.setSize(0.68F, 2.0F);
+		this.initCustomValues();
 		this.applyCustomValues();
+	}
+
+	protected void initCustomValues()
+	{
+		aiArrowAttack = new EntityAIArrowAttack(this, 0.975D, 1, 3, 6.0F);
 	}
 
 	protected void applyCustomValues()
@@ -263,6 +269,6 @@ public class EntityCavenicSkeleton extends EntitySkeleton implements ICavenicMob
 	@Override
 	public int getMaxSpawnedInChunk()
 	{
-		return CaveworldAPI.isEntityInCavenia(this) ? 8 : spawnInChunks;
+		return spawnInChunks;
 	}
 }

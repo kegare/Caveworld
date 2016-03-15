@@ -9,6 +9,9 @@
 
 package caveworld.entity;
 
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
@@ -35,14 +38,32 @@ public class EntityTorchArrow extends EntityCaveArrow
 	}
 
 	@Override
-	protected boolean addItemStackToInventory(EntityPlayer player)
+	protected void onHit(Entity entity)
 	{
-		return player.inventory.addItemStackToInventory(new ItemStack(Items.arrow, 1));
+		if (shootingEntity != null && shootingEntity instanceof EntityLivingBase)
+		{
+			EntityLivingBase living = (EntityLivingBase)shootingEntity;
+			ItemStack itemstack = living.getHeldItem();
+
+			if (EnchantmentHelper.getEnchantmentLevel(Enchantment.flame.effectId, itemstack) > 0)
+			{
+				entity.setFire(10 + rand.nextInt(3));
+
+				return;
+			}
+		}
+
+		entity.setFire(3 + rand.nextInt(2));
 	}
 
 	@Override
 	protected boolean tryPlaceBlock()
 	{
+		if (mop == null)
+		{
+			return true;
+		}
+
 		if (shootingEntity != null && shootingEntity instanceof EntityPlayer)
 		{
 			if (new ItemStack(Blocks.torch).tryPlaceItemIntoWorld((EntityPlayer)shootingEntity, worldObj, xTile, yTile, zTile, mop.sideHit, xTile + 0.5F, yTile + 0.5F, zTile + 0.5F))
@@ -50,48 +71,56 @@ public class EntityTorchArrow extends EntityCaveArrow
 				return true;
 			}
 		}
-
-		int x = xTile;
-		int y = yTile;
-		int z = zTile;
-		int meta = 0;
-
-		switch (mop.sideHit)
+		else
 		{
-			case 0:
-				break;
-			case 1:
-				meta = 0;
-				++y;
-				break;
-			case 2:
-				--z;
-				meta = 4;
-				break;
-			case 3:
-				++z;
-				meta = 3;
-				break;
-			case 4:
-				--x;
-				meta = 2;
-				break;
-			case 5:
-				++x;
-				meta = 1;
-				break;
-		}
+			int x = xTile;
+			int y = yTile;
+			int z = zTile;
+			int meta = 0;
 
-		if (Blocks.torch.canPlaceBlockAt(worldObj, x, y, z) && worldObj.isAirBlock(x, y, z))
-		{
-			if (worldObj.setBlock(x, y, z, Blocks.torch, meta, 3))
+			switch (mop.sideHit)
 			{
-				return true;
+				case 0:
+					break;
+				case 1:
+					meta = 0;
+					++y;
+					break;
+				case 2:
+					--z;
+					meta = 4;
+					break;
+				case 3:
+					++z;
+					meta = 3;
+					break;
+				case 4:
+					--x;
+					meta = 2;
+					break;
+				case 5:
+					++x;
+					meta = 1;
+					break;
+			}
+
+			if (Blocks.torch.canPlaceBlockAt(worldObj, x, y, z) && worldObj.isAirBlock(x, y, z))
+			{
+				if (worldObj.setBlock(x, y, z, Blocks.torch, meta, 3))
+				{
+					return true;
+				}
 			}
 		}
 
 		dropItem(Item.getItemFromBlock(Blocks.torch), 1);
 
 		return true;
+	}
+
+	@Override
+	protected boolean addItemStackToInventory(EntityPlayer player)
+	{
+		return player.inventory.addItemStackToInventory(new ItemStack(Items.arrow, 1));
 	}
 }

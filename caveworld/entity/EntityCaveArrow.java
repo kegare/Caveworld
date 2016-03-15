@@ -9,7 +9,6 @@
 
 package caveworld.entity;
 
-import java.util.Iterator;
 import java.util.List;
 
 import cpw.mods.fml.common.registry.GameData;
@@ -18,12 +17,15 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.play.server.S2BPacketChangeGameState;
 import net.minecraft.potion.Potion;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.DamageSource;
@@ -31,6 +33,7 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.Constants.NBT;
 
 public class EntityCaveArrow extends EntityArrow implements IThrowableEntity
 {
@@ -43,96 +46,39 @@ public class EntityCaveArrow extends EntityArrow implements IThrowableEntity
 
 	protected MovingObjectPosition mop = null;
 
-	public int canBePickedUp = 0;
-	public int arrowShake = 0;
-
 	protected int ticksInGround;
 	protected int ticksInAir = 0;
 	protected double damage = 2.0D;
 
 	protected int knockbackStrength;
 
-	protected EntityCaveArrow(World world)
+	public EntityCaveArrow(World world)
 	{
 		super(world);
-		this.setSize(0.5F, 0.5F);
 	}
 
 	public EntityCaveArrow(World world, double x, double y, double z)
 	{
 		super(world, x, y, z);
-		this.renderDistanceWeight = 10.0D;
-		this.setSize(0.5F, 0.5F);
-		this.setPosition(x, y, z);
-		this.yOffset = 0.0F;
 	}
 
 	public EntityCaveArrow(World world, EntityLivingBase player, EntityLivingBase target, float par3, float par4)
 	{
-		super(world);
-		this.renderDistanceWeight = 10.0D;
-		this.shootingEntity = player;
-
-		if (player instanceof EntityPlayer)
-		{
-			this.canBePickedUp = 1;
-		}
-
-		this.posY = player.posY + player.getEyeHeight() - 0.10000000149011612D;
-		double d0 = target.posX - player.posX;
-		double d1 = target.boundingBox.minY + target.height / 3.0F - posY;
-		double d2 = target.posZ - player.posZ;
-		double d3 = MathHelper.sqrt_double(d0 * d0 + d2 * d2);
-
-		if (d3 >= 1.0E-7D)
-		{
-			float f2 = (float)(Math.atan2(d2, d0) * 180.0D / Math.PI) - 90.0F;
-			float f3 = (float)-(Math.atan2(d1, d3) * 180.0D / Math.PI);
-			double d4 = d0 / d3;
-			double d5 = d2 / d3;
-			this.setLocationAndAngles(player.posX + d4, posY, player.posZ + d5, f2, f3);
-			this.yOffset = 0.0F;
-			float f4 = (float)d3 * 0.2F;
-			this.setThrowableHeading(d0, d1 + f4, d2, par3, par4);
-		}
+		super(world, player, target, par3, par4);
 	}
 
 	public EntityCaveArrow(World world, EntityLivingBase player, float par3)
 	{
 		super(world, player, par3);
-		this.shootingEntity = player;
-
-		if (player instanceof EntityPlayer)
-		{
-			this.canBePickedUp = 1;
-		}
-
-		this.setSize(0.5F, 0.5F);
-		this.setLocationAndAngles(player.posX, player.posY + player.getEyeHeight(), player.posZ, player.rotationYaw, player.rotationPitch);
-		this.posX -= MathHelper.cos(rotationYaw / 180.0F * (float)Math.PI) * 0.16F;
-		this.posY -= 0.10000000149011612D;
-		this.posZ -= MathHelper.sin(rotationYaw / 180.0F * (float)Math.PI) * 0.16F;
-		this.setPosition(posX, posY, posZ);
-		this.yOffset = 0.0F;
-		this.motionX = -MathHelper.sin(rotationYaw   / 180.0F * (float)Math.PI) * MathHelper.cos(rotationPitch / 180.0F * (float)Math.PI);
-		this.motionZ = MathHelper.cos(rotationYaw   / 180.0F * (float)Math.PI) * MathHelper.cos(rotationPitch / 180.0F * (float)Math.PI);
-		this.motionY = -MathHelper.sin(rotationPitch / 180.0F * (float)Math.PI);
-		this.setThrowableHeading(motionX, motionY, motionZ, par3 * 1.5F, 1.0F);
-	}
-
-	@Override
-	protected void entityInit()
-	{
-		dataWatcher.addObject(16, Byte.valueOf((byte)0));
 	}
 
 	@Override
 	public void setThrowableHeading(double x, double y, double z, float par7, float par8)
 	{
-		float var9 = MathHelper.sqrt_double(x * x + y * y + z * z);
-		x /= var9;
-		y /= var9;
-		z /= var9;
+		float f = MathHelper.sqrt_double(x * x + y * y + z * z);
+		x /= f;
+		y /= f;
+		z /= f;
 		x += rand.nextGaussian() * 0.007499999832361937D * par8;
 		y += rand.nextGaussian() * 0.007499999832361937D * par8;
 		z += rand.nextGaussian() * 0.007499999832361937D * par8;
@@ -142,9 +88,9 @@ public class EntityCaveArrow extends EntityArrow implements IThrowableEntity
 		motionX = x;
 		motionY = y;
 		motionZ = z;
-		float var10 = MathHelper.sqrt_double(x * x + z * z);
-		prevRotationYaw   = rotationYaw   = (float)(Math.atan2(x,       z) * 180.0D / Math.PI);
-		prevRotationPitch = rotationPitch = (float)(Math.atan2(y, var10) * 180.0D / Math.PI);
+		f = MathHelper.sqrt_double(x * x + z * z);
+		prevRotationYaw   = rotationYaw   = (float)(Math.atan2(x, z) * 180.0D / Math.PI);
+		prevRotationPitch = rotationPitch = (float)(Math.atan2(y, f) * 180.0D / Math.PI);
 		ticksInGround = 0;
 	}
 
@@ -157,33 +103,22 @@ public class EntityCaveArrow extends EntityArrow implements IThrowableEntity
 	@Override
 	public void setThrower(Entity entity)
 	{
-		if (entity != null && entity instanceof EntityPlayer)
-		{
-			shootingEntity = entity;
-		}
+		shootingEntity = entity;
 	}
 
 	@SideOnly(Side.CLIENT)
 	@Override
-	public void setPositionAndRotation2(double x, double y, double z, float yaw, float pitch, int par9)
+	public void setVelocity(double x, double y, double z)
 	{
-		setPosition(x, y, z);
-		setRotation(yaw, pitch);
-	}
-
-	@SideOnly(Side.CLIENT)
-	@Override
-	public void setVelocity(double vx, double vy, double vz)
-	{
-		motionX = vx;
-		motionY = vy;
-		motionZ = vz;
+		motionX = x;
+		motionY = y;
+		motionZ = z;
 
 		if (prevRotationPitch == 0.0F && prevRotationYaw == 0.0F)
 		{
-			float var7 = MathHelper.sqrt_double(vx * vx + vz * vz);
-			prevRotationYaw = rotationYaw = (float)(Math.atan2(vx, vz) * 180.0D / Math.PI);
-			prevRotationPitch = rotationPitch = (float)(Math.atan2(vy, var7) * 180.0D / Math.PI);
+			float f = MathHelper.sqrt_double(x * x + z * z);
+			prevRotationYaw = rotationYaw = (float)(Math.atan2(x, z) * 180.0D / Math.PI);
+			prevRotationPitch = rotationPitch = (float)(Math.atan2(y, f) * 180.0D / Math.PI);
 			prevRotationPitch = rotationPitch;
 			prevRotationYaw = rotationYaw;
 			setLocationAndAngles(posX, posY, posZ, rotationYaw, rotationPitch);
@@ -194,13 +129,14 @@ public class EntityCaveArrow extends EntityArrow implements IThrowableEntity
 	@Override
 	public void onUpdate()
 	{
-		super.onUpdate();
+		onEntityUpdate();
 
 		if (prevRotationPitch == 0.0F && prevRotationYaw == 0.0F)
 		{
-			float var1 = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
+			float f = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
+
 			prevRotationYaw = rotationYaw = (float)(Math.atan2(motionX, motionZ) * 180.0D / Math.PI);
-			prevRotationPitch = rotationPitch = (float)(Math.atan2(motionY, var1) * 180.0D / Math.PI);
+			prevRotationPitch = rotationPitch = (float)(Math.atan2(motionY, f) * 180.0D / Math.PI);
 		}
 
 		Block block = worldObj.getBlock(xTile, yTile, zTile);
@@ -208,9 +144,9 @@ public class EntityCaveArrow extends EntityArrow implements IThrowableEntity
 		if (block.getMaterial() != Material.air)
 		{
 			block.setBlockBoundsBasedOnState(worldObj, xTile, yTile, zTile);
-			AxisAlignedBB var2 = block.getCollisionBoundingBoxFromPool(worldObj, xTile, yTile, zTile);
+			AxisAlignedBB box = block.getCollisionBoundingBoxFromPool(worldObj, xTile, yTile, zTile);
 
-			if (var2 != null && var2.isVecInside(Vec3.createVectorHelper(posX, posY, posZ)))
+			if (box != null && box.isVecInside(Vec3.createVectorHelper(posX, posY, posZ)))
 			{
 				inGround = true;
 			}
@@ -223,89 +159,100 @@ public class EntityCaveArrow extends EntityArrow implements IThrowableEntity
 
 		if (inGround)
 		{
-			onHit(worldObj.getBlock(xTile, yTile, zTile), worldObj.getBlockMetadata(xTile, yTile, zTile));
+			onHit(block, worldObj.getBlockMetadata(xTile, yTile, zTile));
 		}
 		else
 		{
 			++ticksInAir;
-			Vec3 var17 = Vec3.createVectorHelper(posX, posY, posZ);
-			Vec3 var3 = Vec3.createVectorHelper(posX + motionX, posY + motionY, posZ + motionZ);
-			MovingObjectPosition var4 = worldObj.func_147447_a(var17, var3, false, true, false);
-			var17 = Vec3.createVectorHelper(posX, posY, posZ);
-			var3 = Vec3.createVectorHelper(posX + motionX, posY + motionY, posZ + motionZ);
+			Vec3 posVec = Vec3.createVectorHelper(posX, posY, posZ);
+			Vec3 motionVec = Vec3.createVectorHelper(posX + motionX, posY + motionY, posZ + motionZ);
+			MovingObjectPosition object = worldObj.func_147447_a(posVec, motionVec, false, true, false);
+			posVec = Vec3.createVectorHelper(posX, posY, posZ);
+			motionVec = Vec3.createVectorHelper(posX + motionX, posY + motionY, posZ + motionZ);
 
-			if (var4 != null)
+			if (object != null)
 			{
-				var3 = Vec3.createVectorHelper(var4.hitVec.xCoord, var4.hitVec.yCoord, var4.hitVec.zCoord);
+				motionVec = Vec3.createVectorHelper(object.hitVec.xCoord, object.hitVec.yCoord, object.hitVec.zCoord);
 			}
 
-			Entity var5 = null;
-			List var6 = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.addCoord(motionX, motionY, motionZ).expand(1.0D, 1.0D, 1.0D));
-			double var7 = 0.0D;
-			Iterator var9 = var6.iterator();
-			float var11;
+			Entity entity = null;
+			List list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.addCoord(motionX, motionY, motionZ).expand(1.0D, 1.0D, 1.0D));
+			double d0 = 0.0D;
+			int i;
+			float f;
 
-			while (var9.hasNext())
+			for (i = 0; i < list.size(); ++i)
 			{
-				Entity var10 = (Entity)var9.next();
+				Entity entity1 = (Entity)list.get(i);
 
-				if (var10.canBeCollidedWith() && (var10 != shootingEntity || ticksInAir >= 5))
+				if (entity1.canBeCollidedWith() && (entity1 != shootingEntity || ticksInAir >= 5))
 				{
-					var11 = 0.3F;
-					AxisAlignedBB var12 = var10.boundingBox.expand(var11, var11, var11);
-					MovingObjectPosition var13 = var12.calculateIntercept(var17, var3);
+					f = 0.3F;
+					AxisAlignedBB box = entity1.boundingBox.expand(f, f, f);
+					MovingObjectPosition calc = box.calculateIntercept(posVec, motionVec);
 
-					if (var13 != null)
+					if (calc != null)
 					{
-						double var14 = var17.distanceTo(var13.hitVec);
+						double d1 = posVec.distanceTo(calc.hitVec);
 
-						if (var14 < var7 || var7 == 0.0D)
+						if (d1 < d0 || d0 == 0.0D)
 						{
-							var5 = var10;
-							var7 = var14;
+							entity = entity1;
+							d0 = d1;
 						}
 					}
 				}
 			}
 
-			if (var5 != null)
+			if (entity != null)
 			{
-				var4 = new MovingObjectPosition(var5);
+				object = new MovingObjectPosition(entity);
 			}
 
-			float var20;
-
-			if (var4 != null)
+			if (object != null && object.entityHit != null && object.entityHit instanceof EntityPlayer)
 			{
-				if (var4.entityHit != null)
+				EntityPlayer player = (EntityPlayer)object.entityHit;
+
+				if (player.capabilities.disableDamage || shootingEntity instanceof EntityPlayer && !((EntityPlayer)shootingEntity).canAttackPlayer(player))
 				{
-					var20 = MathHelper.sqrt_double(motionX * motionX + motionY * motionY + motionZ * motionZ);
-					int var24 = MathHelper.ceiling_double_int(var20 * damage);
+					object = null;
+				}
+			}
+
+			float f1;
+			float f2;
+
+			if (object != null)
+			{
+				if (object.entityHit != null)
+				{
+					f1 = MathHelper.sqrt_double(motionX * motionX + motionY * motionY + motionZ * motionZ);
+					int dot = MathHelper.ceiling_double_int(f1 * damage);
 
 					if (getIsCritical())
 					{
-						var24 += rand.nextInt(var24 / 2 + 2);
+						dot += rand.nextInt(dot / 2 + 2);
 					}
 
-					DamageSource var22 = null;
+					DamageSource source = null;
 
 					if (shootingEntity == null)
 					{
-						var22 = DamageSource.causeThrownDamage(this, this);
+						source = DamageSource.causeArrowDamage(this, this);
 					}
 					else
 					{
-						var22 = DamageSource.causeThrownDamage(this, shootingEntity);
+						source = DamageSource.causeArrowDamage(this, shootingEntity);
 					}
 
-					if (isBurning())
+					if (isBurning() && !(object.entityHit instanceof EntityEnderman))
 					{
-						var4.entityHit.setFire(5);
+						object.entityHit.setFire(5);
 					}
 
-					if (shootingEntity != null && shootingEntity instanceof EntityMasterCavenicSkeleton && var4.entityHit instanceof EntityLivingBase)
+					if (shootingEntity != null && shootingEntity instanceof EntityMasterCavenicSkeleton && object.entityHit instanceof EntityLivingBase)
 					{
-						EntityLivingBase living = (EntityLivingBase)var4.entityHit;
+						EntityLivingBase living = (EntityLivingBase)object.entityHit;
 
 						if (!living.isPotionActive(Potion.resistance))
 						{
@@ -313,30 +260,47 @@ public class EntityCaveArrow extends EntityArrow implements IThrowableEntity
 						}
 					}
 
-					if (var4.entityHit.attackEntityFrom(var22, var24))
+					if (object.entityHit.attackEntityFrom(source, dot))
 					{
-						if (var4.entityHit instanceof EntityLiving)
+						if (object.entityHit instanceof EntityLivingBase)
 						{
+							EntityLivingBase living = (EntityLivingBase)object.entityHit;
+
 							if (!worldObj.isRemote)
 							{
-								EntityLiving entity = (EntityLiving)var4.entityHit;
-
-								entity.setArrowCountInEntity(entity.getArrowCountInEntity() + 1);
+								living.setArrowCountInEntity(living.getArrowCountInEntity() + 1);
 							}
 
 							if (knockbackStrength > 0)
 							{
-								float var25 = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
+								f2 = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
 
-								if (var25 > 0.0F)
+								if (f2 > 0.0F)
 								{
-									var4.entityHit.addVelocity(motionX * knockbackStrength * 0.6000000238418579D / var25, 0.1D, motionZ * knockbackStrength * 0.6000000238418579D / var25);
+									object.entityHit.addVelocity(motionX * knockbackStrength * 0.6000000238418579D / f2, 0.1D, motionZ * knockbackStrength * 0.6000000238418579D / f2);
 								}
+							}
+
+							if (shootingEntity != null && shootingEntity instanceof EntityLivingBase)
+							{
+								EnchantmentHelper.func_151384_a(living, shootingEntity);
+								EnchantmentHelper.func_151385_b((EntityLivingBase)shootingEntity, living);
+							}
+
+							if (shootingEntity != null && object.entityHit != shootingEntity && object.entityHit instanceof EntityPlayer && shootingEntity instanceof EntityPlayerMP)
+							{
+								((EntityPlayerMP)shootingEntity).playerNetServerHandler.sendPacket(new S2BPacketChangeGameState(6, 0.0F));
 							}
 						}
 
-						worldObj.playSoundAtEntity(this, "random.bowhit", 1.0F, 1.2F / (rand.nextFloat() * 0.2F + 0.9F));
-						setDead();
+						playSound("random.bowhit", 1.0F, 1.2F / (rand.nextFloat() * 0.2F + 0.9F));
+
+						onHit(object.entityHit);
+
+						if (!(object.entityHit instanceof EntityEnderman))
+						{
+							setDead();
+						}
 					}
 					else
 					{
@@ -350,42 +314,46 @@ public class EntityCaveArrow extends EntityArrow implements IThrowableEntity
 				}
 				else
 				{
-					xTile = var4.blockX;
-					yTile = var4.blockY;
-					zTile = var4.blockZ;
+					xTile = object.blockX;
+					yTile = object.blockY;
+					zTile = object.blockZ;
 					inTile = worldObj.getBlock(xTile, yTile, zTile);
 					inData = worldObj.getBlockMetadata(xTile, yTile, zTile);
-					motionX = (float)(var4.hitVec.xCoord - posX);
-					motionY = (float)(var4.hitVec.yCoord - posY);
-					motionZ = (float)(var4.hitVec.zCoord - posZ);
-					var20 = MathHelper.sqrt_double(motionX * motionX + motionY * motionY + motionZ * motionZ);
-					posX -= motionX / var20 * 0.05000000074505806D;
-					posY -= motionY / var20 * 0.05000000074505806D;
-					posZ -= motionZ / var20 * 0.05000000074505806D;
-					worldObj.playSoundAtEntity(this, "random.bowhit", 1.0F, 1.2F / (rand.nextFloat() * 0.2F + 0.9F));
+					motionX = (float)(object.hitVec.xCoord - posX);
+					motionY = (float)(object.hitVec.yCoord - posY);
+					motionZ = (float)(object.hitVec.zCoord - posZ);
+					f1 = MathHelper.sqrt_double(motionX * motionX + motionY * motionY + motionZ * motionZ);
+					posX -= motionX / f1 * 0.05000000074505806D;
+					posY -= motionY / f1 * 0.05000000074505806D;
+					posZ -= motionZ / f1 * 0.05000000074505806D;
+					playSound("random.bowhit", 1.0F, 1.2F / (rand.nextFloat() * 0.2F + 0.9F));
 					inGround = true;
 					arrowShake = 7;
 					setIsCritical(false);
-					mop = var4;
+					mop = object;
+
+					if (inTile.getMaterial() != Material.air)
+					{
+						inTile.onEntityCollidedWithBlock(worldObj, xTile, yTile, zTile, this);
+					}
 				}
 			}
 
 			if (getIsCritical())
 			{
-				for (int var21 = 0; var21 < 4; ++var21)
+				for (i = 0; i < 4; ++i)
 				{
-					worldObj.spawnParticle("crit", posX + motionX * var21 / 4.0D, posY + motionY * var21 / 4.0D, posZ + motionZ * var21 / 4.0D, -motionX, -motionY + 0.2D, -motionZ);
+					worldObj.spawnParticle("crit", posX + motionX * i / 4.0D, posY + motionY * i / 4.0D, posZ + motionZ * i / 4.0D, -motionX, -motionY + 0.2D, -motionZ);
 				}
 			}
 
 			posX += motionX;
 			posY += motionY;
 			posZ += motionZ;
-			var20 = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
-
+			f1 = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
 			rotationYaw = (float)(Math.atan2(motionX, motionZ) * 180.0D / Math.PI);
 
-			for (rotationPitch = (float)(Math.atan2(motionY, var20) * 180.0D / Math.PI); rotationPitch - prevRotationPitch < -180.0F; prevRotationPitch -= 360.0F)
+			for (rotationPitch = (float)(Math.atan2(motionY, f1) * 180.0D / Math.PI); rotationPitch - prevRotationPitch < -180.0F; prevRotationPitch -= 360.0F)
 			{
 				;
 			}
@@ -407,25 +375,30 @@ public class EntityCaveArrow extends EntityArrow implements IThrowableEntity
 
 			rotationPitch = prevRotationPitch + (rotationPitch - prevRotationPitch) * 0.2F;
 			rotationYaw = prevRotationYaw + (rotationYaw - prevRotationYaw) * 0.2F;
-
-			float var23 = 0.99F;
-			var11 = 0.05F;
+			float f3 = 0.99F;
+			f = 0.05F;
 
 			if (isInWater())
 			{
-				for (int var26 = 0; var26 < 4; ++var26)
+				for (i = 0; i < 4; ++i)
 				{
-					float var27 = 0.25F;
-					worldObj.spawnParticle("bubble", posX - motionX * var27, posY - motionY * var27, posZ - motionZ * var27, motionX, motionY, motionZ);
+					f2 = 0.25F;
+
+					worldObj.spawnParticle("bubble", posX - motionX * f2, posY - motionY * f2, posZ - motionZ * f2, motionX, motionY, motionZ);
 				}
 
-				var23 = 0.8F;
+				f3 = 0.8F;
 			}
 
-			motionX *= var23;
-			motionY *= var23;
-			motionZ *= var23;
-			motionY -= var11;
+			if (isWet())
+			{
+				extinguish();
+			}
+
+			motionX *= f3;
+			motionY *= f3;
+			motionZ *= f3;
+			motionY -= f;
 			setPosition(posX, posY, posZ);
 			func_145775_I();
 		}
@@ -456,16 +429,16 @@ public class EntityCaveArrow extends EntityArrow implements IThrowableEntity
 		arrowShake = nbt.getByte("shake") & 255;
 		inGround = nbt.getByte("inGround") == 1;
 
-		if (nbt.hasKey("damage"))
+		if (nbt.hasKey("damage", NBT.TAG_ANY_NUMERIC))
 		{
 			damage = nbt.getDouble("damage");
 		}
 
-		if (nbt.hasKey("pickup"))
+		if (nbt.hasKey("pickup", NBT.TAG_ANY_NUMERIC))
 		{
 			canBePickedUp = nbt.getByte("pickup");
 		}
-		else if (nbt.hasKey("player"))
+		else if (nbt.hasKey("player", NBT.TAG_ANY_NUMERIC))
 		{
 			canBePickedUp = nbt.getBoolean("player") ? 1 : 0;
 		}
@@ -476,14 +449,14 @@ public class EntityCaveArrow extends EntityArrow implements IThrowableEntity
 	{
 		if (!worldObj.isRemote && inGround && arrowShake <= 0)
 		{
-			boolean var2 = canBePickedUp == 1 || canBePickedUp == 2 && player.capabilities.isCreativeMode;
+			boolean pickup = canBePickedUp == 1 || canBePickedUp == 2 && player.capabilities.isCreativeMode;
 
 			if (canBePickedUp == 1 && !addItemStackToInventory(player))
 			{
-				var2 = false;
+				pickup = false;
 			}
 
-			if (var2)
+			if (pickup)
 			{
 				worldObj.playSoundAtEntity(this, "random.pop", 0.2F, ((rand.nextFloat() - rand.nextFloat()) * 0.7F + 1.0F) * 2.0F);
 				player.onItemPickup(this, 1);
@@ -492,17 +465,10 @@ public class EntityCaveArrow extends EntityArrow implements IThrowableEntity
 		}
 	}
 
-	@SideOnly(Side.CLIENT)
 	@Override
-	public float getShadowSize()
+	public void setDamage(double value)
 	{
-		return 0.0F;
-	}
-
-	@Override
-	public void setDamage(double par1)
-	{
-		damage = par1;
+		damage = value;
 	}
 
 	@Override
@@ -512,43 +478,14 @@ public class EntityCaveArrow extends EntityArrow implements IThrowableEntity
 	}
 
 	@Override
-	public void setKnockbackStrength(int par1)
+	public void setKnockbackStrength(int strength)
 	{
-		knockbackStrength = par1;
-	}
-
-	@Override
-	public boolean canAttackWithItem()
-	{
-		return false;
-	}
-
-	@Override
-	public void setIsCritical(boolean par1)
-	{
-		byte var2 = dataWatcher.getWatchableObjectByte(16);
-
-		if (par1)
-		{
-			dataWatcher.updateObject(16, Byte.valueOf((byte)(var2 | 1)));
-		}
-		else
-		{
-			dataWatcher.updateObject(16, Byte.valueOf((byte)(var2 & -2)));
-		}
-	}
-
-
-	@Override
-	public boolean getIsCritical()
-	{
-		byte var1 = dataWatcher.getWatchableObjectByte(16);
-		return (var1 & 1) != 0;
+		knockbackStrength = strength;
 	}
 
 	protected void onHit(Block block, int metadata)
 	{
-		if (block == inTile && metadata == inData && mop != null)
+		if (block == inTile && metadata == inData)
 		{
 			++ticksInGround;
 
@@ -567,6 +504,8 @@ public class EntityCaveArrow extends EntityArrow implements IThrowableEntity
 			ticksInAir = 0;
 		}
 	}
+
+	protected void onHit(Entity entity) {}
 
 	protected boolean tryPlaceBlock()
 	{

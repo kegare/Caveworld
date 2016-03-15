@@ -198,6 +198,8 @@ public class CaveEventHooks
 	@SideOnly(Side.CLIENT)
 	public static ICaveVeinManager prevVeinAquaCavernManager;
 
+	private final Random rand = new Random();
+
 	@SideOnly(Side.CLIENT)
 	@SubscribeEvent
 	public void onConfigChanged(OnConfigChangedEvent event)
@@ -849,8 +851,6 @@ public class CaveEventHooks
 			{
 				if (CaveworldAPI.isCaveborn() && firstJoinPlayers.contains(player.getUniqueID().toString()))
 				{
-					Random random = new Random();
-
 					for (ItemStack itemstack : cavebornItems)
 					{
 						ItemStack item = itemstack.copy();
@@ -870,7 +870,7 @@ public class CaveEventHooks
 
 							if (item.stackSize <= 0)
 							{
-								item.stackSize = MathHelper.getRandomIntegerInRange(random, 5, 10);
+								item.stackSize = MathHelper.getRandomIntegerInRange(rand, 5, 10);
 							}
 						}
 						else
@@ -1384,6 +1384,45 @@ public class CaveEventHooks
 					{
 						event.setCanceled(true);
 					}
+
+					Block block = world.getBlock(x, y, z);
+
+					if (block == Blocks.pumpkin || block == Blocks.lit_pumpkin)
+					{
+						block = world.getBlock(x, y - 1, z);
+						int meta = world.getBlockMetadata(x, y - 1, z);
+
+						if (block == CaveBlocks.cavenium_ore && (meta == 2 || meta == 3))
+						{
+							if (block == world.getBlock(x, y - 2, z) && meta == world.getBlockMetadata(x, y - 2, z))
+							{
+								world.setBlock(x, y, z, Blocks.air, 0, 2);
+								world.setBlock(x, y - 1, z, Blocks.air, 0, 2);
+								world.setBlock(x, y - 2, z, Blocks.air, 0, 2);
+
+								EntityCaveman entity = new EntityCaveman(world);
+								int type = meta == 2 ? 1 : meta == 3 ? 2 : 0;
+
+								entity.setCavemanType(type);
+								entity.setHealth(entity.getMaxHealth());
+								entity.setLocationAndAngles(x + 0.5D, y - 1.95D, z + 0.5D, 0.0F, 0.0F);
+
+								if (current != null)
+								{
+									entity.setCurrentItemOrArmor(0, current);
+
+									player.setCurrentItemOrArmor(0, null);
+								}
+
+								world.spawnEntityInWorld(entity);
+								world.notifyBlockChange(x, y, z, Blocks.air);
+								world.notifyBlockChange(x, y - 1, z, Blocks.air);
+								world.notifyBlockChange(x, y - 2, z, Blocks.air);
+
+								event.setCanceled(true);
+							}
+						}
+					}
 				}
 
 				break;
@@ -1860,8 +1899,6 @@ public class CaveEventHooks
 			}
 			else if (message.equalsIgnoreCase("@cavemusic"))
 			{
-				Random random = player.getServerForPlayer().rand;
-
 				if (CaveworldAPI.isEntityInAquaCavern(player))
 				{
 					CaveNetworkRegistry.sendTo(new CaveMusicMessage("cavemusic.aqua"), player);
@@ -1872,11 +1909,11 @@ public class CaveEventHooks
 				}
 				else if (CaveworldAPI.isEntityInCavenia(player))
 				{
-					CaveNetworkRegistry.sendTo(new CaveMusicMessage("cavemusic.battle" + (random.nextInt(2) + 1)), player);
+					CaveNetworkRegistry.sendTo(new CaveMusicMessage("cavemusic.battle" + (rand.nextInt(2) + 1)), player);
 				}
 				else
 				{
-					CaveNetworkRegistry.sendTo(new CaveMusicMessage(random.nextInt(3) == 0 ? "cavemusic.cave" : "cavemusic.unrest"), player);
+					CaveNetworkRegistry.sendTo(new CaveMusicMessage(rand.nextInt(3) == 0 ? "cavemusic.cave" : "cavemusic.unrest"), player);
 				}
 
 				event.setCanceled(true);

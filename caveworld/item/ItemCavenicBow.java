@@ -208,10 +208,8 @@ public class ItemCavenicBow extends ItemBow implements IModeItem
 				{
 					EntityArrow arrow = createEntityArrow(world, player, power > 0.75F ? power * 10.0F : power * 2.0F);
 
-					if (power == 1.0F)
-					{
-						arrow.setIsCritical(true);
-					}
+					arrow.setDamage(3.0D);
+					arrow.setIsCritical(true);
 
 					int j = EnchantmentHelper.getEnchantmentLevel(Enchantment.power.effectId, itemstack);
 
@@ -220,12 +218,7 @@ public class ItemCavenicBow extends ItemBow implements IModeItem
 						arrow.setDamage(arrow.getDamage() + j + 0.5D);
 					}
 
-					j = EnchantmentHelper.getEnchantmentLevel(Enchantment.punch.effectId, itemstack);
-
-					if (j > 0)
-					{
-						arrow.setKnockbackStrength(j * 2);
-					}
+					arrow.setKnockbackStrength(10 * EnchantmentHelper.getEnchantmentLevel(Enchantment.punch.effectId, itemstack));
 
 					if (EnchantmentHelper.getEnchantmentLevel(Enchantment.flame.effectId, itemstack) > 0)
 					{

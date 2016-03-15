@@ -17,6 +17,7 @@ import net.minecraft.command.IEntitySelector;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.ai.EntityAIBase;
+import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -60,7 +61,7 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 	@Override
 	public boolean shouldExecute()
 	{
-		ItemStack itemstack = getHeldWeapon();
+		ItemStack itemstack = getHeldItem();
 
 		if (itemstack == null)
 		{
@@ -88,7 +89,7 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 		{
 			case SWORD:
 			case TOOL:
-				List<EntityLivingBase> list = theWorld.selectEntitiesWithinAABB(EntityLivingBase.class, theSoldier.boundingBox.expand(10.0D, 4.0D, 10.0D), this);
+				List<EntityLivingBase> list = theWorld.selectEntitiesWithinAABB(EntityLivingBase.class, theSoldier.boundingBox.expand(20.0D, 4.0D, 20.0D), this);
 				EntityLivingBase target = null;
 
 				for (EntityLivingBase entity : list)
@@ -119,12 +120,12 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 	@Override
 	public boolean continueExecuting()
 	{
-		if (tickCounter > 60 || getHeldWeapon() == null || theSoldier.isStopped())
+		if (tickCounter > 60 || getHeldItem() == null || theSoldier.isStopped())
 		{
 			return false;
 		}
 
-		return getCurrentType() != CombatType.NONE && canMoveToEntity(theTarget) && ItemStack.areItemStacksEqual(theWeapon, theSoldier.getHeldItem());
+		return getCurrentType() != CombatType.NONE && canMoveToEntity(theTarget);
 	}
 
 	@Override
@@ -148,7 +149,7 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 	{
 		theSoldier.getLookHelper().setLookPositionWithEntity(theTarget, 10.0F, theSoldier.getVerticalFaceSpeed());
 
-		ItemStack current = getHeldWeapon();
+		ItemStack current = getHeldItem();
 
 		switch (getCurrentType())
 		{
@@ -179,6 +180,13 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 
 					theSoldier.swingItem();
 
+					if (theSoldier.getCavemanType() > 0)
+					{
+						theTarget.hurtResistantTime = 0;
+
+						damage *= 3.0F;
+					}
+
 					theTarget.attackEntityFrom(DamageSource.causeMobDamage(theSoldier), damage);
 
 					theWeapon.getItem().hitEntity(current, theTarget, theSoldier);
@@ -192,7 +200,7 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 		++tickCounter;
 	}
 
-	public ItemStack getHeldWeapon()
+	public ItemStack getHeldItem()
 	{
 		ItemStack item = theSoldier.getHeldItem();
 
@@ -227,11 +235,18 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 	@Override
 	public boolean isEntityApplicable(Entity entity)
 	{
-		if (!canMoveToEntity(entity))
+		if (!canMoveToEntity(entity) || entity instanceof EntityCaveman)
 		{
 			return false;
 		}
 
-		return entity instanceof EntityPlayer && !((EntityPlayer)entity).capabilities.isCreativeMode;
+		switch (theSoldier.getCavemanType())
+		{
+			case 1:
+			case 2:
+				return entity instanceof IMob;
+			default:
+				return entity instanceof EntityPlayer && !((EntityPlayer)entity).capabilities.isCreativeMode;
+		}
 	}
 }

@@ -29,6 +29,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.EntityAILookIdle;
 import net.minecraft.entity.ai.EntityAIMoveTowardsRestriction;
 import net.minecraft.entity.ai.EntityAIRestrictSun;
@@ -43,6 +44,8 @@ import net.minecraft.init.Items;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item.ToolMaterial;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemSword;
+import net.minecraft.item.ItemTool;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.DamageSource;
@@ -97,12 +100,16 @@ public class EntityCaveman extends EntityMob implements IInventory
 
 	private long stoppedTime;
 
+	private EntityAIBase aiSoldier = new EntityAISoldier(this);
+	private EntityAIBase aiCollecter = new EntityAICollector(this, 1.0D, 20.0F);
+
 	public boolean isCollecting;
 	public boolean inventoryFull;
 
 	public EntityCaveman(World world)
 	{
 		super(world);
+		this.isImmuneToFire = true;
 		this.setSize(0.45F, 1.75F);
 		this.getNavigator().setAvoidSun(true);
 		this.getNavigator().setCanSwim(true);
@@ -110,11 +117,22 @@ public class EntityCaveman extends EntityMob implements IInventory
 		this.tasks.addTask(2, new EntityAIMoveTowardsRestriction(this, 1.0D));
 		this.tasks.addTask(3, new EntityAIRestrictSun(this));
 		this.tasks.addTask(4, new EntityAIFleeSun2(this, 1.25D));
-		this.tasks.addTask(5, new EntityAISoldier(this));
-		this.tasks.addTask(6, new EntityAICollector(this, 1.0D, 20.0F));
 		this.tasks.addTask(7, new EntityAIWander(this, 1.0D));
 		this.tasks.addTask(8, new EntityAIWatchClosest(this, EntityPlayer.class, 10.0F));
-		this.tasks.addTask(8, new EntityAILookIdle(this));
+		this.tasks.addTask(9, new EntityAILookIdle(this));
+
+		if (world != null && !world.isRemote)
+		{
+			setCustomTask();
+		}
+	}
+
+	@Override
+	protected void entityInit()
+	{
+		super.entityInit();
+
+		dataWatcher.addObject(13, Byte.valueOf((byte)0));
 	}
 
 	@Override
@@ -122,21 +140,36 @@ public class EntityCaveman extends EntityMob implements IInventory
 	{
 		super.applyEntityAttributes();
 
-		getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(30.0D);
-		getEntityAttribute(SharedMonsterAttributes.knockbackResistance).setBaseValue(0.5D);
-		getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.325D);
+		applyEntityAttributes(0);
+	}
+
+	protected void applyEntityAttributes(int type)
+	{
+		double maxHealth = 30.0D;
+		double knockbackResistance = 0.5D;
+		double movementSpeed = 0.325D;
+
+		switch (type)
+		{
+			case 1:
+				maxHealth = 100.0D;
+				knockbackResistance = 0.75D;
+				break;
+			case 2:
+				maxHealth = 500.0D;
+				knockbackResistance = 1.0D;
+				break;
+		}
+
+		getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(maxHealth);
+		getEntityAttribute(SharedMonsterAttributes.knockbackResistance).setBaseValue(knockbackResistance);
+		getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(movementSpeed);
 	}
 
 	@Override
 	public boolean isAIEnabled()
 	{
 		return true;
-	}
-
-	@Override
-	public boolean isChild()
-	{
-		return false;
 	}
 
 	@Override
@@ -148,6 +181,35 @@ public class EntityCaveman extends EntityMob implements IInventory
 		}
 
 		return 1.55F;
+	}
+
+	public int getCavemanType()
+	{
+		return dataWatcher.getWatchableObjectByte(13);
+	}
+
+	public void setCavemanType(int type)
+	{
+		dataWatcher.updateObject(13, Byte.valueOf((byte)type));
+
+		applyEntityAttributes(type);
+	}
+
+	public void setCustomTask()
+	{
+		tasks.removeTask(aiSoldier);
+		tasks.removeTask(aiCollecter);
+
+		ItemStack item = getHeldItem();
+
+		if (item != null && (item.getItem() instanceof ItemSword || item.getItem() instanceof ItemTool))
+		{
+			tasks.addTask(5, aiSoldier);
+		}
+		else
+		{
+			tasks.addTask(6, aiCollecter);
+		}
 	}
 
 	public long getStoppedTime()
@@ -220,6 +282,17 @@ public class EntityCaveman extends EntityMob implements IInventory
 	}
 
 	@Override
+	public void setCurrentItemOrArmor(int slot, ItemStack itemstack)
+	{
+		super.setCurrentItemOrArmor(slot, itemstack);
+
+		if (!worldObj.isRemote && slot == 0)
+		{
+			setCustomTask();
+		}
+	}
+
+	@Override
 	public void onLivingUpdate()
 	{
 		super.onLivingUpdate();
@@ -227,6 +300,11 @@ public class EntityCaveman extends EntityMob implements IInventory
 		if (isStopped())
 		{
 			setSize(0.45F, 1.2F);
+
+			if (ticksExisted % 20 == 0)
+			{
+				setHealth(getHealth() + 0.5F);
+			}
 		}
 		else
 		{
@@ -242,12 +320,7 @@ public class EntityCaveman extends EntityMob implements IInventory
 			stoppedTime = 0;
 		}
 
-		if (isStopped() && stoppedTime % 100 == 0)
-		{
-			heal(0.5F + rand.nextFloat() / 2);
-		}
-
-		if (!worldObj.isRemote && isEntityAlive() && !isStopped())
+		if (!worldObj.isRemote && isEntityAlive())
 		{
 			List<EntityItem> list = worldObj.getEntitiesWithinAABB(EntityItem.class, boundingBox.expand(1.0D, 0.5D, 1.0D));
 
@@ -301,16 +374,15 @@ public class EntityCaveman extends EntityMob implements IInventory
 
 		if (!worldObj.isRemote)
 		{
-			for (ItemStack itemstack : inventoryContents)
+			for (int i = 0; i < getSizeInventory(); ++i)
 			{
-				ItemStack content = ItemStack.copyItemStack(itemstack);
+				ItemStack item = getStackInSlotOnClosing(i);
 
-				if (content != null && content.getItem() != null && content.stackSize > 0 && rand.nextInt(3) == 0)
+				if (item != null && item.getItem() != null && rand.nextInt(3) == 0)
 				{
-					entityDropItem(content, 0.0F);
+					entityDropItem(item, 0.05F);
 
-					content.animationsToGo = 5;
-					itemstack.stackSize = 0;
+					item.animationsToGo = 5;
 				}
 			}
 		}
@@ -378,6 +450,8 @@ public class EntityCaveman extends EntityMob implements IInventory
 	{
 		super.writeEntityToNBT(nbt);
 
+		nbt.setByte("Type", (byte)getCavemanType());
+
 		NBTTagList list = new NBTTagList();
 
 		for (int slot = 0; slot < getSizeInventory(); ++slot)
@@ -401,6 +475,11 @@ public class EntityCaveman extends EntityMob implements IInventory
 	public void readEntityFromNBT(NBTTagCompound nbt)
 	{
 		super.readEntityFromNBT(nbt);
+
+		if (nbt.hasKey("Type", NBT.TAG_ANY_NUMERIC))
+		{
+			setCavemanType(nbt.getByte("Type"));
+		}
 
 		if (nbt.hasKey("Items"))
 		{
@@ -427,6 +506,8 @@ public class EntityCaveman extends EntityMob implements IInventory
 		{
 			stoppedTime = nbt.getLong("Stopped");
 		}
+
+		setCustomTask();
 	}
 
 	@Override
