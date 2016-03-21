@@ -105,7 +105,8 @@ public class RenderCaveman extends RenderBiped
 
 				Tessellator tessellator1 = Tessellator.instance;
 				GL11.glDisable(GL11.GL_TEXTURE_2D);
-				int health = (int)(2.0D * width * (caveman.getHealth() / caveman.getMaxHealth()));
+				float max = caveman.getMaxHealth();
+				int health = (int)(2.0D * width * (Math.min(caveman.getHealth(), max) / max));
 
 				if (renderHealth < 0.0D)
 				{

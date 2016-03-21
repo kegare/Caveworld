@@ -41,6 +41,19 @@ import net.minecraftforge.common.MinecraftForge;
 
 public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 {
+	/*
+	 * Metadata
+	 * 0: Aquamarine Ore
+	 * 1: Block of Aquamarine
+	 * 2: Randomite Ore
+	 * 3: Magnite Ore
+	 * 4: Block of Magnite
+	 * 5: Hexcite Ore
+	 * 6: Block of Hexcite
+	 * 7: Infitite Ore
+	 * 8: Block of Infitite
+	 */
+
 	private final Random random = new Random();
 
 	public final List<ItemStack> randomiteDrops = Lists.newArrayList();
@@ -92,7 +105,12 @@ public class BlockGemOre extends BlockOre implements IBlockRenderOverlay
 		{
 			case 2:
 				return 0;
+			case 1:
+			case 3:
+			case 4:
+			case 6:
 			case 7:
+			case 8:
 				return 1;
 		}
 

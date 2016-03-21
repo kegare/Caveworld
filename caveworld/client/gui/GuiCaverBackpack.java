@@ -4,28 +4,36 @@ import org.lwjgl.opengl.GL11;
 
 import caveworld.inventory.ContainerCaverBackpack;
 import caveworld.inventory.InventoryCaverBackpack;
+import caveworld.item.ItemCaverBackpack;
+import caveworld.plugin.sextiarysector.SSHelper;
+import caveworld.plugin.sextiarysector.SSTabs;
+import caveworld.plugin.sextiarysector.SextiarySectorPlugin;
+import cpw.mods.fml.common.Optional.Method;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import shift.sextiarysector.api.equipment.EquipmentType;
+import shift.sextiarysector.gui.tab.TabManager;
 
 @SideOnly(Side.CLIENT)
 public class GuiCaverBackpack extends GuiContainer
 {
 	private static final ResourceLocation containerTexture = new ResourceLocation("textures/gui/container/generic_54.png");
 
-	private IInventory upperChestInventory;
-	private IInventory lowerChestInventory;
+	private IInventory upperInventory;
+	private IInventory lowerInventory;
 	private int inventoryRows;
 
 	public GuiCaverBackpack(InventoryPlayer inventory, InventoryCaverBackpack backpackInventory)
 	{
 		super(new ContainerCaverBackpack(inventory, backpackInventory));
-		this.upperChestInventory = inventory;
-		this.lowerChestInventory = backpackInventory;
+		this.upperInventory = inventory;
+		this.lowerInventory = backpackInventory;
 		this.allowUserInput = false;
 		short s = 222;
 		int i = s - 108;
@@ -34,10 +42,37 @@ public class GuiCaverBackpack extends GuiContainer
 	}
 
 	@Override
+	public void initGui()
+	{
+		buttonList.clear();
+
+		super.initGui();
+
+		if (SextiarySectorPlugin.enabled())
+		{
+			initSSGui();
+		}
+	}
+
+	@Method(modid = SextiarySectorPlugin.MODID)
+	public void initSSGui()
+	{
+		if (SSTabs.tabCaverBackpack != null)
+		{
+			ItemStack itemstack = SSHelper.getEquipment(mc.thePlayer, EquipmentType.Bag);
+
+			if (itemstack != null && itemstack.getItem() instanceof ItemCaverBackpack)
+			{
+				TabManager.updateTabValues(guiLeft, guiTop, buttonList, SSTabs.tabCaverBackpack, false);
+			}
+		}
+	}
+
+	@Override
 	protected void drawGuiContainerForegroundLayer(int par1, int par2)
 	{
-		fontRendererObj.drawString(lowerChestInventory.hasCustomInventoryName() ? lowerChestInventory.getInventoryName() : I18n.format(lowerChestInventory.getInventoryName(), new Object[0]), 8, 6, 4210752);
-		fontRendererObj.drawString(upperChestInventory.hasCustomInventoryName() ? upperChestInventory.getInventoryName() : I18n.format(upperChestInventory.getInventoryName(), new Object[0]), 8, ySize - 96 + 2, 4210752);
+		fontRendererObj.drawString(lowerInventory.hasCustomInventoryName() ? lowerInventory.getInventoryName() : I18n.format(lowerInventory.getInventoryName()), 8, 6, 4210752);
+		fontRendererObj.drawString(upperInventory.hasCustomInventoryName() ? upperInventory.getInventoryName() : I18n.format(upperInventory.getInventoryName()), 8, ySize - 96 + 2, 4210752);
 	}
 
 	@Override

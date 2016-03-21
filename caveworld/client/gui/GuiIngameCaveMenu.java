@@ -82,9 +82,13 @@ public class GuiIngameCaveMenu extends GuiScreen implements IVolume
 		switch (pageIndex)
 		{
 			case 1:
-				if (menuType != MenuType.CAVELAND_PORTAL && menuType != MenuType.CAVENIA_PORTAL)
+				if (menuType != MenuType.CAVENIA_PORTAL)
 				{
-					biomeButton = prev = new GuiButtonExt(1, prev.xPosition, prev.yPosition + prev.height + 5, I18n.format(Caveworld.CONFIG_LANG + "biomes"));
+					if (menuType != MenuType.CAVELAND_PORTAL)
+					{
+						biomeButton = prev = new GuiButtonExt(1, prev.xPosition, prev.yPosition + prev.height + 5, I18n.format(Caveworld.CONFIG_LANG + "biomes"));
+					}
+
 					veinButton = prev = new GuiButtonExt(2, prev.xPosition, prev.yPosition + prev.height + 5, I18n.format(Caveworld.CONFIG_LANG + "veins"));
 				}
 
@@ -195,6 +199,9 @@ public class GuiIngameCaveMenu extends GuiScreen implements IVolume
 							break;
 						case AQUA_CAVERN_PORTAL:
 							mc.displayGuiScreen(new GuiVeinsEntry(this, CaveworldAPI.veinAquaCavernManager));
+							break;
+						case CAVELAND_PORTAL:
+							mc.displayGuiScreen(new GuiVeinsEntry(this, CaveworldAPI.veinCavelandManager));
 							break;
 						default:
 							mc.displayGuiScreen(new GuiIngameVeinCustomize());

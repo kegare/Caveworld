@@ -18,6 +18,7 @@ import cpw.mods.fml.client.config.IConfigElement;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.util.EnumChatFormatting;
 
 @SideOnly(Side.CLIENT)
 public class CycleIntegerEntry extends ButtonEntry
@@ -41,6 +42,11 @@ public class CycleIntegerEntry extends ButtonEntry
 	public void updateValueButtonText()
 	{
 		btnValue.displayString = I18n.format(configElement.getLanguageKey() + "." + currentValue);
+
+		if (btnValue.displayString.equalsIgnoreCase(I18n.format("gui.disabled")))
+		{
+			btnValue.displayString = EnumChatFormatting.DARK_RED + btnValue.displayString;
+		}
 	}
 
 	@Override

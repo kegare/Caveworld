@@ -17,6 +17,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import com.google.common.collect.Sets;
 
 import caveworld.api.CaveworldAPI;
+import caveworld.api.ICaveMob;
 import caveworld.entity.ai.EntityAICollector;
 import caveworld.entity.ai.EntityAIFleeSun2;
 import caveworld.entity.ai.EntityAISoldier;
@@ -25,7 +26,9 @@ import caveworld.item.ItemCavenium;
 import caveworld.util.CaveUtils;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -37,7 +40,7 @@ import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.ai.EntityAIWander;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.monster.EntityMob;
+import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -51,11 +54,12 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
+import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.util.Constants.NBT;
 
-public class EntityCaveman extends EntityMob implements IInventory
+public class EntityCaveman extends EntityCreature implements IMob, ICaveMob, IInventory
 {
 	public static int spawnWeight;
 	public static int spawnMinHeight;
@@ -109,7 +113,7 @@ public class EntityCaveman extends EntityMob implements IInventory
 	public EntityCaveman(World world)
 	{
 		super(world);
-		this.isImmuneToFire = true;
+		this.experienceValue = 5;
 		this.setSize(0.45F, 1.75F);
 		this.getNavigator().setAvoidSun(true);
 		this.getNavigator().setCanSwim(true);
@@ -140,6 +144,8 @@ public class EntityCaveman extends EntityMob implements IInventory
 	{
 		super.applyEntityAttributes();
 
+		getAttributeMap().registerAttribute(SharedMonsterAttributes.attackDamage);
+
 		applyEntityAttributes(0);
 	}
 
@@ -159,6 +165,8 @@ public class EntityCaveman extends EntityMob implements IInventory
 				maxHealth = 500.0D;
 				knockbackResistance = 1.0D;
 				break;
+			case 3:
+				maxHealth = 10.0D;
 		}
 
 		getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(maxHealth);
@@ -222,9 +230,34 @@ public class EntityCaveman extends EntityMob implements IInventory
 		return onGround && getStoppedTime() > 500L;
 	}
 
-	public String getLocalizedName()
+	@Override
+	protected String getSwimSound()
 	{
-		return StatCollector.translateToLocal("entity." + getEntityString() + ".name");
+		return "game.hostile.swim";
+	}
+
+	@Override
+	protected String getSplashSound()
+	{
+		return "game.hostile.swim.splash";
+	}
+
+	@Override
+	protected String getHurtSound()
+	{
+		return "game.hostile.hurt";
+	}
+
+	@Override
+	protected String getDeathSound()
+	{
+		return "game.hostile.die";
+	}
+
+	@Override
+	protected String func_146067_o(int value)
+	{
+		return value > 4 ? "game.hostile.hurt.fall.big" : "game.hostile.hurt.fall.small";
 	}
 
 	@Override
@@ -293,8 +326,21 @@ public class EntityCaveman extends EntityMob implements IInventory
 	}
 
 	@Override
+	public void onUpdate()
+	{
+		super.onUpdate();
+
+		if (worldObj.isRemote && dataWatcher.hasChanges())
+		{
+			dataWatcher.func_111144_e();
+		}
+	}
+
+	@Override
 	public void onLivingUpdate()
 	{
+		updateArmSwingProgress();
+
 		super.onLivingUpdate();
 
 		if (isStopped())
@@ -389,6 +435,59 @@ public class EntityCaveman extends EntityMob implements IInventory
 	}
 
 	@Override
+	protected void attackEntity(Entity entity, float distance)
+	{
+		if (attackTime <= 0 && distance < 2.0F && entity.boundingBox.maxY > boundingBox.minY && entity.boundingBox.minY < boundingBox.maxY)
+		{
+			attackTime = 20;
+
+			attackEntityAsMob(entity);
+		}
+	}
+
+	@Override
+	public boolean attackEntityAsMob(Entity entity)
+	{
+		float damage = (float)getEntityAttribute(SharedMonsterAttributes.attackDamage).getAttributeValue();
+		int i = 0;
+
+		if (entity instanceof EntityLivingBase)
+		{
+			damage += EnchantmentHelper.getEnchantmentModifierLiving(this, (EntityLivingBase)entity);
+			i += EnchantmentHelper.getKnockbackModifier(this, (EntityLivingBase)entity);
+		}
+
+		if (entity.attackEntityFrom(DamageSource.causeMobDamage(this), damage))
+		{
+			if (i > 0)
+			{
+				entity.addVelocity(-MathHelper.sin(rotationYaw * (float)Math.PI / 180.0F) * i * 0.5F, 0.1D, MathHelper.cos(rotationYaw * (float)Math.PI / 180.0F) * i * 0.5F);
+
+				motionX *= 0.6D;
+				motionZ *= 0.6D;
+			}
+
+			int j = EnchantmentHelper.getFireAspectModifier(this);
+
+			if (j > 0)
+			{
+				entity.setFire(j * 4);
+			}
+
+			if (entity instanceof EntityLivingBase)
+			{
+				EnchantmentHelper.func_151384_a((EntityLivingBase)entity, this);
+			}
+
+			EnchantmentHelper.func_151385_b(this, entity);
+
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
 	public boolean attackEntityFrom(DamageSource source, float damage)
 	{
 		if (!source.isProjectile() && !source.isMagicDamage())
@@ -425,6 +524,16 @@ public class EntityCaveman extends EntityMob implements IInventory
 	@Override
 	public boolean interact(EntityPlayer player)
 	{
+		if (getCavemanType() > 0)
+		{
+			if (!worldObj.isRemote)
+			{
+				player.displayGUIChest(this);
+			}
+
+			return true;
+		}
+
 		ItemStack itemstack = player.inventory.getCurrentItem();
 
 		if (itemstack != null && itemstack.getItem() instanceof ItemCavenium)
@@ -481,7 +590,7 @@ public class EntityCaveman extends EntityMob implements IInventory
 			setCavemanType(nbt.getByte("Type"));
 		}
 
-		if (nbt.hasKey("Items"))
+		if (nbt.hasKey("Items", NBT.TAG_COMPOUND))
 		{
 			NBTTagList list = nbt.getTagList("Items", NBT.TAG_COMPOUND);
 
@@ -502,12 +611,24 @@ public class EntityCaveman extends EntityMob implements IInventory
 			}
 		}
 
-		if (nbt.hasKey("Stopped"))
+		if (nbt.hasKey("Stopped", NBT.TAG_ANY_NUMERIC))
 		{
 			stoppedTime = nbt.getLong("Stopped");
 		}
 
 		setCustomTask();
+	}
+
+	@Override
+	public float getBlockPathWeight(int x, int y, int z)
+	{
+		return 0.5F - worldObj.getLightBrightness(x, y, z);
+	}
+
+	@Override
+	protected boolean func_146066_aG()
+	{
+		return true;
 	}
 
 	@Override
@@ -523,10 +644,39 @@ public class EntityCaveman extends EntityMob implements IInventory
 		return y >= spawnMinHeight && y <= spawnMaxHeight;
 	}
 
+	protected boolean isValidLightLevel()
+	{
+		int x = MathHelper.floor_double(posX);
+		int y = MathHelper.floor_double(boundingBox.minY);
+		int z = MathHelper.floor_double(posZ);
+
+		if (worldObj.getSavedLightValue(EnumSkyBlock.Sky, x, y, z) > rand.nextInt(32))
+		{
+			return false;
+		}
+		else
+		{
+			int light = worldObj.getBlockLightValue(x, y, z);
+
+			if (worldObj.isThundering())
+			{
+				int prev = worldObj.skylightSubtracted;
+
+				worldObj.skylightSubtracted = 10;
+
+				light = worldObj.getBlockLightValue(x, y, z);
+
+				worldObj.skylightSubtracted = prev;
+			}
+
+			return light <= rand.nextInt(8);
+		}
+	}
+
 	@Override
 	public boolean getCanSpawnHere()
 	{
-		return CaveworldAPI.isEntityInCaves(this) && isValidHeight() && super.getCanSpawnHere();
+		return CaveworldAPI.isEntityInCaves(this) && isValidHeight() && isValidLightLevel() && super.getCanSpawnHere();
 	}
 
 	@Override
@@ -560,7 +710,7 @@ public class EntityCaveman extends EntityMob implements IInventory
 	@Override
 	public String getInventoryName()
 	{
-		String name = getLocalizedName();
+		String name = StatCollector.translateToLocal("entity." + getEntityString() + ".name");
 
 		if (hasCustomNameTag())
 		{

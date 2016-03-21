@@ -18,6 +18,7 @@ import java.util.Set;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -242,6 +243,75 @@ public class ItemLumberingAxe extends ItemCaveAxe implements ICaveniumTool
 		}
 
 		return itemstack.getTagCompound().getString(getModeName(itemstack) + ":Blocks").contains(CaveUtils.toStringHelper(block, metadata));
+	}
+
+	@Override
+	public boolean breakAll(ItemStack itemstack, World world, int x, int y, int z, EntityLivingBase entity)
+	{
+		if (entity instanceof EntityPlayerMP)
+		{
+			EntityPlayerMP player = (EntityPlayerMP)entity;
+			BreakMode mode = getMode(itemstack);
+			MultiBreakExecutor executor = mode.getExecutor(player);
+
+			if (executor != null && !executor.getBreakPositions().isEmpty())
+			{
+				BreakPos origin = executor.getOriginPos();
+
+				if (x == origin.x && y == origin.y && z == origin.z)
+				{
+					BreakPos pos = null;
+					boolean lumber = mode == BreakMode.LUMBERING;
+
+					if (lumber)
+					{
+						List<BreakPos> list = Lists.newArrayList(executor.getBreakPositions());
+
+						pos = list.get(list.size() - 1);
+					}
+
+					executor.breakAll();
+
+					if (lumber && pos != null)
+					{
+						int range = 2;
+						int check = range + 1;
+
+						if (world.checkChunksExist(pos.x - check, pos.y - check, pos.z - check, pos.x + check, pos.y + check, pos.z + check))
+						{
+							for (int checkX = -range; checkX <= range; ++checkX)
+							{
+								for (int checkY = -range; checkY <= range; ++checkY)
+								{
+									for (int checkZ = -range; checkZ <= range; ++checkZ)
+									{
+										int posX = pos.x + checkX;
+										int posY = pos.y + checkY;
+										int posZ = pos.z + checkZ;
+										Block target = world.getBlock(posX, posY, posZ);
+										int meta = world.getBlockMetadata(posX, posY, posZ);
+
+										if (target.isLeaves(world, posX, posY, posZ))
+										{
+											world.scheduleBlockUpdate(posX, posY, posZ, target, 20 + world.rand.nextInt(8));
+
+											if (!player.capabilities.isCreativeMode)
+											{
+												world.playAuxSFX(2001, posX, posY, posZ, Block.getIdFromBlock(target) + (meta << 12));
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	@Override
@@ -514,20 +584,7 @@ public class ItemLumberingAxe extends ItemCaveAxe implements ICaveniumTool
 			}
 		}
 
-		if (entity instanceof EntityPlayerMP)
-		{
-			MultiBreakExecutor executor = mode.getExecutor((EntityPlayerMP)entity);
-
-			if (executor != null && !executor.getBreakPositions().isEmpty())
-			{
-				BreakPos origin = executor.getOriginPos();
-
-				if (x == origin.x && y == origin.y && z == origin.z)
-				{
-					executor.breakAll();
-				}
-			}
-		}
+		breakAll(itemstack, world, x, y, z, entity);
 
 		return super.onBlockDestroyed(itemstack, world, block, x, y, z, entity);
 	}

@@ -20,6 +20,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import caveworld.api.CaveworldAPI;
 import caveworld.client.particle.EntityUniversalChestFX;
 import caveworld.core.CaveAchievementList;
 import caveworld.item.CaveItems;
@@ -193,6 +194,12 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 		dataWatcher.updateObject(15, Byte.valueOf((byte)type));
 
 		applyEntityAttributes(type);
+	}
+
+	@Override
+	public void setSkeletonType(int type)
+	{
+		setSize(0.7F, 3.0F);
 	}
 
 	@Override
@@ -559,17 +566,6 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 	}
 
 	@Override
-	public void onKillEntity(EntityLivingBase entity)
-	{
-		super.onKillEntity(entity);
-
-		if (entity != null && entity instanceof EntityPlayer)
-		{
-			getAttacker((EntityPlayer)entity).addKilled(1);
-		}
-	}
-
-	@Override
 	public void onDeath(DamageSource source)
 	{
 		super.onDeath(source);
@@ -596,7 +592,7 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 
 			for (Attacker entry : getSortedAttacker())
 			{
-				IChatComponent component = new ChatComponentTranslation("caveworld.message.crazy.report", entry.getName(), getAttackerOccupancy(entry) + "%", entry.getKilled());
+				IChatComponent component = new ChatComponentTranslation("caveworld.message.crazy.report", entry.getName(), getAttackerOccupancy(entry) + "%");
 				component.getChatStyle().setColor(EnumChatFormatting.GRAY);
 
 				names.add(entry.getName());
@@ -671,6 +667,12 @@ public class EntityCrazyCavenicSkeleton extends EntityMasterCavenicSkeleton impl
 	protected boolean canDespawn()
 	{
 		return false;
+	}
+
+	@Override
+	public boolean getCanSpawnHere()
+	{
+		return CaveworldAPI.isEntityInCavenia(this);
 	}
 
 	@Override

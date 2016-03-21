@@ -1,3 +1,3 @@
 package caveworld.api;
 
-public interface ICavenicMob {}
+public interface ICavenicMob extends ICaveMob {}

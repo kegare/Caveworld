@@ -88,6 +88,8 @@ public class DimensionEntry extends CaveCategoryEntry
 						result.add(new CaveCategoryElement("veinsAquaCavern", VeinsAquaCavernEntry.class));
 						break;
 					case "Caveland":
+						result.add(new CaveCategoryElement("veinsCaveland", VeinsCavelandEntry.class));
+						break;
 					case "Cavenia":
 						break;
 					default:

@@ -19,7 +19,7 @@ public final class CaveworldAPI
 {
 	public static final String
 	MODID = "caveworld",
-	API_VERSION = "2.2.7";
+	API_VERSION = "2.3.1";
 
 	public static ICaveAPIHandler apiHandler;
 	public static ICaveBiomeManager biomeManager;
@@ -28,6 +28,7 @@ public final class CaveworldAPI
 	public static ICaveVeinManager veinCavernManager;
 	public static ICaveBiomeManager biomeAquaCavernManager;
 	public static ICaveVeinManager veinAquaCavernManager;
+	public static ICaveVeinManager veinCavelandManager;
 
 	private CaveworldAPI() {}
 
@@ -514,6 +515,54 @@ public final class CaveworldAPI
 		if (veinAquaCavernManager != null)
 		{
 			veinAquaCavernManager.clearCaveVeins();
+		}
+	}
+
+	/**
+	 * @see ICaveVeinManager#addCaveVein(ICaveVein)
+	 */
+	public static boolean addCavelandVein(ICaveVein vein)
+	{
+		return veinCavelandManager != null && veinCavelandManager.addCaveVein(vein);
+	}
+
+	/**
+	 * @see ICaveVeinManager#removeCaveVeins(ICaveVein)
+	 */
+	public static int removeCavelandVeins(ICaveVein vein)
+	{
+		return veinCavelandManager == null ? 0 : veinCavelandManager.removeCaveVeins(vein);
+	}
+
+	/**
+	 * @see ICaveVeinManager#removeCaveVeins(Block, int)
+	 */
+	public static int removeCavelandVeins(Block block, int metadata)
+	{
+		return veinCavelandManager == null ? 0 : veinCavelandManager.removeCaveVeins(block, metadata);
+	}
+
+	/**
+	 * @see ICaveVeinManager#getRandomCaveVein(Random)
+	 */
+	public static ICaveVein getRandomCavelandVein(Random random)
+	{
+		return veinCavelandManager == null ? null : veinCavelandManager.getRandomCaveVein(random);
+	}
+
+	public static List<ICaveVein> getCavelandVeins()
+	{
+		return veinCavelandManager == null ? new ArrayList<ICaveVein>() : veinCavelandManager.getCaveVeins();
+	}
+
+	/**
+	 * @see ICaveVeinManager#clearCaveVeins()
+	 */
+	public static void clearCavelandVeins()
+	{
+		if (veinCavelandManager != null)
+		{
+			veinCavelandManager.clearCaveVeins();
 		}
 	}
 

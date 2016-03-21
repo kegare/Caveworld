@@ -150,17 +150,16 @@ public class EntityCavenicSkeleton extends EntitySkeleton implements ICavenicMob
 	@Override
 	protected void addRandomArmor()
 	{
-		super.addRandomArmor();
-
 		if (rand.nextInt(15) == 0)
 		{
 			setCurrentItemOrArmor(0, new ItemStack(CaveItems.cavenic_bow));
-			setEquipmentDropChance(0, 2.0F);
 		}
 		else
 		{
 			setCurrentItemOrArmor(0, new ItemStack(Items.bow));
 		}
+
+		setEquipmentDropChance(0, 2.0F);
 	}
 
 	@Override
@@ -174,6 +173,16 @@ public class EntityCavenicSkeleton extends EntitySkeleton implements ICavenicMob
 		{
 			tasks.addTask(4, aiArrowAttack);
 		}
+	}
+
+	@Override
+	public void setCurrentItemOrArmor(int slot, ItemStack itemstack)
+	{
+		if (slot == 0 && itemstack == null)
+		{
+			addRandomArmor();
+		}
+		else super.setCurrentItemOrArmor(slot, itemstack);
 	}
 
 	@Override
@@ -227,6 +236,17 @@ public class EntityCavenicSkeleton extends EntitySkeleton implements ICavenicMob
 
 		playSound("random.bow", 1.0F, 1.0F / (getRNG().nextFloat() * 0.4F + 0.8F));
 		worldObj.spawnEntityInWorld(arrow);
+	}
+
+	@Override
+	public void onLivingUpdate()
+	{
+		super.onLivingUpdate();
+
+		if (getHeldItem() == null)
+		{
+			addRandomArmor();
+		}
 	}
 
 	@Override

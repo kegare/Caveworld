@@ -94,9 +94,7 @@ public class EntityMasterCavenicSkeleton extends EntityCavenicSkeleton implement
 	@Override
 	public void setSkeletonType(int type)
 	{
-		super.setSkeletonType(type);
-
-		setSize(0.95F, 2.65F);
+		setSize(0.7F, 2.65F);
 	}
 
 	@Override

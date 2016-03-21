@@ -51,10 +51,10 @@ import caveworld.world.WorldProviderCaveland;
 import caveworld.world.WorldProviderCavern;
 import caveworld.world.WorldProviderCaveworld;
 import cpw.mods.fml.client.config.GuiConfigEntries.IConfigEntry;
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.registry.GameData;
+import cpw.mods.fml.relauncher.FMLLaunchHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.material.Material;
@@ -86,8 +86,6 @@ import net.minecraftforge.common.util.EnumHelper;
 
 public class Config
 {
-	private static final Side side = FMLCommonHandler.instance().getSide();
-
 	public static Configuration generalCfg;
 	public static Configuration mobsCfg;
 	public static Configuration dimensionCfg;
@@ -97,6 +95,7 @@ public class Config
 	public static Configuration veinsCfg;
 	public static Configuration veinsCavernCfg;
 	public static Configuration veinsAquaCavernCfg;
+	public static Configuration veinsCavelandCfg;
 	public static Configuration pluginsCfg;
 	public static Configuration serverCfg;
 
@@ -104,6 +103,7 @@ public class Config
 	public static boolean versionNotify;
 	public static boolean veinsAutoRegister;
 	public static boolean deathLoseMiningPoint;
+	public static boolean deathLoseMinerRank;
 	public static int miningPointRenderType;
 	public static boolean showMinerRank;
 	public static String[] miningPoints;
@@ -118,8 +118,6 @@ public class Config
 	public static int modeDisplayTime;
 	public static int quickBreakLimit;
 	public static boolean portalCache;
-
-	public static boolean mossStoneCraftRecipe;
 
 	public static boolean hardcore;
 	public static int caveborn;
@@ -142,6 +140,8 @@ public class Config
 	public static final int RENDER_TYPE_PORTAL = Caveworld.proxy.getUniqueRenderType();
 	public static final int RENDER_TYPE_CHEST = Caveworld.proxy.getUniqueRenderType();
 	public static final int RENDER_TYPE_OVERLAY = Caveworld.proxy.getUniqueRenderType();
+
+	private static final Side side = FMLLaunchHandler.side();
 
 	public static File getConfigDir()
 	{
@@ -298,6 +298,14 @@ public class Config
 		prop.comment += "Note: If multiplayer, server-side only.";
 		propOrder.add(prop.getName());
 		deathLoseMiningPoint = prop.getBoolean(deathLoseMiningPoint);
+		prop = generalCfg.get(category, "deathLoseMinerRank", false);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		prop.comment += Configuration.NEW_LINE;
+		prop.comment += "Note: If multiplayer, server-side only.";
+		propOrder.add(prop.getName());
+		deathLoseMinerRank = prop.getBoolean(deathLoseMinerRank);
 
 		if (side.isClient())
 		{
@@ -345,7 +353,7 @@ public class Config
 		propOrder.add(prop.getName());
 		miningPointValidItems = prop.getStringList();
 		prop = generalCfg.get(category, "randomiteDrops", new String[0]);
-		prop.setMaxListLength(100).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(selectItemsWithBlocks);
+		prop.setMaxListLength(500).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(selectItemsWithBlocks);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		propOrder.add(prop.getName());
 		randomiteDrops = prop.getStringList();
@@ -414,18 +422,9 @@ public class Config
 
 		generalCfg.setCategoryPropertyOrder(category, propOrder);
 
-		category = "recipes";
-		prop = generalCfg.get(category, "mossStoneCraftRecipe", true);
-		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
-		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
-		prop.comment += " [default: " + prop.getDefault() + "]";
-		propOrder.add(prop.getName());
-		mossStoneCraftRecipe = prop.getBoolean(mossStoneCraftRecipe);
-
-		generalCfg.setCategoryPropertyOrder(category, propOrder);
-		generalCfg.setCategoryRequiresMcRestart(category, true);
-
 		category = "options";
+		propOrder = Lists.newArrayList();
+
 		prop = generalCfg.get(category, "hardcore", false);
 		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -542,8 +541,8 @@ public class Config
 		mobsCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
 		mobsCfg.setCategoryPropertyOrder(category, propOrder);
 
-		propOrder = Lists.newArrayList();
 		category = "ArcherZombie";
+		propOrder = Lists.newArrayList();
 		prop = mobsCfg.get(category, "spawnWeight", 100);
 		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -583,8 +582,8 @@ public class Config
 		mobsCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
 		mobsCfg.setCategoryPropertyOrder(category, propOrder);
 
-		propOrder = Lists.newArrayList();
 		category = "CavenicSkeleton";
+		propOrder = Lists.newArrayList();
 		prop = mobsCfg.get(category, "spawnWeight", 70);
 		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -624,8 +623,8 @@ public class Config
 		mobsCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
 		mobsCfg.setCategoryPropertyOrder(category, propOrder);
 
-		propOrder = Lists.newArrayList();
 		category = "CavenicCreeper";
+		propOrder = Lists.newArrayList();
 		prop = mobsCfg.get(category, "spawnWeight", 70);
 		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -665,8 +664,8 @@ public class Config
 		mobsCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
 		mobsCfg.setCategoryPropertyOrder(category, propOrder);
 
-		propOrder = Lists.newArrayList();
 		category = "CavenicZombie";
+		propOrder = Lists.newArrayList();
 		prop = mobsCfg.get(category, "spawnWeight", 70);
 		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -706,8 +705,8 @@ public class Config
 		mobsCfg.setCategoryLanguageKey(category, Caveworld.CONFIG_LANG + category);
 		mobsCfg.setCategoryPropertyOrder(category, propOrder);
 
-		propOrder = Lists.newArrayList();
 		category = "CavenicSpider";
+		propOrder = Lists.newArrayList();
 		prop = mobsCfg.get(category, "spawnWeight", 70);
 		prop.setMinValue(0).setMaxValue(1000).setLanguageKey(Caveworld.CONFIG_LANG + "mobs.entry." + prop.getName());
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
@@ -890,8 +889,8 @@ public class Config
 
 		dimensionCfg.setCategoryPropertyOrder(category, propOrder);
 
-		propOrder = Lists.newArrayList();
 		category = "Cavern";
+		propOrder = Lists.newArrayList();
 
 		dimensionCfg.addCustomCategoryComment(category, "If multiplayer, server-side only.");
 
@@ -969,8 +968,8 @@ public class Config
 
 		dimensionCfg.setCategoryPropertyOrder(category, propOrder);
 
-		propOrder = Lists.newArrayList();
 		category = "Aqua Cavern";
+		propOrder = Lists.newArrayList();
 
 		dimensionCfg.addCustomCategoryComment(category, "If multiplayer, server-side only.");
 
@@ -1022,8 +1021,8 @@ public class Config
 
 		dimensionCfg.setCategoryPropertyOrder(category, propOrder);
 
-		propOrder = Lists.newArrayList();
 		category = "Caveland";
+		propOrder = Lists.newArrayList();
 
 		dimensionCfg.addCustomCategoryComment(category, "If multiplayer, server-side only.");
 
@@ -1086,8 +1085,8 @@ public class Config
 
 		dimensionCfg.setCategoryPropertyOrder(category, propOrder);
 
-		propOrder = Lists.newArrayList();
 		category = "Cavenia";
+		propOrder = Lists.newArrayList();
 
 		dimensionCfg.addCustomCategoryComment(category, "If multiplayer, server-side only.");
 
@@ -1724,6 +1723,69 @@ public class Config
 		}
 
 		saveConfig(veinsAquaCavernCfg);
+	}
+
+	public static void syncVeinsCavelandCfg()
+	{
+		if (veinsCavelandCfg == null)
+		{
+			veinsCavelandCfg = loadConfig("caveland", "veins");
+		}
+		else
+		{
+			CaveworldAPI.clearCavelandVeins();
+		}
+
+		if (veinsCavelandCfg.getCategoryNames().isEmpty())
+		{
+			List<ICaveVein> veins = Lists.newArrayList();
+
+			veins.add(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 17, 30, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.coal_ore, 0), 15, 20, 100, 1, 10));
+			veins.add(new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 10, 30, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.iron_ore, 0), 8, 20, 100, 1, 10));
+			veins.add(new CaveVein(new BlockEntry(Blocks.gravel, 0), 20, 30, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.gravel, 0), 10, 10, 100, 1, 10));
+			veins.add(new CaveVein(new BlockEntry(Blocks.sand, 0), 20, 20, 100, 1, 255));
+			veins.add(new CaveVein(new BlockEntry(Blocks.sand, 0), 10, 7, 100, 1, 10));
+
+			for (ICaveVein entry : veins)
+			{
+				CaveworldAPI.addCavelandVein(entry);
+			}
+		}
+		else
+		{
+			int i = 0;
+
+			for (String name : veinsCavelandCfg.getCategoryNames())
+			{
+				if (NumberUtils.isNumber(name))
+				{
+					CaveworldAPI.addCavelandVein(null);
+				}
+				else ++i;
+			}
+
+			if (i > 0)
+			{
+				try
+				{
+					FileUtils.forceDelete(new File(veinsCavelandCfg.toString()));
+
+					CaveworldAPI.clearCavelandVeins();
+
+					veinsCavelandCfg = null;
+					syncVeinsCavelandCfg();
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
+			}
+		}
+
+		saveConfig(veinsCavelandCfg);
 	}
 
 	public static void syncPluginsCfg()

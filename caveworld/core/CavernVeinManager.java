@@ -9,18 +9,11 @@
 
 package caveworld.core;
 
-import java.util.List;
-
-import com.google.common.collect.Lists;
-
-import caveworld.api.ICaveVein;
 import caveworld.world.WorldProviderCavern;
 import net.minecraftforge.common.config.Configuration;
 
 public class CavernVeinManager extends CaveVeinManager
 {
-	private final List<ICaveVein> CAVE_VEINS = Lists.newArrayList();
-
 	@Override
 	public Configuration getConfig()
 	{
@@ -31,11 +24,5 @@ public class CavernVeinManager extends CaveVeinManager
 	public int getType()
 	{
 		return WorldProviderCavern.TYPE;
-	}
-
-	@Override
-	public List<ICaveVein> getCaveVeins()
-	{
-		return CAVE_VEINS;
 	}
 }

@@ -19,6 +19,7 @@ import caveworld.plugin.ICavePlugin;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Optional.Method;
 import cpw.mods.fml.common.registry.GameRegistry;
+import cpw.mods.fml.relauncher.FMLLaunchHandler;
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 import shift.sextiarysector.api.recipe.RecipeAPI;
@@ -56,6 +57,11 @@ public class SextiarySectorPlugin implements ICavePlugin
 	@Override
 	public void invoke()
 	{
+		if (FMLLaunchHandler.side().isClient())
+		{
+			SSTabs.registerTabs();
+		}
+
 		RecipeAPI.pulverizer.add("oreMagnite", new ItemStack(CaveItems.gem, 2, 2));
 
 		Block block = GameRegistry.findBlock(MODID, "CoalLargeOre");

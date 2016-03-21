@@ -54,7 +54,6 @@ public class CaverManager implements ICaverManager
 {
 	public static final String CAVER_TAG = "Caveworld:Caver";
 
-	private static final Map<String, NBTTagCompound> caverData = Maps.newHashMap();
 	private static final Table<Block, Integer, Integer> pointAmounts = HashBasedTable.create();
 
 	public static BlockEntry lastMine;
@@ -283,20 +282,7 @@ public class CaverManager implements ICaverManager
 	@Override
 	public void saveData(Entity entity, NBTTagCompound compound)
 	{
-		Caver caver = getCaver(entity);
-
-		if (compound == null)
-		{
-			NBTTagCompound data = new NBTTagCompound();
-
-			caver.saveNBTData(data);
-
-			caverData.put(entity.getUniqueID().toString(), data);
-		}
-		else
-		{
-			caver.saveNBTData(compound);
-		}
+		getCaver(entity).saveNBTData(compound);
 	}
 
 	@Override
@@ -304,16 +290,14 @@ public class CaverManager implements ICaverManager
 	{
 		Caver caver = getCaver(entity);
 
-		if (compound == null)
-		{
-			caver.loadNBTData(caverData.remove(entity.getUniqueID().toString()));
-		}
-		else
-		{
-			caver.loadNBTData(compound);
-		}
-
+		caver.loadNBTData(compound);
 		caver.adjustData();
+	}
+
+	@Override
+	public void adjustData(Entity entity)
+	{
+		getCaver(entity).adjustData();
 	}
 
 	public enum MinerRank

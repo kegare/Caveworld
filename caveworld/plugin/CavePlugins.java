@@ -31,6 +31,7 @@ import caveworld.plugin.moreinventory.MIMPlugin;
 import caveworld.plugin.nei.NEIPlugin;
 import caveworld.plugin.sextiarysector.SextiarySectorPlugin;
 import caveworld.plugin.tconstruct.TinkersConstructPlugin;
+import caveworld.plugin.thaumcraft.ThaumcraftPlugin;
 import caveworld.util.CaveLog;
 import cpw.mods.fml.common.Loader;
 
@@ -55,6 +56,7 @@ public class CavePlugins
 		PLUGINS.add(new MIMPlugin());
 		PLUGINS.add(new SextiarySectorPlugin());
 		PLUGINS.add(new TinkersConstructPlugin());
+		PLUGINS.add(new ThaumcraftPlugin());
 		CLIENT_PLUGINS.add(new CraftGuidePlugin());
 		CLIENT_PLUGINS.add(new NEIPlugin());
 	}

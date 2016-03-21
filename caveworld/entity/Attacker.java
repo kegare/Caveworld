@@ -19,7 +19,6 @@ public class Attacker
 
 	private String name;
 	private float damage;
-	private int killed;
 
 	public Attacker(String uuid)
 	{
@@ -36,7 +35,6 @@ public class Attacker
 		this(nbt.getString("UUID"));
 		this.name = nbt.getString("Name");
 		this.damage = nbt.getFloat("Damage");
-		this.killed = nbt.getInteger("Killed");
 	}
 
 	public String getUniqueID()
@@ -69,21 +67,6 @@ public class Attacker
 		damage += value;
 	}
 
-	public int getKilled()
-	{
-		return killed;
-	}
-
-	public void setKilled(int value)
-	{
-		killed = value;
-	}
-
-	public void addKilled(int value)
-	{
-		killed += value;
-	}
-
 	public NBTTagCompound getNBTData()
 	{
 		NBTTagCompound nbt = new NBTTagCompound();
@@ -91,7 +74,6 @@ public class Attacker
 		nbt.setString("UUID", uuid);
 		nbt.setString("Name", name);
 		nbt.setFloat("Damage", damage);
-		nbt.setInteger("Killed", killed);
 
 		return nbt;
 	}

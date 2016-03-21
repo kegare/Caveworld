@@ -9,20 +9,20 @@
 
 package caveworld.core;
 
-import caveworld.world.WorldProviderAquaCavern;
+import caveworld.world.WorldProviderCaveland;
 import net.minecraftforge.common.config.Configuration;
 
-public class AquaCavernVeinManager extends CaveVeinManager
+public class CavelandVeinManager extends CaveVeinManager
 {
 	@Override
 	public Configuration getConfig()
 	{
-		return Config.veinsAquaCavernCfg;
+		return Config.veinsCavelandCfg;
 	}
 
 	@Override
 	public int getType()
 	{
-		return WorldProviderAquaCavern.TYPE;
+		return WorldProviderCaveland.TYPE;
 	}
 }

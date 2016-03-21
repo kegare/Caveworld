@@ -139,6 +139,7 @@ public class Caveworld
 		CaveworldAPI.veinCavernManager = new CavernVeinManager();
 		CaveworldAPI.biomeAquaCavernManager = new AquaCavernBiomeManager();
 		CaveworldAPI.veinAquaCavernManager = new AquaCavernVeinManager();
+		CaveworldAPI.veinCavelandManager = new CavelandVeinManager();
 
 		CaverAPI.caverManager = new CaverManager();
 
@@ -404,6 +405,7 @@ public class Caveworld
 		Config.syncVeinsCfg();
 		Config.syncVeinsCavernCfg();
 		Config.syncVeinsAquaCavernCfg();
+		Config.syncVeinsCavelandCfg();
 
 		CavePlugins.registerPlugins();
 		Config.syncPluginsCfg();

@@ -9,19 +9,11 @@
 
 package caveworld.core;
 
-import java.util.Map;
-
-import com.google.common.collect.Maps;
-
-import caveworld.api.ICaveBiome;
 import caveworld.world.WorldProviderCavern;
-import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.config.Configuration;
 
 public class CavernBiomeManager extends CaveBiomeManager
 {
-	private final Map<BiomeGenBase, ICaveBiome> CAVE_BIOMES = Maps.newHashMap();
-
 	@Override
 	public Configuration getConfig()
 	{
@@ -32,11 +24,5 @@ public class CavernBiomeManager extends CaveBiomeManager
 	public int getType()
 	{
 		return WorldProviderCavern.TYPE;
-	}
-
-	@Override
-	public Map<BiomeGenBase, ICaveBiome> getCaveBiomeMap()
-	{
-		return CAVE_BIOMES;
 	}
 }

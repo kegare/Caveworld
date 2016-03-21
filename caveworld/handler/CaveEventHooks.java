@@ -35,6 +35,7 @@ import caveworld.core.AquaCavernVeinManager;
 import caveworld.core.CaveAchievementList;
 import caveworld.core.CaveBiomeManager;
 import caveworld.core.CaveVeinManager;
+import caveworld.core.CavelandVeinManager;
 import caveworld.core.CaverManager;
 import caveworld.core.CaverManager.MinerRank;
 import caveworld.core.CavernBiomeManager;
@@ -69,6 +70,7 @@ import caveworld.network.client.MultiBreakCountMessage;
 import caveworld.network.common.VeinAdjustMessage;
 import caveworld.network.server.CaveAchievementMessage;
 import caveworld.plugin.enderstorage.EnderStoragePlugin;
+import caveworld.plugin.sextiarysector.SSHelper;
 import caveworld.plugin.sextiarysector.SextiarySectorPlugin;
 import caveworld.util.CaveUtils;
 import caveworld.util.Version;
@@ -177,6 +179,7 @@ import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.world.BlockEvent.BreakEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import shift.sextiarysector.api.SextiarySectorAPI;
+import shift.sextiarysector.api.equipment.EquipmentType;
 
 public class CaveEventHooks
 {
@@ -197,6 +200,8 @@ public class CaveEventHooks
 	public static ICaveVeinManager prevVeinCavernManager;
 	@SideOnly(Side.CLIENT)
 	public static ICaveVeinManager prevVeinAquaCavernManager;
+	@SideOnly(Side.CLIENT)
+	public static ICaveVeinManager prevVeinCavelandManager;
 
 	private final Random rand = new Random();
 
@@ -468,11 +473,10 @@ public class CaveEventHooks
 	public void onMouse(MouseEvent event)
 	{
 		Minecraft mc = FMLClientHandler.instance().getClient();
-		EntityPlayer player = mc.thePlayer;
 
-		if (player != null)
+		if (mc.thePlayer != null)
 		{
-			ItemStack current = player.getCurrentEquippedItem();
+			ItemStack current = mc.thePlayer.getCurrentEquippedItem();
 
 			if (current != null && current.getItem() instanceof ICaveniumTool)
 			{
@@ -747,6 +751,8 @@ public class CaveEventHooks
 			CaveworldAPI.veinCavernManager = new CavernVeinManager().setReadOnly(true);
 			prevVeinAquaCavernManager = CaveworldAPI.veinAquaCavernManager;
 			CaveworldAPI.veinAquaCavernManager = new AquaCavernVeinManager().setReadOnly(true);
+			prevVeinCavelandManager = CaveworldAPI.veinCavelandManager;
+			CaveworldAPI.veinCavelandManager = new CavelandVeinManager().setReadOnly(true);
 		}
 	}
 
@@ -792,6 +798,12 @@ public class CaveEventHooks
 			prevVeinAquaCavernManager = null;
 		}
 
+		if (prevVeinCavelandManager != null)
+		{
+			CaveworldAPI.veinCavelandManager = prevVeinCavelandManager;
+			prevVeinCavelandManager = null;
+		}
+
 		ItemOreCompass.resetFinder();
 	}
 
@@ -821,6 +833,7 @@ public class CaveEventHooks
 				manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new VeinAdjustMessage(CaveworldAPI.veinManager)));
 				manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new VeinAdjustMessage(CaveworldAPI.veinCavernManager)));
 				manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new VeinAdjustMessage(CaveworldAPI.veinAquaCavernManager)));
+				manager.scheduleOutboundPacket(CaveNetworkRegistry.getPacket(new VeinAdjustMessage(CaveworldAPI.veinCavelandManager)));
 			}
 		}
 	}
@@ -1085,17 +1098,35 @@ public class CaveEventHooks
 		EntityPlayer player = event.entityPlayer;
 		EntityPlayer old = event.original;
 
-		if (event.wasDeath && CaveworldAPI.isEntityInCavenia(player))
+		if (event.wasDeath)
 		{
-			if (old.getEntityData().hasKey("Cavenia:Inventory"))
+			NBTTagCompound nbt = new NBTTagCompound();
+
+			CaverAPI.saveData(old, nbt);
+			CaverAPI.loadData(player, nbt);
+
+			if (Config.deathLoseMiningPoint)
 			{
-				player.inventory.readFromNBT(old.getEntityData().getTagList("Cavenia:Inventory", NBT.TAG_COMPOUND));
+				CaverAPI.setMiningPoint(player, 0);
 			}
 
-			player.experienceLevel = old.experienceLevel;
-			player.experienceTotal = old.experienceTotal;
-			player.experience = old.experience;
-			player.setScore(old.getScore());
+			if (Config.deathLoseMinerRank)
+			{
+				CaverAPI.setMinerRank(player, 0);
+			}
+
+			if (CaveworldAPI.isEntityInCavenia(player))
+			{
+				if (old.getEntityData().hasKey("Cavenia:Inventory"))
+				{
+					player.inventory.readFromNBT(old.getEntityData().getTagList("Cavenia:Inventory", NBT.TAG_COMPOUND));
+				}
+
+				player.experienceLevel = old.experienceLevel;
+				player.experienceTotal = old.experienceTotal;
+				player.experience = old.experience;
+				player.setScore(old.getScore());
+			}
 		}
 	}
 
@@ -1233,7 +1264,7 @@ public class CaveEventHooks
 
 								if (player.capabilities.isCreativeMode)
 								{
-									executor.breakAll();
+									tool.breakAll(current, world, x, y, z, player);
 								}
 								else
 								{
@@ -1392,7 +1423,7 @@ public class CaveEventHooks
 						block = world.getBlock(x, y - 1, z);
 						int meta = world.getBlockMetadata(x, y - 1, z);
 
-						if (block == CaveBlocks.cavenium_ore && (meta == 2 || meta == 3))
+						if (block == CaveBlocks.cavenium_ore && (meta == 2 || meta == 3) || block == Blocks.stone && CaveworldAPI.isEntityInCaves(player))
 						{
 							if (block == world.getBlock(x, y - 2, z) && meta == world.getBlockMetadata(x, y - 2, z))
 							{
@@ -1401,7 +1432,7 @@ public class CaveEventHooks
 								world.setBlock(x, y - 2, z, Blocks.air, 0, 2);
 
 								EntityCaveman entity = new EntityCaveman(world);
-								int type = meta == 2 ? 1 : meta == 3 ? 2 : 0;
+								int type = meta == 2 ? 1 : meta == 3 ? 2 : 3;
 
 								entity.setCavemanType(type);
 								entity.setHealth(entity.getMaxHealth());
@@ -1409,9 +1440,13 @@ public class CaveEventHooks
 
 								if (current != null)
 								{
-									entity.setCurrentItemOrArmor(0, current);
+									entity.setCurrentItemOrArmor(0, current.copy());
+									entity.setEquipmentDropChance(0, 2.0F);
 
-									player.setCurrentItemOrArmor(0, null);
+									if (!player.capabilities.isCreativeMode)
+									{
+										player.setCurrentItemOrArmor(0, null);
+									}
 								}
 
 								world.spawnEntityInWorld(entity);
@@ -1508,7 +1543,7 @@ public class CaveEventHooks
 			}
 			else
 			{
-				event.newSpeed = event.originalSpeed * 5.0F;
+				event.newSpeed = event.originalSpeed * 7.0F;
 			}
 		}
 
@@ -1583,30 +1618,50 @@ public class CaveEventHooks
 		if (!player.worldObj.isRemote)
 		{
 			ItemStack itemstack = event.original;
+			ItemStack item = null;
 
-			outside: for (int i = 0; i < player.inventory.getSizeInventory(); ++i)
+			if (SextiarySectorPlugin.enabled())
 			{
-				ItemStack item = player.inventory.getStackInSlot(i);
+				item = SSHelper.getEquipment(player, EquipmentType.Bag);
 
-				if (item != null && item.getItem() instanceof ItemCaverBackpack)
+				if (item == null || !(item.getItem() instanceof ItemCaverBackpack))
 				{
-					InventoryCaverBackpack inventory = new InventoryCaverBackpack(item);
+					item = null;
+				}
+			}
 
-					for (int j = 0; j < inventory.getSizeInventory(); ++j)
+			if (item == null)
+			{
+				for (int i = 0; i < player.inventory.getSizeInventory(); ++i)
+				{
+					item = player.inventory.getStackInSlot(i);
+
+					if (item == null || !(item.getItem() instanceof ItemCaverBackpack))
 					{
-						ItemStack stack = inventory.getStackInSlot(j);
+						item = null;
+					}
+					else break;
+				}
+			}
 
-						if (stack != null && itemstack.getItem() == stack.getItem())
+			if (item != null && item.getItem() instanceof ItemCaverBackpack)
+			{
+				InventoryCaverBackpack inventory = new InventoryCaverBackpack(item);
+
+				for (int j = 0; j < inventory.getSizeInventory(); ++j)
+				{
+					ItemStack stack = inventory.getStackInSlot(j);
+
+					if (stack != null && itemstack.getItem() == stack.getItem())
+					{
+						if (itemstack.isItemStackDamageable() && stack.isItemStackDamageable() || itemstack.getItemDamage() == stack.getItemDamage())
 						{
-							if (itemstack.isItemStackDamageable() && stack.isItemStackDamageable() || itemstack.getItemDamage() == stack.getItemDamage())
-							{
-								player.inventory.setInventorySlotContents(player.inventory.currentItem, stack);
+							player.inventory.setInventorySlotContents(player.inventory.currentItem, stack);
 
-								inventory.setInventorySlotContents(j, null);
-								inventory.markDirty();
+							inventory.setInventorySlotContents(j, null);
+							inventory.markDirty();
 
-								break outside;
-							}
+							break;
 						}
 					}
 				}
@@ -1626,11 +1681,6 @@ public class CaveEventHooks
 		Entity entity = event.entity;
 		World world = event.world;
 
-		if (entity instanceof EntityLivingBase)
-		{
-			CaverAPI.loadData(entity, null);
-		}
-
 		if (entity instanceof EntityLiving && CaveworldAPI.isEntityInCaves(entity))
 		{
 			if (entity.posY >= world.provider.getActualHeight() - 1)
@@ -1638,6 +1688,8 @@ public class CaveEventHooks
 				event.setCanceled(true);
 			}
 		}
+
+		CaverAPI.adjustData(entity);
 	}
 
 	@SubscribeEvent
@@ -1685,19 +1737,12 @@ public class CaveEventHooks
 	{
 		EntityLivingBase entity = event.entityLiving;
 
-		if (Config.deathLoseMiningPoint)
-		{
-			CaverAPI.setMiningPoint(entity, 0);
-		}
-
 		if (CaveworldAPI.isEntityInCavenia(entity) && entity instanceof EntityPlayer)
 		{
 			EntityPlayer player = (EntityPlayer)entity;
 
 			player.getEntityData().setTag("Cavenia:Inventory", player.inventory.writeToNBT(new NBTTagList()));
 		}
-
-		CaverAPI.saveData(entity, null);
 	}
 
 	@SubscribeEvent

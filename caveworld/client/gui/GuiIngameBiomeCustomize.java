@@ -94,7 +94,7 @@ public class GuiIngameBiomeCustomize extends GuiScreen
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float ticks)
 	{
-		drawDefaultBackground();
+		drawGradientRect(0, 0, width, height, Integer.MIN_VALUE, Integer.MAX_VALUE);
 		drawCenteredString(fontRendererObj, I18n.format(Caveworld.CONFIG_LANG + "biomes"), width / 2, 40, 0xFFFFFF);
 
 		super.drawScreen(mouseX, mouseY, ticks);

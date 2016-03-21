@@ -255,6 +255,30 @@ public class ItemMiningPickaxe extends ItemCavePickaxe implements ICaveniumTool
 	}
 
 	@Override
+	public boolean breakAll(ItemStack itemstack, World world, int x, int y, int z, EntityLivingBase entity)
+	{
+		if (entity instanceof EntityPlayerMP)
+		{
+			BreakMode mode = getMode(itemstack);
+			MultiBreakExecutor executor = mode.getExecutor((EntityPlayerMP)entity);
+
+			if (executor != null && !executor.getBreakPositions().isEmpty())
+			{
+				BreakPos origin = executor.getOriginPos();
+
+				if (x == origin.x && y == origin.y && z == origin.z)
+				{
+					executor.breakAll();
+
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	@Override
 	public Item getBase(ItemStack itemstack)
 	{
 		NBTTagCompound data = itemstack.getTagCompound();
@@ -524,20 +548,7 @@ public class ItemMiningPickaxe extends ItemCavePickaxe implements ICaveniumTool
 			}
 		}
 
-		if (entity instanceof EntityPlayerMP)
-		{
-			MultiBreakExecutor executor = mode.getExecutor((EntityPlayerMP)entity);
-
-			if (executor != null && !executor.getBreakPositions().isEmpty())
-			{
-				BreakPos origin = executor.getOriginPos();
-
-				if (x == origin.x && y == origin.y && z == origin.z)
-				{
-					executor.breakAll();
-				}
-			}
-		}
+		breakAll(itemstack, world, x, y, z, entity);
 
 		return super.onBlockDestroyed(itemstack, world, block, x, y, z, entity);
 	}

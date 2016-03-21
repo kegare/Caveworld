@@ -72,4 +72,6 @@ public interface ICaverManager
 	public void saveData(Entity entity, NBTTagCompound compound);
 
 	public void loadData(Entity entity, NBTTagCompound compound);
+
+	public void adjustData(Entity entity);
 }

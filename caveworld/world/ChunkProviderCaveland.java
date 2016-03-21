@@ -12,6 +12,8 @@ package caveworld.world;
 import java.util.List;
 import java.util.Random;
 
+import caveworld.api.CaveworldAPI;
+import caveworld.api.ICaveVein;
 import caveworld.block.CaveBlocks;
 import caveworld.entity.CaveEntityRegistry;
 import caveworld.world.gen.MapGenCavelandCaves;
@@ -233,58 +235,9 @@ public class ChunkProviderCaveland implements IChunkProvider
 		MinecraftForge.EVENT_BUS.post(new DecorateBiomeEvent.Pre(worldObj, random, worldX, worldZ));
 		MinecraftForge.ORE_GEN_BUS.post(new OreGenEvent.Pre(worldObj, random, worldX, worldZ));
 
-		if (decorator.gravelGen != null)
+		for (ICaveVein vein : CaveworldAPI.getCavelandVeins())
 		{
-			for (i = 0; i < 10; ++i)
-			{
-				x = worldX + random.nextInt(16);
-				y = random.nextInt(worldHeight - 2);
-				z = worldZ + random.nextInt(16);
-
-				decorator.gravelGen.generate(worldObj, random, x, y, z);
-			}
-		}
-
-		if (decorator.coalGen != null)
-		{
-			for (i = 0; i < 20; ++i)
-			{
-				x = worldX + random.nextInt(16);
-				y = random.nextInt(worldHeight - 2);
-				z = worldZ + random.nextInt(16);
-
-				decorator.coalGen.generate(worldObj, random, x, y, z);
-			}
-
-			for (i = 0; i < 15; ++i)
-			{
-				x = worldX + random.nextInt(16);
-				y = random.nextInt(10);
-				z = worldZ + random.nextInt(16);
-
-				decorator.coalGen.generate(worldObj, random, x, y, z);
-			}
-		}
-
-		if (decorator.ironGen != null)
-		{
-			for (i = 0; i < 20; ++i)
-			{
-				x = worldX + random.nextInt(16);
-				y = random.nextInt(worldHeight - 2);
-				z = worldZ + random.nextInt(16);
-
-				decorator.ironGen.generate(worldObj, random, x, y, z);
-			}
-
-			for (i = 0; i < 15; ++i)
-			{
-				x = worldX + random.nextInt(16);
-				y = random.nextInt(10);
-				z = worldZ + random.nextInt(16);
-
-				decorator.ironGen.generate(worldObj, random, x, y, z);
-			}
+			vein.generateVeins(worldObj, random, worldX, worldZ);
 		}
 
 		MinecraftForge.ORE_GEN_BUS.post(new OreGenEvent.Post(worldObj, random, worldX, worldZ));

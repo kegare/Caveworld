@@ -25,6 +25,7 @@ import caveworld.network.common.OpRemoteCheckMessage;
 import caveworld.network.common.RegenerateMessage;
 import caveworld.network.common.VeinAdjustMessage;
 import caveworld.network.server.CaveAchievementMessage;
+import caveworld.network.server.OpenGuiMessage;
 import caveworld.network.server.PortalInventoryMessage;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.NetworkRegistry;
@@ -111,5 +112,6 @@ public class CaveNetworkRegistry
 		registerMessage(MultiBreakCountMessage.class, MultiBreakCountMessage.class, Side.CLIENT);
 		registerMessage(PortalInventoryMessage.class, PortalInventoryMessage.class, Side.SERVER);
 		registerMessage(LastMineMessage.class, LastMineMessage.class, Side.CLIENT);
+		registerMessage(OpenGuiMessage.class, OpenGuiMessage.class, Side.SERVER);
 	}
 }

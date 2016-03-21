@@ -202,11 +202,8 @@ public class CaveBlocks
 			GameRegistry.addShapelessRecipe(new ItemStack(perverted_sapling, 1, i), new ItemStack(Blocks.sapling, 1, i), Items.fermented_spider_eye);
 		}
 
-		if (Config.mossStoneCraftRecipe)
-		{
-			GameRegistry.addRecipe(new ShapelessOreRecipe(new ItemStack(Blocks.mossy_cobblestone), Blocks.vine, "cobblestone"));
-			GameRegistry.addShapelessRecipe(new ItemStack(Blocks.stonebrick, 1, 1), Blocks.vine, new ItemStack(Blocks.stonebrick, 1, 0));
-		}
+		GameRegistry.addRecipe(new ShapelessOreRecipe(new ItemStack(Blocks.mossy_cobblestone), Blocks.vine, "cobblestone"));
+		GameRegistry.addShapelessRecipe(new ItemStack(Blocks.stonebrick, 1, 1), Blocks.vine, new ItemStack(Blocks.stonebrick, 1, 0));
 
 		FurnaceRecipes.smelting().func_151394_a(new ItemStack(cavenium_ore, 1, 0), new ItemStack(CaveItems.cavenium, 1, 0), 0.5F);
 		FurnaceRecipes.smelting().func_151394_a(new ItemStack(cavenium_ore, 1, 1), new ItemStack(CaveItems.cavenium, 1, 1), 0.75F);

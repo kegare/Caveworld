@@ -14,7 +14,7 @@ import java.util.Random;
 import caveworld.api.BlockEntry;
 import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
-import caveworld.api.ICavenicMob;
+import caveworld.api.ICaveMob;
 import caveworld.client.gui.MenuType;
 import caveworld.core.Caveworld;
 import caveworld.core.Config;
@@ -317,7 +317,7 @@ public abstract class BlockCavePortal extends BlockPortal implements IBlockPorta
 	@Override
 	public void onEntityCollidedWithBlock(World world, int x, int y, int z, Entity entity)
 	{
-		if (!world.isRemote && entity.isEntityAlive() && !(entity instanceof ICavenicMob))
+		if (!world.isRemote && entity.isEntityAlive() && !(entity instanceof ICaveMob))
 		{
 			if (entity.timeUntilPortal <= 0)
 			{
@@ -348,10 +348,17 @@ public abstract class BlockCavePortal extends BlockPortal implements IBlockPorta
 				}
 
 				Teleporter teleporter = getTeleporter(worldNew, brick);
+				ChunkCoordinates pos = new ChunkCoordinates(MathHelper.floor_double(entity.posX), MathHelper.floor_double(entity.posY + 0.5D), MathHelper.floor_double(entity.posZ));
+				double posX = entity.posX + 0.5D;
+				double posY = entity.posY + Math.max(entity.getEyeHeight() - 0.35D, 0.5D);
+				double posZ = entity.posZ + 0.5D;
 
 				entity.worldObj.removeEntity(entity);
 				entity.isDead = false;
 				entity.timeUntilPortal = entity.getPortalCooldown();
+				entity.motionX = 0.0D;
+				entity.motionY = 0.0D;
+				entity.motionZ = 0.0D;
 
 				if (entity instanceof EntityPlayerMP)
 				{
@@ -359,22 +366,26 @@ public abstract class BlockCavePortal extends BlockPortal implements IBlockPorta
 
 					if (!player.isSneaking() && !player.isPotionActive(Potion.blindness))
 					{
-						setLastPos(player, dimOld, player.getPlayerCoordinates());
-
-						worldOld.playSoundToNearExcept(player, "caveworld:caveworld_portal", 0.5F, 1.0F);
+						setLastPos(player, dimOld, pos);
 
 						server.getConfigurationManager().transferPlayerToDimension(player, dimNew, teleporter);
 
-						worldNew.playSoundAtEntity(player, "caveworld:caveworld_portal", 0.75F, 1.0F);
-
 						setLastDimension(player, dimOld);
+
+						worldOld.playSoundEffect(posX, posY, posZ, "caveworld:caveworld_portal", 0.5F, 1.0F);
+
+						posX = player.posX + 0.5D;
+						posY = player.posY + Math.max(player.getEyeHeight() - 0.35D, 0.5D);
+						posZ = player.posZ + 0.5D;
+
+						worldNew.playSoundEffect(posX, posY, posZ, "caveworld:caveworld_portal", 0.75F, 1.0F);
 					}
 				}
 				else
 				{
 					entity.dimension = dimNew;
 
-					setLastPos(entity, dimOld, new ChunkCoordinates(MathHelper.floor_double(entity.posX), MathHelper.floor_double(entity.posY + 0.5D), MathHelper.floor_double(entity.posZ)));
+					setLastPos(entity, dimOld, pos);
 
 					server.getConfigurationManager().transferEntityToWorld(entity, dimOld, worldOld, worldNew, teleporter);
 
@@ -382,17 +393,25 @@ public abstract class BlockCavePortal extends BlockPortal implements IBlockPorta
 
 					if (target != null)
 					{
-						worldOld.playSoundEffect(x + 0.5D, y + 0.5D, z + 0.5D, "caveworld:caveworld_portal", 0.25F, 1.15F);
-
 						target.copyDataFrom(entity, true);
+
+						boolean force = target.forceSpawn;
+
 						target.forceSpawn = true;
 
 						worldNew.spawnEntityInWorld(target);
-						worldNew.playSoundAtEntity(target, "caveworld:caveworld_portal", 0.5F, 1.15F);
 
-						target.forceSpawn = false;
+						target.forceSpawn = force;
 
 						setLastDimension(target, dimOld);
+
+						worldOld.playSoundEffect(posX, posY, posZ, "caveworld:caveworld_portal", 0.25F, 1.15F);
+
+						posX = target.posX + 0.5D;
+						posY = target.posY + Math.max(target.getEyeHeight() - 0.35D, 0.5D);
+						posZ = target.posZ + 0.5D;
+
+						worldNew.playSoundEffect(posX, posY, posZ, "caveworld:caveworld_portal", 0.5F, 1.15F);
 					}
 
 					entity.setDead();

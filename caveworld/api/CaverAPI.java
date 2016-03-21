@@ -341,4 +341,12 @@ public final class CaverAPI
 			caverManager.loadData(entity, compound);
 		}
 	}
+
+	public static void adjustData(Entity entity)
+	{
+		if (caverManager != null)
+		{
+			caverManager.adjustData(entity);
+		}
+	}
 }

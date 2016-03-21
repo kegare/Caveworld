@@ -9,6 +9,7 @@
 
 package caveworld.inventory;
 
+import caveworld.item.ItemCaverBackpack;
 import invtweaks.api.container.ChestContainer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -51,12 +52,17 @@ public class ContainerCaverBackpack extends Container
 		{
 			if (j == inventory.currentItem)
 			{
-				addSlotToContainer(new SlotFixed(inventory, j, 8 + j * 18, 161 + i));
+				ItemStack itemstack = inventory.getStackInSlot(j);
+
+				if (itemstack != null && itemstack.getItem() instanceof ItemCaverBackpack)
+				{
+					addSlotToContainer(new SlotFixed(inventory, j, 8 + j * 18, 161 + i));
+
+					continue;
+				}
 			}
-			else
-			{
-				addSlotToContainer(new Slot(inventory, j, 8 + j * 18, 161 + i));
-			}
+
+			addSlotToContainer(new Slot(inventory, j, 8 + j * 18, 161 + i));
 		}
 	}
 

@@ -121,15 +121,6 @@ public class InventoryCaverBackpack implements IInventory
 	@Override
 	public boolean isUseableByPlayer(EntityPlayer player)
 	{
-		ItemStack current = player.getCurrentEquippedItem();
-
-		if (current != itemstack)
-		{
-			itemstack = current;
-
-			loadNBTData();
-		}
-
 		return itemstack != null;
 	}
 

@@ -25,6 +25,7 @@ import net.minecraft.item.ItemSword;
 import net.minecraft.item.ItemTool;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
+import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
 
 public class EntityAISoldier extends EntityAIBase implements IEntitySelector
@@ -120,7 +121,7 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 	@Override
 	public boolean continueExecuting()
 	{
-		if (tickCounter > 60 || getHeldItem() == null || theSoldier.isStopped())
+		if (tickCounter > 60 || getHeldItem() == null || theSoldier.isStopped() || theWorld.difficultySetting == EnumDifficulty.PEACEFUL)
 		{
 			return false;
 		}
@@ -235,7 +236,7 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 	@Override
 	public boolean isEntityApplicable(Entity entity)
 	{
-		if (!canMoveToEntity(entity) || entity instanceof EntityCaveman)
+		if (theWorld.difficultySetting == EnumDifficulty.PEACEFUL || !canMoveToEntity(entity) || entity instanceof EntityCaveman)
 		{
 			return false;
 		}
@@ -244,6 +245,7 @@ public class EntityAISoldier extends EntityAIBase implements IEntitySelector
 		{
 			case 1:
 			case 2:
+			case 3:
 				return entity instanceof IMob;
 			default:
 				return entity instanceof EntityPlayer && !((EntityPlayer)entity).capabilities.isCreativeMode;

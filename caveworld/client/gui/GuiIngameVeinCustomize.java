@@ -23,7 +23,7 @@ import net.minecraft.client.resources.I18n;
 public class GuiIngameVeinCustomize extends GuiScreen
 {
 	private GuiButton backButton;
-	private GuiButton caveworldButton, cavernButton, aquaCavernButton;
+	private GuiButton caveworldButton, cavernButton, aquaCavernButton, cavelandButton;
 
 	@Override
 	public void initGui()
@@ -60,11 +60,20 @@ public class GuiIngameVeinCustomize extends GuiScreen
 		aquaCavernButton.xPosition = cavernButton.xPosition;
 		aquaCavernButton.yPosition = cavernButton.yPosition + cavernButton.height + 5;
 
+		if (cavelandButton == null)
+		{
+			cavelandButton = new GuiButtonExt(4, 0, 0, "Caveland");
+		}
+
+		cavelandButton.xPosition = aquaCavernButton.xPosition;
+		cavelandButton.yPosition = aquaCavernButton.yPosition + aquaCavernButton.height + 5;
+
 		buttonList.clear();
 		buttonList.add(backButton);
 		buttonList.add(caveworldButton);
 		buttonList.add(cavernButton);
 		buttonList.add(aquaCavernButton);
+		buttonList.add(cavelandButton);
 	}
 
 	@Override
@@ -87,6 +96,9 @@ public class GuiIngameVeinCustomize extends GuiScreen
 				case 3:
 					mc.displayGuiScreen(new GuiVeinsEntry(this, CaveworldAPI.veinAquaCavernManager));
 					break;
+				case 4:
+					mc.displayGuiScreen(new GuiVeinsEntry(this, CaveworldAPI.veinCavelandManager));
+					break;
 			}
 		}
 	}
@@ -94,7 +106,7 @@ public class GuiIngameVeinCustomize extends GuiScreen
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float ticks)
 	{
-		drawDefaultBackground();
+		drawGradientRect(0, 0, width, height, Integer.MIN_VALUE, Integer.MAX_VALUE);
 		drawCenteredString(fontRendererObj, I18n.format(Caveworld.CONFIG_LANG + "veins"), width / 2, 40, 0xFFFFFF);
 
 		super.drawScreen(mouseX, mouseY, ticks);
