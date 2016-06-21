@@ -1,12 +1,3 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.client.config;
 
 import java.util.Collection;
@@ -45,6 +36,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
@@ -62,7 +54,17 @@ public class GuiSelectItem extends GuiScreen
 		for (Item item : GameData.getItemRegistry().typeSafeIterable())
 		{
 			list.clear();
-			item.getSubItems(item, item.getCreativeTab(), list);
+
+			CreativeTabs[] tabs = item.getCreativeTabs();
+
+			if (tabs == null)
+			{
+				item.getSubItems(item, item.getCreativeTab(), list);
+			}
+			else for (CreativeTabs tab : tabs)
+			{
+				item.getSubItems(item, tab, list);
+			}
 
 			if (list.isEmpty())
 			{

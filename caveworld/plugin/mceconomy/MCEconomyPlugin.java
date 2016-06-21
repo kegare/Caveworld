@@ -1,12 +1,3 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.plugin.mceconomy;
 
 import java.io.File;
@@ -17,8 +8,8 @@ import org.apache.commons.lang3.math.NumberUtils;
 
 import caveworld.block.BlockPervertedLog;
 import caveworld.block.CaveBlocks;
-import caveworld.core.CaverManager.MinerRank;
-import caveworld.core.Config;
+import caveworld.config.Config;
+import caveworld.config.manager.CaverManager.MinerRank;
 import caveworld.entity.EntityArcherZombie;
 import caveworld.entity.EntityCaveman;
 import caveworld.entity.EntityCavenicCreeper;
@@ -133,10 +124,15 @@ public class MCEconomyPlugin implements ICavePlugin
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveBlocks.cavenia_portal), -1);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.cavenium, 1, 0), 200);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.cavenium, 1, 1), 500);
-		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.mining_pickaxe), -1);
-		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.lumbering_axe), -1);
-		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.digging_shovel), -1);
-		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.farming_hoe), -1);
+
+		if (!Config.disableCaveniumTools)
+		{
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.mining_pickaxe), -1);
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.lumbering_axe), -1);
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.digging_shovel), -1);
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.farming_hoe), -1);
+		}
+
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.cavenic_bow), -1);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.ore_compass), 2200);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.gem, 1, 0), 35);
@@ -161,15 +157,24 @@ public class MCEconomyPlugin implements ICavePlugin
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.hexcite_chestplate), 8805);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.hexcite_leggings), 7705);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.hexcite_boots), 4405);
-		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_sword), 20005);
-		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_pickaxe), 30005);
-		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_axe), 30005);
-		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_shovel), 10005);
-		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_hoe), 20005);
-		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_helmet), 50005);
-		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_chestplate), 80005);
-		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_leggings), 70005);
-		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_boots), 40005);
+
+		if (!Config.disableInfititeTools)
+		{
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_sword), 20005);
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_pickaxe), 30005);
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_axe), 30005);
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_shovel), 10005);
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_hoe), 20005);
+		}
+
+		if (!Config.disableInfititeArmors)
+		{
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_helmet), 50005);
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_chestplate), 80005);
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_leggings), 70005);
+			MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.infitite_boots), 40005);
+		}
+
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.caver_backpack), 850);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.acresia, 1, 0), 0);
 		MCEconomyAPI.addPurchaseItem(new ItemStack(CaveItems.acresia, 1, 1), 1);

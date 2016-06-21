@@ -1,12 +1,3 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.plugin.mceconomy;
 
 import java.io.File;
@@ -36,10 +27,10 @@ import caveworld.client.config.GuiSelectItem;
 import caveworld.client.config.GuiSelectItem.SelectListener;
 import caveworld.client.config.GuiSelectMinerRank;
 import caveworld.client.gui.GuiListSlot;
-import caveworld.core.CaverManager;
-import caveworld.core.CaverManager.MinerRank;
+import caveworld.config.Config;
+import caveworld.config.manager.CaverManager;
+import caveworld.config.manager.CaverManager.MinerRank;
 import caveworld.core.Caveworld;
-import caveworld.core.Config;
 import caveworld.network.CaveNetworkRegistry;
 import caveworld.network.common.OpRemoteCheckMessage;
 import caveworld.plugin.mceconomy.ShopProductManager.ShopProduct;

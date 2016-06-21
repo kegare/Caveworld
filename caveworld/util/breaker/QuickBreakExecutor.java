@@ -1,15 +1,6 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.util.breaker;
 
-import caveworld.core.Config;
+import caveworld.config.Config;
 import net.minecraft.block.BlockRedstoneOre;
 import net.minecraft.entity.player.EntityPlayer;
 

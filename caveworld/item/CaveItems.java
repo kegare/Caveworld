@@ -1,17 +1,9 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.item;
 
 import com.google.common.base.Predicate;
 
 import caveworld.block.CaveBlocks;
+import caveworld.config.Config;
 import caveworld.recipe.RecipeCavenicBow;
 import caveworld.recipe.RecipeCaveniumTool;
 import caveworld.recipe.RecipeFarmingHoe;
@@ -116,18 +108,18 @@ public class CaveItems
 		GameRegistry.registerItem(acresia, "acresia");
 		GameRegistry.registerItem(spawn_egg, "spawn_egg");
 
+		if (Config.disableCaveniumTools)
+		{
+			mining_pickaxe.setCreativeTab(null);
+			lumbering_axe.setCreativeTab(null);
+			digging_shovel.setCreativeTab(null);
+			farming_hoe.setCreativeTab(null);
+		}
+
 		OreDictionary.registerOre("cavenium", new ItemStack(cavenium, 1, 0));
 		OreDictionary.registerOre("gemCavenium", new ItemStack(cavenium, 1, 0));
 		OreDictionary.registerOre("refinedCavenium", new ItemStack(cavenium, 1, 1));
 		OreDictionary.registerOre("gemRefinedCavenium", new ItemStack(cavenium, 1, 1));
-		OreDictionary.registerOre("pickaxeMining", mining_pickaxe);
-		OreDictionary.registerOre("miningPickaxe", mining_pickaxe);
-		OreDictionary.registerOre("axeLumbering", lumbering_axe);
-		OreDictionary.registerOre("lumberingAxe", lumbering_axe);
-		OreDictionary.registerOre("shovelDigging", digging_shovel);
-		OreDictionary.registerOre("diggingShovel", digging_shovel);
-		OreDictionary.registerOre("hoeFarming", farming_hoe);
-		OreDictionary.registerOre("farmingHoe", farming_hoe);
 		OreDictionary.registerOre("bowCavenic", cavenic_bow);
 		OreDictionary.registerOre("cavenicBow", cavenic_bow);
 		OreDictionary.registerOre("oreCompass", ore_compass);
@@ -157,15 +149,39 @@ public class CaveItems
 		OreDictionary.registerOre("chestplateHexcite", hexcite_chestplate);
 		OreDictionary.registerOre("leggingsHexcite", hexcite_leggings);
 		OreDictionary.registerOre("bootsHexcite", hexcite_boots);
-		OreDictionary.registerOre("swordInfitite", infitite_sword);
-		OreDictionary.registerOre("pickaxeInfitite", infitite_pickaxe);
-		OreDictionary.registerOre("axeInfitite", infitite_axe);
-		OreDictionary.registerOre("shovelInfitite", infitite_shovel);
-		OreDictionary.registerOre("hoeInfitite", infitite_hoe);
-		OreDictionary.registerOre("helmetInfitite", infitite_helmet);
-		OreDictionary.registerOre("chestplateInfitite", infitite_chestplate);
-		OreDictionary.registerOre("leggingsInfitite", infitite_leggings);
-		OreDictionary.registerOre("bootsInfitite", infitite_boots);
+
+		if (!Config.disableInfititeTools)
+		{
+			OreDictionary.registerOre("swordInfitite", infitite_sword);
+			OreDictionary.registerOre("pickaxeInfitite", infitite_pickaxe);
+			OreDictionary.registerOre("axeInfitite", infitite_axe);
+			OreDictionary.registerOre("shovelInfitite", infitite_shovel);
+			OreDictionary.registerOre("hoeInfitite", infitite_hoe);
+		}
+		else
+		{
+			infitite_sword.setCreativeTab(null);
+			infitite_pickaxe.setCreativeTab(null);
+			infitite_axe.setCreativeTab(null);
+			infitite_shovel.setCreativeTab(null);
+			infitite_hoe.setCreativeTab(null);
+		}
+
+		if (!Config.disableInfititeArmors)
+		{
+			OreDictionary.registerOre("helmetInfitite", infitite_helmet);
+			OreDictionary.registerOre("chestplateInfitite", infitite_chestplate);
+			OreDictionary.registerOre("leggingsInfitite", infitite_leggings);
+			OreDictionary.registerOre("bootsInfitite", infitite_boots);
+		}
+		else
+		{
+			infitite_helmet.setCreativeTab(null);
+			infitite_chestplate.setCreativeTab(null);
+			infitite_leggings.setCreativeTab(null);
+			infitite_boots.setCreativeTab(null);
+		}
+
 		OreDictionary.registerOre("caverBackpack", caver_backpack);
 		OreDictionary.registerOre("acresia", new ItemStack(acresia, 1, 1));
 		OreDictionary.registerOre("seedsAcresia", new ItemStack(acresia, 1, 0));
@@ -184,38 +200,41 @@ public class CaveItems
 		GameRegistry.addShapelessRecipe(new ItemStack(cavenium, 9, 0), new ItemStack(CaveBlocks.cavenium_ore, 1, 2));
 		GameRegistry.addShapelessRecipe(new ItemStack(cavenium, 9, 1), new ItemStack(CaveBlocks.cavenium_ore, 1, 3));
 
-		GameRegistry.addRecipe(new RecipeCaveniumTool(new ItemStack(mining_pickaxe), new Predicate<ItemStack>()
+		if (!Config.disableCaveniumTools)
 		{
-			@Override
-			public boolean apply(ItemStack itemstack)
+			GameRegistry.addRecipe(new RecipeCaveniumTool(new ItemStack(mining_pickaxe), new Predicate<ItemStack>()
 			{
-				return CaveUtils.isItemPickaxe(itemstack);
-			}
-		}));
-		GameRegistry.addRecipe(new RecipeCaveniumTool(new ItemStack(lumbering_axe), new Predicate<ItemStack>()
-		{
-			@Override
-			public boolean apply(ItemStack itemstack)
+				@Override
+				public boolean apply(ItemStack itemstack)
+				{
+					return CaveUtils.isItemPickaxe(itemstack);
+				}
+			}));
+			GameRegistry.addRecipe(new RecipeCaveniumTool(new ItemStack(lumbering_axe), new Predicate<ItemStack>()
 			{
-				return CaveUtils.isItemAxe(itemstack);
-			}
-		}));
-		GameRegistry.addRecipe(new RecipeCaveniumTool(new ItemStack(digging_shovel), new Predicate<ItemStack>()
-		{
-			@Override
-			public boolean apply(ItemStack itemstack)
+				@Override
+				public boolean apply(ItemStack itemstack)
+				{
+					return CaveUtils.isItemAxe(itemstack);
+				}
+			}));
+			GameRegistry.addRecipe(new RecipeCaveniumTool(new ItemStack(digging_shovel), new Predicate<ItemStack>()
 			{
-				return CaveUtils.isItemShovel(itemstack);
-			}
-		}));
-		GameRegistry.addRecipe(new RecipeFarmingHoe(new ItemStack(farming_hoe), new Predicate<ItemStack>()
-		{
-			@Override
-			public boolean apply(ItemStack itemstack)
+				@Override
+				public boolean apply(ItemStack itemstack)
+				{
+					return CaveUtils.isItemShovel(itemstack);
+				}
+			}));
+			GameRegistry.addRecipe(new RecipeFarmingHoe(new ItemStack(farming_hoe), new Predicate<ItemStack>()
 			{
-				return CaveUtils.isItemHoe(itemstack);
-			}
-		}));
+				@Override
+				public boolean apply(ItemStack itemstack)
+				{
+					return CaveUtils.isItemHoe(itemstack);
+				}
+			}));
+		}
 
 		GameRegistry.addRecipe(new RecipeCavenicBow(new ItemStack(cavenic_bow)));
 
@@ -314,47 +333,54 @@ public class CaveItems
 			'H', new ItemStack(gem, 1, 3)
 		);
 
-		GameRegistry.addRecipe(new ShapedOreRecipe(infitite_sword,
-			"I", "I", "S",
-			'I', new ItemStack(gem, 1, 4),
-			'S', "stickWood"
-		));
-		GameRegistry.addRecipe(new ShapedOreRecipe(infitite_pickaxe,
-			"III", " S ", " S ",
-			'I', new ItemStack(gem, 1, 4),
-			'S', "stickWood"
-		));
-		GameRegistry.addRecipe(new ShapedOreRecipe(infitite_axe,
-			"II", "IS", " S",
-			'I', new ItemStack(gem, 1, 4),
-			'S', "stickWood"
-		));
-		GameRegistry.addRecipe(new ShapedOreRecipe(infitite_shovel,
-			"I", "S", "S",
-			'I', new ItemStack(gem, 1, 4),
-			'S', "stickWood"
-		));
-		GameRegistry.addRecipe(new ShapedOreRecipe(infitite_hoe,
-			"II", " S", " S",
-			'I', new ItemStack(gem, 1, 4),
-			'S', "stickWood"
-		));
-		GameRegistry.addRecipe(new ItemStack(infitite_helmet),
-			"III", "I I",
-			'I', new ItemStack(gem, 1, 4)
-		);
-		GameRegistry.addRecipe(new ItemStack(infitite_chestplate),
-			"I I", "III", "III",
-			'I', new ItemStack(gem, 1, 4)
-		);
-		GameRegistry.addRecipe(new ItemStack(infitite_leggings),
-			"III", "I I", "I I",
-			'I', new ItemStack(gem, 1, 4)
-		);
-		GameRegistry.addRecipe(new ItemStack(infitite_boots),
-			"I I", "I I",
-			'I', new ItemStack(gem, 1, 4)
-		);
+		if (!Config.disableInfititeTools)
+		{
+			GameRegistry.addRecipe(new ShapedOreRecipe(infitite_sword,
+				"I", "I", "S",
+				'I', new ItemStack(gem, 1, 4),
+				'S', "stickWood"
+			));
+			GameRegistry.addRecipe(new ShapedOreRecipe(infitite_pickaxe,
+				"III", " S ", " S ",
+				'I', new ItemStack(gem, 1, 4),
+				'S', "stickWood"
+			));
+			GameRegistry.addRecipe(new ShapedOreRecipe(infitite_axe,
+				"II", "IS", " S",
+				'I', new ItemStack(gem, 1, 4),
+				'S', "stickWood"
+			));
+			GameRegistry.addRecipe(new ShapedOreRecipe(infitite_shovel,
+				"I", "S", "S",
+				'I', new ItemStack(gem, 1, 4),
+				'S', "stickWood"
+			));
+			GameRegistry.addRecipe(new ShapedOreRecipe(infitite_hoe,
+				"II", " S", " S",
+				'I', new ItemStack(gem, 1, 4),
+				'S', "stickWood"
+			));
+		}
+
+		if (!Config.disableInfititeArmors)
+		{
+			GameRegistry.addRecipe(new ItemStack(infitite_helmet),
+				"III", "I I",
+				'I', new ItemStack(gem, 1, 4)
+			);
+			GameRegistry.addRecipe(new ItemStack(infitite_chestplate),
+				"I I", "III", "III",
+				'I', new ItemStack(gem, 1, 4)
+			);
+			GameRegistry.addRecipe(new ItemStack(infitite_leggings),
+				"III", "I I", "I I",
+				'I', new ItemStack(gem, 1, 4)
+			);
+			GameRegistry.addRecipe(new ItemStack(infitite_boots),
+				"I I", "I I",
+				'I', new ItemStack(gem, 1, 4)
+			);
+		}
 
 		GameRegistry.addRecipe(new ItemStack(caver_backpack),
 			"LCL", "CLC", "LCL",

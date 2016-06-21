@@ -1,12 +1,3 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.util.breaker;
 
 import java.util.Set;
@@ -83,6 +74,8 @@ public abstract class MultiBreakExecutor
 
 	public void breakAll()
 	{
+		player.getEntityData().setBoolean("CaveMultiBreak", true);
+
 		for (BreakPos pos : breakPositions)
 		{
 			ItemStack current = player.getCurrentEquippedItem();
@@ -92,6 +85,8 @@ public abstract class MultiBreakExecutor
 				pos.doBreak(player);
 			}
 		}
+
+		player.getEntityData().removeTag("CaveMultiBreak");
 
 		breakPositions.clear();
 	}

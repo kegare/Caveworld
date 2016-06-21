@@ -1,12 +1,3 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.world;
 
 import java.util.Iterator;
@@ -19,7 +10,7 @@ import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
 import caveworld.block.BlockCavePortal;
 import caveworld.block.CaveBlocks;
-import caveworld.core.Config;
+import caveworld.config.Config;
 import caveworld.util.CaveUtils;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
@@ -51,7 +42,6 @@ public class TeleporterCaveworld extends Teleporter
 	{
 		super(worldServer);
 		this.worldObj = worldServer;
-		this.worldObj.customTeleporters.add(this);
 		this.random = new Random(worldServer.getSeed());
 		this.portalBlock = CaveBlocks.caveworld_portal;
 	}
@@ -60,6 +50,18 @@ public class TeleporterCaveworld extends Teleporter
 	{
 		this(worldServer);
 		this.brickFrame = brick;
+	}
+
+	public void setLocationAndAngles(Entity entity, double posX, double posY, double posZ)
+	{
+		if (entity instanceof EntityPlayerMP)
+		{
+			CaveUtils.setPlayerLocation((EntityPlayerMP)entity, posX, posY, posZ);
+		}
+		else
+		{
+			entity.setLocationAndAngles(posX, posY, posZ, entity.rotationYaw, entity.rotationPitch);
+		}
 	}
 
 	public void init(Entity entity)
@@ -82,14 +84,7 @@ public class TeleporterCaveworld extends Teleporter
 				}
 			}
 
-			if (entity instanceof EntityPlayerMP)
-			{
-				CaveUtils.setPlayerLocation((EntityPlayerMP)entity, x, y, z);
-			}
-			else
-			{
-				entity.setLocationAndAngles(x, y, z, entity.rotationYaw, entity.rotationPitch);
-			}
+			setLocationAndAngles(entity, x, y, z);
 		}
 		else if (Config.portalCache)
 		{
@@ -101,17 +96,7 @@ public class TeleporterCaveworld extends Teleporter
 				int y = coord.posY;
 				int z = coord.posZ;
 
-				if (worldObj.blockExists(x, y, z) && worldObj.getBlock(x, y, z) == portalBlock)
-				{
-					if (entity instanceof EntityPlayerMP)
-					{
-						CaveUtils.setPlayerLocation((EntityPlayerMP)entity, x, y, z);
-					}
-					else
-					{
-						entity.setLocationAndAngles(x, y, z, entity.rotationYaw, entity.rotationPitch);
-					}
-				}
+				setLocationAndAngles(entity, x, y, z);
 			}
 		}
 	}
@@ -314,14 +299,7 @@ public class TeleporterCaveworld extends Teleporter
 				entity.motionX = entity.motionY = entity.motionZ = 0.0D;
 			}
 
-			if (entity instanceof EntityPlayerMP)
-			{
-				CaveUtils.setPlayerLocation((EntityPlayerMP)entity, var2, var3, var4);
-			}
-			else
-			{
-				entity.setLocationAndAngles(var2, var3, var4, entity.rotationYaw, entity.rotationPitch);
-			}
+			setLocationAndAngles(entity, var2, var3, var4);
 
 			return true;
 		}

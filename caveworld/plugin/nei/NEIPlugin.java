@@ -1,14 +1,6 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.plugin.nei;
 
+import caveworld.config.Config;
 import caveworld.plugin.ICavePlugin;
 import codechicken.nei.api.API;
 import codechicken.nei.recipe.TemplateRecipeHandler;
@@ -48,24 +40,27 @@ public class NEIPlugin implements ICavePlugin
 	@Override
 	public void invoke()
 	{
-		TemplateRecipeHandler handler = new MiningPickaxeRecipeHandler();
+		if (!Config.disableCaveniumTools)
+		{
+			TemplateRecipeHandler handler = new MiningPickaxeRecipeHandler();
 
-		API.registerRecipeHandler(handler);
-		API.registerUsageHandler(handler);
+			API.registerRecipeHandler(handler);
+			API.registerUsageHandler(handler);
 
-		handler = new LumberingAxeRecipeHandler();
+			handler = new LumberingAxeRecipeHandler();
 
-		API.registerRecipeHandler(handler);
-		API.registerUsageHandler(handler);
+			API.registerRecipeHandler(handler);
+			API.registerUsageHandler(handler);
 
-		handler = new DiggingShovelRecipeHandler();
+			handler = new DiggingShovelRecipeHandler();
 
-		API.registerRecipeHandler(handler);
-		API.registerUsageHandler(handler);
+			API.registerRecipeHandler(handler);
+			API.registerUsageHandler(handler);
 
-		handler = new FarmingHoeRecipeHandler();
+			handler = new FarmingHoeRecipeHandler();
 
-		API.registerRecipeHandler(handler);
-		API.registerUsageHandler(handler);
+			API.registerRecipeHandler(handler);
+			API.registerUsageHandler(handler);
+		}
 	}
 }

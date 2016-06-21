@@ -1,13 +1,4 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
-package caveworld.core;
+package caveworld.config.manager;
 
 import java.util.Comparator;
 import java.util.List;
@@ -24,6 +15,7 @@ import caveworld.api.BlockEntry;
 import caveworld.api.DummyCaveBiome;
 import caveworld.api.ICaveBiome;
 import caveworld.api.ICaveBiomeManager;
+import caveworld.config.Config;
 import caveworld.util.CaveUtils;
 import caveworld.world.WorldProviderCaveworld;
 import net.minecraft.init.Blocks;

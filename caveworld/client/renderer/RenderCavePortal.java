@@ -1,18 +1,9 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.client.renderer;
 
 import org.lwjgl.opengl.GL11;
 
 import caveworld.block.IBlockPortal;
-import caveworld.core.Config;
+import caveworld.config.Config;
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;

@@ -1,12 +1,3 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.client.config;
 
 import java.util.List;
@@ -14,8 +5,8 @@ import java.util.List;
 import com.google.common.collect.Lists;
 
 import caveworld.client.config.CaveConfigGui.CaveCategoryElement;
+import caveworld.config.Config;
 import caveworld.core.Caveworld;
-import caveworld.core.Config;
 import cpw.mods.fml.client.config.GuiConfig;
 import cpw.mods.fml.client.config.GuiConfigEntries;
 import cpw.mods.fml.client.config.IConfigElement;

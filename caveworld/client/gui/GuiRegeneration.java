@@ -1,12 +1,3 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.client.gui;
 
 import java.awt.Desktop;
@@ -15,7 +6,8 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
 import caveworld.network.CaveNetworkRegistry;
-import caveworld.network.common.RegenerateMessage;
+import caveworld.network.client.RegenerationGuiMessage.EnumType;
+import caveworld.network.server.RegenerationMessage;
 import cpw.mods.fml.client.config.GuiButtonExt;
 import cpw.mods.fml.client.config.GuiCheckBox;
 import cpw.mods.fml.client.config.HoverChecker;
@@ -26,7 +18,8 @@ import net.minecraftforge.common.DimensionManager;
 
 public class GuiRegeneration extends GuiScreen
 {
-	private boolean backup = true;
+	public static boolean backup = true;
+
 	private boolean caveworld = true;
 	private boolean cavern = true;
 	private boolean aquaCavern = true;
@@ -40,14 +33,8 @@ public class GuiRegeneration extends GuiScreen
 
 	public GuiRegeneration() {}
 
-	public GuiRegeneration(boolean backup)
+	public GuiRegeneration(boolean caveworld, boolean cavern, boolean aquaCavern, boolean caveland, boolean cavenia)
 	{
-		this.backup = backup;
-	}
-
-	public GuiRegeneration(boolean backup, boolean caveworld, boolean cavern, boolean aquaCavern, boolean caveland, boolean cavenia)
-	{
-		this(backup);
 		this.caveworld = caveworld;
 		this.cavern = cavern;
 		this.aquaCavern = aquaCavern;
@@ -60,7 +47,7 @@ public class GuiRegeneration extends GuiScreen
 	{
 		if (regenButton == null)
 		{
-			regenButton = new GuiButtonExt(0, 0, 0, I18n.format("caveworld.regenerate.gui.regenerate"));
+			regenButton = new GuiButtonExt(0, 0, 0, I18n.format("caveworld.regeneration.gui.regenerate"));
 		}
 
 		regenButton.xPosition = width / 2 - 100;
@@ -68,7 +55,7 @@ public class GuiRegeneration extends GuiScreen
 
 		if (openButton == null)
 		{
-			openButton = new GuiButtonExt(1, 0, 0, I18n.format("caveworld.regenerate.gui.backup.open"));
+			openButton = new GuiButtonExt(1, 0, 0, I18n.format("caveworld.regeneration.gui.backup.open"));
 			openButton.visible = false;
 		}
 
@@ -110,7 +97,7 @@ public class GuiRegeneration extends GuiScreen
 
 		if (backupCheckBox == null)
 		{
-			backupCheckBox = new GuiCheckBox(8, 10, 0, I18n.format("caveworld.regenerate.gui.backup"), backup);
+			backupCheckBox = new GuiCheckBox(8, 10, 0, I18n.format("caveworld.regeneration.gui.backup"), backup);
 		}
 
 		backupCheckBox.yPosition = height - 20;
@@ -173,7 +160,7 @@ public class GuiRegeneration extends GuiScreen
 						break;
 					}
 
-					CaveNetworkRegistry.sendToServer(new RegenerateMessage(backupCheckBox.isChecked(), caveworld, cavern, aquaCavern, caveland, cavenia));
+					CaveNetworkRegistry.sendToServer(new RegenerationMessage(backupCheckBox.isChecked(), caveworld, cavern, aquaCavern, caveland, cavenia));
 
 					regenButton.enabled = false;
 					cancelButton.visible = false;
@@ -190,6 +177,9 @@ public class GuiRegeneration extends GuiScreen
 					mc.displayGuiScreen(null);
 					mc.setIngameFocus();
 					break;
+				case 8:
+					backup = backupCheckBox.isChecked();
+					break;
 			}
 		}
 	}
@@ -201,16 +191,16 @@ public class GuiRegeneration extends GuiScreen
 
 		GL11.glPushMatrix();
 		GL11.glScalef(1.5F, 1.5F, 1.0F);
-		drawCenteredString(fontRendererObj, I18n.format("caveworld.regenerate.gui.title"), width / 3, 30, 0xFFFFFF);
+		drawCenteredString(fontRendererObj, I18n.format("caveworld.regeneration.gui.title"), width / 3, 30, 0xFFFFFF);
 		GL11.glPopMatrix();
 
-		drawCenteredString(fontRendererObj, I18n.format("caveworld.regenerate.gui.info"), width / 2, 90, 0xEEEEEE);
+		drawCenteredString(fontRendererObj, I18n.format("caveworld.regeneration.gui.info"), width / 2, 90, 0xEEEEEE);
 
 		super.drawScreen(mouseX, mouseY, ticks);
 
 		if (backupHoverChecker.checkHover(mouseX, mouseY))
 		{
-			func_146283_a(fontRendererObj.listFormattedStringToWidth(I18n.format("caveworld.regenerate.gui.backup.tooltip"), 300), mouseX, mouseY);
+			func_146283_a(fontRendererObj.listFormattedStringToWidth(I18n.format("caveworld.regeneration.gui.backup.tooltip"), 300), mouseX, mouseY);
 		}
 	}
 
@@ -220,7 +210,7 @@ public class GuiRegeneration extends GuiScreen
 		return false;
 	}
 
-	public void updateProgress(int task)
+	public void updateProgress(EnumType type)
 	{
 		regenButton.enabled = false;
 		cancelButton.visible = false;
@@ -231,27 +221,28 @@ public class GuiRegeneration extends GuiScreen
 		caveniaCheckBox.visible = false;
 		backupCheckBox.visible = false;
 
-		if (task < 0)
+		if (type == null)
 		{
 			regenButton.visible = false;
 			cancelButton.visible = true;
 		}
-		else switch (task)
+		else switch (type)
 		{
-			case 0:
-				regenButton.displayString = I18n.format("caveworld.regenerate.gui.progress.regenerating");
+			case START:
+				regenButton.displayString = I18n.format("caveworld.regeneration.gui.progress.start");
 				break;
-			case 1:
-				regenButton.displayString = I18n.format("caveworld.regenerate.gui.progress.backingup");
+			case BACKUP:
+				regenButton.displayString = I18n.format("caveworld.regeneration.gui.progress.backup");
 				break;
-			case 2:
-				regenButton.displayString = I18n.format("caveworld.regenerate.gui.progress.regenerated");
+			case SUCCESS:
+				regenButton.displayString = I18n.format("caveworld.regeneration.gui.progress.success");
 				cancelButton.displayString = I18n.format("gui.done");
 				cancelButton.visible = true;
 				break;
-			case 3:
-				regenButton.displayString = I18n.format("caveworld.regenerate.gui.progress.failed");
+			case FAILED:
+				regenButton.displayString = I18n.format("caveworld.regeneration.gui.progress.failed");
 				cancelButton.visible = true;
+			default:
 		}
 	}
 }

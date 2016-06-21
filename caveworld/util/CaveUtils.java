@@ -1,16 +1,6 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.util;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.FileSystem;
@@ -21,22 +11,17 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -44,10 +29,7 @@ import com.google.common.collect.Sets;
 import caveworld.api.BlockEntry;
 import caveworld.api.CaveworldAPI;
 import caveworld.core.Caveworld;
-import caveworld.network.CaveNetworkRegistry;
-import caveworld.network.common.RegenerateMessage;
 import caveworld.world.TeleporterDummy;
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.registry.GameData;
@@ -65,7 +47,6 @@ import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.event.ClickEvent;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
@@ -76,13 +57,8 @@ import net.minecraft.item.ItemSpade;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
-import net.minecraft.world.MinecraftException;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.client.ForgeHooksClient;
@@ -92,8 +68,6 @@ import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.common.BiomeManager.BiomeEntry;
 import net.minecraftforge.common.BiomeManager.BiomeType;
 import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.oredict.OreDictionary;
 
 public class CaveUtils
@@ -637,180 +611,6 @@ public class CaveUtils
 		world.setBlock(x, y - 1, z, Blocks.stone, 0, 2);
 
 		return false;
-	}
-
-	public static boolean regenerateDimension(int dim, boolean backup, boolean ret)
-	{
-		MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
-		WorldServer world = server.worldServerForDimension(dim);
-		File dir = new File(DimensionManager.getCurrentSaveRootDirectory(), world.provider.getSaveFolder());
-		String name = world.provider.getDimensionName();
-		Set<EntityPlayerMP> teleportedPlayers = Sets.newHashSet();
-
-		for (Object obj : server.getConfigurationManager().playerEntityList)
-		{
-			EntityPlayerMP player = (EntityPlayerMP)obj;
-
-			if (player.dimension == dim)
-			{
-				teleportPlayer(player, 0);
-
-				teleportedPlayers.add(player);
-			}
-		}
-
-		IChatComponent component;
-
-		component = new ChatComponentTranslation("caveworld.regenerate.regenerating", name);
-		component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
-		server.getConfigurationManager().sendChatMsg(component);
-
-		if (server.isSinglePlayer())
-		{
-			CaveNetworkRegistry.sendToAll(new RegenerateMessage(backup));
-		}
-
-		CaveNetworkRegistry.sendToAll(new RegenerateMessage.ProgressNotify(0));
-
-		try
-		{
-			world.saveAllChunks(true, null);
-		}
-		catch (MinecraftException e)
-		{
-			return false;
-		}
-
-		world.flush();
-
-		MinecraftForge.EVENT_BUS.post(new WorldEvent.Unload(world));
-
-		DimensionManager.setWorld(dim, null);
-
-		if (dir.exists())
-		{
-			if (backup)
-			{
-				File parent = dir.getParentFile();
-				final Pattern pattern = Pattern.compile("^" + dir.getName() + "_bak-..*\\.zip$");
-				File[] files = parent.listFiles(new FilenameFilter()
-				{
-					@Override
-					public boolean accept(File dir, String name)
-					{
-						return pattern.matcher(name).matches();
-					}
-				});
-
-				if (files != null && files.length >= 5)
-				{
-					Arrays.sort(files, new Comparator<File>()
-					{
-						@Override
-						public int compare(File o1, File o2)
-						{
-							int i = compareWithNull(o1, o2);
-
-							if (i == 0 && o1 != null && o2 != null)
-							{
-								try
-								{
-									i = Files.getLastModifiedTime(o1.toPath()).compareTo(Files.getLastModifiedTime(o2.toPath()));
-								}
-								catch (IOException e) {}
-							}
-
-							return i;
-						}
-					});
-
-					try
-					{
-						FileUtils.forceDelete(files[0]);
-					}
-					catch (IOException e) {}
-				}
-
-				Calendar calendar = Calendar.getInstance();
-				String year = Integer.toString(calendar.get(Calendar.YEAR));
-				String month = String.format("%02d", calendar.get(Calendar.MONTH) + 1);
-				String day = String.format("%02d", calendar.get(Calendar.DATE));
-				String hour = String.format("%02d", calendar.get(Calendar.HOUR_OF_DAY));
-				String minute = String.format("%02d", calendar.get(Calendar.MINUTE));
-				String second = String.format("%02d", calendar.get(Calendar.SECOND));
-				File bak = new File(parent, dir.getName() + "_bak-" + Joiner.on("").join(year, month, day) + "-" + Joiner.on("").join(hour, minute, second) + ".zip");
-
-				if (bak.exists())
-				{
-					FileUtils.deleteQuietly(bak);
-				}
-
-				component = new ChatComponentTranslation("caveworld.regenerate.backingup", name);
-				component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
-				server.getConfigurationManager().sendChatMsg(component);
-
-				CaveNetworkRegistry.sendToAll(new RegenerateMessage.ProgressNotify(1));
-
-				if (archiveDirZip(dir, bak))
-				{
-					ClickEvent click = new ClickEvent(ClickEvent.Action.OPEN_FILE, FilenameUtils.normalize(bak.getParentFile().getPath()));
-
-					component = new ChatComponentTranslation("caveworld.regenerate.backedup", name);
-					component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true).setChatClickEvent(click);
-					server.getConfigurationManager().sendChatMsg(component);
-				}
-				else
-				{
-					component = new ChatComponentTranslation("caveworld.regenerate.backup.failed", name);
-					component.getChatStyle().setColor(EnumChatFormatting.RED).setItalic(true);
-					server.getConfigurationManager().sendChatMsg(component);
-				}
-			}
-
-			try
-			{
-				FileUtils.deleteDirectory(dir);
-			}
-			catch (IOException e)
-			{
-				return false;
-			}
-		}
-
-		if (DimensionManager.shouldLoadSpawn(dim))
-		{
-			world = server.worldServerForDimension(dim);
-
-			try
-			{
-				world.saveAllChunks(true, null);
-			}
-			catch (MinecraftException e)
-			{
-				return false;
-			}
-
-			world.flush();
-		}
-
-		component = new ChatComponentTranslation("caveworld.regenerate.regenerated", name);
-		component.getChatStyle().setColor(EnumChatFormatting.GRAY).setItalic(true);
-		server.getConfigurationManager().sendChatMsg(component);
-
-		CaveNetworkRegistry.sendToAll(new RegenerateMessage.ProgressNotify(2));
-
-		if (ret)
-		{
-			for (EntityPlayerMP player : teleportedPlayers)
-			{
-				if (player.dimension != dim)
-				{
-					teleportPlayer(player, dim);
-				}
-			}
-		}
-
-		return true;
 	}
 
 	public static boolean archiveDirZip(final File dir, final File dest)

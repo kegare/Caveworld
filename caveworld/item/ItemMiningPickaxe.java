@@ -1,12 +1,3 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.item;
 
 import java.util.Collections;
@@ -22,8 +13,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import caveworld.api.BlockEntry;
+import caveworld.config.Config;
 import caveworld.core.Caveworld;
-import caveworld.core.Config;
 import caveworld.util.ArrayListExtended;
 import caveworld.util.CaveUtils;
 import caveworld.util.Roman;
@@ -678,6 +669,13 @@ public class ItemMiningPickaxe extends ItemCavePickaxe implements ICaveniumTool
 	@Override
 	public void addInformation(ItemStack itemstack, EntityPlayer player, List list, boolean advanced)
 	{
+		if (Config.disableCaveniumTools)
+		{
+			list.add(I18n.format("gui.disabled"));
+
+			return;
+		}
+
 		list.add(getModeInfomation(itemstack));
 
 		Item item = getBase(itemstack);

@@ -1,12 +1,3 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.client.config;
 
 import java.util.Comparator;
@@ -24,7 +15,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import caveworld.client.gui.GuiListSlot;
-import caveworld.core.CaverManager.MinerRank;
+import caveworld.config.manager.CaverManager.MinerRank;
 import caveworld.core.Caveworld;
 import caveworld.util.ArrayListExtended;
 import caveworld.util.CaveUtils;

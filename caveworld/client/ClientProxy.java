@@ -1,12 +1,3 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.client;
 
 import org.lwjgl.input.Keyboard;
@@ -34,8 +25,8 @@ import caveworld.client.renderer.RenderFarmingHoe;
 import caveworld.client.renderer.RenderMasterCavenicCreeper;
 import caveworld.client.renderer.RenderMasterCavenicSkeleton;
 import caveworld.client.renderer.TileEntityUniversalChestRenderer;
+import caveworld.config.Config;
 import caveworld.core.CommonProxy;
-import caveworld.core.Config;
 import caveworld.entity.EntityArcherZombie;
 import caveworld.entity.EntityCaveman;
 import caveworld.entity.EntityCavenicCreeper;

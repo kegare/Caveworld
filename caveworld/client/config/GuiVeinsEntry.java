@@ -1,12 +1,3 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.client.config;
 
 import java.io.File;
@@ -38,9 +29,9 @@ import caveworld.api.ICaveVein;
 import caveworld.api.ICaveVeinManager;
 import caveworld.client.config.GuiSelectBlock.SelectListener;
 import caveworld.client.gui.GuiListSlot;
-import caveworld.core.CaveVeinManager.CaveVein;
+import caveworld.config.Config;
+import caveworld.config.manager.CaveVeinManager.CaveVein;
 import caveworld.core.Caveworld;
-import caveworld.core.Config;
 import caveworld.network.CaveNetworkRegistry;
 import caveworld.network.common.OpRemoteCheckMessage;
 import caveworld.network.common.VeinAdjustMessage;

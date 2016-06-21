@@ -1,12 +1,3 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.client.gui;
 
 import caveworld.api.CaveworldAPI;
@@ -14,8 +5,8 @@ import caveworld.block.CaveBlocks;
 import caveworld.client.config.GuiBiomesEntry;
 import caveworld.client.config.GuiVeinsEntry;
 import caveworld.client.gui.GuiButtonVolume.IVolume;
+import caveworld.config.Config;
 import caveworld.core.Caveworld;
-import caveworld.core.Config;
 import caveworld.network.CaveNetworkRegistry;
 import caveworld.network.server.PortalInventoryMessage;
 import caveworld.plugin.mceconomy.GuiShopEntry;
@@ -119,7 +110,7 @@ public class GuiIngameCaveMenu extends GuiScreen implements IVolume
 				break;
 		}
 
-		regenButton = prev = new GuiButtonExt(3, prev.xPosition, prev.yPosition + prev.height + 5, I18n.format("caveworld.regenerate.gui.title"));
+		regenButton = prev = new GuiButtonExt(3, prev.xPosition, prev.yPosition + prev.height + 5, I18n.format("caveworld.regeneration.gui.title"));
 
 		buttonList.clear();
 		buttonList.add(prevPageButton);
@@ -213,22 +204,22 @@ public class GuiIngameCaveMenu extends GuiScreen implements IVolume
 					switch (menuType)
 					{
 						case CAVEWORLD_PORTAL:
-							mc.displayGuiScreen(new GuiRegeneration(true, true, false, false, false, false));
+							mc.displayGuiScreen(new GuiRegeneration(true, false, false, false, false));
 							break;
 						case CAVERN_PORTAL:
-							mc.displayGuiScreen(new GuiRegeneration(true, false, true, false, false, false));
+							mc.displayGuiScreen(new GuiRegeneration(false, true, false, false, false));
 							break;
 						case AQUA_CAVERN_PORTAL:
-							mc.displayGuiScreen(new GuiRegeneration(true, false, false, true, false, false));
+							mc.displayGuiScreen(new GuiRegeneration(false, false, true, false, false));
 							break;
 						case CAVELAND_PORTAL:
-							mc.displayGuiScreen(new GuiRegeneration(true, false, false, false, true, false));
+							mc.displayGuiScreen(new GuiRegeneration(false, false, false, true, false));
 							break;
 						case CAVENIA_PORTAL:
-							mc.displayGuiScreen(new GuiRegeneration(true, false, false, false, false, true));
+							mc.displayGuiScreen(new GuiRegeneration(false, false, false, false, true));
 							break;
 						default:
-							mc.displayGuiScreen(new GuiRegeneration(true));
+							mc.displayGuiScreen(new GuiRegeneration());
 							break;
 					}
 

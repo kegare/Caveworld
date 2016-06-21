@@ -1,19 +1,10 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.block;
 
 import java.util.Random;
 
 import caveworld.client.particle.EntityUniversalChestFX;
+import caveworld.config.Config;
 import caveworld.core.Caveworld;
-import caveworld.core.Config;
 import caveworld.entity.TileEntityUniversalChest;
 import caveworld.inventory.InventoryUniversalChest;
 import cpw.mods.fml.client.FMLClientHandler;

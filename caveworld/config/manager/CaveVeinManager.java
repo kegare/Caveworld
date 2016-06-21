@@ -1,13 +1,4 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
-package caveworld.core;
+package caveworld.config.manager;
 
 import java.util.List;
 import java.util.Random;
@@ -23,6 +14,8 @@ import com.google.common.primitives.Ints;
 import caveworld.api.BlockEntry;
 import caveworld.api.ICaveVein;
 import caveworld.api.ICaveVeinManager;
+import caveworld.config.Config;
+import caveworld.core.Caveworld;
 import caveworld.world.WorldProviderCaveworld;
 import cpw.mods.fml.common.registry.GameData;
 import net.minecraft.block.Block;

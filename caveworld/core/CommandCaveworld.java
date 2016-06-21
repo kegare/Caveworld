@@ -1,12 +1,3 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.core;
 
 import java.util.List;
@@ -14,15 +5,12 @@ import java.util.List;
 import com.google.common.base.Joiner;
 
 import caveworld.api.CaverAPI;
-import caveworld.api.CaveworldAPI;
 import caveworld.network.CaveNetworkRegistry;
 import caveworld.network.client.CaveworldMenuMessage;
-import caveworld.network.common.RegenerateMessage;
-import caveworld.util.CaveUtils;
+import caveworld.network.client.RegenerationGuiMessage;
 import caveworld.util.Version;
 import cpw.mods.fml.common.Loader;
 import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.event.ClickEvent;
@@ -102,44 +90,20 @@ public class CommandCaveworld extends CommandBase
 			message.appendSibling(component);
 			sender.addChatMessage(message);
 		}
-		else if (args[0].equalsIgnoreCase("regenerate"))
+		else if (args[0].equalsIgnoreCase("regenerate") && sender instanceof EntityPlayerMP)
 		{
-			boolean backup = true;
+			EntityPlayerMP player = (EntityPlayerMP)sender;
+			MinecraftServer server = player.mcServer;
 
-			if (args.length > 1)
+			if (server.isSinglePlayer() || server.getConfigurationManager().func_152596_g(player.getGameProfile()))
 			{
-				try
-				{
-					backup = parseBoolean(sender, args[1]);
-				}
-				catch (CommandException e)
-				{
-					backup = true;
-				}
-			}
-
-			if (sender instanceof EntityPlayerMP)
-			{
-				EntityPlayerMP player = (EntityPlayerMP)sender;
-				MinecraftServer server = player.mcServer;
-
-				if (server.isSinglePlayer() || server.getConfigurationManager().func_152596_g(player.getGameProfile()))
-				{
-					CaveNetworkRegistry.sendTo(new RegenerateMessage(backup), player);
-				}
-				else
-				{
-					IChatComponent component = new ChatComponentTranslation("commands.generic.permission");
-					component.getChatStyle().setColor(EnumChatFormatting.RED);
-					sender.addChatMessage(component);
-				}
+				CaveNetworkRegistry.sendTo(new RegenerationGuiMessage(RegenerationGuiMessage.EnumType.OPEN), player);
 			}
 			else
 			{
-				boolean ret = CaveworldAPI.isHardcore() || CaveworldAPI.isCaveborn();
-
-				CaveUtils.regenerateDimension(CaveworldAPI.getDimension(), backup, ret);
-				CaveUtils.regenerateDimension(CaveworldAPI.getCavernDimension(), backup, ret);
+				IChatComponent component = new ChatComponentTranslation("commands.generic.permission");
+				component.getChatStyle().setColor(EnumChatFormatting.RED);
+				sender.addChatMessage(component);
 			}
 		}
 		else if (args[0].equalsIgnoreCase("mp") && args.length > 1 && sender instanceof EntityPlayerMP)

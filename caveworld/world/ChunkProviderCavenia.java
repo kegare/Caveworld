@@ -18,7 +18,7 @@ import com.google.common.collect.Lists;
 import caveworld.api.BlockEntry;
 import caveworld.api.ICaveVein;
 import caveworld.block.CaveBlocks;
-import caveworld.core.CaveVeinManager.CaveVein;
+import caveworld.config.manager.CaveVeinManager.CaveVein;
 import caveworld.entity.CaveEntityRegistry;
 import caveworld.entity.EntityCrazyCavenicSkeleton;
 import caveworld.entity.ICrazyMob;

@@ -1,12 +1,3 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.world;
 
 import java.io.File;
@@ -20,7 +11,7 @@ import org.apache.logging.log4j.Level;
 
 import com.google.common.base.Strings;
 
-import caveworld.core.Config;
+import caveworld.config.Config;
 import caveworld.util.CaveLog;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.CompressedStreamTools;

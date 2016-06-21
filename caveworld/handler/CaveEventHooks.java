@@ -1,12 +1,3 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.handler;
 
 import java.util.List;
@@ -30,19 +21,19 @@ import caveworld.block.CaveBlocks;
 import caveworld.client.gui.GuiDownloadCaveTerrain;
 import caveworld.client.gui.GuiLoadCaveTerrain;
 import caveworld.client.gui.GuiSelectBreakable;
-import caveworld.core.AquaCavernBiomeManager;
-import caveworld.core.AquaCavernVeinManager;
+import caveworld.config.Config;
+import caveworld.config.ConfigHelper;
+import caveworld.config.manager.AquaCavernBiomeManager;
+import caveworld.config.manager.AquaCavernVeinManager;
+import caveworld.config.manager.CaveBiomeManager;
+import caveworld.config.manager.CaveVeinManager;
+import caveworld.config.manager.CavelandVeinManager;
+import caveworld.config.manager.CaverManager;
+import caveworld.config.manager.CaverManager.MinerRank;
+import caveworld.config.manager.CavernBiomeManager;
+import caveworld.config.manager.CavernVeinManager;
 import caveworld.core.CaveAchievementList;
-import caveworld.core.CaveBiomeManager;
-import caveworld.core.CaveVeinManager;
-import caveworld.core.CavelandVeinManager;
-import caveworld.core.CaverManager;
-import caveworld.core.CaverManager.MinerRank;
-import caveworld.core.CavernBiomeManager;
-import caveworld.core.CavernVeinManager;
 import caveworld.core.Caveworld;
-import caveworld.core.Config;
-import caveworld.core.ConfigHelper;
 import caveworld.entity.EntityCaveman;
 import caveworld.inventory.InventoryCaverBackpack;
 import caveworld.item.CaveItems;
@@ -382,7 +373,6 @@ public class CaveEventHooks
 				CaveUtils.renderItemStack(mc, minerRank.getRenderItemStack(), x, y, true, false, null);
 
 				GL11.glPushMatrix();
-				GL11.glDisable(GL11.GL_LIGHTING);
 				GL11.glDisable(GL11.GL_DEPTH_TEST);
 				GL11.glEnable(GL11.GL_BLEND);
 				OpenGlHelper.glBlendFunc(770, 771, 1, 0);
@@ -428,7 +418,6 @@ public class CaveEventHooks
 					}
 				}
 
-				GL11.glEnable(GL11.GL_LIGHTING);
 				GL11.glEnable(GL11.GL_DEPTH_TEST);
 				GL11.glDisable(GL11.GL_BLEND);
 				GL11.glPopMatrix();
@@ -1575,6 +1564,10 @@ public class CaveEventHooks
 			else if (rank >= MinerRank.THE_MINER.getRank())
 			{
 				event.newSpeed *= 1.25F;
+			}
+			else if (rank >= MinerRank.DIAMOND_MINER.getRank())
+			{
+				event.newSpeed *= 1.1F;
 			}
 		}
 	}

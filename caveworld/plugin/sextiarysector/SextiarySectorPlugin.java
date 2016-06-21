@@ -1,19 +1,10 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.plugin.sextiarysector;
 
 import caveworld.api.BlockEntry;
 import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
-import caveworld.core.CaveVeinManager.CaveVein;
-import caveworld.core.Config;
+import caveworld.config.Config;
+import caveworld.config.manager.CaveVeinManager.CaveVein;
 import caveworld.item.CaveItems;
 import caveworld.plugin.ICavePlugin;
 import cpw.mods.fml.common.Loader;
@@ -22,6 +13,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.FMLLaunchHandler;
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.common.MinecraftForge;
 import shift.sextiarysector.api.recipe.RecipeAPI;
 
 public class SextiarySectorPlugin implements ICavePlugin
@@ -63,6 +55,8 @@ public class SextiarySectorPlugin implements ICavePlugin
 		}
 
 		RecipeAPI.pulverizer.add("oreMagnite", new ItemStack(CaveItems.gem, 2, 2));
+
+		MinecraftForge.EVENT_BUS.register(new SSEventHooks());
 
 		Block block = GameRegistry.findBlock(MODID, "CoalLargeOre");
 

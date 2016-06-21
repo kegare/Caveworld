@@ -1,12 +1,3 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.core;
 
 import java.io.File;
@@ -17,6 +8,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Level;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
 
@@ -24,6 +16,16 @@ import caveworld.api.BlockEntry;
 import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
 import caveworld.block.CaveBlocks;
+import caveworld.config.Config;
+import caveworld.config.ConfigHelper;
+import caveworld.config.manager.AquaCavernBiomeManager;
+import caveworld.config.manager.AquaCavernVeinManager;
+import caveworld.config.manager.CaveBiomeManager;
+import caveworld.config.manager.CaveVeinManager;
+import caveworld.config.manager.CavelandVeinManager;
+import caveworld.config.manager.CaverManager;
+import caveworld.config.manager.CavernBiomeManager;
+import caveworld.config.manager.CavernVeinManager;
 import caveworld.entity.CaveEntityRegistry;
 import caveworld.handler.CaveAPIHandler;
 import caveworld.handler.CaveEventHooks;
@@ -153,12 +155,12 @@ public class Caveworld
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event)
 	{
+		Config.syncGeneralCfg();
+
 		CaveBlocks.registerBlocks();
 		CaveItems.registerItems();
 
 		CaveNetworkRegistry.registerMessages();
-
-		Config.syncGeneralCfg();
 
 		if (event.getSide().isServer())
 		{
@@ -217,7 +219,7 @@ public class Caveworld
 	}
 
 	@EventHandler
-	public void postInit(final FMLPostInitializationEvent event)
+	public void postInit(FMLPostInitializationEvent event)
 	{
 		SubItemHelper.cacheSubBlocks(event.getSide());
 		SubItemHelper.cacheSubItems(event.getSide());
@@ -230,100 +232,103 @@ public class Caveworld
 			CaveUtils.isItemHoe(item);
 		}
 
-		for (Block block : GameData.getBlockRegistry().typeSafeIterable())
+		if (!Config.disableCaveniumTools)
 		{
-			try
+			for (Block block : GameData.getBlockRegistry().typeSafeIterable())
 			{
-				List<ItemStack> list = SubItemHelper.getSubBlocks(block);
-
-				if (list.isEmpty())
+				try
 				{
-					if (Strings.nullToEmpty(block.getHarvestTool(0)).equalsIgnoreCase("pickaxe") || CaveItems.mining_pickaxe.func_150897_b(block) ||
-						block instanceof BlockOre || block instanceof BlockRedstoneOre || block instanceof BlockGlowstone)
-					{
-						ItemMiningPickaxe.breakableBlocks.addIfAbsent(new BlockEntry(block, 0));
+					List<ItemStack> list = SubItemHelper.getSubBlocks(block);
 
-						if (block instanceof BlockRotatedPillar)
+					if (list.isEmpty())
+					{
+						if (Strings.nullToEmpty(block.getHarvestTool(0)).equalsIgnoreCase("pickaxe") || CaveItems.mining_pickaxe.func_150897_b(block) ||
+							block instanceof BlockOre || block instanceof BlockRedstoneOre || block instanceof BlockGlowstone)
 						{
-							ItemMiningPickaxe.breakableBlocks.addIfAbsent(new BlockEntry(block, 4));
-							ItemMiningPickaxe.breakableBlocks.addIfAbsent(new BlockEntry(block, 8));
+							ItemMiningPickaxe.breakableBlocks.addIfAbsent(new BlockEntry(block, 0));
+
+							if (block instanceof BlockRotatedPillar)
+							{
+								ItemMiningPickaxe.breakableBlocks.addIfAbsent(new BlockEntry(block, 4));
+								ItemMiningPickaxe.breakableBlocks.addIfAbsent(new BlockEntry(block, 8));
+							}
+						}
+
+						if (CaveUtils.isWood(block, 0))
+						{
+							ItemLumberingAxe.breakableBlocks.addIfAbsent(new BlockEntry(block, 0));
+
+							if (block instanceof BlockRotatedPillar)
+							{
+								ItemLumberingAxe.breakableBlocks.addIfAbsent(new BlockEntry(block, 4));
+								ItemLumberingAxe.breakableBlocks.addIfAbsent(new BlockEntry(block, 8));
+							}
+						}
+
+						if (Strings.nullToEmpty(block.getHarvestTool(0)).equalsIgnoreCase("shovel") || CaveItems.digging_shovel.func_150897_b(block) || block instanceof BlockClay ||
+							block.getMaterial() == Material.ground || block.getMaterial() == Material.grass || block.getMaterial() == Material.sand || block.getMaterial() == Material.snow || block.getMaterial() == Material.craftedSnow)
+						{
+							ItemDiggingShovel.breakableBlocks.addIfAbsent(new BlockEntry(block, 0));
+
+							if (block instanceof BlockRotatedPillar)
+							{
+								ItemDiggingShovel.breakableBlocks.addIfAbsent(new BlockEntry(block, 4));
+								ItemDiggingShovel.breakableBlocks.addIfAbsent(new BlockEntry(block, 8));
+							}
 						}
 					}
-
-					if (CaveUtils.isWood(block, 0))
+					else for (ItemStack itemstack : list)
 					{
-						ItemLumberingAxe.breakableBlocks.addIfAbsent(new BlockEntry(block, 0));
-
-						if (block instanceof BlockRotatedPillar)
+						if (itemstack != null && itemstack.getItem() != null)
 						{
-							ItemLumberingAxe.breakableBlocks.addIfAbsent(new BlockEntry(block, 4));
-							ItemLumberingAxe.breakableBlocks.addIfAbsent(new BlockEntry(block, 8));
-						}
-					}
+							Block sub = Block.getBlockFromItem(itemstack.getItem());
 
-					if (Strings.nullToEmpty(block.getHarvestTool(0)).equalsIgnoreCase("shovel") || CaveItems.digging_shovel.func_150897_b(block) ||
-						block.getMaterial() == Material.ground || block.getMaterial() == Material.grass || block.getMaterial() == Material.sand || block.getMaterial() == Material.snow || block.getMaterial() == Material.craftedSnow)
-					{
-						ItemDiggingShovel.breakableBlocks.addIfAbsent(new BlockEntry(block, 0));
+							if (sub == Blocks.air)
+							{
+								continue;
+							}
 
-						if (block instanceof BlockRotatedPillar)
-						{
-							ItemDiggingShovel.breakableBlocks.addIfAbsent(new BlockEntry(block, 4));
-							ItemDiggingShovel.breakableBlocks.addIfAbsent(new BlockEntry(block, 8));
+							int meta = itemstack.getItemDamage();
+
+							if (Strings.nullToEmpty(sub.getHarvestTool(meta)).equalsIgnoreCase("pickaxe") ||
+								CaveItems.mining_pickaxe.func_150897_b(sub) || sub instanceof BlockOre || sub instanceof BlockRedstoneOre || block instanceof BlockGlowstone)
+							{
+								ItemMiningPickaxe.breakableBlocks.addIfAbsent(new BlockEntry(sub, meta));
+
+								if (sub instanceof BlockRotatedPillar)
+								{
+									ItemMiningPickaxe.breakableBlocks.addIfAbsent(new BlockEntry(sub, meta + 4));
+									ItemMiningPickaxe.breakableBlocks.addIfAbsent(new BlockEntry(sub, meta + 8));
+								}
+							}
+
+							if (CaveUtils.isWood(sub, meta))
+							{
+								ItemLumberingAxe.breakableBlocks.addIfAbsent(new BlockEntry(sub, meta));
+
+								if (sub instanceof BlockRotatedPillar)
+								{
+									ItemLumberingAxe.breakableBlocks.addIfAbsent(new BlockEntry(sub, meta + 4));
+									ItemLumberingAxe.breakableBlocks.addIfAbsent(new BlockEntry(sub, meta + 8));
+								}
+							}
+
+							if (Strings.nullToEmpty(sub.getHarvestTool(meta)).equalsIgnoreCase("shovel") || CaveItems.digging_shovel.func_150897_b(sub) || block instanceof BlockClay ||
+								sub.getMaterial() == Material.ground || sub.getMaterial() == Material.grass || sub.getMaterial() == Material.sand || sub.getMaterial() == Material.snow || sub.getMaterial() == Material.craftedSnow)
+							{
+								ItemDiggingShovel.breakableBlocks.addIfAbsent(new BlockEntry(sub, meta));
+
+								if (sub instanceof BlockRotatedPillar)
+								{
+									ItemDiggingShovel.breakableBlocks.addIfAbsent(new BlockEntry(sub, meta + 4));
+									ItemDiggingShovel.breakableBlocks.addIfAbsent(new BlockEntry(sub, meta + 8));
+								}
+							}
 						}
 					}
 				}
-				else for (ItemStack itemstack : list)
-				{
-					if (itemstack != null && itemstack.getItem() != null)
-					{
-						Block sub = Block.getBlockFromItem(itemstack.getItem());
-
-						if (sub == Blocks.air)
-						{
-							continue;
-						}
-
-						int meta = itemstack.getItemDamage();
-
-						if (Strings.nullToEmpty(sub.getHarvestTool(meta)).equalsIgnoreCase("pickaxe") ||
-							CaveItems.mining_pickaxe.func_150897_b(sub) || sub instanceof BlockOre || sub instanceof BlockRedstoneOre || block instanceof BlockGlowstone)
-						{
-							ItemMiningPickaxe.breakableBlocks.addIfAbsent(new BlockEntry(sub, meta));
-
-							if (sub instanceof BlockRotatedPillar)
-							{
-								ItemMiningPickaxe.breakableBlocks.addIfAbsent(new BlockEntry(sub, meta + 4));
-								ItemMiningPickaxe.breakableBlocks.addIfAbsent(new BlockEntry(sub, meta + 8));
-							}
-						}
-
-						if (CaveUtils.isWood(sub, meta))
-						{
-							ItemLumberingAxe.breakableBlocks.addIfAbsent(new BlockEntry(sub, meta));
-
-							if (sub instanceof BlockRotatedPillar)
-							{
-								ItemLumberingAxe.breakableBlocks.addIfAbsent(new BlockEntry(sub, meta + 4));
-								ItemLumberingAxe.breakableBlocks.addIfAbsent(new BlockEntry(sub, meta + 8));
-							}
-						}
-
-						if (Strings.nullToEmpty(sub.getHarvestTool(meta)).equalsIgnoreCase("shovel") || CaveItems.digging_shovel.func_150897_b(sub) ||
-							sub.getMaterial() == Material.ground || sub.getMaterial() == Material.grass || sub.getMaterial() == Material.sand || sub.getMaterial() == Material.snow || sub.getMaterial() == Material.craftedSnow)
-						{
-							ItemDiggingShovel.breakableBlocks.addIfAbsent(new BlockEntry(sub, meta));
-
-							if (sub instanceof BlockRotatedPillar)
-							{
-								ItemDiggingShovel.breakableBlocks.addIfAbsent(new BlockEntry(sub, meta + 4));
-								ItemDiggingShovel.breakableBlocks.addIfAbsent(new BlockEntry(sub, meta + 8));
-							}
-						}
-					}
-				}
+				catch (Throwable e) {}
 			}
-			catch (Throwable e) {}
 		}
 
 		CaverAPI.setMiningPointAmount("oreCoal", 1);
@@ -399,6 +404,35 @@ public class Caveworld
 		CaverAPI.setMiningPointAmount("aquamarineOre", 2);
 		CaverAPI.setMiningPointAmount("glowstone", 2);
 
+		if (Config.initCavebornItems)
+		{
+			ConfigCategory category = Config.generalCfg.getCategory("options");
+			Property prop = category.get("cavebornItems");
+
+			if (prop != null)
+			{
+				List<ItemStack> items = Lists.newArrayList();
+
+				items.add(new ItemStack(Items.stone_pickaxe));
+				items.add(new ItemStack(Items.stone_sword));
+				items.add(new ItemStack(Blocks.torch));
+				items.add(new ItemStack(Items.bread));
+
+				for (int i = 0; i < 3; ++i)
+				{
+					items.add(new ItemStack(CaveBlocks.perverted_sapling, 1, i));
+				}
+
+				items.add(new ItemStack(Blocks.crafting_table));
+				items.add(new ItemStack(Blocks.dirt));
+				items.add(new ItemStack(CaveItems.acresia));
+
+				Config.cavebornItems = ConfigHelper.getStringsFromItems(items);
+
+				prop.set(Config.cavebornItems);
+			}
+		}
+
 		Config.syncBiomesCfg();
 		Config.syncBiomesCavernCfg();
 		Config.syncBiomesAquaCavernCfg();
@@ -423,17 +457,20 @@ public class Caveworld
 	{
 		Set<String> entries = Sets.newTreeSet();
 
-		for (Block block : GameData.getBlockRegistry().typeSafeIterable())
+		if (!Config.disableCaveniumTools)
 		{
-			for (int i = 0; i < 16; ++i)
+			for (Block block : GameData.getBlockRegistry().typeSafeIterable())
 			{
-				int point = CaverAPI.getMiningPointAmount(block, i);
-
-				if (point > 0)
+				for (int i = 0; i < 16; ++i)
 				{
-					entries.add(GameData.getBlockRegistry().getNameForObject(block) + ":" + i + "," + point);
+					int point = CaverAPI.getMiningPointAmount(block, i);
 
-					ItemMiningPickaxe.defaultBreakables.add(CaveUtils.toStringHelper(block, i));
+					if (point > 0)
+					{
+						entries.add(GameData.getBlockRegistry().getNameForObject(block) + ":" + i + "," + point);
+
+						ItemMiningPickaxe.defaultBreakables.add(CaveUtils.toStringHelper(block, i));
+					}
 				}
 			}
 		}

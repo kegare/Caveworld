@@ -1,12 +1,3 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.block;
 
 import java.util.Random;
@@ -16,8 +7,8 @@ import caveworld.api.CaverAPI;
 import caveworld.api.CaveworldAPI;
 import caveworld.api.ICaveMob;
 import caveworld.client.gui.MenuType;
+import caveworld.config.Config;
 import caveworld.core.Caveworld;
-import caveworld.core.Config;
 import caveworld.network.CaveNetworkRegistry;
 import caveworld.network.client.PortalMenuMessage;
 import caveworld.plugin.mceconomy.MCEconomyPlugin;

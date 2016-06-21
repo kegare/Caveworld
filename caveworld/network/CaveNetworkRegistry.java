@@ -1,12 +1,3 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
 package caveworld.network;
 
 import java.util.List;
@@ -20,13 +11,14 @@ import caveworld.network.client.CaveworldMenuMessage;
 import caveworld.network.client.LastMineMessage;
 import caveworld.network.client.MultiBreakCountMessage;
 import caveworld.network.client.PortalMenuMessage;
+import caveworld.network.client.RegenerationGuiMessage;
 import caveworld.network.common.HeldItemNBTAdjustMessage;
 import caveworld.network.common.OpRemoteCheckMessage;
-import caveworld.network.common.RegenerateMessage;
 import caveworld.network.common.VeinAdjustMessage;
 import caveworld.network.server.CaveAchievementMessage;
 import caveworld.network.server.OpenGuiMessage;
 import caveworld.network.server.PortalInventoryMessage;
+import caveworld.network.server.RegenerationMessage;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
@@ -104,8 +96,8 @@ public class CaveNetworkRegistry
 		registerMessage(BrightnessAdjustMessage.class, BrightnessAdjustMessage.class, Side.CLIENT);
 		registerMessage(CaveMusicMessage.class, CaveMusicMessage.class, Side.CLIENT);
 		registerMessage(HeldItemNBTAdjustMessage.class, HeldItemNBTAdjustMessage.class);
-		registerMessage(RegenerateMessage.class, RegenerateMessage.class);
-		registerMessage(RegenerateMessage.ProgressNotify.class, RegenerateMessage.ProgressNotify.class, Side.CLIENT);
+		registerMessage(RegenerationGuiMessage.class, RegenerationGuiMessage.class, Side.CLIENT);
+		registerMessage(RegenerationMessage.class, RegenerationMessage.class, Side.SERVER);
 		registerMessage(CaveworldMenuMessage.class, CaveworldMenuMessage.class, Side.CLIENT);
 		registerMessage(PortalMenuMessage.class, PortalMenuMessage.class, Side.CLIENT);
 		registerMessage(CaveAchievementMessage.class, CaveAchievementMessage.class, Side.SERVER);

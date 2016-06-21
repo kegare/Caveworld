@@ -1,13 +1,4 @@
-/*
- * Caveworld
- *
- * Copyright (c) 2016 kegare
- * https://github.com/kegare
- *
- * This mod is distributed under the terms of the Minecraft Mod Public License Japanese Translation, or MMPL_J.
- */
-
-package caveworld.core;
+package caveworld.config;
 
 import java.io.File;
 import java.util.List;
@@ -27,15 +18,16 @@ import caveworld.api.CaveworldAPI;
 import caveworld.api.ICaveBiome;
 import caveworld.api.ICaveVein;
 import caveworld.block.CaveBlocks;
-import caveworld.core.CaveBiomeManager.CaveBiome;
-import caveworld.core.CaveVeinManager.CaveVein;
+import caveworld.config.manager.CaveBiomeManager;
+import caveworld.config.manager.CaveBiomeManager.CaveBiome;
+import caveworld.config.manager.CaveVeinManager.CaveVein;
+import caveworld.core.Caveworld;
 import caveworld.entity.EntityArcherZombie;
 import caveworld.entity.EntityCaveman;
 import caveworld.entity.EntityCavenicCreeper;
 import caveworld.entity.EntityCavenicSkeleton;
 import caveworld.entity.EntityCavenicSpider;
 import caveworld.entity.EntityCavenicZombie;
-import caveworld.item.CaveItems;
 import caveworld.plugin.CavePlugins;
 import caveworld.plugin.ICavePlugin;
 import caveworld.util.CaveConfiguration;
@@ -72,8 +64,6 @@ import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.EntityBat;
 import net.minecraft.entity.passive.EntityWaterMob;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -118,6 +108,9 @@ public class Config
 	public static int modeDisplayTime;
 	public static int quickBreakLimit;
 	public static boolean portalCache;
+	public static boolean disableCaveniumTools;
+	public static boolean disableInfititeTools;
+	public static boolean disableInfititeArmors;
 
 	public static boolean hardcore;
 	public static int caveborn;
@@ -125,6 +118,8 @@ public class Config
 
 	public static boolean cauldron;
 	public static boolean remoteConfig;
+
+	public static boolean initCavebornItems;
 
 	public static Class<? extends IConfigEntry> selectItems;
 	public static Class<? extends IConfigEntry> selectItemsWithBlocks;
@@ -419,6 +414,30 @@ public class Config
 		prop.comment += "Note: If multiplayer, server-side only.";
 		propOrder.add(prop.getName());
 		portalCache = prop.getBoolean(portalCache);
+		prop = generalCfg.get(category, "disableCaveniumTools", false);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		prop.comment += Configuration.NEW_LINE;
+		prop.comment += "Note: If multiplayer, server-side only.";
+		propOrder.add(prop.getName());
+		disableCaveniumTools = prop.getBoolean(disableCaveniumTools);
+		prop = generalCfg.get(category, "disableInfititeTools", false);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		prop.comment += Configuration.NEW_LINE;
+		prop.comment += "Note: If multiplayer, server-side only.";
+		propOrder.add(prop.getName());
+		disableInfititeTools = prop.getBoolean(disableInfititeTools);
+		prop = generalCfg.get(category, "disableInfititeArmors", false);
+		prop.setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setRequiresMcRestart(true);
+		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
+		prop.comment += " [default: " + prop.getDefault() + "]";
+		prop.comment += Configuration.NEW_LINE;
+		prop.comment += "Note: If multiplayer, server-side only.";
+		propOrder.add(prop.getName());
+		disableInfititeArmors = prop.getBoolean(disableInfititeArmors);
 
 		generalCfg.setCategoryPropertyOrder(category, propOrder);
 
@@ -456,34 +475,12 @@ public class Config
 		prop.comment += "Note: If multiplayer, server-side only.";
 		propOrder.add(prop.getName());
 		caveborn = MathHelper.clamp_int(prop.getInt(caveborn), Integer.parseInt(prop.getMinValue()), Integer.parseInt(prop.getMaxValue()));
-		boolean flag = !generalCfg.getCategory(category).containsKey("cavebornItems");
+		initCavebornItems = !generalCfg.getCategory(category).containsKey("cavebornItems");
 		prop = generalCfg.get(category, "cavebornItems", new String[0]);
 		prop.setMaxListLength(36).setLanguageKey(Caveworld.CONFIG_LANG + category + '.' + prop.getName()).setConfigEntryClass(selectItemsWithBlocks);
 		prop.comment = StatCollector.translateToLocal(prop.getLanguageKey() + ".tooltip");
 		propOrder.add(prop.getName());
 		cavebornItems = prop.getStringList();
-
-		if (flag)
-		{
-			List<ItemStack> items = Lists.newArrayList();
-
-			items.add(new ItemStack(Items.stone_pickaxe));
-			items.add(new ItemStack(Items.stone_sword));
-			items.add(new ItemStack(Blocks.torch));
-			items.add(new ItemStack(Items.bread));
-
-			for (int i = 0; i < 3; ++i)
-			{
-				items.add(new ItemStack(CaveBlocks.perverted_sapling, 1, i));
-			}
-
-			items.add(new ItemStack(Blocks.crafting_table));
-			items.add(new ItemStack(Blocks.dirt));
-			items.add(new ItemStack(CaveItems.acresia));
-
-			cavebornItems = ConfigHelper.getStringsFromItems(items);
-			prop.set(cavebornItems);
-		}
 
 		generalCfg.setCategoryPropertyOrder(category, propOrder);
 
